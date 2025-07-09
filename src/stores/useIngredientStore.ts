@@ -38,41 +38,39 @@ function saveIngredientFiltersToStorage(filters: {
 }
 
 export const useIngredientStore = create<IngredientState>()(
-  subscribeWithSelector(function (set) {
-    return {
-      disabledCategories: [],
-      disabledIngredients: [],
-      isModalOpen: false,
-      registryVersion: 0,
+  subscribeWithSelector((set) => ({
+    disabledCategories: [],
+    disabledIngredients: [],
+    isModalOpen: false,
+    registryVersion: 0,
 
-      closeModal() {
-        set({ isModalOpen: false });
-      },
-      openModal() {
-        set({ isModalOpen: true });
-      },
-      refreshRegistry() {
-        set((state) => ({ registryVersion: state.registryVersion + 1 }));
-      },
-      setFilters({ categories, ingredients }) {
-        set({ disabledCategories: categories, disabledIngredients: ingredients });
-      },
-      toggleCategory(category) {
-        set((state) => ({
-          disabledCategories: state.disabledCategories.includes(category)
-            ? state.disabledCategories.filter((existing) => existing !== category)
-            : [...state.disabledCategories, category],
-        }));
-      },
-      toggleIngredient(id) {
-        set((state) => ({
-          disabledIngredients: state.disabledIngredients.includes(id)
-            ? state.disabledIngredients.filter((existing) => existing !== id)
-            : [...state.disabledIngredients, id],
-        }));
-      },
-    };
-  }),
+    closeModal() {
+      set({ isModalOpen: false });
+    },
+    openModal() {
+      set({ isModalOpen: true });
+    },
+    refreshRegistry() {
+      set((state) => ({ registryVersion: state.registryVersion + 1 }));
+    },
+    setFilters({ categories, ingredients }) {
+      set({ disabledCategories: categories, disabledIngredients: ingredients });
+    },
+    toggleCategory(category) {
+      set((state) => ({
+        disabledCategories: state.disabledCategories.includes(category)
+          ? state.disabledCategories.filter((existing) => existing !== category)
+          : [...state.disabledCategories, category],
+      }));
+    },
+    toggleIngredient(id) {
+      set((state) => ({
+        disabledIngredients: state.disabledIngredients.includes(id)
+          ? state.disabledIngredients.filter((existing) => existing !== id)
+          : [...state.disabledIngredients, id],
+      }));
+    },
+  })),
 );
 
 useIngredientStore.subscribe(selectIngredientFilters, saveIngredientFiltersToStorage);

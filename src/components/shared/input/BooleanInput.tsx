@@ -5,7 +5,7 @@ import { useThemeStore } from '../../../stores/useThemeStore';
 import type { ChangeEventHandler, InputHTMLAttributes, JSX } from 'react';
 
 interface BooleanInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'checked'> {
-  readonly ariaLabel: string;
+  readonly ariaLabel?: string;
   readonly checked: boolean;
   readonly className?: string;
   readonly id: string;

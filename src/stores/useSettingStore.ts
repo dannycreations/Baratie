@@ -10,19 +10,17 @@ interface SettingState {
   readonly openPanel: () => void;
 }
 
-export const useSettingStore = create<SettingState>()(function (set) {
-  return {
-    activeTab: 'appearance',
-    isPanelOpen: false,
+export const useSettingStore = create<SettingState>()((set) => ({
+  activeTab: 'appearance',
+  isPanelOpen: false,
 
-    setActiveTab(tab) {
-      set({ activeTab: tab });
-    },
-    closePanel() {
-      set({ isPanelOpen: false });
-    },
-    openPanel() {
-      set({ isPanelOpen: true });
-    },
-  };
-});
+  setActiveTab(tab) {
+    set({ activeTab: tab });
+  },
+  closePanel() {
+    set({ isPanelOpen: false });
+  },
+  openPanel() {
+    set({ isPanelOpen: true });
+  },
+}));

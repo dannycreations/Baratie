@@ -26,7 +26,7 @@ function saveThemeNameToStorage(themeName: ThemeId): void {
 }
 
 export const useThemeStore = create<ThemeState>()(
-  subscribeWithSelector(function (set) {
+  subscribeWithSelector((set) => {
     let id = darkThemeConfig.id;
     let theme = darkThemeConfig.theme;
 

@@ -11,7 +11,7 @@ import type { ChangeEvent, JSX, TextareaHTMLAttributes, UIEvent } from 'react';
 
 interface TextareaInputProps
   extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'value' | 'onChange' | 'readOnly' | 'placeholder' | 'disabled' | 'spellCheck'> {
-  readonly ariaLabel: string;
+  readonly ariaLabel?: string;
   readonly disabled?: boolean;
   readonly placeholder?: string;
   readonly readOnly?: boolean;

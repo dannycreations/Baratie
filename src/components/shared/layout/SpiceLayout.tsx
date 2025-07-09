@@ -41,14 +41,13 @@ const SpiceRenderer = memo(function SpiceRenderer({ ingredientDefinition, spice,
     switch (spice.type) {
       case 'boolean': {
         const value = typeof rawValue === 'boolean' ? rawValue : spice.value;
-        return <BooleanInput id={id} ariaLabel={spice.label} checked={value} onChange={handleBooleanChange} />;
+        return <BooleanInput id={id} checked={value} onChange={handleBooleanChange} />;
       }
       case 'number': {
         const value = typeof rawValue === 'number' ? rawValue : spice.value;
         return (
           <NumberInput
             id={id}
-            ariaLabel={spice.label}
             max={spice.max}
             min={spice.min}
             placeholder={spice.placeholder}
@@ -60,14 +59,13 @@ const SpiceRenderer = memo(function SpiceRenderer({ ingredientDefinition, spice,
       }
       case 'string': {
         const value = typeof rawValue === 'string' ? rawValue : spice.value;
-        return <StringInput id={id} ariaLabel={spice.label} placeholder={spice.placeholder} value={value} onChange={handleValueChange} />;
+        return <StringInput id={id} placeholder={spice.placeholder} value={value} onChange={handleValueChange} />;
       }
       case 'textarea': {
         const value = typeof rawValue === 'string' ? rawValue : spice.value;
         return (
           <textarea
             id={id}
-            aria-label={spice.label}
             className={`w-full rounded-md border p-2 outline-none disabled:cursor-not-allowed disabled:opacity-50 ${theme.inputBorder} ${theme.inputBg} ${theme.inputText} ${theme.textPlaceholder} ${theme.inputFocusRing}`}
             placeholder={spice.placeholder}
             rows={4}
@@ -81,7 +79,7 @@ const SpiceRenderer = memo(function SpiceRenderer({ ingredientDefinition, spice,
         if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
           return null;
         }
-        return <SelectInput id={id} ariaLabel={spice.label} options={spice.options} value={String(value)} onChange={handleSelectChange} />;
+        return <SelectInput id={id} options={spice.options} value={String(value)} onChange={handleSelectChange} />;
       }
       default: {
         return null;
@@ -90,7 +88,7 @@ const SpiceRenderer = memo(function SpiceRenderer({ ingredientDefinition, spice,
   };
 
   const isBoolean = spice.type === 'boolean';
-  const fieldSetClass = isBoolean ? 'flex flex-row items-center justify-start gap-x-3' : '';
+  const fieldSetClass = isBoolean ? 'flex flex-row items-center justify-start gap-x-3' : 'pb-3';
   const inputWrapperClass = isBoolean ? 'flex h-8 items-center' : 'w-full sm:w-auto sm:min-w-44 sm:flex-grow';
 
   return (

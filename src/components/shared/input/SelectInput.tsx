@@ -6,7 +6,7 @@ import { ChevronDownIcon } from '../Icon';
 import type { ChangeEventHandler, JSX, SelectHTMLAttributes } from 'react';
 
 interface SelectInputProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'value'> {
-  readonly ariaLabel: string;
+  readonly ariaLabel?: string;
   readonly className?: string;
   readonly id: string;
   readonly options: readonly { readonly label: string; readonly value: string | number | boolean }[];

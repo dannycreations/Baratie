@@ -1,7 +1,10 @@
+
 import { memo, useCallback, useMemo, useState } from 'react';
 
+import { CONFIRM_TIMEOUT_MS } from '../../app/constants';
 import { APP_THEMES } from '../../app/themes';
 import { addNewExtension, removeExtension } from '../../helpers/extensionHelper';
+import { useConditionalTimer } from '../../hooks/useConditionalTimer';
 import { useExtensionStore } from '../../stores/useExtensionStore';
 import { useSettingStore } from '../../stores/useSettingStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -159,6 +162,17 @@ const ExtensionSettings = memo(function ExtensionSettings() {
   const extensions = useExtensionStore((state) => state.extensions);
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const resetDeleting = useCallback(() => {
+    setDeletingId(null);
+  }, []);
+
+  useConditionalTimer({
+    state: deletingId ? 'running' : 'stopped',
+    callback: resetDeleting,
+    duration: CONFIRM_TIMEOUT_MS,
+  });
 
   const handleAddClick = useCallback(async () => {
     if (!url.trim() || isLoading) return;
@@ -179,6 +193,18 @@ const ExtensionSettings = memo(function ExtensionSettings() {
       }
     },
     [handleAddClick],
+  );
+
+  const handleDeleteClick = useCallback(
+    (extensionId: string) => {
+      if (deletingId === extensionId) {
+        removeExtension(extensionId);
+        setDeletingId(null);
+      } else {
+        setDeletingId(extensionId);
+      }
+    },
+    [deletingId],
   );
 
   return (
@@ -212,28 +238,38 @@ const ExtensionSettings = memo(function ExtensionSettings() {
           <EmptyView>No extensions have been installed yet.</EmptyView>
         ) : (
           <ul className={`space-y-2 rounded-md border p-2 ${theme.inputBorder}`}>
-            {extensions.map((ext) => (
-              <li
-                key={ext.id}
-                className={`flex items-center justify-between rounded p-3 text-sm transition-colors ${theme.itemBg} ${theme.itemBgMutedHover}`}
-              >
-                <div className="flex flex-col gap-1">
-                  <span className={`font-medium ${theme.textPrimary}`}>{ext.name}</span>
-                  <span className={`text-xs ${theme.textTertiary}`}>{ext.id}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <ExtensionItemStatus status={ext.status} errors={ext.errors} />
-                  <TooltipButton
-                    aria-label={`Remove extension ${ext.name}`}
-                    icon={<Trash2Icon size={18} />}
-                    size="sm"
-                    tooltipContent="Remove Extension"
-                    variant="danger"
-                    onClick={() => removeExtension(ext.id)}
-                  />
-                </div>
-              </li>
-            ))}
+            {extensions.map((ext) => {
+              const isDeleting = deletingId === ext.id;
+              const deleteButtonTip = isDeleting ? 'Confirm Deletion' : 'Remove Extension';
+              const deleteButtonLabel = isDeleting ? `Confirm removal of extension ${ext.name}` : `Remove extension ${ext.name}`;
+              const deleteButtonClasses = isDeleting
+                ? ['border', theme.errorBorderLight, theme.errorBgLighter, theme.errorTextLight, theme.errorBgHover].join(' ')
+                : undefined;
+
+              return (
+                <li
+                  key={ext.id}
+                  className={`flex items-center justify-between rounded p-3 text-sm transition-colors ${theme.itemBg} ${theme.itemBgMutedHover}`}
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className={`font-medium ${theme.textPrimary}`}>{ext.name}</span>
+                    <span className={`text-xs ${theme.textTertiary}`}>{ext.id}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <ExtensionItemStatus status={ext.status} errors={ext.errors} />
+                    <TooltipButton
+                      aria-label={deleteButtonLabel}
+                      className={deleteButtonClasses}
+                      icon={isDeleting ? <AlertTriangleIcon className={theme.errorText} size={18} /> : <Trash2Icon size={18} />}
+                      size="sm"
+                      tooltipContent={deleteButtonTip}
+                      variant="danger"
+                      onClick={() => handleDeleteClick(ext.id)}
+                    />
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

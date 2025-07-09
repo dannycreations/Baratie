@@ -5,7 +5,7 @@ import { useThemeStore } from '../../../stores/useThemeStore';
 import type { ChangeEventHandler, InputHTMLAttributes, JSX, RefObject } from 'react';
 
 interface StringInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
-  readonly ariaLabel: string;
+  readonly ariaLabel?: string;
   readonly className?: string;
   readonly id: string;
   readonly inputRef?: RefObject<HTMLInputElement | null>;

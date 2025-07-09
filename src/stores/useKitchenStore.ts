@@ -19,33 +19,31 @@ interface KitchenState {
 }
 
 export const useKitchenStore = create<KitchenState>()(
-  subscribeWithSelector(function (set) {
-    return {
-      inputPanelConfig: null,
-      outputPanelConfig: null,
-      cookingStatus: 'idle',
-      ingredientStatuses: {},
-      inputData: '',
-      inputPanelIngId: null,
-      isAutoCookEnabled: true,
-      outputData: '',
+  subscribeWithSelector((set) => ({
+    inputPanelConfig: null,
+    outputPanelConfig: null,
+    cookingStatus: 'idle',
+    ingredientStatuses: {},
+    inputData: '',
+    inputPanelIngId: null,
+    isAutoCookEnabled: true,
+    outputData: '',
 
-      setCookingResult(result: RecipeCookResult): void {
-        set({
-          inputPanelConfig: result.inputPanelConfig,
-          outputPanelConfig: result.outputPanelConfig,
-          cookingStatus: result.cookingStatus,
-          ingredientStatuses: result.ingredientStatuses,
-          inputPanelIngId: result.inputPanelIngId,
-          outputData: result.outputData,
-        });
-      },
-      setInputData(data: string): void {
-        set({ inputData: data });
-      },
-      toggleAutoCookState(): void {
-        set((state) => ({ isAutoCookEnabled: !state.isAutoCookEnabled }));
-      },
-    };
-  }),
+    setCookingResult(result: RecipeCookResult): void {
+      set({
+        inputPanelConfig: result.inputPanelConfig,
+        outputPanelConfig: result.outputPanelConfig,
+        cookingStatus: result.cookingStatus,
+        ingredientStatuses: result.ingredientStatuses,
+        inputPanelIngId: result.inputPanelIngId,
+        outputData: result.outputData,
+      });
+    },
+    setInputData(data: string): void {
+      set({ inputData: data });
+    },
+    toggleAutoCookState(): void {
+      set((state) => ({ isAutoCookEnabled: !state.isAutoCookEnabled }));
+    },
+  })),
 );

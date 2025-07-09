@@ -39,7 +39,6 @@ export const CookbookSave = memo(function CookbookSave({ nameInput, onNameChange
         {(id) => (
           <StringInput
             id={id}
-            ariaLabel="Recipe name"
             inputRef={nameRef}
             onChange={handleChange}
             onKeyDown={handleKeyDown}

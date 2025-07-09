@@ -20,20 +20,18 @@ function saveFavoritesToStorage(favorites: readonly symbol[]): void {
 }
 
 export const useFavoriteStore = create<FavoriteState>()(
-  subscribeWithSelector(function (set) {
-    return {
-      favorites: [],
+  subscribeWithSelector((set) => ({
+    favorites: [],
 
-      setFavorites(favorites) {
-        set({ favorites });
-      },
-      toggle(type) {
-        set((state) => ({
-          favorites: state.favorites.includes(type) ? state.favorites.filter((favorite) => favorite !== type) : [...state.favorites, type],
-        }));
-      },
-    };
-  }),
+    setFavorites(favorites) {
+      set({ favorites });
+    },
+    toggle(type) {
+      set((state) => ({
+        favorites: state.favorites.includes(type) ? state.favorites.filter((favorite) => favorite !== type) : [...state.favorites, type],
+      }));
+    },
+  })),
 );
 
 useFavoriteStore.subscribe(selectFavorites, saveFavoritesToStorage);

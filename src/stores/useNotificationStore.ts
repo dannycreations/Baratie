@@ -7,12 +7,10 @@ interface NotificationState {
   readonly setNotifications: (notifications: readonly NotificationMessage[]) => void;
 }
 
-export const useNotificationStore = create<NotificationState>()(function (set) {
-  return {
-    notifications: [],
+export const useNotificationStore = create<NotificationState>()((set) => ({
+  notifications: [],
 
-    setNotifications(notifications: readonly NotificationMessage[]): void {
-      set({ notifications });
-    },
-  };
-});
+  setNotifications(notifications: readonly NotificationMessage[]): void {
+    set({ notifications });
+  },
+}));

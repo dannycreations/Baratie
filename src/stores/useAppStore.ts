@@ -8,17 +8,15 @@ interface AppState {
   readonly setLoadingMessage: (message: string, hasError?: boolean) => void;
 }
 
-export const useAppStore = create<AppState>()(function (set) {
-  return {
-    isInitialized: false,
-    loadingMessage: 'Firing up the galley...',
-    loadingHasError: false,
+export const useAppStore = create<AppState>()((set) => ({
+  isInitialized: false,
+  loadingMessage: 'Firing up the galley...',
+  loadingHasError: false,
 
-    setInitialized(isReady: boolean): void {
-      set({ isInitialized: isReady });
-    },
-    setLoadingMessage(message: string, hasError = false): void {
-      set({ loadingMessage: message, loadingHasError: hasError });
-    },
-  };
-});
+  setInitialized(isReady: boolean): void {
+    set({ isInitialized: isReady });
+  },
+  setLoadingMessage(message: string, hasError = false): void {
+    set({ loadingMessage: message, loadingHasError: hasError });
+  },
+}));
