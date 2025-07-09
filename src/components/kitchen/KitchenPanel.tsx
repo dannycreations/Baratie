@@ -25,13 +25,13 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
   const ingredients = useRecipeStore((state) => state.ingredients);
   const updateSpice = useRecipeStore((state) => state.updateSpice);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const importOperationRef = useRef(0);
+
   const isInput = type === 'input';
   const data = isInput ? inputData : outputData;
   const config = isInput ? inputPanelConfig : outputPanelConfig;
   const title = config?.title || (isInput ? 'Input' : 'Output');
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const importOperationRef = useRef(0);
 
   const onFileSelect = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
     const operationId = ++importOperationRef.current;
@@ -90,7 +90,7 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
             onClick={onTriggerFileSelect}
             size="sm"
             tooltipContent="Open File..."
-            tooltipPosition="top"
+            tooltipPosition="left"
             variant="stealth"
           />
           {canClear && (
@@ -117,10 +117,10 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
           onClick={onDownloadOutput}
           size="sm"
           tooltipContent="Save Output"
-          tooltipPosition="top"
+          tooltipPosition="left"
           variant="stealth"
         />
-        <CopyButton textToCopy={data} tooltipPosition="top" />
+        <CopyButton textToCopy={data} tooltipPosition="left" />
       </>
     );
   }, [isInput, data, inputPanelConfig, onClearInput, onTriggerFileSelect, onDownloadOutput]);

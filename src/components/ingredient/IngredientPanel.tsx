@@ -40,14 +40,12 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
   const listId = useId();
 
   const allIngredients = useMemo(() => ingredientRegistry.getAllIngredients(), [registryVersion]);
+  const ingredientsByCat = useSearchIngredients(allIngredients, query, favorites, disabledCategories, disabledIngredients);
   const totalIngredients = allIngredients.length;
-
   const visibleIngredients = useMemo(
     () => allIngredients.filter((ing) => !disabledCategories.includes(ing.category) && !disabledIngredients.includes(ing.name)).length,
     [allIngredients, disabledCategories, disabledIngredients],
   );
-
-  const ingredientsByCat = useSearchIngredients(allIngredients, query, favorites, disabledCategories, disabledIngredients);
 
   const onRecipeDragEnter = useCallback((event: DragEvent<HTMLDivElement>) => {
     if (event.dataTransfer.types.includes('application/x-baratie-recipe-item-id')) {
@@ -80,32 +78,6 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
       setDraggedItemId(null);
     },
     [removeIngredient, setDraggedItemId],
-  );
-
-  const headerActions = useMemo(
-    () => (
-      <>
-        <TooltipButton
-          aria-label={`Manage ingredients. ${visibleIngredients} of ${totalIngredients} visible.`}
-          icon={<PreferencesIcon size={18} />}
-          onClick={openModal}
-          size="sm"
-          tooltipContent={`Manage Ingredients\n${visibleIngredients} of ${totalIngredients} visible`}
-          tooltipPosition="bottom"
-          variant="stealth"
-        />
-        <TooltipButton
-          aria-label="Open application settings"
-          icon={<SettingsIcon size={18} />}
-          onClick={openSettingPanel}
-          size="sm"
-          tooltipContent="Settings, Appearance & Extensions"
-          tooltipPosition="bottom"
-          variant="stealth"
-        />
-      </>
-    ),
-    [totalIngredients, visibleIngredients, openModal, openSettingPanel],
   );
 
   const handleDragStart = useCallback((event: DragEvent<HTMLElement>) => {
@@ -141,6 +113,32 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
     event.preventDefault();
     event.stopPropagation();
   }, []);
+
+  const headerActions = useMemo(
+    () => (
+      <>
+        <TooltipButton
+          aria-label={`Manage ingredients. ${visibleIngredients} of ${totalIngredients} visible.`}
+          icon={<PreferencesIcon size={18} />}
+          onClick={openModal}
+          size="sm"
+          tooltipContent={`Manage Ingredients\n${visibleIngredients} of ${totalIngredients} visible`}
+          tooltipPosition="bottom"
+          variant="stealth"
+        />
+        <TooltipButton
+          aria-label="Open application settings"
+          icon={<SettingsIcon size={18} />}
+          onClick={openSettingPanel}
+          size="sm"
+          tooltipContent="Settings, Appearance & Extensions"
+          tooltipPosition="bottom"
+          variant="stealth"
+        />
+      </>
+    ),
+    [totalIngredients, visibleIngredients, openModal, openSettingPanel],
+  );
 
   const renderIngredient = useCallback(
     (ingredient: IngredientDefinition) => {

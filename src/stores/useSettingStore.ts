@@ -17,9 +17,11 @@ export const useSettingStore = create<SettingState>()((set) => ({
   setActiveTab(tab) {
     set({ activeTab: tab });
   },
+
   closePanel() {
     set({ isPanelOpen: false });
   },
+
   openPanel() {
     set({ isPanelOpen: true });
   },

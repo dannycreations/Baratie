@@ -55,6 +55,7 @@ export const RecipeItem = memo(function RecipeItem({
   onDragOver,
 }: RecipeItemProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);
+
   const definition = ingredientRegistry.getIngredient(ingredient.name);
   errorHandler.assert(
     definition,
@@ -100,7 +101,6 @@ export const RecipeItem = memo(function RecipeItem({
   }${isEditorVisible ? '. The options editor is expanded.' : ''}`;
 
   const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
-
   const classes = [
     'group',
     'flex',

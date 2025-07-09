@@ -16,22 +16,16 @@ import type {
   ResultType,
 } from './IngredientRegistry';
 
-function isPanelSignal(value: unknown): value is PanelControlSignal {
-  if (typeof value !== 'object' || value === null || value instanceof InputType) {
-    return false;
-  }
-  const potentialSignal = value as { output?: unknown };
-  return potentialSignal.output instanceof InputType;
-}
-
-class CookCancelledError extends Error {
-  public constructor() {
-    super('Cook operation cancelled by a newer request.');
-    this.name = 'CookCancelledError';
-  }
-}
-
 export type CookingStatusType = 'idle' | 'error' | 'success' | 'warning';
+
+export interface RecipeCookResult {
+  readonly inputPanelConfig: InputPanelConfig | null;
+  readonly outputPanelConfig: OutputPanelConfig | null;
+  readonly cookingStatus: CookingStatusType;
+  readonly ingredientStatuses: Readonly<Record<string, CookingStatusType>>;
+  readonly inputPanelIngId: string | null;
+  readonly outputData: string;
+}
 
 interface CookLoopResult {
   readonly cookedData: string;
@@ -57,13 +51,19 @@ interface ProcessedRunResult {
   readonly status: CookingStatusType;
 }
 
-export interface RecipeCookResult {
-  readonly inputPanelConfig: InputPanelConfig | null;
-  readonly outputPanelConfig: OutputPanelConfig | null;
-  readonly cookingStatus: CookingStatusType;
-  readonly ingredientStatuses: Readonly<Record<string, CookingStatusType>>;
-  readonly inputPanelIngId: string | null;
-  readonly outputData: string;
+function isPanelSignal(value: unknown): value is PanelControlSignal {
+  if (typeof value !== 'object' || value === null || value instanceof InputType) {
+    return false;
+  }
+  const potentialSignal = value as { output?: unknown };
+  return potentialSignal.output instanceof InputType;
+}
+
+class CookCancelledError extends Error {
+  public constructor() {
+    super('Cook operation cancelled by a newer request.');
+    this.name = 'CookCancelledError';
+  }
 }
 
 export class Kitchen {
@@ -71,6 +71,21 @@ export class Kitchen {
   private isCooking = false;
   private timeoutId: number | null = null;
   private intervalMs = 0;
+
+  public toggleAutoCook = (): void => {
+    const wasEnabled = useKitchenStore.getState().isAutoCookEnabled;
+    useKitchenStore.getState().toggleAutoCookState();
+
+    if (!wasEnabled) {
+      this.triggerCook();
+    } else {
+      if (this.timeoutId) {
+        clearTimeout(this.timeoutId);
+        this.timeoutId = null;
+        logger.info('Auto-cook disabled, pending scheduled cook cancelled.');
+      }
+    }
+  };
 
   public async cook(): Promise<void> {
     this.cookVersion++;
@@ -166,21 +181,6 @@ export class Kitchen {
       unsubscribeRecipe();
     };
   }
-
-  public toggleAutoCook = (): void => {
-    const wasEnabled = useKitchenStore.getState().isAutoCookEnabled;
-    useKitchenStore.getState().toggleAutoCookState();
-
-    if (!wasEnabled) {
-      this.triggerCook();
-    } else {
-      if (this.timeoutId) {
-        clearTimeout(this.timeoutId);
-        this.timeoutId = null;
-        logger.info('Auto-cook disabled, pending scheduled cook cancelled.');
-      }
-    }
-  };
 
   private async cookRecipe(recipe: readonly Ingredient[], initialInput: string, cookId: number): Promise<RecipeCookResult> {
     if (this.cookVersion !== cookId) throw new CookCancelledError();

@@ -8,6 +8,8 @@ import { showNotification } from './notificationHelper';
 import type { IngredientDefinition } from '../core/IngredientRegistry';
 import type { Extension, ExtensionManifest } from '../stores/useExtensionStore';
 
+type StorableExtension = Omit<Extension, 'status' | 'errors' | 'registeredIngredients'>;
+
 function isExtensionManifest(obj: unknown): obj is ExtensionManifest {
   if (typeof obj !== 'object' || obj === null) return false;
   const manifest = obj as Record<string, unknown>;
@@ -23,8 +25,6 @@ function isExtensionManifest(obj: unknown): obj is ExtensionManifest {
   }
   return false;
 }
-
-type StorableExtension = Omit<Extension, 'status' | 'errors' | 'registeredIngredients'>;
 
 function isStorableExtension(obj: unknown): obj is StorableExtension {
   if (typeof obj !== 'object' || obj === null) return false;
@@ -68,7 +68,7 @@ async function loadAndExecuteExtension(extension: Extension): Promise<void> {
 
   for (const entryPoint of entryPoints) {
     if (!entryPoint.trim()) continue;
-    const scriptUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}/${entryPoint}`;
+    const scriptUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}@latest/${entryPoint}`;
     try {
       const response = await fetch(scriptUrl);
       if (!response.ok) {
@@ -164,7 +164,7 @@ export async function addExtension(url: string): Promise<void> {
     return;
   }
 
-  const manifestUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}/manifest.json`;
+  const manifestUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}@latest/manifest.json`;
 
   try {
     const response = await fetch(manifestUrl);
@@ -188,7 +188,6 @@ export async function addExtension(url: string): Promise<void> {
     };
 
     addExtension(newExtension);
-    showNotification(`Adding extension '${manifest.name}'...`, 'info', 'Extension Manager');
     await loadAndExecuteExtension(newExtension);
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : String(e);

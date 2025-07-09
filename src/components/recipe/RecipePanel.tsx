@@ -24,7 +24,6 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
   const removeIngredient = useRecipeStore((state) => state.removeIngredient);
   const reorderIngredients = useRecipeStore((state) => state.reorderIngredients);
   const updateSpice = useRecipeStore((state) => state.updateSpice);
-
   const ingredientStatuses = useKitchenStore((state) => state.ingredientStatuses);
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
   const inputPanelIngId = useKitchenStore((state) => state.inputPanelIngId);
@@ -32,7 +31,6 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isDraggingIngredient, setIsDraggingIngredient] = useState(false);
-
   const listId = useId();
 
   const {
@@ -59,7 +57,6 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
   const onDragStart = useCallback(
     (event: DragEvent<HTMLElement>, ingredient: Ingredient) => {
       onDragStartBase(event, ingredient.id);
-
       event.dataTransfer.setData('application/x-baratie-recipe-item-id', ingredient.id);
     },
     [onDragStartBase],

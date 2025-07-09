@@ -7,6 +7,10 @@ export interface IconProps extends SVGProps<SVGSVGElement> {
   readonly size?: number | string;
 }
 
+export interface StarIconProps extends IconProps {
+  readonly isFilled?: boolean;
+}
+
 export interface CreateIconOptions<P extends IconProps = IconProps> {
   readonly iconName: string;
   readonly path: ReactNode;
@@ -21,7 +25,6 @@ export function createIcon<P extends IconProps = IconProps>({ iconName, defaultP
 
   const Component = forwardRef<SVGSVGElement, P>(function IconComponent(props, ref) {
     const { size = 24, className = '', ...rest } = props;
-
     const computedDefaultProps = typeof defaultProps === 'function' ? defaultProps(props as P) : defaultProps;
 
     const finalProps: SVGProps<SVGSVGElement> = {
@@ -52,10 +55,6 @@ export function createIcon<P extends IconProps = IconProps>({ iconName, defaultP
 
   Component.displayName = `${componentName}Icon`;
   return memo(Component);
-}
-
-export interface StarIconProps extends IconProps {
-  readonly isFilled?: boolean;
 }
 
 export const AlertTriangleIcon = createIcon({

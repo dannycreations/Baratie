@@ -32,6 +32,7 @@ export const Tooltip = memo(function Tooltip({
 }: TooltipProps): JSX.Element {
   const { activeId, setActiveId } = useTooltipStore();
   const theme = useThemeStore((state) => state.theme);
+
   const [tooltipCoords, setTooltipCoords] = useState<{ top: number; left: number }>({ top: -9999, left: -9999 });
   const [arrowOffset, setArrowOffset] = useState<{ left?: number; top?: number }>({});
   const [isPositioned, setIsPositioned] = useState(false);

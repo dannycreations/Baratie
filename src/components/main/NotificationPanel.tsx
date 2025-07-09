@@ -13,7 +13,7 @@ export const NotificationPanel = memo(function NotificationPanel(): JSX.Element 
   }
 
   return (
-    <div aria-live="polite" aria-relevant="additions" className="fixed top-4 left-4 right-4 z-[100] space-y-1.5 sm:left-auto sm:w-full sm:max-w-sm">
+    <div aria-live="polite" aria-relevant="additions" className="fixed top-4 left-4 right-4 z-[700] space-y-1.5 sm:left-auto sm:w-full sm:max-w-sm">
       {messages.map((notification) => (
         <NotificationItem key={notification.id} notification={notification} />
       ))}

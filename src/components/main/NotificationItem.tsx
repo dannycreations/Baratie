@@ -34,10 +34,13 @@ export const NotificationItem = memo(function NotificationItem({ notification }:
     setExiting(true);
   }, []);
 
-  const state = isExiting ? 'stopped' : isPaused ? 'paused' : 'running';
+  const onMouseEnter = useCallback((): void => setPaused(true), []);
+  const onMouseLeave = useCallback((): void => setPaused(false), []);
+
+  const timerState = isExiting ? 'stopped' : isPaused ? 'paused' : 'running';
 
   useConditionalTimer({
-    state,
+    state: timerState,
     callback: startExit,
     duration: notification.duration ?? NOTIFY_DURATION_MS,
     resetTrigger: notification.resetAt,
@@ -57,11 +60,6 @@ export const NotificationItem = memo(function NotificationItem({ notification }:
     };
   }, [isExiting, notification.id]);
 
-  const onMouseEnter = useCallback((): void => setPaused(true), []);
-  const onMouseLeave = useCallback((): void => setPaused(false), []);
-
-  const { icon: iconColor, border: borderClass, bar: barBackgroundClass } = getNotificationTheme(theme, notification.type);
-
   const renderIcon = (): JSX.Element => {
     switch (notification.type) {
       case 'success':
@@ -75,6 +73,7 @@ export const NotificationItem = memo(function NotificationItem({ notification }:
     }
   };
 
+  const { icon: iconColor, border: borderClass, bar: barBackgroundClass } = getNotificationTheme(theme, notification.type);
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
   const duration = notification.duration ?? NOTIFY_DURATION_MS;
 

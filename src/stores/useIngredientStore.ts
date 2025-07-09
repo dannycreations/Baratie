@@ -47,15 +47,19 @@ export const useIngredientStore = create<IngredientState>()(
     closeModal() {
       set({ isModalOpen: false });
     },
+
     openModal() {
       set({ isModalOpen: true });
     },
+
     refreshRegistry() {
       set((state) => ({ registryVersion: state.registryVersion + 1 }));
     },
+
     setFilters({ categories, ingredients }) {
       set({ disabledCategories: categories, disabledIngredients: ingredients });
     },
+
     toggleCategory(category) {
       set((state) => ({
         disabledCategories: state.disabledCategories.includes(category)
@@ -63,6 +67,7 @@ export const useIngredientStore = create<IngredientState>()(
           : [...state.disabledCategories, category],
       }));
     },
+
     toggleIngredient(id) {
       set((state) => ({
         disabledIngredients: state.disabledIngredients.includes(id)

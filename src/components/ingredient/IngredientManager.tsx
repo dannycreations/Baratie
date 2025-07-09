@@ -26,6 +26,7 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
   const theme = useThemeStore((state) => state.theme);
 
   const [query, setQuery] = useState('');
+  const listId = useId();
 
   const allIngredients = useMemo(() => ingredientRegistry.getAllIngredients(), [registryVersion]);
 
@@ -167,8 +168,6 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
     },
     [disabledCategories, disabledIngredients, toggleIngredient, theme],
   );
-
-  const listId = useId();
 
   const content = useMemo(() => {
     if (filtered.size === 0 && query.trim() !== '') {

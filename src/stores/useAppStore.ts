@@ -16,6 +16,7 @@ export const useAppStore = create<AppState>()((set) => ({
   setInitialized(isReady: boolean): void {
     set({ isInitialized: isReady });
   },
+
   setLoadingMessage(message: string, hasError = false): void {
     set({ loadingMessage: message, loadingHasError: hasError });
   },

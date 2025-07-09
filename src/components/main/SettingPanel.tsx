@@ -3,6 +3,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { CONFIRM_TIMEOUT_MS } from '../../app/constants';
 import { APP_THEMES } from '../../app/themes';
 import { addExtension, removeExtension } from '../../helpers/extensionHelper';
+import { getConfirmClasses } from '../../helpers/styleHelper';
 import { useConditionalTimer } from '../../hooks/useConditionalTimer';
 import { useExtensionStore } from '../../stores/useExtensionStore';
 import { useSettingStore } from '../../stores/useSettingStore';
@@ -70,15 +71,17 @@ const AppearanceSettings = memo(function AppearanceSettings() {
   const setTheme = useThemeStore((state) => state.setTheme);
 
   const handleSelectTheme = useCallback(
-    (id: ThemeId) => {
-      setTheme(id);
+    (themeId: ThemeId) => {
+      setTheme(themeId);
     },
     [setTheme],
   );
 
   return (
     <div role="radiogroup" aria-labelledby="theme-group-label">
-      <p className={`mb-3 text-sm ${theme.textTertiary}`}>Select a color theme for the application.</p>
+      <p id="theme-group-label" className={`mb-3 text-sm ${theme.textTertiary}`}>
+        Select a color theme for the application.
+      </p>
       <div className={`overflow-hidden rounded-md border ${theme.inputBorder}`}>
         {APP_THEMES.map((item, index) => {
           const isChecked = id === item.id;
@@ -88,6 +91,8 @@ const AppearanceSettings = memo(function AppearanceSettings() {
             'items-center',
             'justify-between',
             'p-4',
+            'focus:outline-none',
+            `focus:ring-2 focus:ring-inset ${theme.accentRing}`,
             theme.itemBgHover,
             index > 0 && `border-t ${theme.inputBorder}`,
           ]
@@ -100,15 +105,10 @@ const AppearanceSettings = memo(function AppearanceSettings() {
               key={item.id}
               role="radio"
               aria-checked={isChecked}
-              tabIndex={0}
+              tabIndex={isChecked ? 0 : -1}
+              data-theme-id={item.id}
               className={radioClasses}
               onClick={() => handleSelectTheme(item.id)}
-              onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  handleSelectTheme(item.id);
-                }
-              }}
             >
               <div className="flex items-center gap-4">
                 <span className={nameClasses}>{item.name}</span>
@@ -134,7 +134,6 @@ const ExtensionItemStatus = memo(function ExtensionItemStatus({ status, errors }
   };
 
   const current = statusMap[status] || statusMap.error;
-
   const content = (
     <div className={`flex items-center gap-1.5 text-xs font-medium ${current.color}`}>
       {current.icon}
@@ -143,7 +142,6 @@ const ExtensionItemStatus = memo(function ExtensionItemStatus({ status, errors }
   );
 
   const hasErrors = errors && errors.length > 0;
-
   if (hasErrors) {
     const errorList = errors.join('\n');
     return (
@@ -159,6 +157,7 @@ const ExtensionItemStatus = memo(function ExtensionItemStatus({ status, errors }
 const ExtensionSettings = memo(function ExtensionSettings() {
   const theme = useThemeStore((state) => state.theme);
   const extensions = useExtensionStore((state) => state.extensions);
+
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -244,9 +243,7 @@ const ExtensionSettings = memo(function ExtensionSettings() {
               const isDeleting = deletingId === ext.id;
               const deleteButtonTip = isDeleting ? 'Confirm Deletion' : 'Remove Extension';
               const deleteButtonLabel = isDeleting ? `Confirm removal of extension ${ext.name}` : `Remove extension ${ext.name}`;
-              const deleteButtonClasses = isDeleting
-                ? ['border', theme.errorBorderLight, theme.errorBgLighter, theme.errorTextLight, theme.errorBgHover].join(' ')
-                : undefined;
+              const deleteButtonClasses = isDeleting ? getConfirmClasses(theme) : undefined;
 
               return (
                 <li

@@ -55,7 +55,6 @@ export class AppRegistry {
     }
 
     this.setupSubscriptions();
-
     this.isRunning = true;
     logger.info('Starting application initialization sequence.');
 
@@ -95,6 +94,7 @@ export class AppRegistry {
     if (this.subscriptionsSetup) {
       return;
     }
+
     useThemeStore.subscribe(
       (state) => state.theme,
       (theme) => {
@@ -104,6 +104,7 @@ export class AppRegistry {
       },
       { fireImmediately: true },
     );
+
     this.subscriptionsSetup = true;
   }
 }

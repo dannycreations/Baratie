@@ -14,7 +14,7 @@ export const LoadingScreen = memo(function LoadingScreen(): JSX.Element {
   const containerClasses = [
     'fixed',
     'inset-0',
-    'z-[200]',
+    'z-[900]',
     'flex',
     'flex-col',
     'items-center',

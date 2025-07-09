@@ -26,6 +26,7 @@ export const useFavoriteStore = create<FavoriteState>()(
     setFavorites(favorites) {
       set({ favorites });
     },
+
     toggle(type) {
       set((state) => ({
         favorites: state.favorites.includes(type) ? state.favorites.filter((favorite) => favorite !== type) : [...state.favorites, type],

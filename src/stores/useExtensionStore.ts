@@ -57,7 +57,7 @@ export const useExtensionStore = create<ExtensionState>()(
 
     setIngredients(id, ingredients) {
       set((state) => ({
-        extensions: state.extensions.map((ext) => (ext.id === id ? { ...ext, ingredients: ingredients } : ext)),
+        extensions: state.extensions.map((ext) => (ext.id === id ? { ...ext, ingredients } : ext)),
       }));
     },
   })),

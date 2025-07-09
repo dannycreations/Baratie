@@ -91,8 +91,6 @@ export const Modal = memo(function Modal({
     return () => clearTimeout(timer);
   }, [isOpen, isRendered, onExited]);
 
-  useFocusTrap({ elementRef: modalContentRef, isActive: isOpen });
-
   useEffect(() => {
     if (isOpen) {
       document.addEventListener('keydown', handleEscapeKey);
@@ -101,6 +99,8 @@ export const Modal = memo(function Modal({
       };
     }
   }, [isOpen, handleEscapeKey]);
+
+  useFocusTrap({ elementRef: modalContentRef, isActive: isOpen });
 
   if (!isRendered) {
     return null;
@@ -149,7 +149,7 @@ export const Modal = memo(function Modal({
   return createPortal(
     <div
       ref={backdropRef}
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm ${theme.modalBackdrop} ${backdropAnimClass}`}
+      className={`fixed inset-0 z-[500] flex items-center justify-center p-4 backdrop-blur-sm ${theme.modalBackdrop} ${backdropAnimClass}`}
       onClick={handleBackdropClick}
     >
       <div

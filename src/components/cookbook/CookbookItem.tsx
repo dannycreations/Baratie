@@ -1,6 +1,7 @@
 import { memo, useCallback, useState } from 'react';
 
 import { CONFIRM_TIMEOUT_MS } from '../../app/constants';
+import { getConfirmClasses } from '../../helpers/styleHelper';
 import { useConditionalTimer } from '../../hooks/useConditionalTimer';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
@@ -55,9 +56,7 @@ export const CookbookItem = memo(function CookbookItem({ recipe, onLoad, onDelet
 
   const deleteButtonTip = isDeleting ? 'Confirm Deletion' : 'Delete Recipe';
   const deleteButtonLabel = isDeleting ? `Confirm deletion of ${recipe.name}` : `Delete the recipe: ${recipe.name}`;
-  const deleteButtonClasses = isDeleting
-    ? ['border', theme.errorBorderLight, theme.errorBgLighter, theme.errorTextLight, theme.errorBgHover].join(' ')
-    : undefined;
+  const deleteButtonClasses = isDeleting ? getConfirmClasses(theme) : undefined;
 
   const leftColumn = (
     <>

@@ -39,9 +39,11 @@ export const useKitchenStore = create<KitchenState>()(
         outputData: result.outputData,
       });
     },
+
     setInputData(data: string): void {
       set({ inputData: data });
     },
+
     toggleAutoCookState(): void {
       set((state) => ({ isAutoCookEnabled: !state.isAutoCookEnabled }));
     },

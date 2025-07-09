@@ -76,9 +76,7 @@ export class ErrorHandler {
 
   public handle(error: unknown, callerContext?: string, options: Partial<ErrorHandlerOptions> = {}): void {
     const handlerOptions = { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
-
     const newError = this.buildError(error, callerContext, handlerOptions.defaultMessage, handlerOptions.genericMessage);
-
     const effectiveContext = newError.context || 'Application';
     const displayMessage = newError.userMessage || ErrorHandler.DEFAULT_ERROR_CONFIG.defaultMessage!;
     const notificationTitle = handlerOptions.notificationTitle || `Error: ${effectiveContext}`;

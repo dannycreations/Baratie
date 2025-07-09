@@ -28,7 +28,17 @@ const ERROR_DESCRIPTION_ID = 'error-dialog-description';
 function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);
 
-  const backdropClasses = ['fixed', 'inset-0', 'z-50', 'flex', 'items-center', 'justify-center', 'p-4', 'backdrop-blur-sm', theme.modalBackdropHeavy]
+  const backdropClasses = [
+    'fixed',
+    'inset-0',
+    'z-[800]',
+    'flex',
+    'items-center',
+    'justify-center',
+    'p-4',
+    'backdrop-blur-sm',
+    theme.modalBackdropHeavy,
+  ]
     .filter(Boolean)
     .join(' ');
   const dialogClasses = [
@@ -83,21 +93,21 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
+  public constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null, errorInfo: null };
   }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  public static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error, errorInfo: null };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     logger.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({ errorInfo });
   }
 
-  render(): ReactNode {
+  public render(): ReactNode {
     if (this.state.hasError) {
       return <ErrorDisplay error={this.state.error} errorInfo={this.state.errorInfo} />;
     }

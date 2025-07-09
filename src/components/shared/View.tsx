@@ -19,29 +19,6 @@ interface ErrorViewProps {
   readonly errorInfo: ErrorInfo | null;
 }
 
-export const EmptyView = memo(function EmptyView({
-  children,
-  className = 'flex flex-grow flex-col items-center justify-center p-4',
-  textClassName,
-  icon,
-  title,
-}: EmptyViewProps): JSX.Element {
-  const theme = useThemeStore((state) => state.theme);
-  const finalClass = textClassName ?? `break-all text-center text-sm ${theme.textTertiary}`;
-
-  return (
-    <div role="status" aria-live="polite" className={className}>
-      {icon && (
-        <div aria-hidden="true" className={`mb-2 ${theme.textQuaternary}`}>
-          {icon}
-        </div>
-      )}
-      {title && <h3 className={`mb-1 text-lg font-semibold ${finalClass}`}>{title}</h3>}
-      <div className={finalClass}>{children}</div>
-    </div>
-  );
-});
-
 function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
   const errorObject: Record<string, unknown> = {
     name: error.name,
@@ -109,6 +86,29 @@ function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
     );
   }
 }
+
+export const EmptyView = memo(function EmptyView({
+  children,
+  className = 'flex flex-grow flex-col items-center justify-center p-4',
+  textClassName,
+  icon,
+  title,
+}: EmptyViewProps): JSX.Element {
+  const theme = useThemeStore((state) => state.theme);
+  const finalClass = textClassName ?? `break-all text-center text-sm ${theme.textTertiary}`;
+
+  return (
+    <div role="status" aria-live="polite" className={className}>
+      {icon && (
+        <div aria-hidden="true" className={`mb-2 ${theme.textQuaternary}`}>
+          {icon}
+        </div>
+      )}
+      {title && <h3 className={`mb-1 text-lg font-semibold ${finalClass}`}>{title}</h3>}
+      <div className={finalClass}>{children}</div>
+    </div>
+  );
+});
 
 export const ErrorView = memo(function ErrorView({ error, errorInfo }: ErrorViewProps): JSX.Element | null {
   const detailsElementRef = useOverflowScroll<HTMLDetailsElement>({ xClassName: 'pr-2', yClassName: 'pb-2' });

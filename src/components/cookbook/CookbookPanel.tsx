@@ -25,14 +25,14 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
   const onDelete = useCookbookStore((state) => state.delete);
   const load = useCookbookStore((state) => state.load);
   const onMerge = useCookbookStore((state) => state.merge);
-
   const ingredients = useRecipeStore((state) => state.ingredients);
   const activeRecipeId = useRecipeStore((state) => state.activeRecipeId);
-  const isRecipeEmpty = ingredients.length === 0;
 
   const nameRef = useRef<HTMLInputElement>(null);
   const importRef = useRef<HTMLInputElement>(null);
   const importOperationRef = useRef(0);
+
+  const isRecipeEmpty = ingredients.length === 0;
 
   const onSave = useCallback(() => {
     addOrUpdate(nameInput, ingredients, activeRecipeId);

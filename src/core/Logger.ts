@@ -105,8 +105,6 @@ export class Logger {
 
     switch (level) {
       case LogLevel.TRACE:
-        console.debug(prefix, ...args);
-        break;
       case LogLevel.DEBUG:
         console.debug(prefix, ...args);
         break;

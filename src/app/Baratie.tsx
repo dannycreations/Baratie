@@ -74,6 +74,7 @@ function BaratieView(): JSX.Element {
           </div>
         </section>
       </main>
+
       <NotificationPanel />
       <CookbookPanel />
       <SettingPanel />

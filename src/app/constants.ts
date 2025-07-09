@@ -5,7 +5,7 @@ export const KEY_CUSTOM_OUTPUT = Symbol('Custom Output');
 export const KEY_REPEAT_STEP = Symbol('Repeat Step');
 
 export const STORAGE_COOKBOOK = 'baratie-cookbook';
-export const STORAGE_FAVORITES = 'baratie-favorite';
+export const STORAGE_FAVORITES = 'baratie-favorites';
 export const STORAGE_CATEGORIES = 'baratie-categories';
 export const STORAGE_INGREDIENTS = 'baratie-ingredients';
 export const STORAGE_EXTENSIONS = 'baratie-extensions';
