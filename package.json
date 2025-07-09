@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "vite build && tsc --emitDeclarationOnly",
     "clean": "rimraf -g \"*.tsbuildinfo\" \"dist\"",
-    "update": "npm-check-updates -u",
+    "update": "npm-check-updates -u -x @types/node",
     "prepare": "pnpm run clean && pnpm run build",
     "release": "pnpm run prepare && changeset publish --no-git-tag"
   },
@@ -26,7 +26,7 @@
     "@changesets/cli": "^2.29.5",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.2",
     "@tailwindcss/vite": "^4.1.11",
-    "@types/node": "^24.0.12",
+    "@types/node": "22.15.34",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
