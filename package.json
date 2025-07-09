@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && tsc --emitDeclarationOnly",
+    "format": "prettier --write .",
     "clean": "rimraf -g \"*.tsbuildinfo\" \"dist\"",
     "update": "npm-check-updates -u -x @types/node",
     "prepare": "pnpm run clean && pnpm run build",

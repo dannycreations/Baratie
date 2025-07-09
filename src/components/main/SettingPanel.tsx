@@ -1,4 +1,3 @@
-
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { CONFIRM_TIMEOUT_MS } from '../../app/constants';

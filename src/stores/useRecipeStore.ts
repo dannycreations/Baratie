@@ -76,9 +76,7 @@ export const useRecipeStore = create<RecipeState>()(
           const validatedSpices = validateSpices(ingredientDefinition, ingredient.spices);
           return { ...ingredient, spices: validatedSpices };
         }
-        logger.warn(
-          `Ingredient definition not found for type "${String(ingredient.id)}" during setRecipe. Options may not be correctly validated.`,
-        );
+        logger.warn(`Ingredient definition not found for type "${String(ingredient.id)}" during setRecipe. Options may not be correctly validated.`);
         return { ...ingredient, spices: ingredient.spices };
       });
 

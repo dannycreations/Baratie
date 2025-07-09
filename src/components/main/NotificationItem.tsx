@@ -83,7 +83,6 @@ export const NotificationItem = memo(function NotificationItem({ notification }:
     'relative',
     'my-2',
     'w-full',
-    'max-w-sm',
     'overflow-hidden',
     'rounded-lg',
     'border-l-4',
