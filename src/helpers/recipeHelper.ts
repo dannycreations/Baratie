@@ -18,22 +18,22 @@ export function getAllIngredients(): readonly Ingredient[] {
   return useRecipeStore.getState().ingredients;
 }
 
-export function removeIngredient(instanceId: string): void {
-  useRecipeStore.getState().removeIngredient(instanceId);
+export function removeIngredient(id: string): void {
+  useRecipeStore.getState().removeIngredient(id);
 }
 
 export function reorderIngredients(draggedId: string, targetId: string): void {
   useRecipeStore.getState().reorderIngredients(draggedId, targetId);
 }
 
-export function setIngredientSpices(instanceId: string, newSpices: Record<string, unknown>): void {
-  useRecipeStore.getState().setIngredientSpices(instanceId, newSpices);
+export function setIngredientSpices(id: string, newSpices: Record<string, unknown>): void {
+  useRecipeStore.getState().setIngredientSpices(id, newSpices);
 }
 
 export function setRecipe(ingredients: readonly Ingredient[], activeRecipeId: string | null = null): void {
   useRecipeStore.getState().set(ingredients, activeRecipeId);
 }
 
-export function updateSpiceValue(instanceId: string, spiceId: string, rawValue: string | boolean | number, spice: SpiceDefinition): void {
-  useRecipeStore.getState().updateSpice(instanceId, spiceId, rawValue, spice);
+export function updateSpiceValue(id: string, spiceId: string, rawValue: string | boolean | number, spice: SpiceDefinition): void {
+  useRecipeStore.getState().updateSpice(id, spiceId, rawValue, spice);
 }

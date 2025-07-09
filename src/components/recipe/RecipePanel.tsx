@@ -47,21 +47,20 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
 
   const onEditToggle = useCallback(
     (ingredient: Ingredient) => {
-      if (inputPanelIngId === ingredient.instanceId) {
+      if (inputPanelIngId === ingredient.id) {
         setEditingId(null);
         return;
       }
-      setEditingId((currentId) => (currentId === ingredient.instanceId ? null : ingredient.instanceId));
+      setEditingId((currentId) => (currentId === ingredient.id ? null : ingredient.id));
     },
     [inputPanelIngId],
   );
 
   const onDragStart = useCallback(
     (event: DragEvent<HTMLElement>, ingredient: Ingredient) => {
-      onDragStartBase(event, ingredient.instanceId);
+      onDragStartBase(event, ingredient.id);
 
-      event.dataTransfer.setData('application/x-baratie-recipe-item-id', ingredient.instanceId);
-      event.dataTransfer.setData('application/x-baratie-recipe-item-name', ingredient.name);
+      event.dataTransfer.setData('application/x-baratie-recipe-item-id', ingredient.id);
     },
     [onDragStartBase],
   );
@@ -188,13 +187,13 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
       <>
         {ingredients.map((ingredient: Ingredient) => (
           <RecipeItem
-            key={ingredient.instanceId}
-            status={ingredientStatuses[ingredient.instanceId] || 'idle'}
+            key={ingredient.id}
+            status={ingredientStatuses[ingredient.id] || 'idle'}
             ingredient={ingredient}
             isAutoCook={isAutoCookEnabled}
-            isDragged={dragId === ingredient.instanceId}
-            isEditing={editingId === ingredient.instanceId && ingredient.instanceId !== inputPanelIngId}
-            isSpiceInInput={ingredient.instanceId === inputPanelIngId}
+            isDragged={dragId === ingredient.id}
+            isEditing={editingId === ingredient.id && ingredient.id !== inputPanelIngId}
+            isSpiceInInput={ingredient.id === inputPanelIngId}
             onDragEnd={onDragEndBase}
             onDragEnter={onDragEnterBase}
             onDragOver={onDragOverBase}

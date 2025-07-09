@@ -1,7 +1,6 @@
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 
 import { errorHandler, ingredientRegistry } from '../../app/container';
-import { showNotification } from '../../helpers/notificationHelper';
 import { useSearchIngredients } from '../../hooks/useSearch';
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useFavoriteStore } from '../../stores/useFavoriteStore';
@@ -44,7 +43,7 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
   const totalIngredients = allIngredients.length;
 
   const visibleIngredients = useMemo(
-    () => allIngredients.filter((ing) => !disabledCategories.includes(ing.category) && !disabledIngredients.includes(ing.id)).length,
+    () => allIngredients.filter((ing) => !disabledCategories.includes(ing.category) && !disabledIngredients.includes(ing.name)).length,
     [allIngredients, disabledCategories, disabledIngredients],
   );
 
@@ -74,12 +73,8 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
     (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault();
       const id = event.dataTransfer.getData('application/x-baratie-recipe-item-id');
-      const name = event.dataTransfer.getData('application/x-baratie-recipe-item-name');
       if (id) {
         removeIngredient(id);
-        if (name) {
-          showNotification(`'${name}' removed from the recipe.`, 'info', 'Recipe Updated');
-        }
       }
       setDragOverRecipe(false);
       setDraggedItemId(null);
@@ -149,9 +144,10 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
 
   const renderIngredient = useCallback(
     (ingredient: IngredientDefinition) => {
-      const isFavorite = favorites.includes(ingredient.id);
-      const ingredientIdString = ingredientRegistry.getStringFromSymbol(ingredient.id);
-      errorHandler.assert(ingredientIdString, `Could not get string from symbol for ingredient: ${ingredient.name}`, 'Render Ingredient');
+      const ingredientName = ingredient.name.description ?? 'Unnamed Ingredient';
+      const isFavorite = favorites.includes(ingredient.name);
+      const ingredientIdString = ingredientRegistry.getStringFromSymbol(ingredient.name);
+      errorHandler.assert(ingredientIdString, `Could not get string from symbol for ingredient: ${ingredientName}`, 'Render Ingredient');
 
       const favoriteButtonClasses = [
         'opacity-70',
@@ -167,7 +163,7 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
           <span
             className={`cursor-default truncate pr-2 text-sm transition-colors duration-150 ${theme.textSecondary} ${theme.accentTextGroupHover}`}
           >
-            {ingredient.name}
+            {ingredientName}
           </span>
         </Tooltip>
       );
@@ -175,7 +171,7 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
       const rightColumn = (
         <>
           <TooltipButton
-            aria-label={isFavorite ? `Remove '${ingredient.name}' from favorites` : `Add '${ingredient.name}' to favorites`}
+            aria-label={isFavorite ? `Remove '${ingredientName}' from favorites` : `Add '${ingredientName}' to favorites`}
             aria-pressed={isFavorite}
             className={favoriteButtonClasses}
             data-ingredient-id={ingredientIdString}
@@ -184,12 +180,12 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
             onClick={handleToggleFavorite}
             onMouseDown={preventMouseDefault}
             size="sm"
-            tooltipContent={isFavorite ? `Remove '${ingredient.name}' from favorites` : `Add '${ingredient.name}' to favorites`}
+            tooltipContent={isFavorite ? `Remove '${ingredientName}' from favorites` : `Add '${ingredientName}' to favorites`}
             tooltipPosition="top"
             variant="stealth"
           />
           <TooltipButton
-            aria-label={`Add '${ingredient.name}' to the recipe`}
+            aria-label={`Add '${ingredientName}' to the recipe`}
             className="opacity-70 group-hover:opacity-100"
             data-ingredient-id={ingredientIdString}
             draggable={false}
@@ -197,7 +193,7 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
             onClick={handleAddIngredient}
             onMouseDown={preventMouseDefault}
             size="sm"
-            tooltipContent={`Add '${ingredient.name}' to Recipe`}
+            tooltipContent={`Add '${ingredientName}' to Recipe`}
             tooltipPosition="top"
             variant="primary"
           />
@@ -205,7 +201,7 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
       );
 
       return (
-        <li key={ingredient.id.toString()} data-ingredient-id={ingredientIdString} draggable={true} onDragStart={handleDragStart}>
+        <li key={ingredient.name.toString()} data-ingredient-id={ingredientIdString} draggable={true} onDragStart={handleDragStart}>
           <ItemListLayout
             className={`group h-11 rounded-md px-2 py-1.5 transition-colors duration-150 ${theme.itemBg} ${theme.itemBgMutedHover}`}
             leftContent={leftColumn}

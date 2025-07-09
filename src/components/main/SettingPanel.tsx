@@ -2,7 +2,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 
 import { CONFIRM_TIMEOUT_MS } from '../../app/constants';
 import { APP_THEMES } from '../../app/themes';
-import { addNewExtension, removeExtension } from '../../helpers/extensionHelper';
+import { addExtension, removeExtension } from '../../helpers/extensionHelper';
 import { useConditionalTimer } from '../../hooks/useConditionalTimer';
 import { useExtensionStore } from '../../stores/useExtensionStore';
 import { useSettingStore } from '../../stores/useSettingStore';
@@ -176,9 +176,12 @@ const ExtensionSettings = memo(function ExtensionSettings() {
   const handleAddClick = useCallback(async () => {
     if (!url.trim() || isLoading) return;
     setIsLoading(true);
-    await addNewExtension(url);
-    setIsLoading(false);
-    setUrl('');
+    try {
+      await addExtension(url);
+      setUrl('');
+    } finally {
+      setIsLoading(false);
+    }
   }, [url, isLoading]);
 
   const handleUrlChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {

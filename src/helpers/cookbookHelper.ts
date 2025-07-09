@@ -10,16 +10,14 @@ import type { Ingredient, RecipeBookItem } from '../core/IngredientRegistry';
 
 interface RawIngredient {
   readonly id: string;
-  readonly instanceId: string;
   readonly name: string;
   readonly spices: Readonly<Record<string, unknown>>;
 }
 
 interface SerializedRecipeItem extends Omit<RecipeBookItem, 'ingredients'> {
   readonly ingredients: readonly {
-    readonly id: string | undefined;
-    readonly instanceId: string;
-    readonly name: string;
+    readonly id: string;
+    readonly name: string | undefined;
     readonly spices: Readonly<Record<string, unknown>>;
   }[];
 }
@@ -30,8 +28,6 @@ function isRawIngredient(data: unknown): data is RawIngredient {
   if (typeof data !== 'object' || data === null) return false;
   const d = data as Record<string, unknown>;
   return (
-    typeof d.instanceId === 'string' &&
-    d.instanceId.trim() !== '' &&
     typeof d.id === 'string' &&
     d.id.trim() !== '' &&
     typeof d.name === 'string' &&
@@ -61,18 +57,18 @@ function sanitizeRecipe(recipeData: unknown, source: 'fileImport' | 'storage'): 
       logger.warn(`Skipping ingredient with invalid structure from ${source} for recipe '${name}':`, rawIngredient);
       continue;
     }
-    const ingredientIdSymbol = ingredientRegistry.getSymbolFromString(rawIngredient.id);
-    if (!ingredientIdSymbol) {
-      logger.warn(`Skipping unknown ingredient type '${rawIngredient.id}' from ${source} for recipe '${name}'.`);
+    const ingredientNameSymbol = ingredientRegistry.getSymbolFromString(rawIngredient.name);
+    if (!ingredientNameSymbol) {
+      logger.warn(`Skipping unknown ingredient name '${rawIngredient.name}' from ${source} for recipe '${name}'.`);
       continue;
     }
-    const definition = ingredientRegistry.getIngredient(ingredientIdSymbol);
+    const definition = ingredientRegistry.getIngredient(ingredientNameSymbol);
     if (!definition) {
-      logger.warn(`Definition not found for known type symbol: '${rawIngredient.id}'.`);
+      logger.warn(`Definition not found for known name symbol: '${rawIngredient.name}'.`);
       continue;
     }
     const validatedSpices = validateSpices(definition, rawIngredient.spices);
-    validIngredients.push({ ...rawIngredient, id: ingredientIdSymbol, spices: validatedSpices });
+    validIngredients.push({ id: rawIngredient.id, name: ingredientNameSymbol, spices: validatedSpices });
   }
 
   if (validIngredients.length !== rawIngredients.length && rawIngredients.length > 0) {
@@ -95,10 +91,9 @@ function serializeRecipe(recipe: Readonly<RecipeBookItem>): SerializedRecipeItem
   return {
     ...recipe,
     ingredients: recipe.ingredients.map((ingredient) => ({
-      instanceId: ingredient.instanceId,
-      name: ingredient.name,
+      id: ingredient.id,
+      name: ingredientRegistry.getStringFromSymbol(ingredient.name),
       spices: ingredient.spices,
-      id: ingredientRegistry.getStringFromSymbol(ingredient.id),
     })),
   };
 }

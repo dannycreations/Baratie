@@ -30,8 +30,7 @@ const CUSTOM_INPUT_SPICES: readonly SpiceDefinition[] = [
 ];
 
 export const CUSTOM_INPUT_DEFINITION: IngredientDefinition<CustomInputSpice> = {
-  id: KEY_CUSTOM_INPUT,
-  name: 'Custom Input',
+  name: KEY_CUSTOM_INPUT,
   category: CATEGORY_FLOW,
   description: 'Controls the Input Panel for text, a binary file, or options for the next ingredient.',
   spices: CUSTOM_INPUT_SPICES,
@@ -46,12 +45,12 @@ export const CUSTOM_INPUT_DEFINITION: IngredientDefinition<CustomInputSpice> = {
 
       if (nextIngredientIndex < recipe.length) {
         const targetIngredient = recipe[nextIngredientIndex];
-        const targetDefinition = ingredientRegistry.getIngredient(targetIngredient.id);
+        const targetDefinition = ingredientRegistry.getIngredient(targetIngredient.name);
         if (targetDefinition?.spices && targetDefinition.spices.length > 0) {
           config = {
             mode: 'spiceEditor',
-            targetIngredientId: targetIngredient.instanceId,
-            title: `Options: ${targetDefinition.name}`,
+            targetIngredientId: targetIngredient.id,
+            title: `Options: ${targetDefinition.name.description}`,
           };
         } else {
           config = {
@@ -82,7 +81,7 @@ export const CUSTOM_INPUT_DEFINITION: IngredientDefinition<CustomInputSpice> = {
 
     const panelInstruction: PanelControlConfig = {
       panelType: 'input',
-      providerOpId: currentIngredient.instanceId,
+      providerId: currentIngredient.id,
       config,
     };
 

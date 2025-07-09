@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import * as Zustand from 'zustand';
+import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
 
 import { createRoot } from './app/Baratie';
 import { appRegistry, errorHandler, ingredientRegistry, logger } from './app/container';
@@ -14,7 +15,6 @@ import {
   exportSingle,
   getAllRecipes,
   importFromFile,
-  initCookbook,
   loadRecipe,
   mergeRecipes,
   openCookbook,
@@ -22,8 +22,8 @@ import {
   setRecipeName,
   setSearchQuery,
 } from './helpers/cookbookHelper';
-import * as extensionHelper from './helpers/extensionHelper';
-import { initFavorites, toggleFavorite } from './helpers/favoriteHelper';
+import { addExtension, removeExtension } from './helpers/extensionHelper';
+import { toggleFavorite } from './helpers/favoriteHelper';
 import { clearNotifications, removeNotification, showNotification } from './helpers/notificationHelper';
 import {
   addIngredient,
@@ -36,7 +36,6 @@ import {
   setRecipe,
   updateSpiceValue,
 } from './helpers/recipeHelper';
-import { getVisibleSpices, updateAndValidate, validateSpices } from './helpers/spiceHelper';
 import { readAsBase64, readAsText, triggerDownload } from './utilities/fileUtil';
 
 import type { BaratieOptions } from './app/Baratie';
@@ -56,7 +55,7 @@ export type {
   SpiceDefinition,
 };
 
-export { React, ReactDOM, Zustand };
+export { create, React, ReactDOM, subscribeWithSelector };
 
 const BARATIE_HELPERS = {
   cookbook: {
@@ -67,7 +66,6 @@ const BARATIE_HELPERS = {
     exportSingle,
     getAll: getAllRecipes,
     importFromFile,
-    init: initCookbook,
     load: loadRecipe,
     merge: mergeRecipes,
     open: openCookbook,
@@ -75,9 +73,11 @@ const BARATIE_HELPERS = {
     setName: setRecipeName,
     setQuery: setSearchQuery,
   },
-  extension: extensionHelper,
+  extension: {
+    add: addExtension,
+    remove: removeExtension,
+  },
   favorite: {
-    init: initFavorites,
     toggle: toggleFavorite,
   },
   file: {
@@ -85,15 +85,10 @@ const BARATIE_HELPERS = {
     readB64: readAsBase64,
     readText: readAsText,
   },
-  ingredient: {
-    getVisible: getVisibleSpices,
-    updateAndValidate,
-    validate: validateSpices,
-  },
   notification: {
-    clearAll: clearNotifications,
-    remove: removeNotification,
     show: showNotification,
+    remove: removeNotification,
+    clear: clearNotifications,
   },
   recipe: {
     add: addIngredient,
@@ -106,18 +101,17 @@ const BARATIE_HELPERS = {
     setSpices: setIngredientSpices,
     updateSpice: updateSpiceValue,
   },
-};
+} as const;
 
 const BARATIE_API = {
-  createRoot,
-  appRegistry,
-  errorHandler,
-  ingredientRegistry,
   logger,
-  helpers: BARATIE_HELPERS,
-  InputType,
   LogLevel,
-};
+  createRoot,
+  app: appRegistry,
+  error: errorHandler,
+  ingredient: ingredientRegistry,
+  helpers: BARATIE_HELPERS,
+} as const;
 
 declare global {
   var Baratie: typeof BARATIE_API;

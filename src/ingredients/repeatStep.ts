@@ -62,8 +62,7 @@ const REPEAT_STEP_SPICES: readonly SpiceDefinition[] = [
 ];
 
 export const REPEAT_STEP_DEFINITION: IngredientDefinition<RepeatStepSpices> = {
-  id: KEY_REPEAT_STEP,
-  name: 'Repeat Step',
+  name: KEY_REPEAT_STEP,
   category: CATEGORY_FLOW,
   description: 'Repeats a sequence of preceding ingredients a specified number of times.',
   spices: REPEAT_STEP_SPICES,
@@ -77,6 +76,7 @@ export const REPEAT_STEP_DEFINITION: IngredientDefinition<RepeatStepSpices> = {
     }
 
     const { ingredient: currentIngredient, currentIndex, initialInput, recipe, cookVersion } = context;
+    const ingredientName = currentIngredient.name.description ?? 'Unnamed Ingredient';
 
     const ingredientsToRepeat = recipe.slice(0, currentIndex);
 
@@ -84,7 +84,7 @@ export const REPEAT_STEP_DEFINITION: IngredientDefinition<RepeatStepSpices> = {
       errorHandler.handle(
         new AppError(
           'REPEAT_STEP: No ingredients above to repeat.',
-          `Ingredient: ${currentIngredient.name}`,
+          `Ingredient: ${ingredientName}`,
           "'Repeat Step' has no preceding ingredients to execute. Add one or more ingredients before it.",
         ),
         undefined,
@@ -102,9 +102,9 @@ export const REPEAT_STEP_DEFINITION: IngredientDefinition<RepeatStepSpices> = {
         for (let i = 0; i < repeatCount; i++) {
           const { result: output, error } = await errorHandler.attemptAsync(
             () => kitchen.cookSubRecipe(ingredientsToRepeat, initialInput, context, cookVersion),
-            `Ingredient: ${currentIngredient.name} > Repetition ${i + 1} (Attempt ${attempt + 1})`,
+            `Ingredient: ${ingredientName} > Repetition ${i + 1} (Attempt ${attempt + 1})`,
             {
-              genericMessage: `An error occurred during repetition ${i + 1} for '${currentIngredient.name}'.`,
+              genericMessage: `An error occurred during repetition ${i + 1} for '${ingredientName}'.`,
               shouldNotify: false,
             },
           );
@@ -122,13 +122,13 @@ export const REPEAT_STEP_DEFINITION: IngredientDefinition<RepeatStepSpices> = {
       } catch (e) {
         const isLastAttempt = attempt >= retriesOnError;
         if (isLastAttempt) {
-          errorHandler.handle(e, `Ingredient: ${currentIngredient.name}`, {
-            defaultMessage: `The ingredient '${currentIngredient.name}' failed after ${retriesOnError} retries.`,
+          errorHandler.handle(e, `Ingredient: ${ingredientName}`, {
+            defaultMessage: `The ingredient '${ingredientName}' failed after ${retriesOnError} retries.`,
             shouldNotify: true,
           });
           throw e;
         } else {
-          logger.warn(`Repeat Step: Attempt ${attempt + 1} failed for '${currentIngredient.name}'. Retrying in ${retryDelayMs}ms...`, e);
+          logger.warn(`Repeat Step: Attempt ${attempt + 1} failed for '${ingredientName}'. Retrying in ${retryDelayMs}ms...`, e);
           if (retryDelayMs > 0) {
             await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
           }

@@ -128,13 +128,13 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
   const content = useMemo(() => {
     if (isInput) {
       if (inputPanelConfig?.mode === 'spiceEditor') {
-        const targetIngredient = ingredients.find((ing) => ing.instanceId === inputPanelConfig.targetIngredientId);
+        const targetIngredient = ingredients.find((ing) => ing.id === inputPanelConfig.targetIngredientId);
         if (!targetIngredient) return null;
-        const definition = ingredientRegistry.getIngredient(targetIngredient.id);
+        const definition = ingredientRegistry.getIngredient(targetIngredient.name);
         errorHandler.assert(definition, 'Could not find definition for target ingredient in spice editor.');
 
         return (
-          <div className="overflow-y-auto p-3" aria-label={`Parameters for ${definition.name}`}>
+          <div className="overflow-y-auto p-3" aria-label={`Parameters for ${targetIngredient.name.description}`}>
             <SpiceLayout
               containerClassName="space-y-3"
               currentSpices={targetIngredient.spices}

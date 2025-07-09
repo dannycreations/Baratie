@@ -14,7 +14,7 @@ export function useSearchIngredients(
   return useMemo(() => {
     const lowerQuery = query.toLowerCase().trim();
     const visibleIngredients = allIngredients.filter(
-      (ingredient) => !disabledCategories.includes(ingredient.category) && !disabledIngredients.includes(ingredient.id),
+      (ingredient) => !disabledCategories.includes(ingredient.category) && !disabledIngredients.includes(ingredient.name),
     );
 
     if (visibleIngredients.length === 0) {
@@ -25,10 +25,10 @@ export function useSearchIngredients(
     const ingredientsByCat = new Map<symbol, IngredientDefinition[]>();
 
     for (const ingredient of visibleIngredients) {
-      const isFavorite = favoriteIngredients.includes(ingredient.id);
-
+      const isFavorite = favoriteIngredients.includes(ingredient.name);
+      const ingredientName = ingredient.name.description ?? '';
       const categoryDescription = (ingredient.category.description ?? '').toLowerCase();
-      const nameMatches = ingredient.name.toLowerCase().includes(lowerQuery);
+      const nameMatches = ingredientName.toLowerCase().includes(lowerQuery);
       const descriptionMatches = ingredient.description.toLowerCase().includes(lowerQuery);
       const categoryMatches = categoryDescription.includes(lowerQuery);
       const searchMatches = !lowerQuery || nameMatches || descriptionMatches || categoryMatches;
@@ -48,7 +48,7 @@ export function useSearchIngredients(
     const result = new Map<symbol, readonly IngredientDefinition[]>();
 
     if (favoritesList.length > 0) {
-      favoritesList.sort((a, b) => a.name.localeCompare(b.name));
+      favoritesList.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
       result.set(CATEGORY_FAVORITES, favoritesList);
     }
 
@@ -56,7 +56,7 @@ export function useSearchIngredients(
 
     for (const category of sortedCategories) {
       const items = ingredientsByCat.get(category)!;
-      items.sort((a, b) => a.name.localeCompare(b.name));
+      items.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
       result.set(category, items);
     }
 

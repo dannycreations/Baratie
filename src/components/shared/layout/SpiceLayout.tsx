@@ -13,16 +13,14 @@ import type { ChangeEvent, JSX, ReactNode } from 'react';
 import type { IngredientDefinition, SpiceDefinition } from '../../../core/IngredientRegistry';
 
 interface SpiceRendererProps {
-  readonly ingredientDefinition: IngredientDefinition;
   readonly isLast: boolean;
   readonly onSpiceChange: (spiceId: string, newValue: boolean | number | string, spice: SpiceDefinition) => void;
   readonly spice: SpiceDefinition;
   readonly value: unknown;
 }
 
-const SpiceRenderer = memo(function SpiceRenderer({ ingredientDefinition, spice, value: rawValue, onSpiceChange, isLast }: SpiceRendererProps) {
+const SpiceRenderer = memo(function SpiceRenderer({ spice, value: rawValue, onSpiceChange, isLast }: SpiceRendererProps) {
   const theme = useThemeStore((state) => state.theme);
-  const inputId = `spice-${String(ingredientDefinition.id)}-${spice.id}`;
 
   const handleBooleanChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => onSpiceChange(spice.id, event.target.checked, spice),
@@ -102,7 +100,7 @@ const SpiceRenderer = memo(function SpiceRenderer({ ingredientDefinition, spice,
     <FormLayout
       description={spice.description}
       fieldSetClass={fieldSetClass}
-      inputId={inputId}
+      inputId={`spice-${spice.id}`}
       inputWrapperClass={inputWrapperClass}
       label={spice.label}
     >
@@ -139,7 +137,7 @@ export const SpiceLayout = memo(function SpiceLayout({
 
   return (
     <form
-      aria-label={`Options for ${ingredientDefinition.name}`}
+      aria-label={`Options for ${ingredientDefinition.name.description}`}
       className={finalContainerClass}
       onSubmit={(event) => event.preventDefault()}
       role="form"
@@ -147,14 +145,7 @@ export const SpiceLayout = memo(function SpiceLayout({
       {visibleSpices.map((spice, index) => {
         const rawValue = currentSpices[spice.id];
         return (
-          <SpiceRenderer
-            key={spice.id}
-            ingredientDefinition={ingredientDefinition}
-            isLast={index === visibleSpices.length - 1}
-            spice={spice}
-            value={rawValue}
-            onSpiceChange={onSpiceChange}
-          />
+          <SpiceRenderer key={spice.id} isLast={index === visibleSpices.length - 1} spice={spice} value={rawValue} onSpiceChange={onSpiceChange} />
         );
       })}
     </form>

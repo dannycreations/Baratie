@@ -93,7 +93,7 @@ export class Kitchen {
       const { inputData } = useKitchenStore.getState();
       const recipe = useRecipeStore.getState().ingredients;
 
-      const hasIntervalSetter = recipe.some((ing) => ing.id === KEY_REPEAT_STEP);
+      const hasIntervalSetter = recipe.some((ing) => ing.name === KEY_REPEAT_STEP);
       if (!hasIntervalSetter && this.intervalMs > 0) {
         this.setCookingInterval(0);
       }
@@ -126,10 +126,10 @@ export class Kitchen {
     for (const subIngredient of subRecipe) {
       if (this.cookVersion !== cookId) throw new CookCancelledError();
 
-      const subDefinition = ingredientRegistry.getIngredient(subIngredient.id);
-      errorHandler.assert(subDefinition, `cookSubRecipe: Definition for '${subIngredient.name}' not found.`);
-      const subIndex = parentContext.recipe.findIndex((ingredient) => ingredient.instanceId === subIngredient.instanceId);
-      errorHandler.assert(subIndex !== -1, `cookSubRecipe: Could not find original index for '${subIngredient.name}'.`);
+      const subDefinition = ingredientRegistry.getIngredient(subIngredient.name);
+      errorHandler.assert(subDefinition, `cookSubRecipe: Definition for '${subIngredient.name.description}' not found.`);
+      const subIndex = parentContext.recipe.findIndex((ingredient) => ingredient.id === subIngredient.id);
+      errorHandler.assert(subIndex !== -1, `cookSubRecipe: Could not find original index for '${subIngredient.name.description}'.`);
       const subContext: IngredientContext = { ...parentContext, currentIndex: subIndex, ingredient: subIngredient };
       const runResult = await subDefinition.run(new InputType(currentData), subIngredient.spices, subContext);
       currentData = this.processRunResult(runResult, currentData, subIngredient).nextData;
@@ -222,13 +222,17 @@ export class Kitchen {
       if (this.cookVersion !== cookId) throw new CookCancelledError();
 
       const ingredient = recipe[i];
-      const definition = ingredientRegistry.getIngredient(ingredient.id);
+      const definition = ingredientRegistry.getIngredient(ingredient.name);
       if (!definition) {
         errorHandler.handle(
-          new AppError(`Definition for '${ingredient.name}' not found.`, 'Recipe Cooking', `Ingredient '${ingredient.name}' is misconfigured.`),
+          new AppError(
+            `Definition for '${ingredient.name.description}' not found.`,
+            'Recipe Cooking',
+            `Ingredient '${ingredient.name.description}' is misconfigured.`,
+          ),
         );
-        cookedData = `Error: Definition for ${ingredient.name} not found.`;
-        localStatuses[ingredient.instanceId] = 'error';
+        cookedData = `Error: Definition for ${ingredient.name.description} not found.`;
+        localStatuses[ingredient.id] = 'error';
         globalError = true;
         break;
       }
@@ -243,7 +247,7 @@ export class Kitchen {
         cookId,
       );
       cookedData = nextData;
-      localStatuses[ingredient.instanceId] = status;
+      localStatuses[ingredient.id] = status;
 
       if (panelInstruction) {
         if (panelInstruction.panelType === 'input') {
@@ -267,7 +271,7 @@ export class Kitchen {
 
   private processRunResult(runResult: ResultType, currentData: string, ingredient: Ingredient): ProcessedRunResult {
     if (runResult === null) {
-      logger.info(`Ingredient '${ingredient.name}' was skipped (returned null).`);
+      logger.info(`Ingredient '${ingredient.name.description}' was skipped (returned null).`);
       return { nextData: currentData, status: 'warning', panelInstruction: undefined };
     }
     if (isPanelSignal(runResult)) {
@@ -280,7 +284,7 @@ export class Kitchen {
     if (runResult instanceof InputType) {
       return { nextData: runResult.cast('string').getValue(), status: 'success', panelInstruction: undefined };
     }
-    errorHandler.assert(false, `Ingredient '${ingredient.name}' returned an invalid result type.`);
+    errorHandler.assert(false, `Ingredient '${ingredient.name.description}' returned an invalid result type.`);
   }
 
   private async runIngredient(
@@ -292,8 +296,8 @@ export class Kitchen {
     initialInput: string,
     cookId: number,
   ): Promise<IngredientRunResult> {
-    errorHandler.assert(definition.run, `Runner for '${ingredient.name}' not found.`);
-    logger.debug(`Running ingredient: ${ingredient.name}`, { instanceId: ingredient.instanceId, index: currentIndex });
+    errorHandler.assert(definition.run, `Runner for '${ingredient.name.description}' not found.`);
+    logger.debug(`Running ingredient: ${ingredient.name.description}`, { id: ingredient.id, index: currentIndex });
 
     const context: IngredientContext = { cookVersion: cookId, currentIndex, ingredient, initialInput, recipe };
     const { error, result } = await errorHandler.attemptAsync(() => definition.run(new InputType(currentData), ingredient.spices, context));

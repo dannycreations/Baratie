@@ -3,9 +3,8 @@ import { useIngredientStore } from '../stores/useIngredientStore';
 import { InputType } from './InputType';
 
 export interface Ingredient {
-  readonly id: symbol;
-  readonly instanceId: string;
-  readonly name: string;
+  readonly id: string;
+  readonly name: symbol;
   readonly spices: Readonly<Record<string, unknown>>;
 }
 
@@ -32,12 +31,12 @@ export type IngredientRunner<T = unknown, InType = unknown, OutType = unknown> =
 ) => ResultType<OutType> | Promise<ResultType<OutType>>;
 
 export interface IngredientDefinition<T = unknown, InType = unknown, OutType = unknown> {
-  readonly id: symbol;
-  readonly name: string;
+  readonly name: symbol;
   readonly category: symbol;
   readonly description: string;
-  readonly run: IngredientRunner<T, InType, OutType>;
   readonly spices?: readonly SpiceDefinition[];
+  readonly run: IngredientRunner<T, InType, OutType>;
+  readonly extensionId?: string;
 }
 
 export interface SpiceDependency {
@@ -56,12 +55,12 @@ export type OutputPanelConfig = { readonly mode: 'textarea'; readonly title: str
 export type PanelControlConfig =
   | {
       readonly panelType: 'input';
-      readonly providerOpId: string;
+      readonly providerId: string;
       readonly config: InputPanelConfig;
     }
   | {
       readonly panelType: 'output';
-      readonly providerOpId: string;
+      readonly providerId: string;
       readonly config: OutputPanelConfig;
     };
 
@@ -123,8 +122,8 @@ type TextareaSpice = BaseSpice<'textarea', string> & {
 
 export class IngredientRegistry {
   private readonly ingredients: Map<symbol, IngredientDefinition> = new Map();
-  private readonly typeStringToSymbol: Map<string, symbol> = new Map();
-  private readonly typeSymbolToString: Map<symbol, string> = new Map();
+  private readonly stringToSymbol: Map<string, symbol> = new Map();
+  private readonly symbolToString: Map<symbol, string> = new Map();
 
   public getAllIngredients(): readonly IngredientDefinition[] {
     return Array.from(this.ingredients.values());
@@ -135,36 +134,54 @@ export class IngredientRegistry {
   }
 
   public getStringFromSymbol(typeSymbol: symbol): string | undefined {
-    return this.typeSymbolToString.get(typeSymbol);
+    return this.symbolToString.get(typeSymbol);
   }
 
   public getSymbolFromString(typeString: string): symbol | undefined {
-    return this.typeStringToSymbol.get(typeString);
+    return this.stringToSymbol.get(typeString);
   }
 
   public registerIngredient<T>(definition: IngredientDefinition<T>): void {
-    if (this.ingredients.has(definition.id)) {
-      logger.warn(`IngredientRegistry: Re-registering type "${String(definition.id)}", which overwrites the existing definition.`);
+    if (this.ingredients.has(definition.name)) {
+      logger.warn(`IngredientRegistry: Re-registering type "${String(definition.name)}", which overwrites the existing definition.`);
     }
 
-    this.ingredients.set(definition.id, definition as IngredientDefinition);
+    this.ingredients.set(definition.name, definition as IngredientDefinition);
 
-    const typeString = definition.id.description?.trim();
+    const typeString = definition.name.description?.trim();
     if (typeString) {
-      if (this.typeStringToSymbol.has(typeString) && this.typeStringToSymbol.get(typeString) !== definition.id) {
+      if (this.stringToSymbol.has(typeString) && this.stringToSymbol.get(typeString) !== definition.name) {
         logger.warn(
           `IngredientRegistry: The type string "${typeString}" is already registered with a different symbol instance. This can cause serialization conflicts.`,
         );
       }
-      this.typeSymbolToString.set(definition.id, typeString);
-      this.typeStringToSymbol.set(typeString, definition.id);
+      this.symbolToString.set(definition.name, typeString);
+      this.stringToSymbol.set(typeString, definition.name);
     } else {
-      logger.warn('IngredientRegistry: An ingredient was registered without a description on its symbol ID, which is required for serialization.', {
-        id: definition.id,
+      logger.warn('IngredientRegistry: An ingredient was registered without a description on its name symbol, which is required for serialization.', {
         name: definition.name,
       });
     }
 
     useIngredientStore.getState().refreshRegistry();
+  }
+
+  public unregisterIngredients(types: readonly symbol[]): void {
+    let changed = false;
+    for (const type of types) {
+      if (this.ingredients.has(type)) {
+        this.ingredients.delete(type);
+        const typeString = this.symbolToString.get(type);
+        if (typeString) {
+          this.symbolToString.delete(type);
+          this.stringToSymbol.delete(typeString);
+        }
+        changed = true;
+        logger.info(`Unregistered ingredient: ${String(type)}`);
+      }
+    }
+    if (changed) {
+      useIngredientStore.getState().refreshRegistry();
+    }
   }
 }

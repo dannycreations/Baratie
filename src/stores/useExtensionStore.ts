@@ -14,9 +14,10 @@ export interface Extension extends ExtensionManifest {
   readonly url: string;
   readonly status: 'loading' | 'loaded' | 'error' | 'partial';
   readonly errors?: readonly string[];
+  readonly ingredients?: readonly symbol[];
 }
 
-type StorableExtension = Omit<Extension, 'status' | 'errors'>;
+type StorableExtension = Omit<Extension, 'status' | 'errors' | 'registeredIngredients'>;
 
 interface ExtensionState {
   readonly extensions: readonly Extension[];
@@ -24,6 +25,7 @@ interface ExtensionState {
   readonly remove: (id: string) => void;
   readonly setExtensions: (extensions: readonly Extension[]) => void;
   readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: readonly string[]) => void;
+  readonly setIngredients: (id: string, ingredients: readonly symbol[]) => void;
 }
 
 export const useExtensionStore = create<ExtensionState>()(
@@ -50,6 +52,12 @@ export const useExtensionStore = create<ExtensionState>()(
     setExtensionStatus(id, status, errors) {
       set((state) => ({
         extensions: state.extensions.map((ext) => (ext.id === id ? { ...ext, status, errors } : ext)),
+      }));
+    },
+
+    setIngredients(id, ingredients) {
+      set((state) => ({
+        extensions: state.extensions.map((ext) => (ext.id === id ? { ...ext, ingredients: ingredients } : ext)),
       }));
     },
   })),

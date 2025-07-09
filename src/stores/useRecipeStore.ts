@@ -11,12 +11,12 @@ interface RecipeState {
   readonly ingredients: readonly Ingredient[];
   readonly addIngredient: (type: symbol, initialSpices?: Readonly<Record<string, unknown>>) => void;
   readonly clear: () => void;
-  readonly removeIngredient: (instanceId: string) => void;
+  readonly removeIngredient: (id: string) => void;
   readonly reorderIngredients: (draggedId: string, targetId: string) => void;
   readonly set: (ingredients: readonly Ingredient[], activeRecipeId?: string | null) => void;
   readonly setActiveRecipeId: (id: string | null) => void;
-  readonly setIngredientSpices: (instanceId: string, newSpices: Readonly<Record<string, unknown>>) => void;
-  readonly updateSpice: (instanceId: string, spiceId: string, rawValue: string | boolean | number, spice: Readonly<SpiceDefinition>) => void;
+  readonly setIngredientSpices: (id: string, newSpices: Readonly<Record<string, unknown>>) => void;
+  readonly updateSpice: (id: string, spiceId: string, rawValue: string | boolean | number, spice: Readonly<SpiceDefinition>) => void;
 }
 
 export const useRecipeStore = create<RecipeState>()(
@@ -32,8 +32,7 @@ export const useRecipeStore = create<RecipeState>()(
 
       const validSpices = validateSpices(ingredientDefinition, initialSpices || {});
       const newIngredient: Ingredient = {
-        id: type,
-        instanceId: crypto.randomUUID(),
+        id: crypto.randomUUID(),
         name: ingredientDefinition.name,
         spices: validSpices,
       };
@@ -44,9 +43,9 @@ export const useRecipeStore = create<RecipeState>()(
       set({ activeRecipeId: null, ingredients: [] });
     },
 
-    removeIngredient(instanceId) {
+    removeIngredient(id) {
       set((state) => {
-        const newIngredients = state.ingredients.filter((ingredient) => ingredient.instanceId !== instanceId);
+        const newIngredients = state.ingredients.filter((ingredient) => ingredient.id !== id);
         const newActiveRecipeId = newIngredients.length > 0 ? state.activeRecipeId : null;
         return {
           activeRecipeId: newActiveRecipeId,
@@ -57,8 +56,8 @@ export const useRecipeStore = create<RecipeState>()(
 
     reorderIngredients(draggedId, targetId) {
       const currentRecipe = [...get().ingredients];
-      const draggedIndex = currentRecipe.findIndex((ingredient) => ingredient.instanceId === draggedId);
-      const targetIndex = currentRecipe.findIndex((ingredient) => ingredient.instanceId === targetId);
+      const draggedIndex = currentRecipe.findIndex((ingredient) => ingredient.id === draggedId);
+      const targetIndex = currentRecipe.findIndex((ingredient) => ingredient.id === targetId);
 
       if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) {
         return;
@@ -71,12 +70,14 @@ export const useRecipeStore = create<RecipeState>()(
 
     set(ingredients, activeRecipeId = null) {
       const validIngredients = ingredients.map((ingredient) => {
-        const ingredientDefinition = ingredientRegistry.getIngredient(ingredient.id);
+        const ingredientDefinition = ingredientRegistry.getIngredient(ingredient.name);
         if (ingredientDefinition) {
           const validatedSpices = validateSpices(ingredientDefinition, ingredient.spices);
           return { ...ingredient, spices: validatedSpices };
         }
-        logger.warn(`Ingredient definition not found for type "${String(ingredient.id)}" during setRecipe. Options may not be correctly validated.`);
+        logger.warn(
+          `Ingredient definition not found for type "${String(ingredient.name)}" during setRecipe. Options may not be correctly validated.`,
+        );
         return { ...ingredient, spices: ingredient.spices };
       });
 
@@ -88,47 +89,43 @@ export const useRecipeStore = create<RecipeState>()(
       set({ activeRecipeId: id });
     },
 
-    setIngredientSpices(instanceId, newSpices) {
-      const ingredientToUpdate = get().ingredients.find((ingredient) => ingredient.instanceId === instanceId);
-      errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${instanceId}" not found for spice update.`, 'Recipe Update Spices');
+    setIngredientSpices(id, newSpices) {
+      const ingredientToUpdate = get().ingredients.find((ingredient) => ingredient.id === id);
+      errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${id}" not found for spice update.`, 'Recipe Update Spices');
 
-      const ingredientDefinition = ingredientRegistry.getIngredient(ingredientToUpdate.id);
+      const ingredientDefinition = ingredientRegistry.getIngredient(ingredientToUpdate.name);
       const validatedSpices = ingredientDefinition ? validateSpices(ingredientDefinition, newSpices) : newSpices;
 
       set((state) => ({
-        ingredients: state.ingredients.map((ingredient) =>
-          ingredient.instanceId === instanceId ? { ...ingredient, spices: validatedSpices } : ingredient,
-        ),
+        ingredients: state.ingredients.map((ingredient) => (ingredient.id === id ? { ...ingredient, spices: validatedSpices } : ingredient)),
       }));
     },
 
-    updateSpice(instanceId, spiceId, rawValue, spice) {
-      const ingredientToUpdate = get().ingredients.find((ingredient) => ingredient.instanceId === instanceId);
-      errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${instanceId}" not found for spice change.`, 'Recipe Change Spice');
+    updateSpice(id, spiceId, rawValue, spice) {
+      const ingredientToUpdate = get().ingredients.find((ingredient) => ingredient.id === id);
+      errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${id}" not found for spice change.`, 'Recipe Change Spice');
 
-      const ingredientDefinition = ingredientRegistry.getIngredient(ingredientToUpdate.id);
+      const ingredientDefinition = ingredientRegistry.getIngredient(ingredientToUpdate.name);
       errorHandler.assert(
         ingredientDefinition,
-        `Ingredient definition not found for type "${String(ingredientToUpdate.id)}".`,
+        `Ingredient definition not found for type "${String(ingredientToUpdate.name)}".`,
         'Recipe Change Spice',
       );
 
       const isSpiceInDefinition = ingredientDefinition.spices?.some((s) => s.id === spiceId);
       errorHandler.assert(
         isSpiceInDefinition,
-        `Spice with ID "${spiceId}" is not a valid spice for ingredient "${ingredientDefinition.name}".`,
+        `Spice with ID "${spiceId}" is not a valid spice for ingredient "${ingredientDefinition.name.description}".`,
         'Recipe Spice Update',
         {
-          genericMessage: `An internal error occurred while updating options for "${ingredientDefinition.name}".`,
+          genericMessage: `An internal error occurred while updating options for "${ingredientDefinition.name.description}".`,
         },
       );
 
       const newValidSpices = updateAndValidate(ingredientDefinition, ingredientToUpdate.spices, spiceId, rawValue, spice);
 
       set((state) => ({
-        ingredients: state.ingredients.map((ingredient) =>
-          ingredient.instanceId === instanceId ? { ...ingredient, spices: newValidSpices } : ingredient,
-        ),
+        ingredients: state.ingredients.map((ingredient) => (ingredient.id === id ? { ...ingredient, spices: newValidSpices } : ingredient)),
       }));
     },
   })),

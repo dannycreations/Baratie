@@ -1,8 +1,8 @@
 export const CATEGORY_FAVORITES = Symbol('⭐ Favorites');
 export const CATEGORY_FLOW = Symbol('Flow Control');
-export const KEY_CUSTOM_INPUT = Symbol('CUSTOM_INPUT');
-export const KEY_CUSTOM_OUTPUT = Symbol('CUSTOM_OUTPUT');
-export const KEY_REPEAT_STEP = Symbol('REPEAT_STEP');
+export const KEY_CUSTOM_INPUT = Symbol('Custom Input');
+export const KEY_CUSTOM_OUTPUT = Symbol('Custom Output');
+export const KEY_REPEAT_STEP = Symbol('Repeat Step');
 
 export const STORAGE_COOKBOOK = 'baratie-cookbook';
 export const STORAGE_FAVORITES = 'baratie-favorite';

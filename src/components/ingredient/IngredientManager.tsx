@@ -40,7 +40,7 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
       grouped.get(category)!.push(ingredient);
     }
     for (const ingredients of grouped.values()) {
-      ingredients.sort((a, b) => a.name.localeCompare(b.name));
+      ingredients.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
     }
     return new Map([...grouped.entries()].sort((a, b) => (a[0].description ?? '').localeCompare(b[0].description ?? '')));
   }, [allIngredients]);
@@ -57,7 +57,8 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
       const categoryMatches = categoryName.toLowerCase().includes(lowerQuery);
 
       const matchingIngredients = ingredients.filter(
-        (ingredient) => ingredient.name.toLowerCase().includes(lowerQuery) || ingredient.description.toLowerCase().includes(lowerQuery),
+        (ingredient) =>
+          (ingredient.name.description ?? '').toLowerCase().includes(lowerQuery) || ingredient.description.toLowerCase().includes(lowerQuery),
       );
       if (categoryMatches) {
         filteredMap.set(category, ingredients);
@@ -124,8 +125,9 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
   const renderManagerItem = useCallback(
     (ingredient: IngredientDefinition) => {
       const isCategoryDisabled = disabledCategories.includes(ingredient.category);
-      const ingredientId = `manager-ingredient-${(ingredient.id.description ?? '').replace(/\s+/g, '-')}`;
-      const isIngredientDisabled = disabledIngredients.includes(ingredient.id);
+      const ingredientName = ingredient.name.description ?? 'Unnamed Ingredient';
+      const ingredientId = `manager-ingredient-${ingredientName.replace(/\s+/g, '-')}`;
+      const isIngredientDisabled = disabledIngredients.includes(ingredient.name);
       const isDisabled = isCategoryDisabled || isIngredientDisabled;
 
       const labelClasses = [
@@ -140,21 +142,21 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
         <div className="flex min-w-0 items-center gap-3">
           <BooleanInput
             id={ingredientId}
-            ariaLabel={`Toggle ingredient ${ingredient.name}`}
+            ariaLabel={`Toggle ingredient ${ingredientName}`}
             checked={!isIngredientDisabled}
             disabled={isCategoryDisabled}
-            onChange={() => toggleIngredient(ingredient.id)}
+            onChange={() => toggleIngredient(ingredient.name)}
           />
           <Tooltip content={ingredient.description} position="top" tooltipClassName="max-w-xs">
             <label htmlFor={ingredientId} className={labelClasses}>
-              {ingredient.name}
+              {ingredientName}
             </label>
           </Tooltip>
         </div>
       );
 
       return (
-        <li key={ingredient.id.toString()}>
+        <li key={ingredient.name.toString()}>
           <ItemListLayout
             className={`group h-11 rounded-md px-2 py-1.5 transition-colors duration-150 ${theme.itemBg} ${theme.itemBgMutedHover}`}
             leftContent={leftColumn}

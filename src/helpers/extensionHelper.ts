@@ -1,19 +1,66 @@
 import { STORAGE_EXTENSIONS } from '../app/constants';
-import { logger, storage } from '../app/container';
+import { ingredientRegistry, logger, storage } from '../app/container';
 import { useExtensionStore } from '../stores/useExtensionStore';
+import { useFavoriteStore } from '../stores/useFavoriteStore';
+import { useRecipeStore } from '../stores/useRecipeStore';
 import { showNotification } from './notificationHelper';
 
+import type { IngredientDefinition } from '../core/IngredientRegistry';
 import type { Extension, ExtensionManifest } from '../stores/useExtensionStore';
+
+function isExtensionManifest(obj: unknown): obj is ExtensionManifest {
+  if (typeof obj !== 'object' || obj === null) return false;
+  const manifest = obj as Record<string, unknown>;
+  const { name, entry } = manifest;
+  if (typeof name !== 'string' || !name) {
+    return false;
+  }
+  if (typeof entry === 'string' && entry) {
+    return true;
+  }
+  if (Array.isArray(entry) && entry.length > 0 && entry.every((e) => typeof e === 'string')) {
+    return true;
+  }
+  return false;
+}
+
+type StorableExtension = Omit<Extension, 'status' | 'errors' | 'registeredIngredients'>;
+
+function isStorableExtension(obj: unknown): obj is StorableExtension {
+  if (typeof obj !== 'object' || obj === null) return false;
+  const ext = obj as Record<string, unknown>;
+  const { id, url, name, entry } = ext;
+
+  if (typeof id !== 'string' || typeof url !== 'string' || typeof name !== 'string') {
+    return false;
+  }
+  if (typeof entry === 'string') {
+    return true;
+  }
+  if (Array.isArray(entry) && entry.every((e) => typeof e === 'string')) {
+    return true;
+  }
+  return false;
+}
 
 async function loadAndExecuteExtension(extension: Extension): Promise<void> {
   const { id, url, name, entry } = extension;
-  const { setExtensionStatus } = useExtensionStore.getState();
+  const { setExtensionStatus, setIngredients } = useExtensionStore.getState();
 
   const repoInfo = parseGitHubUrl(url);
   if (!repoInfo) {
     setExtensionStatus(id, 'error', ['Invalid GitHub URL']);
     return;
   }
+
+  const originalRegisterIngredient = ingredientRegistry.registerIngredient.bind(ingredientRegistry);
+  const newlyRegisteredSymbols: symbol[] = [];
+
+  ingredientRegistry.registerIngredient = <T>(definition: IngredientDefinition<T>) => {
+    const defWithExtensionId = { ...definition, extensionId: id };
+    originalRegisterIngredient(defWithExtensionId);
+    newlyRegisteredSymbols.push(defWithExtensionId.name);
+  };
 
   const entryPoints = Array.isArray(entry) ? entry : [entry];
   const successLogs: string[] = [];
@@ -42,6 +89,12 @@ async function loadAndExecuteExtension(extension: Extension): Promise<void> {
     }
   }
 
+  ingredientRegistry.registerIngredient = originalRegisterIngredient;
+
+  if (newlyRegisteredSymbols.length > 0) {
+    setIngredients(id, newlyRegisteredSymbols);
+  }
+
   let finalStatus: Extension['status'] = 'error';
   if (successLogs.length > 0) {
     finalStatus = errorLogs.length > 0 ? 'partial' : 'loaded';
@@ -50,7 +103,7 @@ async function loadAndExecuteExtension(extension: Extension): Promise<void> {
   setExtensionStatus(id, finalStatus, errorLogs);
 
   if (finalStatus === 'loaded') {
-    logger.info(`Extension '${name}' loaded successfully.`);
+    logger.info(`Extension '${name}' loaded successfully with ${newlyRegisteredSymbols.length} ingredient(s).`);
   } else if (finalStatus === 'partial') {
     logger.warn(`Extension '${name}' partially loaded with ${errorLogs.length} error(s).`, errorLogs);
   } else {
@@ -77,7 +130,26 @@ function parseGitHubUrl(url: string): { owner: string; repo: string } | null {
   return null;
 }
 
-export async function addNewExtension(url: string): Promise<void> {
+export function initExtensions(): void {
+  const rawExtensions = storage.get(STORAGE_EXTENSIONS, 'Extensions');
+  const extensions: Extension[] = [];
+
+  if (Array.isArray(rawExtensions)) {
+    for (const raw of rawExtensions) {
+      if (isStorableExtension(raw)) {
+        extensions.push({ ...raw, status: 'loading', errors: [], ingredients: [] });
+      }
+    }
+  }
+
+  useExtensionStore.getState().setExtensions(extensions);
+
+  for (const ext of extensions) {
+    loadAndExecuteExtension(ext).catch((e) => logger.error(`Error loading extension on init: ${ext.name}`, e));
+  }
+}
+
+export async function addExtension(url: string): Promise<void> {
   const repoInfo = parseGitHubUrl(url);
   if (!repoInfo) {
     showNotification('Invalid GitHub repository URL.', 'error', 'Add Extension Error');
@@ -99,10 +171,9 @@ export async function addNewExtension(url: string): Promise<void> {
     if (!response.ok) {
       throw new Error(`Could not fetch manifest: ${response.statusText}`);
     }
-    const manifest = (await response.json()) as ExtensionManifest;
+    const manifest = await response.json();
 
-    const entry = manifest.entry;
-    if (!manifest.name || !entry || (Array.isArray(entry) && entry.length === 0)) {
+    if (!isExtensionManifest(manifest)) {
       throw new Error('Manifest must contain a "name" and a non-empty "entry" (string or array).');
     }
 
@@ -113,6 +184,7 @@ export async function addNewExtension(url: string): Promise<void> {
       entry: manifest.entry,
       status: 'loading',
       errors: [],
+      ingredients: [],
     };
 
     addExtension(newExtension);
@@ -128,26 +200,34 @@ export async function addNewExtension(url: string): Promise<void> {
   }
 }
 
-export function initExtensions(): void {
-  const rawExtensions = storage.get(STORAGE_EXTENSIONS, 'Extensions');
-  const extensions: Extension[] = [];
+export function removeExtension(id: string): void {
+  const extension = useExtensionStore.getState().extensions.find((ext) => ext.id === id);
+  if (!extension) {
+    logger.warn(`Attempted to remove non-existent extension with id: ${id}`);
+    return;
+  }
 
-  if (Array.isArray(rawExtensions)) {
-    for (const raw of rawExtensions) {
-      if (typeof raw === 'object' && raw !== null && 'id' in raw && 'url' in raw && 'name' in raw && 'entry' in raw) {
-        extensions.push({ ...(raw as Omit<Extension, 'status' | 'errors'>), status: 'loading', errors: [] });
-      }
+  const ingredientsToRemove = extension.ingredients || [];
+
+  if (ingredientsToRemove.length > 0) {
+    ingredientRegistry.unregisterIngredients(ingredientsToRemove);
+
+    const { ingredients: currentRecipe, set: setRecipe } = useRecipeStore.getState();
+    const updatedRecipe = currentRecipe.filter((ing) => !ingredientsToRemove.includes(ing.name));
+    if (updatedRecipe.length < currentRecipe.length) {
+      const activeRecipeId = useRecipeStore.getState().activeRecipeId;
+      setRecipe(updatedRecipe, activeRecipeId);
+      const removedCount = currentRecipe.length - updatedRecipe.length;
+      showNotification(`${removedCount} ingredient(s) from '${extension.name}' removed from your current recipe.`, 'info', 'Extension Unloaded');
+    }
+
+    const { favorites, setFavorites } = useFavoriteStore.getState();
+    const updatedFavorites = favorites.filter((fav) => !ingredientsToRemove.includes(fav));
+    if (updatedFavorites.length < favorites.length) {
+      setFavorites(updatedFavorites);
     }
   }
 
-  useExtensionStore.getState().setExtensions(extensions);
-
-  for (const ext of extensions) {
-    loadAndExecuteExtension(ext).catch((e) => logger.error(`Error loading extension on init: ${ext.name}`, e));
-  }
-}
-
-export function removeExtension(id: string): void {
   useExtensionStore.getState().remove(id);
-  showNotification('Extension removed. A page reload is required to fully unload its ingredients.', 'info', 'Extension Manager', 7000);
+  showNotification(`Extension '${extension.name}' has been successfully uninstalled.`, 'success', 'Extension Manager');
 }

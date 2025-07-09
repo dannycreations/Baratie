@@ -55,27 +55,24 @@ export const RecipeItem = memo(function RecipeItem({
   onDragOver,
 }: RecipeItemProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);
-  const definition = ingredientRegistry.getIngredient(ingredient.id);
+  const definition = ingredientRegistry.getIngredient(ingredient.name);
   errorHandler.assert(
     definition,
-    `Ingredient definition not found for type "${String(ingredient.id)}" (name: "${ingredient.name}").`,
+    `Ingredient definition not found for name "${String(ingredient.name)}" (name: "${ingredient.name.description}").`,
     'Recipe Item Panel',
-    { genericMessage: `The definition for ingredient "${ingredient.name}" is missing.` },
+    { genericMessage: `The definition for ingredient "${ingredient.name.description}" is missing.` },
   );
 
   const handleDragStart = useCallback((event: DragEvent<HTMLElement>) => onDragStart(event, ingredient), [onDragStart, ingredient]);
-  const handleDragEnter = useCallback(
-    (event: DragEvent<HTMLElement>) => onDragEnter(event, ingredient.instanceId),
-    [onDragEnter, ingredient.instanceId],
-  );
-  const handleRemove = useCallback(() => onRemove(ingredient.instanceId), [onRemove, ingredient.instanceId]);
+  const handleDragEnter = useCallback((event: DragEvent<HTMLElement>) => onDragEnter(event, ingredient.id), [onDragEnter, ingredient.id]);
+  const handleRemove = useCallback(() => onRemove(ingredient.id), [onRemove, ingredient.id]);
   const handleEditToggle = useCallback(() => onEditToggle(ingredient), [onEditToggle, ingredient]);
 
   const handleSpiceChange = useCallback(
     (spiceId: string, newValue: string | boolean | number, spice: SpiceDefinition) => {
-      onSpiceChange(ingredient.instanceId, spiceId, newValue, spice);
+      onSpiceChange(ingredient.id, spiceId, newValue, spice);
     },
-    [onSpiceChange, ingredient.instanceId],
+    [onSpiceChange, ingredient.id],
   );
 
   const hasSpices = !!definition.spices && definition.spices.length > 0;
@@ -98,7 +95,7 @@ export const RecipeItem = memo(function RecipeItem({
   );
 
   const settingsTooltip = isSpiceInInput ? 'Options are in the Input panel' : isEditing ? 'Hide Options' : 'Edit Options';
-  const ariaLabel = `Recipe Item: ${ingredient.name}. Status: ${isAutoCook ? status : 'Auto-Cook Disabled'}${
+  const ariaLabel = `Recipe Item: ${ingredient.name.description}. Status: ${isAutoCook ? status : 'Auto-Cook Disabled'}${
     isSpiceInInput ? '. Options are managed in the Input panel.' : ''
   }${isEditorVisible ? '. The options editor is expanded.' : ''}`;
 
@@ -132,8 +129,8 @@ export const RecipeItem = memo(function RecipeItem({
           <GrabIcon size={20} />
         </span>
       </Tooltip>
-      <Tooltip content={ingredient.name} position="top">
-        <span className={`cursor-default truncate pr-2 font-medium ${theme.textPrimary}`}>{ingredient.name}</span>
+      <Tooltip content={definition.name.description} position="top">
+        <span className={`cursor-default truncate pr-2 font-medium ${theme.textPrimary}`}>{ingredient.name.description}</span>
       </Tooltip>
     </>
   );
@@ -142,7 +139,7 @@ export const RecipeItem = memo(function RecipeItem({
     <>
       {hasSpices && (
         <TooltipButton
-          aria-controls={`options-${ingredient.instanceId}`}
+          aria-controls={`options-${ingredient.id}`}
           aria-expanded={isEditorVisible}
           aria-label={settingsTooltip}
           className={isEditorVisible ? '' : `${theme.textTertiary} ${theme.accentTextHover}`}
@@ -155,7 +152,7 @@ export const RecipeItem = memo(function RecipeItem({
         />
       )}
       <TooltipButton
-        aria-label={`Remove ingredient "${ingredient.name}" from recipe`}
+        aria-label={`Remove ingredient "${ingredient.name.description}" from recipe`}
         className="opacity-50 hover:!opacity-100 group-hover:opacity-100"
         icon={<XIcon size={18} />}
         onClick={handleRemove}
@@ -193,7 +190,7 @@ export const RecipeItem = memo(function RecipeItem({
           )}
           {isEditorVisible && (
             <div
-              id={`options-${ingredient.instanceId}`}
+              id={`options-${ingredient.id}`}
               className="recipe-item-spices-enter-active"
               onDoubleClick={(event: MouseEvent<HTMLDivElement>): void => event.stopPropagation()}
             >
