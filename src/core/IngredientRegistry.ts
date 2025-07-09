@@ -141,12 +141,12 @@ export class IngredientRegistry {
     return this.typeStringToSymbol.get(typeString);
   }
 
-  public registerIngredient(definition: IngredientDefinition): void {
+  public registerIngredient<T>(definition: IngredientDefinition<T>): void {
     if (this.ingredients.has(definition.id)) {
       logger.warn(`IngredientRegistry: Re-registering type "${String(definition.id)}", which overwrites the existing definition.`);
     }
 
-    this.ingredients.set(definition.id, definition);
+    this.ingredients.set(definition.id, definition as IngredientDefinition);
 
     const typeString = definition.id.description?.trim();
     if (typeString) {
