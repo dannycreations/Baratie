@@ -1,0 +1,169 @@
+import { memo, useCallback, useMemo, useRef } from 'react';
+
+import { errorHandler } from '../../../app/container';
+import { useDragDrop } from '../../../hooks/useDragDrop';
+import { useLineNumber } from '../../../hooks/useLineNumber';
+import { useThemeStore } from '../../../stores/useThemeStore';
+import { readAsText } from '../../../utilities/fileUtil';
+import { DropzoneLayout } from '../layout/DropzoneLayout';
+
+import type { ChangeEvent, JSX, TextareaHTMLAttributes, UIEvent } from 'react';
+
+interface TextareaInputProps
+  extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'value' | 'onChange' | 'readOnly' | 'placeholder' | 'disabled' | 'spellCheck'> {
+  readonly ariaLabel: string;
+  readonly disabled?: boolean;
+  readonly placeholder?: string;
+  readonly readOnly?: boolean;
+  readonly showLineNumbers?: boolean;
+  readonly spellCheck?: 'true' | 'false';
+  readonly textareaClassName?: string;
+  readonly value: string;
+  readonly wrapperClassName?: string;
+  readonly onChange?: (value: string) => void;
+}
+
+export const TextareaInput = memo(function TextareaInput({
+  value,
+  onChange,
+  readOnly = false,
+  wrapperClassName = '',
+  textareaClassName = '',
+  placeholder = '',
+  ariaLabel,
+  spellCheck = 'false',
+  disabled = false,
+  showLineNumbers = false,
+  ...rest
+}: TextareaInputProps): JSX.Element {
+  const theme = useThemeStore((state) => state.theme);
+  const lineNumbersRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const logicalLines = useMemo(() => value.split('\n'), [value]);
+  const wrappedLineNumbers = useLineNumber({ logicalLines, showLineNumbers, textAreaRef: textareaRef });
+
+  const handleFileDrop = useCallback(
+    async (file: File) => {
+      if (readOnly || disabled || !onChange) return;
+      const { result: text, error } = await errorHandler.attemptAsync(() => readAsText(file));
+      if (!error && typeof text === 'string') {
+        onChange(text);
+      }
+    },
+    [readOnly, disabled, onChange],
+  );
+
+  const { isDragOver, ...dropZoneProps } = useDragDrop({ onDragDrop: handleFileDrop, disabled: readOnly || disabled });
+
+  const handleTextChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => onChange?.(event.target.value), [onChange]);
+
+  const commonTextareaClasses = [
+    'h-full',
+    'w-full',
+    'resize-none',
+    'p-2.5',
+    'outline-none',
+    'allow-text-selection',
+    'disabled:cursor-not-allowed',
+    theme.inputText,
+    theme.textPlaceholder,
+  ];
+
+  const textareaBaseClasses = [
+    ...commonTextareaClasses,
+    'rounded-md',
+    'border',
+    'disabled:opacity-50',
+    theme.textareaBg,
+    theme.inputBorder,
+    theme.inputFocusRing,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const textareaBoxClasses = [
+    'relative',
+    'flex',
+    'overflow-hidden',
+    'rounded-md',
+    'border',
+    'focus-within:ring-2',
+    theme.textareaBg,
+    theme.inputBorder,
+    theme.inputFocusRing,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const textareaLinedClasses = [...commonTextareaClasses, theme.textareaLinedBg].filter(Boolean).join(' ');
+
+  const renderStandard = (): JSX.Element => (
+    <div className={['relative', wrapperClassName].filter(Boolean).join(' ')} {...dropZoneProps}>
+      <textarea
+        ref={textareaRef}
+        aria-label={ariaLabel}
+        className={[textareaBaseClasses, textareaClassName].filter(Boolean).join(' ')}
+        disabled={disabled}
+        placeholder={placeholder}
+        readOnly={readOnly}
+        spellCheck={spellCheck}
+        value={value}
+        onChange={handleTextChange}
+        {...rest}
+      />
+      {isDragOver && <DropzoneLayout mode="overlay" text="Drop text file" variant="add" />}
+    </div>
+  );
+
+  const renderLined = (): JSX.Element => {
+    const handleScroll = useCallback((event: UIEvent<HTMLTextAreaElement>) => {
+      if (lineNumbersRef.current) lineNumbersRef.current.scrollTop = event.currentTarget.scrollTop;
+    }, []);
+
+    const lineHeight = rest.style?.['lineHeight'] ?? '1.6';
+
+    const boxContainerClasses = [textareaBoxClasses, disabled && 'opacity-50', wrapperClassName, textareaClassName].filter(Boolean).join(' ');
+    const gutterClasses = [
+      'shrink-0',
+      'select-none',
+      'overflow-y-hidden',
+      'py-2.5',
+      'pr-2',
+      'pl-2.5',
+      'text-right',
+      theme.textareaBg,
+      theme.linedGutterText,
+      theme.linedGutterBorder,
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    return (
+      <div className={boxContainerClasses} {...dropZoneProps}>
+        <div ref={lineNumbersRef} aria-hidden="true" className={gutterClasses} style={{ lineHeight }}>
+          {wrappedLineNumbers.map((lineNumber, index) => (
+            <div key={index}>{lineNumber ?? <>&nbsp;</>}</div>
+          ))}
+        </div>
+        <textarea
+          ref={textareaRef}
+          aria-label={ariaLabel}
+          className={textareaLinedClasses}
+          disabled={disabled}
+          placeholder={placeholder}
+          readOnly={readOnly}
+          spellCheck={spellCheck}
+          style={{ ...rest.style, lineHeight }}
+          value={value}
+          onChange={handleTextChange}
+          onScroll={handleScroll}
+          {...rest}
+        />
+        {isDragOver && <DropzoneLayout mode="overlay" text="Drop text file" variant="add" />}
+      </div>
+    );
+  };
+
+  return showLineNumbers ? renderLined() : renderStandard();
+});
