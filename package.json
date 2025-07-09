@@ -2,15 +2,13 @@
   "name": "baratie",
   "version": "0.0.1",
   "author": "dannycreations",
-  "license": "MIT",
+  "license": "GPL",
   "type": "module",
-  "exports": {
-    "types": "./dist/index.d.ts",
-    "default": "./dist/index.js"
-  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "tsup",
+    "build": "vite build && tsc --emitDeclarationOnly",
     "clean": "rimraf -g \"*.tsbuildinfo\" \"dist\"",
     "update": "npm-check-updates -u",
     "prepare": "pnpm run clean && pnpm run build",
@@ -34,19 +32,17 @@
     "@vitejs/plugin-react": "^4.6.0",
     "npm-check-updates": "^18.0.1",
     "prettier": "^3.6.2",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
     "rimraf": "^6.0.1",
     "tailwindcss": "^4.1.11",
-    "tsup": "^8.5.0",
+    "terser": "^5.43.1",
     "typescript": "^5.8.3",
     "vite": "^7.0.0",
-    "vite-plugin-checker": "^0.9.3",
-    "zustand": "^5.0.6"
+    "vite-plugin-checker": "^0.9.3"
   },
   "peerDependencies": {
-    "react": "^19",
-    "react-dom": "^19"
+    "react": "19.x",
+    "react-dom": "19.x",
+    "zustand": "5.x"
   },
   "packageManager": "pnpm@10.12.4"
 }

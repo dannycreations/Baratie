@@ -1,3 +1,7 @@
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import * as Zustand from 'zustand';
+
 import { createRoot } from './app/Baratie';
 import { appRegistry, errorHandler, ingredientRegistry, logger } from './app/container';
 import { InputType } from './core/InputType';
@@ -49,6 +53,8 @@ export type {
   ResultType,
   SpiceDefinition,
 };
+
+export { React, ReactDOM, Zustand };
 
 const BARATIE_HELPERS = {
   cookbook: {

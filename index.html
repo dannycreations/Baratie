@@ -11,6 +11,10 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+    <script type="module">
+      import './dist/index.js';
+
+      Baratie.createRoot(document.getElementById('root'));
+    </script>
   </body>
 </html>

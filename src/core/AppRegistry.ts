@@ -64,7 +64,7 @@ export class AppRegistry {
           for (const task of allTasks) {
             useAppStore.getState().setLoadingMessage(task.message);
             logger.debug(`Executing init task: ${task.message}`);
-            await Promise.resolve(task.handler);
+            await task.handler?.();
             await new Promise((resolve) => setTimeout(resolve, 200));
           }
         },
