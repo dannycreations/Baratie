@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react';
 
+import { logger } from '../../../app/container';
 import { getVisibleSpices } from '../../../helpers/spiceHelper';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { BooleanInput } from '../input/BooleanInput';
@@ -13,12 +14,13 @@ import type { IngredientDefinition, SpiceDefinition } from '../../../core/Ingred
 
 interface SpiceRendererProps {
   readonly ingredientDefinition: IngredientDefinition;
+  readonly isLast: boolean;
+  readonly onSpiceChange: (spiceId: string, newValue: boolean | number | string, spice: SpiceDefinition) => void;
   readonly spice: SpiceDefinition;
   readonly value: unknown;
-  readonly onSpiceChange: (spiceId: string, newValue: boolean | number | string, spice: SpiceDefinition) => void;
 }
 
-const SpiceRenderer = memo(function SpiceRenderer({ ingredientDefinition, spice, value: rawValue, onSpiceChange }: SpiceRendererProps) {
+const SpiceRenderer = memo(function SpiceRenderer({ ingredientDefinition, spice, value: rawValue, onSpiceChange, isLast }: SpiceRendererProps) {
   const theme = useThemeStore((state) => state.theme);
   const inputId = `spice-${String(ingredientDefinition.id)}-${spice.id}`;
 
@@ -82,13 +84,18 @@ const SpiceRenderer = memo(function SpiceRenderer({ ingredientDefinition, spice,
         return <SelectInput id={id} options={spice.options} value={String(value)} onChange={handleSelectChange} />;
       }
       default: {
+        const exhaustiveCheck: never = spice;
+        logger.warn(`Unhandled spice type: ${(exhaustiveCheck as SpiceDefinition).type}`);
         return null;
       }
     }
   };
 
   const isBoolean = spice.type === 'boolean';
-  const fieldSetClass = isBoolean ? 'flex flex-row items-center justify-start gap-x-3' : 'pb-3';
+  const baseFieldSetClass = isBoolean
+    ? 'flex flex-row items-center justify-start gap-x-3'
+    : 'flex flex-col gap-y-1 gap-x-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start';
+  const fieldSetClass = isLast ? `${baseFieldSetClass} pb-3` : baseFieldSetClass;
   const inputWrapperClass = isBoolean ? 'flex h-8 items-center' : 'w-full sm:w-auto sm:min-w-44 sm:flex-grow';
 
   return (
@@ -137,10 +144,17 @@ export const SpiceLayout = memo(function SpiceLayout({
       onSubmit={(event) => event.preventDefault()}
       role="form"
     >
-      {visibleSpices.map((spice) => {
+      {visibleSpices.map((spice, index) => {
         const rawValue = currentSpices[spice.id];
         return (
-          <SpiceRenderer key={spice.id} ingredientDefinition={ingredientDefinition} spice={spice} value={rawValue} onSpiceChange={onSpiceChange} />
+          <SpiceRenderer
+            key={spice.id}
+            ingredientDefinition={ingredientDefinition}
+            isLast={index === visibleSpices.length - 1}
+            spice={spice}
+            value={rawValue}
+            onSpiceChange={onSpiceChange}
+          />
         );
       })}
     </form>

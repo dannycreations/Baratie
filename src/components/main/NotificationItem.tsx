@@ -67,7 +67,6 @@ export const NotificationItem = memo(function NotificationItem({ notification }:
       case 'success':
         return <CheckIcon className={iconColor} size={22} />;
       case 'error':
-        return <AlertTriangleIcon className={iconColor} size={22} />;
       case 'warning':
         return <AlertTriangleIcon className={iconColor} size={22} />;
       case 'info':

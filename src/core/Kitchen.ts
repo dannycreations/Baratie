@@ -191,7 +191,7 @@ export class Kitchen {
         cookingStatus: 'idle',
         ingredientStatuses: {},
         inputPanelIngId: null,
-        outputData: initialInput,
+        outputData: '',
       };
     }
 
