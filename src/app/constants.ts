@@ -8,6 +8,7 @@ export const STORAGE_COOKBOOK = 'baratie-cookbook';
 export const STORAGE_FAVORITES = 'baratie-favorite';
 export const STORAGE_CATEGORIES = 'baratie-categories';
 export const STORAGE_INGREDIENTS = 'baratie-ingredients';
+export const STORAGE_EXTENSIONS = 'baratie-extensions';
 export const STORAGE_THEME = 'baratie-theme';
 
 export const ANIMATION_EXIT_MS = 400;

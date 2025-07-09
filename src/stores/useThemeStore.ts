@@ -17,6 +17,14 @@ interface ThemeState {
 
 const darkThemeConfig = APP_THEMES.find((t) => t.id === 'dark')!;
 
+function selectThemeName(state: ThemeState): ThemeId {
+  return state.id;
+}
+
+function saveThemeNameToStorage(themeName: ThemeId): void {
+  storage.set(STORAGE_THEME, themeName, 'Theme Preference');
+}
+
 export const useThemeStore = create<ThemeState>()(
   subscribeWithSelector(function (set) {
     let id = darkThemeConfig.id;
@@ -46,13 +54,5 @@ export const useThemeStore = create<ThemeState>()(
     };
   }),
 );
-
-function selectThemeName(state: ThemeState): ThemeId {
-  return state.id;
-}
-
-function saveThemeNameToStorage(themeName: ThemeId): void {
-  storage.set(STORAGE_THEME, themeName, 'Theme Preference');
-}
 
 useThemeStore.subscribe(selectThemeName, saveThemeNameToStorage);

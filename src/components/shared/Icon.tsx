@@ -125,6 +125,17 @@ export const FolderOpenIcon = createIcon({
   ),
 });
 
+export const GitMergeIcon = createIcon({
+  iconName: 'git-merge',
+  path: (
+    <>
+      <circle cx="18" cy="18" r="3" />
+      <circle cx="6" cy="6" r="3" />
+      <path d="M6 9v6a3 3 0 0 0 3 3h6" />
+    </>
+  ),
+});
+
 export const GrabIcon = createIcon({
   iconName: 'grab',
   path: (
@@ -149,6 +160,11 @@ export const InfoIcon = createIcon({
       <line x1="12" x2="12.01" y1="8" y2="8" />
     </>
   ),
+});
+
+export const Loader2Icon = createIcon({
+  iconName: 'loader-2',
+  path: <path d="M21 12a9 9 0 1 1-6.219-8.56" />,
 });
 
 export const PauseIcon = createIcon({

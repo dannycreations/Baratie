@@ -76,14 +76,17 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
         >
           Batten Down the Hatches!
         </Button>
-        {process.env.NODE_ENV === 'development' && error && <ErrorView error={error} errorInfo={errorInfo} />}
+        {error && <ErrorView error={error} errorInfo={errorInfo} />}
       </div>
     </div>
   );
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  state: ErrorBoundaryState = { hasError: false, error: null, errorInfo: null };
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error, errorInfo: null };

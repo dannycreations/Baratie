@@ -30,6 +30,7 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
   const disabledCategories = useIngredientStore((state) => state.disabledCategories);
   const disabledIngredients = useIngredientStore((state) => state.disabledIngredients);
   const openModal = useIngredientStore((state) => state.openModal);
+  const registryVersion = useIngredientStore((state) => state.registryVersion);
   const openSettingPanel = useSettingStore((state) => state.openPanel);
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
   const theme = useThemeStore((state) => state.theme);
@@ -39,7 +40,7 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
 
   const listId = useId();
 
-  const allIngredients = ingredientRegistry.getAllIngredients();
+  const allIngredients = useMemo(() => ingredientRegistry.getAllIngredients(), [registryVersion]);
   const totalIngredients = allIngredients.length;
 
   const visibleIngredients = useMemo(
@@ -103,7 +104,7 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
           icon={<SettingsIcon size={18} />}
           onClick={openSettingPanel}
           size="sm"
-          tooltipContent="Settings &amp; Appearance"
+          tooltipContent="Settings, Appearance & Extensions"
           tooltipPosition="bottom"
           variant="stealth"
         />

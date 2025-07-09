@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react';
 
+import type { RefObject } from 'react';
+
 const FOCUSABLE_SELECTORS = 'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
 
 interface FocusTrapOptions {
-  readonly elementRef: React.RefObject<HTMLElement | null>;
+  readonly elementRef: RefObject<HTMLElement | null>;
   readonly isActive: boolean;
 }
 
@@ -27,7 +29,9 @@ export function useFocusTrap({ elementRef, isActive }: FocusTrapOptions): void {
 
     element.focus();
 
-    const focusableElements = Array.from(element.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)).filter((el) => el.offsetParent !== null);
+    const focusableElements = Array.from(element.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)).filter(
+      (el: HTMLElement) => el.offsetParent !== null,
+    );
 
     if (focusableElements.length === 0) {
       return;

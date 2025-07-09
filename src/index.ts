@@ -5,6 +5,7 @@ import * as Zustand from 'zustand';
 import { createRoot } from './app/Baratie';
 import { appRegistry, errorHandler, ingredientRegistry, logger } from './app/container';
 import { InputType } from './core/InputType';
+import { LogLevel } from './core/Logger';
 import {
   addOrUpdateRecipe,
   closeCookbook,
@@ -21,6 +22,7 @@ import {
   setRecipeName,
   setSearchQuery,
 } from './helpers/cookbookHelper';
+import * as extensionHelper from './helpers/extensionHelper';
 import { initFavorites, toggleFavorite } from './helpers/favoriteHelper';
 import { clearNotifications, removeNotification, showNotification } from './helpers/notificationHelper';
 import {
@@ -73,6 +75,7 @@ const BARATIE_HELPERS = {
     setName: setRecipeName,
     setQuery: setSearchQuery,
   },
+  extension: extensionHelper,
   favorite: {
     init: initFavorites,
     toggle: toggleFavorite,
@@ -113,6 +116,7 @@ const BARATIE_API = {
   logger,
   helpers: BARATIE_HELPERS,
   InputType,
+  LogLevel,
 };
 
 declare global {

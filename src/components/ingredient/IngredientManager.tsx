@@ -22,11 +22,12 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
   const disabledIngredients = useIngredientStore((state) => state.disabledIngredients);
   const toggleCategory = useIngredientStore((state) => state.toggleCategory);
   const toggleIngredient = useIngredientStore((state) => state.toggleIngredient);
+  const registryVersion = useIngredientStore((state) => state.registryVersion);
   const theme = useThemeStore((state) => state.theme);
 
   const [query, setQuery] = useState('');
 
-  const allIngredients = useMemo(() => ingredientRegistry.getAllIngredients(), []);
+  const allIngredients = useMemo(() => ingredientRegistry.getAllIngredients(), [registryVersion]);
 
   const ingredientsByCategory = useMemo(() => {
     const grouped = new Map<symbol, IngredientDefinition[]>();

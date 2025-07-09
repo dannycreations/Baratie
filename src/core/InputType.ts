@@ -139,9 +139,7 @@ export class InputType<T = unknown> {
             if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
               return new InputType(parsed);
             }
-          } catch (e) {
-            // Failed to parse, continue to failure handling
-          }
+          } catch (e) {}
         }
         return handleFailure(new CastError(`Cannot cast to object from type ${typeof originalValue}`));
       }
@@ -156,9 +154,7 @@ export class InputType<T = unknown> {
             if (Array.isArray(parsed)) {
               return new InputType(parsed);
             }
-          } catch (e) {
-            // Failed to parse, continue to failure handling
-          }
+          } catch (e) {}
         }
         return handleFailure(new CastError(`Cannot cast to array from type ${typeof originalValue}`));
       }

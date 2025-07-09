@@ -167,7 +167,7 @@ export const Modal = memo(function Modal({
             <HeaderLayout leftContent={headerLeftContent} rightContent={headerRightContent} />
           </header>
         )}
-        <main className={`flex-grow overflow-y-auto space-y-4 p-3 ${bodyClassName}`}>{children}</main>
+        <main className={`flex-grow overflow-y-auto p-3 ${bodyClassName}`}>{children}</main>
         {!hideFooter && footerContent && (
           <footer className={`flex flex-shrink-0 justify-end space-x-3 border-t p-3 ${theme.inputBorder}`}>{footerContent}</footer>
         )}

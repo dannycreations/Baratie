@@ -6,15 +6,6 @@ import type { NotificationMessage, NotificationType } from '../app/constants';
 
 const DEBOUNCE_DELAY_MS = 300;
 
-export function clearNotifications(): void {
-  useNotificationStore.getState().setNotifications([]);
-}
-
-export function removeNotification(id: string): void {
-  const { notifications, setNotifications } = useNotificationStore.getState();
-  setNotifications(notifications.filter((notification) => notification.id !== id));
-}
-
 const debouncedShowNotification = debounce((message: string, type: NotificationType = 'info', title?: string, duration?: number): void => {
   const { notifications, setNotifications } = useNotificationStore.getState();
 
@@ -38,6 +29,15 @@ const debouncedShowNotification = debounce((message: string, type: NotificationT
     setNotifications([...notifications, newNotification]);
   }
 }, DEBOUNCE_DELAY_MS);
+
+export function clearNotifications(): void {
+  useNotificationStore.getState().setNotifications([]);
+}
+
+export function removeNotification(id: string): void {
+  const { notifications, setNotifications } = useNotificationStore.getState();
+  setNotifications(notifications.filter((notification) => notification.id !== id));
+}
 
 export function showNotification(message: string, type: NotificationType = 'info', title?: string, duration?: number): void {
   debouncedShowNotification(message, type, title, duration);

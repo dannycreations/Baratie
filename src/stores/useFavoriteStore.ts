@@ -10,6 +10,15 @@ interface FavoriteState {
   readonly toggle: (type: symbol) => void;
 }
 
+function selectFavorites(state: FavoriteState): readonly symbol[] {
+  return state.favorites;
+}
+
+function saveFavoritesToStorage(favorites: readonly symbol[]): void {
+  const favStrings = favorites.map((favorite) => ingredientRegistry.getStringFromSymbol(favorite)).filter((str): str is string => str != null);
+  storage.set(STORAGE_FAVORITES, favStrings, 'Favorite Ingredients');
+}
+
 export const useFavoriteStore = create<FavoriteState>()(
   subscribeWithSelector(function (set) {
     return {
@@ -26,14 +35,5 @@ export const useFavoriteStore = create<FavoriteState>()(
     };
   }),
 );
-
-function selectFavorites(state: FavoriteState): readonly symbol[] {
-  return state.favorites;
-}
-
-function saveFavoritesToStorage(favorites: readonly symbol[]): void {
-  const favStrings = favorites.map((favorite) => ingredientRegistry.getStringFromSymbol(favorite)).filter((str): str is string => str != null);
-  storage.set(STORAGE_FAVORITES, favStrings, 'Favorite Ingredients');
-}
 
 useFavoriteStore.subscribe(selectFavorites, saveFavoritesToStorage);

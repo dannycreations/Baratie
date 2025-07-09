@@ -65,7 +65,7 @@ function formatArgument(arg: unknown): unknown {
 }
 
 export class Logger {
-  private readonly level: LogLevel;
+  public level: LogLevel;
 
   public constructor(level: LogLevel) {
     this.level = level;

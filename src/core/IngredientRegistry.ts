@@ -1,4 +1,5 @@
 import { logger } from '../app/container';
+import { useIngredientStore } from '../stores/useIngredientStore';
 import { InputType } from './InputType';
 
 export interface Ingredient {
@@ -163,5 +164,7 @@ export class IngredientRegistry {
         name: definition.name,
       });
     }
+
+    useIngredientStore.getState().refreshRegistry();
   }
 }

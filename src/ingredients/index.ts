@@ -4,4 +4,4 @@ import { REPEAT_STEP_DEFINITION } from './repeatStep';
 
 import type { IngredientDefinition } from '../core/IngredientRegistry';
 
-export const internalIngredients = [CUSTOM_INPUT_DEFINITION, CUSTOM_OUTPUT_DEFINITION, REPEAT_STEP_DEFINITION] as IngredientDefinition[];
+export const internalIngredients = [CUSTOM_INPUT_DEFINITION, CUSTOM_OUTPUT_DEFINITION, REPEAT_STEP_DEFINITION] as readonly IngredientDefinition[];

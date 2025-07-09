@@ -28,7 +28,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
 
 ::-webkit-scrollbar-button {

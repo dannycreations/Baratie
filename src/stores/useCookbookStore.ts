@@ -137,9 +137,9 @@ export const useCookbookStore = create<CookbookState>()(function (set, get) {
 
       if (saveAllRecipes(mergedList)) {
         const summary = [
-          added > 0 ? `${added} new recipes added.` : '',
-          updated > 0 ? `${updated} recipes updated.` : '',
-          skipped > 0 ? `${skipped} recipes skipped (older versions).` : '',
+          added > 0 ? `${added} new recipe${added > 1 ? 's' : ''} added.` : '',
+          updated > 0 ? `${updated} recipe${updated > 1 ? 's' : ''} updated.` : '',
+          skipped > 0 ? `${skipped} recipe${skipped > 1 ? 's' : ''} skipped (older versions).` : '',
         ]
           .filter(Boolean)
           .join(' ');

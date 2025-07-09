@@ -86,6 +86,11 @@ export interface AppTheme {
   readonly swatchErrorBg: string;
   readonly swatchSuccessBg: string;
   readonly swatchTextBg: string;
+  readonly tabActiveBg: string;
+  readonly tabActiveText: string;
+  readonly tabBorder: string;
+  readonly tabInactiveBg: string;
+  readonly tabInactiveText: string;
   readonly textareaBg: string;
   readonly textareaLinedBg: string;
   readonly textPlaceholder: string;
@@ -200,6 +205,11 @@ const DARK_THEME: AppTheme = {
   swatchErrorBg: 'bg-red-400',
   swatchSuccessBg: 'bg-green-400',
   swatchTextBg: 'bg-slate-100',
+  tabActiveBg: 'bg-slate-700/50',
+  tabActiveText: 'text-sky-400',
+  tabBorder: 'border-b-2 border-sky-500',
+  tabInactiveBg: 'hover:bg-slate-700/30',
+  tabInactiveText: 'text-slate-400 hover:text-slate-200',
   textareaBg: 'bg-slate-800',
   textareaLinedBg: 'bg-transparent',
   textPlaceholder: 'placeholder-slate-400',

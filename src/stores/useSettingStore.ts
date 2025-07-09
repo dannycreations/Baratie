@@ -1,14 +1,23 @@
 import { create } from 'zustand';
 
+export type SettingTab = 'appearance' | 'extensions';
+
 interface SettingState {
+  readonly activeTab: SettingTab;
   readonly isPanelOpen: boolean;
+  readonly setActiveTab: (tab: SettingTab) => void;
   readonly closePanel: () => void;
   readonly openPanel: () => void;
 }
 
 export const useSettingStore = create<SettingState>()(function (set) {
   return {
+    activeTab: 'appearance',
     isPanelOpen: false,
+
+    setActiveTab(tab) {
+      set({ activeTab: tab });
+    },
     closePanel() {
       set({ isPanelOpen: false });
     },

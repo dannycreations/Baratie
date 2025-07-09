@@ -1,5 +1,6 @@
 import { errorHandler, logger } from '../app/container';
 import { initCookbook } from '../helpers/cookbookHelper';
+import { initExtensions } from '../helpers/extensionHelper';
 import { initFavorites } from '../helpers/favoriteHelper';
 import { initIngPrefs } from '../helpers/ingredientHelper';
 import { useAppStore } from '../stores/useAppStore';
@@ -20,6 +21,10 @@ export class AppRegistry {
   public constructor() {
     this.systemTasks = [
       { message: 'Sharpening the cutlasses...' },
+      {
+        message: 'Loading supplies from other vessels...',
+        handler: () => initExtensions(),
+      },
       {
         message: 'Polishing the favorite knives...',
         handler: () => initFavorites(),
@@ -93,22 +98,9 @@ export class AppRegistry {
     useThemeStore.subscribe(
       (state) => state.theme,
       (theme) => {
-        const scrollbarStyleId = 'baratie-scrollbar-styles';
-        let styleTag = document.getElementById(scrollbarStyleId);
-        if (!styleTag) {
-          styleTag = document.createElement('style');
-          styleTag.id = scrollbarStyleId;
-          document.head.appendChild(styleTag);
-        }
-
-        styleTag.textContent = `
-          ::-webkit-scrollbar-thumb {
-            background: ${theme.scrollbarThumb};
-          }
-          ::-webkit-scrollbar-thumb:hover {
-            background: ${theme.scrollbarThumbHover};
-          }
-        `;
+        const style = document.documentElement.style;
+        style.setProperty('--scrollbar-thumb', theme.scrollbarThumb);
+        style.setProperty('--scrollbar-thumb-hover', theme.scrollbarThumbHover);
       },
       { fireImmediately: true },
     );

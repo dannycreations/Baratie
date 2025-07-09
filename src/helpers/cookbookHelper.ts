@@ -77,7 +77,15 @@ function sanitizeRecipe(recipeData: unknown, source: 'fileImport' | 'storage'): 
 
   if (validIngredients.length !== rawIngredients.length && rawIngredients.length > 0) {
     const ingredientDifference = rawIngredients.length - validIngredients.length;
-    showNotification(`Recipe '${name}' had ${ingredientDifference} invalid ingredients that were removed.`, 'warning', 'Recipe Load Notice', 7000);
+    const plural = ingredientDifference > 1;
+    const ingredientText = `ingredient${plural ? 's' : ''}`;
+    const verbText = plural ? 'were' : 'was';
+    showNotification(
+      `Recipe '${name}' had ${ingredientDifference} invalid ${ingredientText} that ${verbText} removed.`,
+      'warning',
+      'Recipe Load Notice',
+      7000,
+    );
   }
 
   return { id, name, ingredients: validIngredients, createdAt, updatedAt };

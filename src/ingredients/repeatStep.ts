@@ -61,83 +61,81 @@ const REPEAT_STEP_SPICES: readonly SpiceDefinition[] = [
   },
 ];
 
-async function runRepeatStep(input: InputType<unknown>, spices: RepeatStepSpices, context: IngredientContext): Promise<InputType<string> | null> {
-  const { delimiter, repeatCount, retriesOnError, retryDelayMs, intervalMs } = spices;
-
-  kitchen.setCookingInterval(intervalMs);
-
-  if (input.cast('string').getValue().trim() === '') {
-    return null;
-  }
-
-  const { ingredient: currentIngredient, currentIndex, initialInput, recipe, cookVersion } = context;
-
-  const ingredientsToRepeat = recipe.slice(0, currentIndex);
-
-  if (ingredientsToRepeat.length === 0) {
-    errorHandler.handle(
-      new AppError(
-        'REPEAT_STEP: No ingredients above to repeat.',
-        `Ingredient: ${currentIngredient.name}`,
-        "'Repeat Step' has no preceding ingredients to execute. Add one or more ingredients before it.",
-      ),
-      undefined,
-      {
-        notificationTitle: 'Configuration Warning',
-        shouldNotify: true,
-      },
-    );
-    return new InputType('');
-  }
-
-  for (let attempt = 0; attempt <= retriesOnError; attempt++) {
-    try {
-      const collectedOutputs: string[] = [];
-      for (let i = 0; i < repeatCount; i++) {
-        const { result: output, error } = await errorHandler.attemptAsync(
-          () => kitchen.cookSubRecipe(ingredientsToRepeat, initialInput, context, cookVersion),
-          `Ingredient: ${currentIngredient.name} > Repetition ${i + 1} (Attempt ${attempt + 1})`,
-          {
-            genericMessage: `An error occurred during repetition ${i + 1} for '${currentIngredient.name}'.`,
-            shouldNotify: false,
-          },
-        );
-
-        if (error) {
-          throw error;
-        }
-        if (output !== null) {
-          collectedOutputs.push(output);
-        }
-      }
-
-      const processedDelimiter = delimiter.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
-      return new InputType(collectedOutputs.join(processedDelimiter));
-    } catch (e) {
-      const isLastAttempt = attempt >= retriesOnError;
-      if (isLastAttempt) {
-        errorHandler.handle(e, `Ingredient: ${currentIngredient.name}`, {
-          defaultMessage: `The ingredient '${currentIngredient.name}' failed after ${retriesOnError} retries.`,
-          shouldNotify: true,
-        });
-        throw e;
-      } else {
-        logger.warn(`Repeat Step: Attempt ${attempt + 1} failed for '${currentIngredient.name}'. Retrying in ${retryDelayMs}ms...`, e);
-        if (retryDelayMs > 0) {
-          await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
-        }
-      }
-    }
-  }
-
-  return new InputType('');
-}
-
 export const REPEAT_STEP_DEFINITION: IngredientDefinition<RepeatStepSpices> = {
   id: KEY_REPEAT_STEP,
   name: 'Repeat Step',
   category: CATEGORY_FLOW,
   description: 'Repeats a sequence of preceding ingredients a specified number of times.',
   spices: REPEAT_STEP_SPICES,
-  run: runRepeatStep,
+  run: async (input: InputType<unknown>, spices: RepeatStepSpices, context: IngredientContext): Promise<InputType<string> | null> => {
+    const { delimiter, repeatCount, retriesOnError, retryDelayMs, intervalMs } = spices;
+
+    kitchen.setCookingInterval(intervalMs);
+
+    if (input.cast('string').getValue().trim() === '') {
+      return null;
+    }
+
+    const { ingredient: currentIngredient, currentIndex, initialInput, recipe, cookVersion } = context;
+
+    const ingredientsToRepeat = recipe.slice(0, currentIndex);
+
+    if (ingredientsToRepeat.length === 0) {
+      errorHandler.handle(
+        new AppError(
+          'REPEAT_STEP: No ingredients above to repeat.',
+          `Ingredient: ${currentIngredient.name}`,
+          "'Repeat Step' has no preceding ingredients to execute. Add one or more ingredients before it.",
+        ),
+        undefined,
+        {
+          notificationTitle: 'Configuration Warning',
+          shouldNotify: true,
+        },
+      );
+      return new InputType('');
+    }
+
+    for (let attempt = 0; attempt <= retriesOnError; attempt++) {
+      try {
+        const collectedOutputs: string[] = [];
+        for (let i = 0; i < repeatCount; i++) {
+          const { result: output, error } = await errorHandler.attemptAsync(
+            () => kitchen.cookSubRecipe(ingredientsToRepeat, initialInput, context, cookVersion),
+            `Ingredient: ${currentIngredient.name} > Repetition ${i + 1} (Attempt ${attempt + 1})`,
+            {
+              genericMessage: `An error occurred during repetition ${i + 1} for '${currentIngredient.name}'.`,
+              shouldNotify: false,
+            },
+          );
+
+          if (error) {
+            throw error;
+          }
+          if (output !== null) {
+            collectedOutputs.push(output);
+          }
+        }
+
+        const processedDelimiter = delimiter.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+        return new InputType(collectedOutputs.join(processedDelimiter));
+      } catch (e) {
+        const isLastAttempt = attempt >= retriesOnError;
+        if (isLastAttempt) {
+          errorHandler.handle(e, `Ingredient: ${currentIngredient.name}`, {
+            defaultMessage: `The ingredient '${currentIngredient.name}' failed after ${retriesOnError} retries.`,
+            shouldNotify: true,
+          });
+          throw e;
+        } else {
+          logger.warn(`Repeat Step: Attempt ${attempt + 1} failed for '${currentIngredient.name}'. Retrying in ${retryDelayMs}ms...`, e);
+          if (retryDelayMs > 0) {
+            await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+          }
+        }
+      }
+    }
+
+    return new InputType('');
+  },
 };
