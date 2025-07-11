@@ -8,7 +8,7 @@ function loadFilters(key: string, forCategories: boolean): symbol[] {
     return [];
   }
 
-  const validatedItems = storedItems.filter((item): item is string => typeof item === 'string');
+  const validatedItems = storedItems.filter((item) => typeof item === 'string');
 
   if (forCategories) {
     const allCategorySymbols = new Map<string, symbol>();
@@ -18,13 +18,13 @@ function loadFilters(key: string, forCategories: boolean): symbol[] {
         allCategorySymbols.set(description, ingredient.category);
       }
     }
-    return validatedItems.map((item) => allCategorySymbols.get(item)).filter((s): s is symbol => s !== undefined);
+    return validatedItems.map((item) => allCategorySymbols.get(item)).filter((s) => s !== undefined);
   }
 
-  return validatedItems.map((item) => ingredientRegistry.getSymbolFromString(item)).filter((s): s is symbol => s !== undefined);
+  return validatedItems.map((item) => ingredientRegistry.getSymbolFromString(item)).filter((s) => s !== undefined);
 }
 
-export function initIngPrefs(): void {
+export function initFilters(): void {
   const disabledCategories = loadFilters(STORAGE_CATEGORIES, true);
   const disabledIngredients = loadFilters(STORAGE_INGREDIENTS, false);
   useIngredientStore.getState().setFilters({ categories: disabledCategories, ingredients: disabledIngredients });

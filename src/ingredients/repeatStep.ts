@@ -119,16 +119,16 @@ export const REPEAT_STEP_DEFINITION: IngredientDefinition<RepeatStepSpices> = {
 
         const processedDelimiter = delimiter.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
         return new InputType(collectedOutputs.join(processedDelimiter));
-      } catch (e) {
+      } catch (error) {
         const isLastAttempt = attempt >= retriesOnError;
         if (isLastAttempt) {
-          errorHandler.handle(e, `Ingredient: ${ingredientName}`, {
+          errorHandler.handle(error, `Ingredient: ${ingredientName}`, {
             defaultMessage: `The ingredient '${ingredientName}' failed after ${retriesOnError} retries.`,
             shouldNotify: true,
           });
-          throw e;
+          throw error;
         } else {
-          logger.warn(`Repeat Step: Attempt ${attempt + 1} failed for '${ingredientName}'. Retrying in ${retryDelayMs}ms...`, e);
+          logger.warn(`Repeat Step: Attempt ${attempt + 1} failed for '${ingredientName}'. Retrying in ${retryDelayMs}ms...`, error);
           if (retryDelayMs > 0) {
             await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
           }

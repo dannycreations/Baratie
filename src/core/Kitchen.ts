@@ -119,14 +119,14 @@ export class Kitchen {
         useKitchenStore.getState().setCookingResult(result);
         this.scheduleNextCook();
       }
-    } catch (e) {
-      if (e instanceof CookCancelledError) {
-        logger.info(e.message);
+    } catch (error) {
+      if (error instanceof CookCancelledError) {
+        logger.info(error.message);
       } else {
         if (this.cookVersion === cookId) {
           this.scheduleNextCook();
         }
-        throw e;
+        throw error;
       }
     } finally {
       this.isCooking = false;
@@ -168,7 +168,7 @@ export class Kitchen {
     useKitchenStore.getState().setInputData(data);
   }
 
-  public setupAutoCook(): () => void {
+  public initAutoCook(): () => void {
     const handleStateChange = () => {
       if (useKitchenStore.getState().isAutoCookEnabled) {
         this.triggerCook();

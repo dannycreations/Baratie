@@ -58,8 +58,8 @@ function formatArgument(arg: unknown): unknown {
       }
       return value;
     });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
     return `[Unserializable object: ${message}]`;
   }
 }

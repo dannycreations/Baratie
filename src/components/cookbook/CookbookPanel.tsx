@@ -21,8 +21,8 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
   const resetPanel = useCookbookStore((state) => state.reset);
   const setName = useCookbookStore((state) => state.setName);
   const setQuery = useCookbookStore((state) => state.setQuery);
-  const addOrUpdate = useCookbookStore((state) => state.addOrUpdate);
-  const onDelete = useCookbookStore((state) => state.delete);
+  const upsertRecipe = useCookbookStore((state) => state.upsertRecipe);
+  const deleteRecipe = useCookbookStore((state) => state.deleteRecipe);
   const load = useCookbookStore((state) => state.load);
   const onMerge = useCookbookStore((state) => state.merge);
   const ingredients = useRecipeStore((state) => state.ingredients);
@@ -35,9 +35,9 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
   const isRecipeEmpty = ingredients.length === 0;
 
   const onSave = useCallback(() => {
-    addOrUpdate(nameInput, ingredients, activeRecipeId);
+    upsertRecipe(nameInput, ingredients, activeRecipeId);
     closePanel();
-  }, [addOrUpdate, closePanel, nameInput, ingredients, activeRecipeId]);
+  }, [upsertRecipe, closePanel, nameInput, ingredients, activeRecipeId]);
 
   const onLoad = useCallback(
     (id: string) => {
@@ -127,7 +127,7 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
         <CookbookLoad
           importRef={importRef}
           recipes={filtered}
-          onDelete={onDelete}
+          onDelete={deleteRecipe}
           onImport={onFileImport}
           onLoad={onLoad}
           onQueryChange={setQuery}
@@ -135,7 +135,7 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
           query={query}
         />
       ),
-    [panelMode, nameInput, isRecipeEmpty, onSave, setName, query, filtered, recipes.length, onFileImport, onDelete, onLoad, setQuery],
+    [panelMode, nameInput, isRecipeEmpty, onSave, setName, query, filtered, recipes.length, onFileImport, deleteRecipe, onLoad, setQuery],
   );
 
   return (

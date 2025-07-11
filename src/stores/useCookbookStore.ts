@@ -15,9 +15,9 @@ interface CookbookState {
   readonly panelMode: 'load' | 'save' | null;
   readonly query: string;
   readonly recipes: readonly RecipeBookItem[];
-  readonly addOrUpdate: (name: string, ingredients: readonly Ingredient[], activeRecipeId: string | null) => void;
+  readonly upsertRecipe: (name: string, ingredients: readonly Ingredient[], activeRecipeId: string | null) => void;
   readonly closePanel: () => void;
-  readonly delete: (id: string) => void;
+  readonly deleteRecipe: (id: string) => void;
   readonly load: (id: string) => RecipeBookItem | null;
   readonly merge: (recipesToImport: readonly RecipeBookItem[]) => void;
   readonly openPanel: (args: OpenPanelArgs) => void;
@@ -32,7 +32,7 @@ function findRecipeConflict(recipes: readonly RecipeBookItem[], name: string, ac
   return recipes.find((recipe) => recipe.name.toLowerCase() === lowerCaseName && recipe.id !== activeRecipeId);
 }
 
-function createOrUpdateRecipe(
+function upsertRecipe(
   recipes: readonly RecipeBookItem[],
   name: string,
   ingredients: readonly Ingredient[],
@@ -138,7 +138,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
   query: '',
   recipes: [],
 
-  addOrUpdate(name, ingredients, activeRecipeId) {
+  upsertRecipe(name, ingredients, activeRecipeId) {
     const { recipes } = get();
     const trimmedName = name.trim();
 
@@ -147,7 +147,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       return;
     }
 
-    const { updatedList, recipeId, userMessage } = createOrUpdateRecipe(recipes, trimmedName, ingredients, activeRecipeId);
+    const { updatedList, recipeId, userMessage } = upsertRecipe(recipes, trimmedName, ingredients, activeRecipeId);
 
     if (saveAllRecipes(updatedList)) {
       set({ recipes: updatedList });
@@ -160,7 +160,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     set({ isPanelOpen: false });
   },
 
-  delete(id) {
+  deleteRecipe(id) {
     const { recipes } = get();
     const recipeToDelete = recipes.find((recipe) => recipe.id === id);
     const updatedList = recipes.filter((recipe) => recipe.id !== id);

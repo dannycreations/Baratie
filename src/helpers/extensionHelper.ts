@@ -79,12 +79,12 @@ async function loadAndExecuteExtension(extension: Extension): Promise<void> {
       try {
         new Function('Baratie', scriptContent)(window.Baratie);
         successLogs.push(entryPoint);
-      } catch (e) {
-        const execError = e instanceof Error ? e.message : String(e);
+      } catch (error) {
+        const execError = error instanceof Error ? error.message : String(error);
         throw new Error(`Execution of ${entryPoint} failed: ${execError}`);
       }
-    } catch (e) {
-      const loadError = e instanceof Error ? e.message : String(e);
+    } catch (error) {
+      const loadError = error instanceof Error ? error.message : String(error);
       errorLogs.push(loadError);
     }
   }
@@ -130,7 +130,7 @@ function parseGitHubUrl(url: string): { owner: string; repo: string } | null {
   return null;
 }
 
-export function initExtensions(): void {
+export async function initExtensions(): Promise<void> {
   const rawExtensions = storage.get(STORAGE_EXTENSIONS, 'Extensions');
   const extensions: Extension[] = [];
 
@@ -144,9 +144,10 @@ export function initExtensions(): void {
 
   useExtensionStore.getState().setExtensions(extensions);
 
-  for (const ext of extensions) {
-    loadAndExecuteExtension(ext).catch((e) => logger.error(`Error loading extension on init: ${ext.name}`, e));
-  }
+  const loadingPromises = extensions.map((ext) =>
+    loadAndExecuteExtension(ext).catch((e) => logger.error(`Error loading extension on init: ${ext.name}`, e)),
+  );
+  await Promise.all(loadingPromises);
 }
 
 export async function addExtension(url: string): Promise<void> {
@@ -189,10 +190,10 @@ export async function addExtension(url: string): Promise<void> {
 
     addExtension(newExtension);
     await loadAndExecuteExtension(newExtension);
-  } catch (e) {
-    const errorMessage = e instanceof Error ? e.message : String(e);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     showNotification(`Failed to add extension: ${errorMessage}`, 'error', 'Add Extension Error');
-    logger.error(`Error adding extension from URL ${url}:`, e);
+    logger.error(`Error adding extension from URL ${url}:`, error);
     if (useExtensionStore.getState().extensions.find((ext) => ext.id === id)) {
       setExtensionStatus(id, 'error', [errorMessage]);
     }

@@ -5,7 +5,7 @@ import { StringInput } from './StringInput';
 import type { ChangeEvent, JSX } from 'react';
 
 interface SearchInputProps {
-  readonly ariaControl?: string;
+  readonly ariaControls?: string;
   readonly ariaLabel: string;
   readonly className?: string;
   readonly id: string;

@@ -139,7 +139,7 @@ export class InputType<T = unknown> {
             if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
               return new InputType(parsed);
             }
-          } catch (e) {}
+          } catch (error) {}
         }
         return handleFailure(new CastError(`Cannot cast to object from type ${typeof originalValue}`));
       }
@@ -154,7 +154,7 @@ export class InputType<T = unknown> {
             if (Array.isArray(parsed)) {
               return new InputType(parsed);
             }
-          } catch (e) {}
+          } catch (error) {}
         }
         return handleFailure(new CastError(`Cannot cast to array from type ${typeof originalValue}`));
       }
@@ -169,9 +169,9 @@ export class InputType<T = unknown> {
         if (typeof originalValue === 'string') {
           try {
             return new InputType(base64ToUint8Array(originalValue));
-          } catch (e) {
-            const error = e instanceof Error ? e : new Error(String(e));
-            return handleFailure(new CastError(`Value is not a valid Base64 string for Uint8Array conversion: ${error.message}`));
+          } catch (error) {
+            const inputError = error instanceof Error ? error : new Error(String(error));
+            return handleFailure(new CastError(`Value is not a valid Base64 string for Uint8Array conversion: ${inputError.message}`));
           }
         }
         return handleFailure(new CastError(`Cannot cast to Uint8Array from type ${typeof originalValue}`));
@@ -187,9 +187,9 @@ export class InputType<T = unknown> {
         if (typeof originalValue === 'string') {
           try {
             return new InputType(base64ToUint8Array(originalValue).buffer);
-          } catch (e) {
-            const error = e instanceof Error ? e : new Error(String(e));
-            return handleFailure(new CastError(`Value is not a valid Base64 string for ArrayBuffer conversion: ${error.message}`));
+          } catch (error) {
+            const inputError = error instanceof Error ? error : new Error(String(error));
+            return handleFailure(new CastError(`Value is not a valid Base64 string for ArrayBuffer conversion: ${inputError.message}`));
           }
         }
         return handleFailure(new CastError(`Cannot cast to ArrayBuffer from type ${typeof originalValue}`));

@@ -17,26 +17,6 @@ interface IngredientState {
   readonly toggleIngredient: (id: symbol) => void;
 }
 
-function selectIngredientFilters(state: IngredientState): {
-  readonly disabledCategories: readonly symbol[];
-  readonly disabledIngredients: readonly symbol[];
-} {
-  return { disabledCategories: state.disabledCategories, disabledIngredients: state.disabledIngredients };
-}
-
-function saveIngredientFiltersToStorage(filters: {
-  readonly disabledCategories: readonly symbol[];
-  readonly disabledIngredients: readonly symbol[];
-}): void {
-  const categoryStrings = filters.disabledCategories.map((cat) => cat.description).filter((desc): desc is string => desc != null);
-  const ingredientStrings = filters.disabledIngredients
-    .map((ing) => ingredientRegistry.getStringFromSymbol(ing))
-    .filter((str): str is string => str != null);
-
-  storage.set(STORAGE_CATEGORIES, categoryStrings, 'Disabled Categories');
-  storage.set(STORAGE_INGREDIENTS, ingredientStrings, 'Disabled Ingredients');
-}
-
 export const useIngredientStore = create<IngredientState>()(
   subscribeWithSelector((set) => ({
     disabledCategories: [],
@@ -78,4 +58,18 @@ export const useIngredientStore = create<IngredientState>()(
   })),
 );
 
-useIngredientStore.subscribe(selectIngredientFilters, saveIngredientFiltersToStorage);
+useIngredientStore.subscribe(
+  (state) => state.disabledCategories,
+  (categories) => {
+    const categoryStrings = categories.map((cat) => cat.description).filter((desc) => desc != null);
+    storage.set(STORAGE_CATEGORIES, categoryStrings, 'Disabled Categories');
+  },
+);
+
+useIngredientStore.subscribe(
+  (state) => state.disabledIngredients,
+  (ingredients) => {
+    const ingredientStrings = ingredients.map((ing) => ingredientRegistry.getStringFromSymbol(ing)).filter((str) => str != null);
+    storage.set(STORAGE_INGREDIENTS, ingredientStrings, 'Disabled Ingredients');
+  },
+);

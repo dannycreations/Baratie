@@ -15,9 +15,7 @@ export class AppError extends Error {
   }
 }
 
-export interface AttemptOptions extends Partial<ErrorHandlerOptions> {}
-
-interface ErrorHandlerOptions {
+interface ErrorOptions {
   readonly defaultMessage?: string;
   readonly genericMessage?: string;
   readonly shouldLog?: boolean;
@@ -25,15 +23,22 @@ interface ErrorHandlerOptions {
   readonly shouldNotify?: boolean;
 }
 
+interface AttemptOptions extends Partial<ErrorOptions> {}
+
+interface AttemptResult<T, E> {
+  readonly error: E | AppError | null;
+  readonly result: T | null;
+}
+
 export class ErrorHandler {
-  private static readonly DEFAULT_ERROR_CONFIG: Readonly<ErrorHandlerOptions> = {
+  private static readonly DEFAULT_ERROR_CONFIG: Readonly<ErrorOptions> = {
     defaultMessage: 'An unexpected error occurred. Please try again, or check the console for details.',
     shouldLog: true,
     notificationTitle: 'Application Error',
     shouldNotify: true,
   };
 
-  public assert(condition: unknown, techMessage: string, context?: string, options: Partial<ErrorHandlerOptions> = {}): asserts condition {
+  public assert(condition: unknown, techMessage: string, context?: string, options: Partial<ErrorOptions> = {}): asserts condition {
     if (condition) {
       return;
     }
@@ -43,7 +48,7 @@ export class ErrorHandler {
     throw error;
   }
 
-  public attempt<T>(fn: () => T, context?: string, options?: AttemptOptions): { readonly error: AppError | Error | null; readonly result: T | null } {
+  public attempt<T, E = Error>(fn: () => T, context?: string, options?: AttemptOptions): AttemptResult<T, E> {
     try {
       const result = fn();
       return { result, error: null };
@@ -56,14 +61,9 @@ export class ErrorHandler {
     }
   }
 
-  public async attemptAsync<T>(
-    fn: () => T | Promise<T>,
-    context?: string,
-    options?: AttemptOptions,
-  ): Promise<{ readonly error: AppError | Error | null; readonly result: T | null }> {
+  public async attemptAsync<T, E = Error>(fn: () => T | Promise<T>, context?: string, options?: AttemptOptions): Promise<AttemptResult<T, E>> {
     try {
-      const potentialPromise = fn();
-      const result = potentialPromise instanceof Promise ? await potentialPromise : potentialPromise;
+      const result = await fn();
       return { result, error: null };
     } catch (error: unknown) {
       const handlerOptions = { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
@@ -74,7 +74,7 @@ export class ErrorHandler {
     }
   }
 
-  public handle(error: unknown, callerContext?: string, options: Partial<ErrorHandlerOptions> = {}): void {
+  public handle(error: unknown, callerContext?: string, options: Partial<ErrorOptions> = {}): void {
     const handlerOptions = { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
     const newError = this.buildError(error, callerContext, handlerOptions.defaultMessage, handlerOptions.genericMessage);
     const effectiveContext = newError.context || 'Application';

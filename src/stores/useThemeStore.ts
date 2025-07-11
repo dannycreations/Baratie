@@ -15,20 +15,12 @@ interface ThemeState {
   readonly setTheme: (id: ThemeId) => void;
 }
 
-const darkThemeConfig = APP_THEMES.find((t) => t.id === 'dark')!;
-
-function selectThemeName(state: ThemeState): ThemeId {
-  return state.id;
-}
-
-function saveThemeNameToStorage(themeName: ThemeId): void {
-  storage.set(STORAGE_THEME, themeName, 'Theme Preference');
-}
+const DEFAULT_DARK_THEME = APP_THEMES.find((t) => t.id === 'dark')!;
 
 export const useThemeStore = create<ThemeState>()(
   subscribeWithSelector((set) => {
-    let id = darkThemeConfig.id;
-    let theme = darkThemeConfig.theme;
+    let id = DEFAULT_DARK_THEME.id;
+    let theme = DEFAULT_DARK_THEME.theme;
 
     try {
       const stored = localStorage.getItem(STORAGE_THEME);
@@ -40,8 +32,8 @@ export const useThemeStore = create<ThemeState>()(
           theme = themeConfig.theme;
         }
       }
-    } catch (e) {
-      logger.warn('Could not load theme from storage, using default.');
+    } catch (error) {
+      logger.warn('Could not load theme from storage, using default.', error);
     }
 
     return {
@@ -49,10 +41,25 @@ export const useThemeStore = create<ThemeState>()(
       theme,
       setTheme(id: ThemeId) {
         const newTheme = APP_THEMES.find((t) => t.id === id)?.theme;
-        set({ theme: newTheme || darkThemeConfig.theme, id });
+        set({ theme: newTheme || DEFAULT_DARK_THEME.theme, id });
       },
     };
   }),
 );
 
-useThemeStore.subscribe(selectThemeName, saveThemeNameToStorage);
+useThemeStore.subscribe(
+  (state) => state.theme,
+  (theme) => {
+    const style = document.documentElement.style;
+    style.setProperty('--scrollbar-thumb', theme.scrollbarThumb);
+    style.setProperty('--scrollbar-thumb-hover', theme.scrollbarThumbHover);
+  },
+  { fireImmediately: true },
+);
+
+useThemeStore.subscribe(
+  (state) => state.id,
+  (themeName) => {
+    storage.set(STORAGE_THEME, themeName, 'Theme Preference');
+  },
+);

@@ -8,7 +8,6 @@ import { appRegistry, errorHandler, ingredientRegistry, logger } from './app/con
 import { InputType } from './core/InputType';
 import { LogLevel } from './core/Logger';
 import {
-  addOrUpdateRecipe,
   closeCookbook,
   deleteRecipe,
   exportAll,
@@ -21,6 +20,7 @@ import {
   saveAllRecipes,
   setRecipeName,
   setSearchQuery,
+  upsertRecipe,
 } from './helpers/cookbookHelper';
 import { addExtension, removeExtension } from './helpers/extensionHelper';
 import { toggleFavorite } from './helpers/favoriteHelper';
@@ -57,52 +57,6 @@ export type {
 
 export { create, React, ReactDOM, subscribeWithSelector };
 
-const BARATIE_HELPERS = {
-  cookbook: {
-    addOrUpdate: addOrUpdateRecipe,
-    close: closeCookbook,
-    delete: deleteRecipe,
-    exportAll,
-    exportSingle,
-    getAll: getAllRecipes,
-    importFromFile,
-    load: loadRecipe,
-    merge: mergeRecipes,
-    open: openCookbook,
-    saveAll: saveAllRecipes,
-    setName: setRecipeName,
-    setQuery: setSearchQuery,
-  },
-  extension: {
-    add: addExtension,
-    remove: removeExtension,
-  },
-  favorite: {
-    toggle: toggleFavorite,
-  },
-  file: {
-    download: triggerDownload,
-    readB64: readAsBase64,
-    readText: readAsText,
-  },
-  notification: {
-    show: showNotification,
-    remove: removeNotification,
-    clear: clearNotifications,
-  },
-  recipe: {
-    add: addIngredient,
-    clear: clearRecipe,
-    getActiveId: getActiveRecipeId,
-    getAll: getAllIngredients,
-    remove: removeIngredient,
-    reorder: reorderIngredients,
-    set: setRecipe,
-    setSpices: setIngredientSpices,
-    updateSpice: updateSpiceValue,
-  },
-} as const;
-
 const BARATIE_API = {
   logger,
   LogLevel,
@@ -110,7 +64,51 @@ const BARATIE_API = {
   app: appRegistry,
   error: errorHandler,
   ingredient: ingredientRegistry,
-  helpers: BARATIE_HELPERS,
+  helpers: {
+    cookbook: {
+      upsert: upsertRecipe,
+      close: closeCookbook,
+      delete: deleteRecipe,
+      exportAll,
+      exportSingle,
+      getAll: getAllRecipes,
+      importFromFile,
+      load: loadRecipe,
+      merge: mergeRecipes,
+      open: openCookbook,
+      saveAll: saveAllRecipes,
+      setName: setRecipeName,
+      setQuery: setSearchQuery,
+    },
+    extension: {
+      add: addExtension,
+      remove: removeExtension,
+    },
+    favorite: {
+      toggle: toggleFavorite,
+    },
+    file: {
+      download: triggerDownload,
+      readB64: readAsBase64,
+      readText: readAsText,
+    },
+    notification: {
+      show: showNotification,
+      remove: removeNotification,
+      clear: clearNotifications,
+    },
+    recipe: {
+      add: addIngredient,
+      clear: clearRecipe,
+      getActiveId: getActiveRecipeId,
+      getAll: getAllIngredients,
+      remove: removeIngredient,
+      reorder: reorderIngredients,
+      set: setRecipe,
+      setSpices: setIngredientSpices,
+      updateSpice: updateSpiceValue,
+    },
+  },
 } as const;
 
 declare global {

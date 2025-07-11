@@ -5,6 +5,7 @@ import { useThemeStore } from '../../../stores/useThemeStore';
 import type { ChangeEventHandler, InputHTMLAttributes, JSX, RefObject } from 'react';
 
 interface StringInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
+  readonly ariaControls?: string;
   readonly ariaLabel?: string;
   readonly className?: string;
   readonly id: string;
@@ -25,6 +26,7 @@ export const StringInput = memo(function StringInput({
   inputRef,
   disabled = false,
   ariaLabel,
+  ariaControls,
   ...rest
 }: StringInputProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);
@@ -59,6 +61,7 @@ export const StringInput = memo(function StringInput({
       placeholder={placeholder}
       onChange={onChange}
       aria-label={ariaLabel}
+      aria-controls={ariaControls}
       {...rest}
     />
   );

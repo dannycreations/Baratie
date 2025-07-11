@@ -53,7 +53,7 @@ export const SearchListLayout = memo(function SearchListLayout(props: SearchList
         <div className={props.searchWrapperClassName}>
           <SearchInput
             id={props.searchId!}
-            ariaControl={listId}
+            ariaControls={listId}
             ariaLabel={props.searchAriaLabel!}
             className={props.searchClassName}
             placeholder={props.searchPlaceholder}

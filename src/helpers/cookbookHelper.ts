@@ -108,13 +108,13 @@ function validateRecipe(name: string, ingredients: readonly Ingredient[]): strin
   return null;
 }
 
-export function addOrUpdateRecipe(name: string, ingredients: readonly Ingredient[], activeRecipeId: string | null): void {
+export function upsertRecipe(name: string, ingredients: readonly Ingredient[], activeRecipeId: string | null): void {
   const error = validateRecipe(name, ingredients);
   if (error) {
     showNotification(error, 'warning', 'Save Error');
     return;
   }
-  useCookbookStore.getState().addOrUpdate(name, ingredients, activeRecipeId);
+  useCookbookStore.getState().upsertRecipe(name, ingredients, activeRecipeId);
 }
 
 export function closeCookbook(): void {
@@ -122,7 +122,7 @@ export function closeCookbook(): void {
 }
 
 export function deleteRecipe(id: string): void {
-  useCookbookStore.getState().delete(id);
+  useCookbookStore.getState().deleteRecipe(id);
 }
 
 export function exportAll(recipes: readonly RecipeBookItem[]): void {
@@ -172,7 +172,7 @@ export async function importFromFile(file: File): Promise<RecipeBookItem[] | nul
 
   const recipes = (Array.isArray(jsonData) ? jsonData : [jsonData])
     .map((recipe) => sanitizeRecipe(recipe, 'fileImport'))
-    .filter((recipe): recipe is RecipeBookItem => recipe !== null);
+    .filter((recipe) => recipe !== null);
   if (recipes.length === 0) {
     showNotification('No valid recipes were found in the selected file.', 'warning', 'Import Notice');
     return null;
@@ -180,11 +180,9 @@ export async function importFromFile(file: File): Promise<RecipeBookItem[] | nul
   return recipes;
 }
 
-export function initCookbook(): void {
+export function initRecipes(): void {
   const recipes = storage.get(STORAGE_COOKBOOK, 'Saved Recipes');
-  const sanitized = (Array.isArray(recipes) ? recipes : [])
-    .map((recipe) => sanitizeRecipe(recipe, 'storage'))
-    .filter((recipe): recipe is RecipeBookItem => recipe !== null);
+  const sanitized = (Array.isArray(recipes) ? recipes : []).map((recipe) => sanitizeRecipe(recipe, 'storage')).filter((recipe) => recipe !== null);
   useCookbookStore.getState().setRecipes(sanitized);
 }
 

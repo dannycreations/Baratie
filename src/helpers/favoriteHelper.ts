@@ -10,7 +10,7 @@ export function initFavorites(): void {
     if (Array.isArray(parsedFavorites)) {
       favorites = parsedFavorites
         .map((item) => (typeof item === 'string' ? ingredientRegistry.getSymbolFromString(item) : undefined))
-        .filter((s): s is symbol => s !== undefined);
+        .filter((s) => s !== undefined);
     } else {
       errorHandler.handle(
         new AppError(

@@ -13,7 +13,6 @@ import { internalIngredients } from '../ingredients';
 import { useAppStore } from '../stores/useAppStore';
 import { useThemeStore } from '../stores/useThemeStore';
 import { appRegistry, errorHandler, ingredientRegistry, kitchen } from './container';
-import { APP_STYLES } from './styles';
 
 import type { JSX } from 'react';
 
@@ -21,27 +20,16 @@ export interface BaratieOptions {
   readonly disableIngredients?: boolean;
 }
 
-const GLOBAL_STYLE_ID = 'baratie-global-styles';
-
 function BaratieView(): JSX.Element {
   const isAppReady = useAppStore((state) => state.isInitialized);
   const theme = useThemeStore((state) => state.theme);
-
-  useEffect(() => {
-    if (!document.getElementById(GLOBAL_STYLE_ID)) {
-      const style = document.createElement('style');
-      style.id = GLOBAL_STYLE_ID;
-      style.textContent = APP_STYLES;
-      document.head.appendChild(style);
-    }
-  }, []);
 
   useEffect(() => {
     if (!isAppReady) {
       return;
     }
 
-    const unsubscribe = kitchen.setupAutoCook();
+    const unsubscribe = kitchen.initAutoCook();
     return () => unsubscribe();
   }, [isAppReady]);
 
