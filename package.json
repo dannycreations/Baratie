@@ -25,7 +25,7 @@
   "homepage": "https://github.com/dannycreations/baratie",
   "devDependencies": {
     "@changesets/cli": "^2.29.5",
-    "@ianvs/prettier-plugin-sort-imports": "^4.4.2",
+    "@ianvs/prettier-plugin-sort-imports": "^4.5.1",
     "@tailwindcss/vite": "^4.1.11",
     "@types/node": "22.15.34",
     "@types/react": "^19.1.8",
@@ -37,7 +37,7 @@
     "tailwindcss": "^4.1.11",
     "terser": "^5.43.1",
     "typescript": "^5.8.3",
-    "vite": "^7.0.3",
+    "vite": "^7.0.4",
     "vite-plugin-checker": "^0.10.0"
   },
   "peerDependencies": {
