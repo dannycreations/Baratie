@@ -55,8 +55,7 @@ function isPanelSignal(value: unknown): value is PanelControlSignal {
   if (typeof value !== 'object' || value === null || value instanceof InputType) {
     return false;
   }
-  const potentialSignal = value as { output?: unknown };
-  return potentialSignal.output instanceof InputType;
+  return 'output' in value && (value as { output: unknown }).output instanceof InputType;
 }
 
 class CookCancelledError extends Error {
@@ -218,10 +217,10 @@ export class Kitchen {
     let globalError = false;
     let hasWarnings = false;
 
-    for (let i = 0; i < recipe.length; i++) {
+    for (let index = 0; index < recipe.length; index++) {
       if (this.cookVersion !== cookId) throw new CookCancelledError();
 
-      const ingredient = recipe[i];
+      const ingredient = recipe[index];
       const definition = ingredientRegistry.getIngredient(ingredient.name);
       if (!definition) {
         errorHandler.handle(
@@ -242,7 +241,7 @@ export class Kitchen {
         definition,
         cookedData,
         recipe,
-        i,
+        index,
         initialInput,
         cookId,
       );
@@ -338,9 +337,9 @@ export class Kitchen {
   }
 
   private triggerCook(): void {
-    this.cook().catch((e) => {
-      if (!(e instanceof CookCancelledError)) {
-        logger.error('Error during automatic cook execution:', e);
+    this.cook().catch((error) => {
+      if (!(error instanceof CookCancelledError)) {
+        logger.error('Error during automatic cook execution:', error);
       }
     });
   }

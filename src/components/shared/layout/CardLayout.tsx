@@ -27,7 +27,7 @@ export const CardLayout = memo(function CardLayout({
   const titleId = useId();
   const theme = useThemeStore((state) => state.theme);
 
-  const finalHeaderClass = [
+  const headerClass = [
     'flex',
     'h-12',
     'flex-shrink-0',
@@ -40,14 +40,12 @@ export const CardLayout = memo(function CardLayout({
   ]
     .filter(Boolean)
     .join(' ');
-  const finalContentClass = ['flex-grow', 'overflow-auto', 'p-3', contentClassName].filter(Boolean).join(' ');
-  const finalContainerClass = ['flex', 'flex-col', 'overflow-hidden', 'rounded-lg', theme.cardBg, theme.shadowXl, className]
-    .filter(Boolean)
-    .join(' ');
+  const contentClass = ['flex-grow', 'overflow-auto', 'p-3', contentClassName].filter(Boolean).join(' ');
+  const containerClass = ['flex', 'flex-col', 'overflow-hidden', 'rounded-lg', theme.cardBg, theme.shadowXl, className].filter(Boolean).join(' ');
 
   return (
-    <section role="region" aria-live={ariaLive} aria-labelledby={titleId} className={finalContainerClass}>
-      <div className={finalHeaderClass}>
+    <section role="region" aria-live={ariaLive} aria-labelledby={titleId} className={containerClass}>
+      <div className={headerClass}>
         <HeaderLayout
           leftContent={
             <h2 id={titleId} className="text-lg font-semibold">
@@ -57,7 +55,7 @@ export const CardLayout = memo(function CardLayout({
           rightContent={headerActions}
         />
       </div>
-      <div ref={contentRef} className={finalContentClass}>
+      <div ref={contentRef} className={contentClass}>
         {children}
       </div>
     </section>

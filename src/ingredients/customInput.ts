@@ -29,7 +29,7 @@ const CUSTOM_INPUT_SPICES: readonly SpiceDefinition[] = [
   },
 ];
 
-export const CUSTOM_INPUT_DEFINITION: IngredientDefinition<CustomInputSpice> = {
+export const CUSTOM_INPUT_DEF: IngredientDefinition<CustomInputSpice> = {
   name: KEY_CUSTOM_INPUT,
   category: CATEGORY_FLOW,
   description: 'Controls the Input Panel for text, a binary file, or options for the next ingredient.',

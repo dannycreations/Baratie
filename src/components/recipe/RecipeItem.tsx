@@ -108,10 +108,10 @@ export const RecipeItem = memo(function RecipeItem({
     'items-stretch',
     'rounded-md',
     'text-sm',
-    theme.shadow,
     'transition-all',
     'duration-200',
     'ease-in-out',
+    theme.shadow,
     theme.itemBg,
     isDragged ? `z-10 scale-[0.97] opacity-60 !${theme.itemBgHovered} ${theme.shadow2xl}` : 'scale-100 opacity-100',
     statusBorder,
@@ -120,7 +120,7 @@ export const RecipeItem = memo(function RecipeItem({
     .filter(Boolean)
     .join(' ');
 
-  const grabHandleClasses = ['mr-2', 'cursor-grab', 'transition-colors', theme.textQuaternary, theme.groupHoverSecondary].filter(Boolean).join(' ');
+  const grabHandleClasses = `mr-2 cursor-grab transition-colors ${theme.textQuaternary} ${theme.groupHoverSecondary}`;
 
   const leftColumn = (
     <>
@@ -130,7 +130,7 @@ export const RecipeItem = memo(function RecipeItem({
         </span>
       </Tooltip>
       <Tooltip content={definition.name.description} position="top">
-        <span className={`cursor-default truncate pr-2 font-medium ${theme.textPrimary}`}>{ingredient.name.description}</span>
+        <span className={`truncate pr-2 font-medium cursor-default ${theme.textPrimary}`}>{ingredient.name.description}</span>
       </Tooltip>
     </>
   );
@@ -153,7 +153,7 @@ export const RecipeItem = memo(function RecipeItem({
       )}
       <TooltipButton
         aria-label={`Remove ingredient "${ingredient.name.description}" from recipe`}
-        className="opacity-50 hover:!opacity-100 group-hover:opacity-100"
+        className="opacity-50 group-hover:opacity-100 hover:!opacity-100"
         icon={<XIcon size={18} />}
         onClick={handleRemove}
         size="sm"
@@ -178,7 +178,7 @@ export const RecipeItem = memo(function RecipeItem({
       <ItemListLayout
         className="h-12 w-full cursor-default p-3"
         leftContent={leftColumn}
-        leftWrapperClassName="min-w-0 flex flex-grow items-center"
+        leftClass="min-w-0 flex flex-grow items-center"
         rightContent={rightColumn}
       />
       {hasSpices && (
@@ -195,7 +195,7 @@ export const RecipeItem = memo(function RecipeItem({
               onDoubleClick={(event: MouseEvent<HTMLDivElement>): void => event.stopPropagation()}
             >
               <div className="max-h-96 overflow-y-auto px-1">
-                <div className={`rounded-md border pl-3 pr-3 pt-3 ${theme.itemSpiceBg} ${theme.itemSpiceBorder}`}>
+                <div className={`rounded-md border p-3 pt-3 pl-3 pr-3 ${theme.itemSpiceBg} ${theme.itemSpiceBorder}`}>
                   <SpiceLayout currentSpices={ingredient.spices} ingredientDefinition={definition} onSpiceChange={handleSpiceChange} />
                 </div>
               </div>

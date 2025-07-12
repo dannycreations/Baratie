@@ -34,41 +34,34 @@ type SearchDisabledProps = {
   readonly showSearch: false;
 };
 
-type SearchListProps = BaseSearchListProps & (SearchEnabledProps | SearchDisabledProps);
+type SearchListLayoutProps = BaseSearchListProps & (SearchEnabledProps | SearchDisabledProps);
 
-export const SearchListLayout = memo(function SearchListLayout(props: SearchListProps): JSX.Element {
-  const {
-    containerClassName = 'flex h-full flex-col',
-    listContent,
-    listId,
-    listWrapperClassName = 'flex-grow overflow-y-auto',
-    showSearch = true,
-  } = props;
-
+export const SearchListLayout = memo(function SearchListLayout(props: SearchListLayoutProps): JSX.Element {
+  const { containerClassName = 'flex h-full flex-col', listContent, listId, listWrapperClassName = 'flex-grow overflow-y-auto' } = props;
   const listScrollRef = useOverflowScroll<HTMLDivElement>({ yClassName: 'pr-1' });
 
   return (
     <div className={containerClassName}>
-      {showSearch ? (
+      {props.showSearch !== false && (
         <div className={props.searchWrapperClassName}>
           <SearchInput
-            id={props.searchId!}
+            id={props.searchId}
             ariaControls={listId}
-            ariaLabel={props.searchAriaLabel!}
+            ariaLabel={props.searchAriaLabel}
             className={props.searchClassName}
             placeholder={props.searchPlaceholder}
-            searchTerm={props.searchTerm!}
-            onSearchChange={props.onSearchChange!}
+            searchTerm={props.searchTerm}
+            onSearchChange={props.onSearchChange}
           />
         </div>
-      ) : null}
+      )}
       <div
         ref={listScrollRef}
         id={listId}
         className={listWrapperClassName}
         role="region"
-        aria-live={showSearch ? 'polite' : undefined}
-        aria-relevant={showSearch ? 'all' : undefined}
+        aria-live={props.showSearch !== false ? 'polite' : undefined}
+        aria-relevant={props.showSearch !== false ? 'all' : undefined}
       >
         {listContent}
       </div>

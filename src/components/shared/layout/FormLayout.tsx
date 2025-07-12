@@ -28,29 +28,29 @@ export const FormLayout = memo(function FormLayout({
 }: FormLayoutProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);
 
-  const finalFieldSetClass = fieldSetClass ?? 'flex flex-col gap-y-1 gap-x-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start';
-  const finalLabelClass = labelClass ?? `font-medium text-sm ${theme.textSecondary}`;
-  const finalLabelWrapClass = labelWrapperClass ?? 'sm:flex-shrink-0';
-  const finalInputWrapperClass = inputWrapperClass ?? '';
+  const fieldSetClasses = fieldSetClass ?? 'flex flex-col gap-y-1 gap-x-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start';
+  const labelClasses = labelClass ?? `font-medium text-sm ${theme.textSecondary}`;
+  const labelWrapClasses = labelWrapperClass ?? 'sm:flex-shrink-0';
+  const inputWrapClasses = inputWrapperClass ?? '';
 
   const labelElement = (
-    <label htmlFor={inputId} className={finalLabelClass}>
+    <label htmlFor={inputId} className={labelClasses}>
       {label}:
     </label>
   );
 
   const labelContent = description ? (
-    <Tooltip className={finalLabelWrapClass.trim()} content={description} disabled={!description} position="top" tooltipClassName="max-w-[250px]">
+    <Tooltip className={labelWrapClasses.trim()} content={description} disabled={!description} position="top" tooltipClassName="max-w-[250px]">
       {labelElement}
     </Tooltip>
   ) : (
-    <span className={finalLabelWrapClass.trim()}>{labelElement}</span>
+    <span className={labelWrapClasses.trim()}>{labelElement}</span>
   );
 
   return (
-    <div className={finalFieldSetClass}>
+    <div className={fieldSetClasses}>
       {labelContent}
-      <div className={finalInputWrapperClass}>{children(inputId)}</div>
+      <div className={inputWrapClasses}>{children(inputId)}</div>
     </div>
   );
 });

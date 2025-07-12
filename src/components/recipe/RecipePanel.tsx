@@ -169,7 +169,7 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
   const content = useMemo(() => {
     if (ingredients.length === 0) {
       if (isDraggingIngredient) {
-        return <DropzoneLayout mode="full-area" text="Drop to add ingredient" variant="add" />;
+        return <DropzoneLayout mode="full" text="Drop to add ingredient" variant="add" />;
       }
       return (
         <EmptyView className="flex h-full flex-grow flex-col items-center justify-center p-3">
@@ -181,7 +181,7 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
     }
 
     return (
-      <>
+      <div role="list" aria-label="Current recipe steps" className="space-y-1.5">
         {ingredients.map((ingredient: Ingredient) => (
           <RecipeItem
             key={ingredient.id}
@@ -201,7 +201,7 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
           />
         ))}
         {isDraggingIngredient && <DropzoneLayout mode="placeholder" text="Drop to add ingredient" variant="add" />}
-      </>
+      </div>
     );
   }, [
     ingredients,
@@ -222,7 +222,6 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
 
   const listClasses = [
     'flex-grow',
-    'space-y-1.5',
     'overflow-y-auto',
     'transition-colors',
     'duration-200',

@@ -15,11 +15,9 @@ import { Modal } from '../shared/Modal';
 import { Tooltip } from '../shared/Tooltip';
 import { EmptyView } from '../shared/View';
 
-import type { ChangeEvent, JSX, KeyboardEvent } from 'react';
+import type { ChangeEvent, JSX, KeyboardEvent, MouseEvent } from 'react';
 import type { AppTheme } from '../../app/themes';
 import type { Extension } from '../../stores/useExtensionStore';
-import type { SettingTab } from '../../stores/useSettingStore';
-import type { ThemeId } from '../../stores/useThemeStore';
 
 interface TabButtonProps {
   readonly children: string;
@@ -58,8 +56,13 @@ const PalettePreview = memo(function PalettePreview({ theme }: PalettePreviewPro
 
   return (
     <div className="flex items-center space-x-1.5" aria-label="Theme color palette preview">
-      {swatchColors.map(({ class: colorClass, title }, i) => (
-        <div key={`${title}-${i}`} className={`h-4 w-4 rounded-full border ${theme.inputBorder} ${colorClass}`} title={title} aria-label={title} />
+      {swatchColors.map(({ class: colorClass, title }, index) => (
+        <div
+          key={`${title}-${index}`}
+          className={`h-4 w-4 rounded-full border ${theme.inputBorder} ${colorClass}`}
+          title={title}
+          aria-label={title}
+        />
       ))}
     </div>
   );
@@ -71,8 +74,13 @@ const AppearanceSettings = memo(function AppearanceSettings() {
   const setTheme = useThemeStore((state) => state.setTheme);
 
   const handleSelectTheme = useCallback(
-    (themeId: ThemeId) => {
-      setTheme(themeId);
+    (event: MouseEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>) => {
+      if (!(event.currentTarget instanceof HTMLDivElement)) return;
+      const rawThemeId = event.currentTarget.dataset.themeId;
+      const themeToSet = APP_THEMES.find((theme) => theme.id === rawThemeId);
+      if (themeToSet) {
+        setTheme(themeToSet.id);
+      }
     },
     [setTheme],
   );
@@ -108,7 +116,7 @@ const AppearanceSettings = memo(function AppearanceSettings() {
               tabIndex={isChecked ? 0 : -1}
               data-theme-id={item.id}
               className={radioClasses}
-              onClick={() => handleSelectTheme(item.id)}
+              onClick={handleSelectTheme}
             >
               <div className="flex items-center gap-4">
                 <span className={nameClasses}>{item.name}</span>
@@ -197,7 +205,11 @@ const ExtensionSettings = memo(function ExtensionSettings() {
   );
 
   const handleDeleteClick = useCallback(
-    (extensionId: string) => {
+    (event: MouseEvent<HTMLButtonElement>) => {
+      if (!(event.currentTarget instanceof HTMLButtonElement)) return;
+      const extensionId = event.currentTarget.dataset.extensionId;
+      if (!extensionId) return;
+
       if (deletingId === extensionId) {
         removeExtension(extensionId);
         setDeletingId(null);
@@ -213,7 +225,7 @@ const ExtensionSettings = memo(function ExtensionSettings() {
       <div>
         <p className={`text-sm ${theme.textTertiary}`}>
           Add external ingredients by providing a link to a public GitHub repository. The repository must contain a{' '}
-          <code className={`text-xs ${theme.itemSpiceBg} ${theme.textSecondary} p-1 rounded`}>manifest.json</code> file.
+          <code className={`rounded-md p-1 text-xs ${theme.itemSpiceBg} ${theme.textSecondary}`}>manifest.json</code> file.
         </p>
       </div>
 
@@ -239,31 +251,32 @@ const ExtensionSettings = memo(function ExtensionSettings() {
           <EmptyView>No extensions have been installed yet.</EmptyView>
         ) : (
           <ul className={`space-y-2 rounded-md border p-2 ${theme.inputBorder}`}>
-            {extensions.map((ext) => {
-              const isDeleting = deletingId === ext.id;
+            {extensions.map((extension) => {
+              const isDeleting = deletingId === extension.id;
               const deleteButtonTip = isDeleting ? 'Confirm Deletion' : 'Remove Extension';
-              const deleteButtonLabel = isDeleting ? `Confirm removal of extension ${ext.name}` : `Remove extension ${ext.name}`;
+              const deleteButtonLabel = isDeleting ? `Confirm removal of extension ${extension.name}` : `Remove extension ${extension.name}`;
               const deleteButtonClasses = isDeleting ? getConfirmClasses(theme) : undefined;
 
               return (
                 <li
-                  key={ext.id}
-                  className={`flex items-center justify-between rounded p-3 text-sm transition-colors ${theme.itemBg} ${theme.itemBgMutedHover}`}
+                  key={extension.id}
+                  className={`flex items-center justify-between rounded-md p-3 text-sm transition-colors ${theme.itemBg} ${theme.itemBgMutedHover}`}
                 >
                   <div className="flex flex-col gap-1">
-                    <span className={`font-medium ${theme.textPrimary}`}>{ext.name}</span>
-                    <span className={`text-xs ${theme.textTertiary}`}>{ext.id}</span>
+                    <span className={`font-medium ${theme.textPrimary}`}>{extension.name}</span>
+                    <span className={`text-xs ${theme.textTertiary}`}>{extension.id}</span>
                   </div>
                   <div className="flex items-center gap-4">
-                    <ExtensionItemStatus status={ext.status} errors={ext.errors} />
+                    <ExtensionItemStatus status={extension.status} errors={extension.errors} />
                     <TooltipButton
                       aria-label={deleteButtonLabel}
                       className={deleteButtonClasses}
+                      data-extension-id={extension.id}
                       icon={isDeleting ? <AlertTriangleIcon className={theme.errorText} size={18} /> : <Trash2Icon size={18} />}
                       size="sm"
                       tooltipContent={deleteButtonTip}
                       variant="danger"
-                      onClick={() => handleDeleteClick(ext.id)}
+                      onClick={handleDeleteClick}
                     />
                   </div>
                 </li>
@@ -283,9 +296,13 @@ export const SettingPanel = memo(function SettingPanel(): JSX.Element {
   const setActiveTab = useSettingStore((state) => state.setActiveTab);
   const theme = useThemeStore((state) => state.theme);
 
-  const handleTabClick = (tab: SettingTab) => {
-    setActiveTab(tab);
-  };
+  const showAppearanceTab = useCallback(() => {
+    setActiveTab('appearance');
+  }, [setActiveTab]);
+
+  const showExtensionsTab = useCallback(() => {
+    setActiveTab('extensions');
+  }, [setActiveTab]);
 
   const bodyContent = useMemo(() => {
     switch (activeTab) {
@@ -299,12 +316,12 @@ export const SettingPanel = memo(function SettingPanel(): JSX.Element {
   }, [activeTab]);
 
   return (
-    <Modal isOpen={isPanelOpen} onClose={closePanel} size="xl" title="Settings" contentClassName="max-h-[80vh] flex flex-col" bodyClassName="p-0">
+    <Modal isOpen={isPanelOpen} onClose={closePanel} size="xl" title="Settings" contentClassName="flex max-h-[80vh] flex-col" bodyClassName="p-0">
       <div role="tablist" aria-label="Settings categories" className={`flex border-b px-3 ${theme.inputBorder}`}>
-        <TabButton isActive={activeTab === 'appearance'} onClick={() => handleTabClick('appearance')}>
+        <TabButton isActive={activeTab === 'appearance'} onClick={showAppearanceTab}>
           Appearance
         </TabButton>
-        <TabButton isActive={activeTab === 'extensions'} onClick={() => handleTabClick('extensions')}>
+        <TabButton isActive={activeTab === 'extensions'} onClick={showExtensionsTab}>
           Extensions
         </TabButton>
       </div>

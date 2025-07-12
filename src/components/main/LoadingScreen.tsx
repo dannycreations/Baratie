@@ -25,6 +25,7 @@ export const LoadingScreen = memo(function LoadingScreen(): JSX.Element {
   ]
     .filter(Boolean)
     .join(' ');
+
   const titleClasses = ['mt-6', 'text-2xl', 'font-semibold', 'tracking-wider', isError ? theme.errorText : theme.textSecondary]
     .filter(Boolean)
     .join(' ');
@@ -37,7 +38,7 @@ export const LoadingScreen = memo(function LoadingScreen(): JSX.Element {
         ) : (
           <svg
             aria-hidden="true"
-            className={['h-12', 'w-12', 'animate-spin', theme.accentText].join(' ')}
+            className={`h-12 w-12 animate-spin ${theme.accentText}`}
             fill="none"
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
@@ -51,7 +52,7 @@ export const LoadingScreen = memo(function LoadingScreen(): JSX.Element {
           </svg>
         )}
         <h1 className={titleClasses}>{isError ? 'Kitchen on Fire!' : 'Opening the Baratie'}</h1>
-        <p key={message} className={['fade-in-text', 'mt-2', theme.textTertiary].join(' ')}>
+        <p key={message} className={`fade-in-text mt-2 ${theme.textTertiary}`}>
           {isError ? `Galley Disaster: ${message}` : message}
         </p>
       </div>

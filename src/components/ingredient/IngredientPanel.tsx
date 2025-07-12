@@ -159,7 +159,7 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
       const leftColumn = (
         <Tooltip content={ingredient.description} position="top" tooltipClassName="max-w-xs">
           <span
-            className={`cursor-default truncate pr-2 text-sm transition-colors duration-150 ${theme.textSecondary} ${theme.accentTextGroupHover}`}
+            className={`truncate pr-2 text-sm cursor-default transition-colors duration-150 ${theme.textSecondary} ${theme.accentTextGroupHover}`}
           >
             {ingredientName}
           </span>

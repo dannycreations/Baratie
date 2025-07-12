@@ -100,13 +100,13 @@ export const NotificationItem = memo(function NotificationItem({ notification }:
       <div className="flex items-start p-4">
         <div className="flex-shrink-0 pt-0.5">{renderIcon()}</div>
         <div className="ml-3 flex-1">
-          {notification.title && <h3 className={`font-semibold text-md ${theme.textPrimary}`}>{notification.title}</h3>}
+          {notification.title && <h3 className={`text-md font-semibold ${theme.textPrimary}`}>{notification.title}</h3>}
           <p className={messageClasses}>{notification.message}</p>
         </div>
         <div className="ml-4 flex-shrink-0">
           <Button
             aria-label="Close notification"
-            className={['-mr-1', '-mt-1', theme.textTertiary, theme.textPrimaryHover].join(' ')}
+            className={`-mt-1 -mr-1 ${theme.textTertiary} ${theme.textPrimaryHover}`}
             icon={<XIcon size={20} />}
             onClick={startExit}
             size="sm"
@@ -119,7 +119,7 @@ export const NotificationItem = memo(function NotificationItem({ notification }:
         <div className={`absolute inset-x-0 bottom-0 h-1 ${theme.itemBg}`}>
           <div
             key={`${notification.id}-${notification.resetAt ?? 0}`}
-            className={['h-full', 'progress-bar-fill', barBackgroundClass].join(' ')}
+            className={`progress-bar-fill h-full ${barBackgroundClass}`}
             style={{
               animationDuration: `${duration}ms`,
             }}

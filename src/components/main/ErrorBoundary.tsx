@@ -41,6 +41,7 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
   ]
     .filter(Boolean)
     .join(' ');
+
   const dialogClasses = [
     'w-full',
     'max-w-md',
@@ -67,13 +68,13 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
       className={backdropClasses}
     >
       <div className={dialogClasses}>
-        <div role="img" aria-label="Warning" className={['mb-4', 'text-5xl', theme.errorTextDark].join(' ')}>
+        <div role="img" aria-label="Warning" className={`mb-4 text-5xl ${theme.errorTextDark}`}>
           ⚠️
         </div>
-        <h2 id="error-dialog-title" className={['mb-3', 'text-2xl', 'font-bold', theme.errorText].join(' ')}>
+        <h2 id="error-dialog-title" className={`mb-3 text-2xl font-bold ${theme.errorText}`}>
           A Kitchen Catastrophe!
         </h2>
-        <p id={ERROR_DESCRIPTION_ID} className={['mb-6', theme.textSecondary].join(' ')}>
+        <p id={ERROR_DESCRIPTION_ID} className={`mb-6 ${theme.textSecondary}`}>
           A sudden squall has hit the galley! Reloading might calm the seas.
         </p>
         <Button

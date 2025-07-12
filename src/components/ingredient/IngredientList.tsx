@@ -62,7 +62,7 @@ export const IngredientList = memo(function IngredientList<T extends IngredientD
               id={buttonId}
               aria-controls={panelId}
               aria-expanded={isExpanded}
-              className={`flex h-12 w-full items-center justify-between p-3 text-left ${theme.itemBg} ${theme.textSecondary} ${theme.itemBgHover} focus:outline-none focus:ring-2 focus:ring-inset ${theme.accentRing}`}
+              className={`flex h-12 w-full items-center justify-between p-3 text-left focus:outline-none focus:ring-2 focus:ring-inset ${theme.itemBg} ${theme.textSecondary} ${theme.itemBgHover} ${theme.accentRing}`}
               onClick={() => onCategoryToggle(category)}
             >
               <span className="font-medium">{category.description}</span>

@@ -17,7 +17,7 @@ export interface Extension extends ExtensionManifest {
   readonly ingredients?: readonly symbol[];
 }
 
-type StorableExtension = Omit<Extension, 'status' | 'errors' | 'registeredIngredients'>;
+type StorableExtension = Omit<Extension, 'status' | 'errors' | 'ingredients'>;
 
 interface ExtensionState {
   readonly extensions: readonly Extension[];

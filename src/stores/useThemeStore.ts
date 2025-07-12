@@ -26,7 +26,7 @@ export const useThemeStore = create<ThemeState>()(
       const stored = localStorage.getItem(STORAGE_THEME);
       if (stored) {
         const potentialThemeName = JSON.parse(stored);
-        const themeConfig = APP_THEMES.find((t) => t.id === potentialThemeName);
+        const themeConfig = APP_THEMES.find((theme) => theme.id === potentialThemeName);
         if (themeConfig) {
           id = themeConfig.id;
           theme = themeConfig.theme;
@@ -40,7 +40,7 @@ export const useThemeStore = create<ThemeState>()(
       id,
       theme,
       setTheme(id: ThemeId) {
-        const newTheme = APP_THEMES.find((t) => t.id === id)?.theme;
+        const newTheme = APP_THEMES.find((theme) => theme.id === id)?.theme;
         set({ theme: newTheme || DEFAULT_DARK_THEME.theme, id });
       },
     };
@@ -53,6 +53,11 @@ useThemeStore.subscribe(
     const style = document.documentElement.style;
     style.setProperty('--scrollbar-thumb', theme.scrollbarThumb);
     style.setProperty('--scrollbar-thumb-hover', theme.scrollbarThumbHover);
+
+    const themeColorMeta = document.getElementById('theme-color-meta');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', theme.themeColor);
+    }
   },
   { fireImmediately: true },
 );

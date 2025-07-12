@@ -3,7 +3,7 @@ import { InputType } from '../core/InputType';
 
 import type { IngredientContext, IngredientDefinition, OutputPanelConfig, PanelControlConfig, PanelControlSignal } from '../core/IngredientRegistry';
 
-export const CUSTOM_OUTPUT_DEFINITION: IngredientDefinition<unknown> = {
+export const CUSTOM_OUTPUT_DEF: IngredientDefinition<unknown> = {
   name: KEY_CUSTOM_OUTPUT,
   category: CATEGORY_FLOW,
   description: 'Displays the output as plain text in the Output panel. Can be used to reset any custom output settings from other ingredients.',

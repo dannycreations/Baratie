@@ -11,7 +11,7 @@ import { HeaderLayout } from './layout/HeaderLayout';
 
 import type { JSX, MouseEvent, ReactNode } from 'react';
 
-type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'full';
 
 interface ModalProps {
   readonly bodyClassName?: string;
@@ -30,12 +30,12 @@ interface ModalProps {
   readonly onExited?: () => void;
 }
 
-const MODAL_SIZE_CLASS_MAP: Readonly<Record<ModalSize, string>> = {
+const MODAL_SIZE_MAP: Readonly<Record<ModalSize, string>> = {
   sm: 'max-w-md',
   md: 'max-w-lg',
   lg: 'max-w-xl',
   xl: 'max-w-2xl',
-  '2xl': 'max-w-4xl',
+  xxl: 'max-w-4xl',
   full: 'max-w-full sm:h-[90vh] sm:max-h-[90vh]',
 };
 
@@ -106,7 +106,7 @@ export const Modal = memo(function Modal({
     return null;
   }
 
-  const modalSizeClass = MODAL_SIZE_CLASS_MAP[size] || MODAL_SIZE_CLASS_MAP.lg;
+  const modalSizeClass = MODAL_SIZE_MAP[size] || MODAL_SIZE_MAP.lg;
   const modalBaseClasses = [
     'flex',
     'w-full',

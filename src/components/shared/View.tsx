@@ -118,9 +118,9 @@ export const ErrorView = memo(function ErrorView({ error, errorInfo }: ErrorView
     return null;
   }
 
-  const detailsClasses = ['max-h-48', 'overflow-y-auto', 'rounded', 'mt-6', 'p-3', 'text-left', 'text-xs', theme.itemBg].filter(Boolean).join(' ');
-  const summaryClasses = ['cursor-pointer', 'font-medium', theme.textTertiary, theme.textSecondaryHover].filter(Boolean).join(' ');
-  const preClasses = ['allow-text-selection', 'mt-2', 'whitespace-pre-wrap', theme.textSecondary].filter(Boolean).join(' ');
+  const detailsClasses = `max-h-48 overflow-y-auto rounded-md mt-6 p-3 text-left text-xs ${theme.itemBg}`;
+  const summaryClasses = `cursor-pointer font-medium ${theme.textTertiary} ${theme.textSecondaryHover}`;
+  const preClasses = `allow-text-selection mt-2 whitespace-pre-wrap ${theme.textSecondary}`;
 
   return (
     <details ref={detailsElementRef} className={detailsClasses}>

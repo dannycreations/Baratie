@@ -100,6 +100,7 @@ export interface AppTheme {
   readonly textSecondary: string;
   readonly textSecondaryHover: string;
   readonly textTertiary: string;
+  readonly themeColor: string;
   readonly tooltipArrowBottom: string;
   readonly tooltipArrowLeft: string;
   readonly tooltipArrowRight: string;
@@ -219,6 +220,7 @@ const DARK_THEME: AppTheme = {
   textSecondary: 'text-slate-200',
   textSecondaryHover: 'hover:text-slate-100',
   textTertiary: 'text-slate-400',
+  themeColor: '#0f172a',
   tooltipArrowBottom: 'border-b-slate-950/80',
   tooltipArrowLeft: 'border-l-slate-950/80',
   tooltipArrowRight: 'border-r-slate-950/80',

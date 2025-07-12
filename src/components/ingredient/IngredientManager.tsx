@@ -80,7 +80,7 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
         <div
           aria-expanded={isExpanded}
           aria-label={`Toggle Category ${categoryDescription} Details`}
-          className={`flex h-12 w-full cursor-pointer items-center justify-between p-3 ${theme.itemBg} ${theme.itemBgHover} focus:outline-none focus:ring-2 focus:ring-inset ${theme.accentRing}`}
+          className={`flex h-12 w-full cursor-pointer items-center justify-between p-3 focus:outline-none focus:ring-2 focus:ring-inset ${theme.itemBg} ${theme.itemBgHover} ${theme.accentRing}`}
           onClick={() => onToggle(category)}
           onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
             if (event.key === 'Enter' || event.key === ' ') {
@@ -161,7 +161,7 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
           <ItemListLayout
             className={`group h-11 rounded-md px-2 py-1.5 transition-colors duration-150 ${theme.itemBg} ${theme.itemBgMutedHover}`}
             leftContent={leftColumn}
-            leftWrapperClassName="min-w-0 flex-grow"
+            leftClass="min-w-0 flex-grow"
           />
         </li>
       );

@@ -44,11 +44,11 @@ function upsertRecipe(
   let userMessage: string;
   let recipeId: string;
 
-  if (recipeIndex !== -1) {
+  if (recipeIndex !== -1 && activeRecipeId) {
     const originalRecipe = updatedList[recipeIndex];
     updatedList[recipeIndex] = { ...originalRecipe, name, ingredients, updatedAt: now };
     userMessage = `Recipe '${name}' was updated.`;
-    recipeId = activeRecipeId!;
+    recipeId = activeRecipeId;
   } else {
     recipeId = crypto.randomUUID();
     const newRecipe: RecipeBookItem = { id: recipeId, name, ingredients, createdAt: now, updatedAt: now };
@@ -65,7 +65,7 @@ function mergeRecipeLists(
   recipesToImport: readonly RecipeBookItem[],
 ): { readonly mergedList: readonly RecipeBookItem[]; readonly added: number; readonly updated: number; readonly skipped: number } {
   const mergedList = [...existingRecipes];
-  const existingById = new Map<string, RecipeBookItem>(existingRecipes.map((r) => [r.id, r]));
+  const existingById = new Map<string, RecipeBookItem>(existingRecipes.map((recipe) => [recipe.id, recipe]));
   const existingNames = new Set<string>(existingRecipes.map((r) => r.name.toLowerCase()));
   let added = 0;
   let updated = 0;

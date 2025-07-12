@@ -61,7 +61,7 @@ export const CookbookItem = memo(function CookbookItem({ recipe, onLoad, onDelet
   const leftColumn = (
     <>
       <Tooltip content={recipe.name} position="top">
-        <p className={`cursor-default truncate font-medium text-md ${theme.textPrimary}`}>{recipe.name}</p>
+        <p className={`truncate font-medium text-md cursor-default ${theme.textPrimary}`}>{recipe.name}</p>
       </Tooltip>
       <p className={`text-xs ${theme.textTertiary}`}>
         Last Updated: {formatTimestamp(recipe.updatedAt)} ({recipe.ingredients.length} steps)
@@ -100,9 +100,9 @@ export const CookbookItem = memo(function CookbookItem({ recipe, onLoad, onDelet
       <ItemListLayout
         className={`flex h-11 items-center justify-between rounded-md p-3 transition-colors duration-150 ${theme.itemBg} ${theme.itemBgHover}`}
         leftContent={leftColumn}
-        leftWrapperClassName="min-w-0 flex-grow mr-2"
+        leftClass="min-w-0 flex-grow mr-2"
         rightContent={rightColumn}
-        rightWrapperClassName="flex flex-shrink-0 items-center space-x-2"
+        rightClass="flex flex-shrink-0 items-center space-x-2"
       />
     </li>
   );

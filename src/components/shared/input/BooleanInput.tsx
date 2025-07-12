@@ -23,11 +23,11 @@ export const BooleanInput = memo(function BooleanInput({
 }: BooleanInputProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);
 
-  const containerClasses = ['relative', 'inline-flex', 'cursor-pointer', 'items-center', className].filter(Boolean).join(' ');
-  const peerFocusClasses = ['peer-focus:ring-2', 'peer-focus:ring-offset-2', theme.accentRing, theme.inputBooleanFocusRing].filter(Boolean).join(' ');
+  const containerClasses = `relative inline-flex cursor-pointer items-center ${className}`;
+  const peerFocusClasses = `peer-focus:ring-2 peer-focus:ring-offset-2 ${theme.accentRing} ${theme.inputBooleanFocusRing}`;
 
   const switchClasses = [
-    "peer h-6 w-11 rounded-full after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:content-[''] after:transition-all peer-focus:outline-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
+    `peer h-6 w-11 rounded-full after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:content-[''] after:transition-all peer-focus:outline-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50`,
     theme.inputBg,
     theme.inputBooleanHandle,
     theme.accentBgChecked,
@@ -38,7 +38,7 @@ export const BooleanInput = memo(function BooleanInput({
     .join(' ');
 
   return (
-    <label htmlFor={id} className={containerClasses}>
+    <label htmlFor={id} className={containerClasses.trim()}>
       <input
         id={id}
         type="checkbox"

@@ -61,7 +61,7 @@ const REPEAT_STEP_SPICES: readonly SpiceDefinition[] = [
   },
 ];
 
-export const REPEAT_STEP_DEFINITION: IngredientDefinition<RepeatStepSpices> = {
+export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
   name: KEY_REPEAT_STEP,
   category: CATEGORY_FLOW,
   description: 'Repeats a sequence of preceding ingredients a specified number of times.',
@@ -99,12 +99,12 @@ export const REPEAT_STEP_DEFINITION: IngredientDefinition<RepeatStepSpices> = {
     for (let attempt = 0; attempt <= retriesOnError; attempt++) {
       try {
         const collectedOutputs: string[] = [];
-        for (let i = 0; i < repeatCount; i++) {
+        for (let repetitionIndex = 0; repetitionIndex < repeatCount; repetitionIndex++) {
           const { result: output, error } = await errorHandler.attemptAsync(
             () => kitchen.cookSubRecipe(ingredientsToRepeat, initialInput, context, cookVersion),
-            `Ingredient: ${ingredientName} > Repetition ${i + 1} (Attempt ${attempt + 1})`,
+            `Ingredient: ${ingredientName} > Repetition ${repetitionIndex + 1} (Attempt ${attempt + 1})`,
             {
-              genericMessage: `An error occurred during repetition ${i + 1} for '${ingredientName}'.`,
+              genericMessage: `An error occurred during repetition ${repetitionIndex + 1} for '${ingredientName}'.`,
               shouldNotify: false,
             },
           );

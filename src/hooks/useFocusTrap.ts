@@ -46,12 +46,12 @@ export function useFocusTrap({ elementRef, isActive }: FocusTrapOptions): void {
       }
 
       if (event.shiftKey) {
-        if (document.activeElement === firstElement) {
+        if (document.activeElement === firstElement && lastElement instanceof HTMLElement) {
           lastElement.focus();
           event.preventDefault();
         }
       } else {
-        if (document.activeElement === lastElement) {
+        if (document.activeElement === lastElement && firstElement instanceof HTMLElement) {
           firstElement.focus();
           event.preventDefault();
         }

@@ -17,9 +17,9 @@ interface TextareaInputProps
   readonly readOnly?: boolean;
   readonly showLineNumbers?: boolean;
   readonly spellCheck?: 'true' | 'false';
-  readonly textareaClassName?: string;
+  readonly textareaClass?: string;
   readonly value: string;
-  readonly wrapperClassName?: string;
+  readonly wrapperClass?: string;
   readonly onChange?: (value: string) => void;
 }
 
@@ -27,8 +27,8 @@ export const TextareaInput = memo(function TextareaInput({
   value,
   onChange,
   readOnly = false,
-  wrapperClassName = '',
-  textareaClassName = '',
+  wrapperClass = '',
+  textareaClass = '',
   placeholder = '',
   ariaLabel,
   spellCheck = 'false',
@@ -58,7 +58,7 @@ export const TextareaInput = memo(function TextareaInput({
 
   const handleTextChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => onChange?.(event.target.value), [onChange]);
 
-  const commonTextareaClasses = [
+  const commonTextClasses = [
     'h-full',
     'w-full',
     'resize-none',
@@ -70,8 +70,8 @@ export const TextareaInput = memo(function TextareaInput({
     theme.textPlaceholder,
   ];
 
-  const textareaBaseClasses = [
-    ...commonTextareaClasses,
+  const baseTextClasses = [
+    ...commonTextClasses,
     'rounded-md',
     'border',
     'disabled:opacity-50',
@@ -82,7 +82,7 @@ export const TextareaInput = memo(function TextareaInput({
     .filter(Boolean)
     .join(' ');
 
-  const textareaBoxClasses = [
+  const boxTextClasses = [
     'relative',
     'flex',
     'overflow-hidden',
@@ -96,14 +96,14 @@ export const TextareaInput = memo(function TextareaInput({
     .filter(Boolean)
     .join(' ');
 
-  const textareaLinedClasses = [...commonTextareaClasses, theme.textareaLinedBg].filter(Boolean).join(' ');
+  const linedTextClasses = [...commonTextClasses, theme.textareaLinedBg].filter(Boolean).join(' ');
 
   const renderStandard = (): JSX.Element => (
-    <div className={['relative', wrapperClassName].filter(Boolean).join(' ')} {...dropZoneProps}>
+    <div className={['relative', wrapperClass].filter(Boolean).join(' ')} {...dropZoneProps}>
       <textarea
         ref={textareaRef}
         aria-label={ariaLabel}
-        className={[textareaBaseClasses, textareaClassName].filter(Boolean).join(' ')}
+        className={[baseTextClasses, textareaClass].filter(Boolean).join(' ')}
         disabled={disabled}
         placeholder={placeholder}
         readOnly={readOnly}
@@ -123,7 +123,7 @@ export const TextareaInput = memo(function TextareaInput({
 
     const lineHeight = rest.style?.['lineHeight'] ?? '1.6';
 
-    const boxContainerClasses = [textareaBoxClasses, disabled && 'opacity-50', wrapperClassName, textareaClassName].filter(Boolean).join(' ');
+    const boxContainerClasses = [boxTextClasses, disabled && 'opacity-50', wrapperClass, textareaClass].filter(Boolean).join(' ');
     const gutterClasses = [
       'shrink-0',
       'select-none',
@@ -149,7 +149,7 @@ export const TextareaInput = memo(function TextareaInput({
         <textarea
           ref={textareaRef}
           aria-label={ariaLabel}
-          className={textareaLinedClasses}
+          className={linedTextClasses}
           disabled={disabled}
           placeholder={placeholder}
           readOnly={readOnly}

@@ -20,7 +20,7 @@ function isExtensionManifest(obj: unknown): obj is ExtensionManifest {
   if (typeof entry === 'string' && entry) {
     return true;
   }
-  if (Array.isArray(entry) && entry.length > 0 && entry.every((e) => typeof e === 'string')) {
+  if (Array.isArray(entry) && entry.length > 0 && entry.every((item) => typeof item === 'string')) {
     return true;
   }
   return false;
@@ -37,7 +37,7 @@ function isStorableExtension(obj: unknown): obj is StorableExtension {
   if (typeof entry === 'string') {
     return true;
   }
-  if (Array.isArray(entry) && entry.every((e) => typeof e === 'string')) {
+  if (Array.isArray(entry) && entry.every((item) => typeof item === 'string')) {
     return true;
   }
   return false;
@@ -53,12 +53,12 @@ async function loadAndExecuteExtension(extension: Extension): Promise<void> {
     return;
   }
 
-  const originalRegisterIngredient = ingredientRegistry.registerIngredient.bind(ingredientRegistry);
+  const originalRegister = ingredientRegistry.registerIngredient.bind(ingredientRegistry);
   const newlyRegisteredSymbols: symbol[] = [];
 
   ingredientRegistry.registerIngredient = <T>(definition: IngredientDefinition<T>) => {
     const defWithExtensionId = { ...definition, extensionId: id };
-    originalRegisterIngredient(defWithExtensionId);
+    originalRegister(defWithExtensionId);
     newlyRegisteredSymbols.push(defWithExtensionId.name);
   };
 
@@ -89,7 +89,7 @@ async function loadAndExecuteExtension(extension: Extension): Promise<void> {
     }
   }
 
-  ingredientRegistry.registerIngredient = originalRegisterIngredient;
+  ingredientRegistry.registerIngredient = originalRegister;
 
   if (newlyRegisteredSymbols.length > 0) {
     setIngredients(id, newlyRegisteredSymbols);
@@ -144,8 +144,8 @@ export async function initExtensions(): Promise<void> {
 
   useExtensionStore.getState().setExtensions(extensions);
 
-  const loadingPromises = extensions.map((ext) =>
-    loadAndExecuteExtension(ext).catch((e) => logger.error(`Error loading extension on init: ${ext.name}`, e)),
+  const loadingPromises = extensions.map((extension) =>
+    loadAndExecuteExtension(extension).catch((error) => logger.error(`Error loading extension on init: ${extension.name}`, error)),
   );
   await Promise.all(loadingPromises);
 }

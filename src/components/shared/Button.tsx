@@ -35,14 +35,14 @@ interface CopyButtonProps {
   readonly tooltipPosition?: TooltipProps['position'];
 }
 
-const BUTTON_TEXT_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
+const TEXT_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
   xs: 'px-2 py-1 text-xs',
   sm: 'px-2.5 py-1.5 text-sm',
   md: 'px-3.5 py-2 text-sm',
   lg: 'px-4 py-2.5 text-base',
 };
 
-const BUTTON_ICON_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
+const ICON_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
   xs: 'p-1',
   sm: 'p-1.5',
   md: 'p-2',
@@ -91,7 +91,7 @@ export const Button = memo(function Button({
   const shapeClass = children ? 'rounded-md' : 'rounded-full';
   const loadingClass = loading ? 'cursor-not-allowed opacity-60' : `${theme.shadowHoverLg} ${theme.shadowNoneDisabled}`;
   const variantClass = getVariantClasses(variant, theme);
-  const sizeClass = children ? BUTTON_TEXT_SIZE_MAP[size] : BUTTON_ICON_SIZE_MAP[size];
+  const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
   const widthClass = fullWidth ? 'w-full' : '';
 
   const finalClassName = [baseClasses, shapeClass, loadingClass, variantClass, sizeClass, widthClass, className].filter(Boolean).join(' ');

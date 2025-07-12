@@ -46,6 +46,7 @@ export function useConditionalTimer({ callback, duration, state = 'running', res
       }
     } else {
       clearTimer();
+      remainingTimeRef.current = duration;
     }
 
     return clearTimer;

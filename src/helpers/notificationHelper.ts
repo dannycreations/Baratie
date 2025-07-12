@@ -6,7 +6,7 @@ import type { NotificationMessage, NotificationType } from '../app/constants';
 
 const DEBOUNCE_DELAY_MS = 300;
 
-const debouncedShowNotification = debounce((message: string, type: NotificationType = 'info', title?: string, duration?: number): void => {
+const showNotifications = debounce((message: string, type: NotificationType = 'info', title?: string, duration?: number): void => {
   const { notifications, setNotifications } = useNotificationStore.getState();
 
   const details: Omit<NotificationMessage, 'id' | 'resetAt'> = {
@@ -40,5 +40,5 @@ export function removeNotification(id: string): void {
 }
 
 export function showNotification(message: string, type: NotificationType = 'info', title?: string, duration?: number): void {
-  debouncedShowNotification(message, type, title, duration);
+  showNotifications(message, type, title, duration);
 }

@@ -26,15 +26,15 @@ type OpenCookbookArgs = { readonly mode: 'load' } | { readonly mode: 'save'; rea
 
 function isRawIngredient(data: unknown): data is RawIngredient {
   if (typeof data !== 'object' || data === null) return false;
-  const d = data as Record<string, unknown>;
+  const obj = data as Record<string, unknown>;
   return (
-    typeof d.id === 'string' &&
-    d.id.trim() !== '' &&
-    typeof d.name === 'string' &&
-    d.name.trim() !== '' &&
-    typeof d.spices === 'object' &&
-    d.spices !== null &&
-    !Array.isArray(d.spices)
+    typeof obj.id === 'string' &&
+    obj.id.trim() !== '' &&
+    typeof obj.name === 'string' &&
+    obj.name.trim() !== '' &&
+    typeof obj.spices === 'object' &&
+    obj.spices !== null &&
+    !Array.isArray(obj.spices)
   );
 }
 
@@ -172,7 +172,7 @@ export async function importFromFile(file: File): Promise<RecipeBookItem[] | nul
 
   const recipes = (Array.isArray(jsonData) ? jsonData : [jsonData])
     .map((recipe) => sanitizeRecipe(recipe, 'fileImport'))
-    .filter((recipe) => recipe !== null);
+    .filter((recipe): recipe is RecipeBookItem => recipe !== null);
   if (recipes.length === 0) {
     showNotification('No valid recipes were found in the selected file.', 'warning', 'Import Notice');
     return null;
@@ -182,7 +182,9 @@ export async function importFromFile(file: File): Promise<RecipeBookItem[] | nul
 
 export function initRecipes(): void {
   const recipes = storage.get(STORAGE_COOKBOOK, 'Saved Recipes');
-  const sanitized = (Array.isArray(recipes) ? recipes : []).map((recipe) => sanitizeRecipe(recipe, 'storage')).filter((recipe) => recipe !== null);
+  const sanitized = (Array.isArray(recipes) ? recipes : [])
+    .map((recipe) => sanitizeRecipe(recipe, 'storage'))
+    .filter((recipe): recipe is RecipeBookItem => recipe !== null);
   useCookbookStore.getState().setRecipes(sanitized);
 }
 

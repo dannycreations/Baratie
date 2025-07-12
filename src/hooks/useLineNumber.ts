@@ -51,8 +51,8 @@ export function useLineNumber({ textAreaRef, logicalLines, showLineNumbers }: Li
 
     const visualLinesPerLine = currentLogicalLines.map((line) => Math.max(1, Math.ceil(line.length / maxCharsPerLine)));
     const cumulativeLines: number[] = [];
-    visualLinesPerLine.reduce((acc, val) => {
-      const newTotal = acc + val;
+    visualLinesPerLine.reduce((accumulator, value) => {
+      const newTotal = accumulator + value;
       cumulativeLines.push(newTotal);
       return newTotal;
     }, 0);

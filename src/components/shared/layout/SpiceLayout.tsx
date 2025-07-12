@@ -9,17 +9,16 @@ import { SelectInput } from '../input/SelectInput';
 import { StringInput } from '../input/StringInput';
 import { FormLayout } from './FormLayout';
 
-import type { ChangeEvent, JSX, ReactNode } from 'react';
+import type { ChangeEvent, FormEvent, JSX, ReactNode } from 'react';
 import type { IngredientDefinition, SpiceDefinition } from '../../../core/IngredientRegistry';
 
 interface SpiceRendererProps {
-  readonly isLast: boolean;
   readonly onSpiceChange: (spiceId: string, newValue: boolean | number | string, spice: SpiceDefinition) => void;
   readonly spice: SpiceDefinition;
   readonly value: unknown;
 }
 
-const SpiceRenderer = memo(function SpiceRenderer({ spice, value: rawValue, onSpiceChange, isLast }: SpiceRendererProps) {
+const SpiceRenderer = memo(function SpiceRenderer({ spice, value: rawValue, onSpiceChange }: SpiceRendererProps) {
   const theme = useThemeStore((state) => state.theme);
 
   const handleBooleanChange = useCallback(
@@ -90,10 +89,9 @@ const SpiceRenderer = memo(function SpiceRenderer({ spice, value: rawValue, onSp
   };
 
   const isBoolean = spice.type === 'boolean';
-  const baseFieldSetClass = isBoolean
+  const fieldSetClass = isBoolean
     ? 'flex flex-row items-center justify-start gap-x-3'
     : 'flex flex-col gap-y-1 gap-x-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start';
-  const fieldSetClass = isLast ? `${baseFieldSetClass} pb-3` : baseFieldSetClass;
   const inputWrapperClass = isBoolean ? 'flex h-8 items-center' : 'w-full sm:w-auto sm:min-w-44 sm:flex-grow';
 
   return (
@@ -125,6 +123,10 @@ export const SpiceLayout = memo(function SpiceLayout({
   const theme = useThemeStore((state) => state.theme);
   const finalContainerClass = containerClassName || 'space-y-3';
 
+  const handleSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+  }, []);
+
   if (!ingredientDefinition.spices || ingredientDefinition.spices.length === 0) {
     return <p className={`text-sm italic ${theme.textTertiary}`}>This ingredient has no configurable options.</p>;
   }
@@ -136,17 +138,10 @@ export const SpiceLayout = memo(function SpiceLayout({
   }
 
   return (
-    <form
-      aria-label={`Options for ${ingredientDefinition.name.description}`}
-      className={finalContainerClass}
-      onSubmit={(event) => event.preventDefault()}
-      role="form"
-    >
-      {visibleSpices.map((spice, index) => {
+    <form aria-label={`Options for ${ingredientDefinition.name.description}`} className={finalContainerClass} onSubmit={handleSubmit} role="form">
+      {visibleSpices.map((spice) => {
         const rawValue = currentSpices[spice.id];
-        return (
-          <SpiceRenderer key={spice.id} isLast={index === visibleSpices.length - 1} spice={spice} value={rawValue} onSpiceChange={onSpiceChange} />
-        );
+        return <SpiceRenderer key={spice.id} spice={spice} value={rawValue} onSpiceChange={onSpiceChange} />;
       })}
     </form>
   );

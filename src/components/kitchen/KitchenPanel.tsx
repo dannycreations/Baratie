@@ -161,9 +161,9 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
             placeholder={inputPanelConfig?.placeholder || 'Place Raw Ingredients Here.'}
             showLineNumbers={true}
             spellCheck="false"
-            textareaClassName="font-mono"
+            textareaClass="font-mono"
             value={data}
-            wrapperClassName="flex-1 min-h-0"
+            wrapperClass="flex-1 min-h-0"
           />
         </>
       );
@@ -176,9 +176,9 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
         readOnly
         showLineNumbers={true}
         spellCheck="false"
-        textareaClassName="font-mono"
+        textareaClass="font-mono"
         value={data}
-        wrapperClassName="flex-1 min-h-0"
+        wrapperClass="flex-1 min-h-0"
       />
     );
   }, [isInput, inputPanelConfig, ingredients, onSpiceChange, onFileSelect, data, outputPanelConfig]);
