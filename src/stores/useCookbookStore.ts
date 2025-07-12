@@ -7,21 +7,21 @@ import { useRecipeStore } from './useRecipeStore';
 
 import type { Ingredient, RecipeBookItem } from '../core/IngredientRegistry';
 
-type OpenPanelArgs = { mode: 'load' } | { mode: 'save'; readonly ingredients: readonly Ingredient[] };
+type OpenModalArgs = { mode: 'load' } | { mode: 'save'; readonly ingredients: readonly Ingredient[] };
 
 interface CookbookState {
-  readonly isPanelOpen: boolean;
+  readonly isModalOpen: boolean;
   readonly nameInput: string;
-  readonly panelMode: 'load' | 'save' | null;
+  readonly modalMode: 'load' | 'save' | null;
   readonly query: string;
   readonly recipes: readonly RecipeBookItem[];
   readonly upsertRecipe: (name: string, ingredients: readonly Ingredient[], activeRecipeId: string | null) => void;
-  readonly closePanel: () => void;
+  readonly closeModal: () => void;
   readonly deleteRecipe: (id: string) => void;
   readonly load: (id: string) => RecipeBookItem | null;
   readonly merge: (recipesToImport: readonly RecipeBookItem[]) => void;
-  readonly openPanel: (args: OpenPanelArgs) => void;
-  readonly reset: () => void;
+  readonly openModal: (args: OpenModalArgs) => void;
+  readonly resetModal: () => void;
   readonly setName: (name: string) => void;
   readonly setQuery: (term: string) => void;
   readonly setRecipes: (recipes: readonly RecipeBookItem[]) => void;
@@ -132,9 +132,9 @@ function createInitialName(allRecipes: readonly RecipeBookItem[], ingredients: r
 }
 
 export const useCookbookStore = create<CookbookState>()((set, get) => ({
-  isPanelOpen: false,
+  isModalOpen: false,
   nameInput: '',
-  panelMode: null,
+  modalMode: null,
   query: '',
   recipes: [],
 
@@ -156,8 +156,8 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     }
   },
 
-  closePanel() {
-    set({ isPanelOpen: false });
+  closeModal() {
+    set({ isModalOpen: false });
   },
 
   deleteRecipe(id) {
@@ -206,22 +206,22 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     }
   },
 
-  openPanel(args) {
+  openModal(args) {
     const { mode } = args;
     let initialName = '';
     if (mode === 'save') {
       initialName = createInitialName(get().recipes, args.ingredients);
     }
     set({
-      isPanelOpen: true,
+      isModalOpen: true,
       nameInput: initialName,
-      panelMode: mode,
+      modalMode: mode,
       query: '',
     });
   },
 
-  reset() {
-    set({ nameInput: '', panelMode: null, query: '' });
+  resetModal() {
+    set({ nameInput: '', modalMode: null, query: '' });
   },
 
   setName(name) {

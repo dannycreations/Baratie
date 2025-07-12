@@ -49,7 +49,7 @@ export const useThemeStore = create<ThemeState>()(
 
 useThemeStore.subscribe(
   (state) => state.theme,
-  (theme) => {
+  (theme, prevTheme) => {
     const style = document.documentElement.style;
     style.setProperty('--scrollbar-thumb', theme.scrollbarThumb);
     style.setProperty('--scrollbar-thumb-hover', theme.scrollbarThumbHover);
@@ -58,6 +58,12 @@ useThemeStore.subscribe(
     if (themeColorMeta) {
       themeColorMeta.setAttribute('content', theme.themeColor);
     }
+
+    const body = document.body;
+    if (prevTheme) {
+      body.classList.remove(prevTheme.pageBg, prevTheme.pageText);
+    }
+    body.classList.add(theme.pageBg, theme.pageText);
   },
   { fireImmediately: true },
 );

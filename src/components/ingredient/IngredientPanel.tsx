@@ -28,9 +28,11 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
   const removeIngredient = useRecipeStore((state) => state.removeIngredient);
   const disabledCategories = useIngredientStore((state) => state.disabledCategories);
   const disabledIngredients = useIngredientStore((state) => state.disabledIngredients);
-  const openModal = useIngredientStore((state) => state.openModal);
+  const openIngredientModal = useIngredientStore((state) => state.openModal);
+  const isIngredientOpen = useIngredientStore((state) => state.isModalOpen);
   const registryVersion = useIngredientStore((state) => state.registryVersion);
-  const openSettingPanel = useSettingStore((state) => state.openPanel);
+  const openSettingModal = useSettingStore((state) => state.openModal);
+  const isSettingOpen = useSettingStore((state) => state.isModalOpen);
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
   const theme = useThemeStore((state) => state.theme);
 
@@ -120,24 +122,26 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
         <TooltipButton
           aria-label={`Manage ingredients. ${visibleIngredients} of ${totalIngredients} visible.`}
           icon={<PreferencesIcon size={18} />}
-          onClick={openModal}
+          onClick={openIngredientModal}
           size="sm"
           tooltipContent={`Manage Ingredients\n${visibleIngredients} of ${totalIngredients} visible`}
           tooltipPosition="bottom"
           variant="stealth"
+          tooltipDisabled={isIngredientOpen}
         />
         <TooltipButton
           aria-label="Open application settings"
           icon={<SettingsIcon size={18} />}
-          onClick={openSettingPanel}
+          onClick={openSettingModal}
           size="sm"
           tooltipContent="Settings, Appearance & Extensions"
           tooltipPosition="bottom"
           variant="stealth"
+          tooltipDisabled={isSettingOpen}
         />
       </>
     ),
-    [totalIngredients, visibleIngredients, openModal, openSettingPanel],
+    [totalIngredients, visibleIngredients, openIngredientModal, openSettingModal, isIngredientOpen, isSettingOpen],
   );
 
   const renderIngredient = useCallback(

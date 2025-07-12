@@ -118,7 +118,7 @@ export function upsertRecipe(name: string, ingredients: readonly Ingredient[], a
 }
 
 export function closeCookbook(): void {
-  useCookbookStore.getState().closePanel();
+  useCookbookStore.getState().closeModal();
 }
 
 export function deleteRecipe(id: string): void {
@@ -197,7 +197,7 @@ export function mergeRecipes(recipesToImport: readonly RecipeBookItem[]): void {
 }
 
 export function openCookbook(args: OpenCookbookArgs): void {
-  useCookbookStore.getState().openPanel(args);
+  useCookbookStore.getState().openModal(args);
 }
 
 export function saveAllRecipes(recipes: readonly RecipeBookItem[]): boolean {

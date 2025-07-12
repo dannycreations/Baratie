@@ -290,9 +290,9 @@ const ExtensionSettings = memo(function ExtensionSettings() {
 });
 
 export const SettingPanel = memo(function SettingPanel(): JSX.Element {
-  const isPanelOpen = useSettingStore((state) => state.isPanelOpen);
+  const isModalOpen = useSettingStore((state) => state.isModalOpen);
   const activeTab = useSettingStore((state) => state.activeTab);
-  const closePanel = useSettingStore((state) => state.closePanel);
+  const closeModal = useSettingStore((state) => state.closeModal);
   const setActiveTab = useSettingStore((state) => state.setActiveTab);
   const theme = useThemeStore((state) => state.theme);
 
@@ -316,7 +316,7 @@ export const SettingPanel = memo(function SettingPanel(): JSX.Element {
   }, [activeTab]);
 
   return (
-    <Modal isOpen={isPanelOpen} onClose={closePanel} size="xl" title="Settings" contentClassName="flex max-h-[80vh] flex-col" bodyClassName="p-0">
+    <Modal isOpen={isModalOpen} onClose={closeModal} size="xl" title="Settings" contentClassName="flex max-h-[80vh] flex-col" bodyClassName="p-0">
       <div role="tablist" aria-label="Settings categories" className={`flex border-b px-3 ${theme.inputBorder}`}>
         <TabButton isActive={activeTab === 'appearance'} onClick={showAppearanceTab}>
           Appearance

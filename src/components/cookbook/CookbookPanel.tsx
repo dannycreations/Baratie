@@ -12,13 +12,13 @@ import { CookbookSave } from './CookbookSave';
 import type { ChangeEvent, JSX } from 'react';
 
 export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
-  const isPanelOpen = useCookbookStore((state) => state.isPanelOpen);
-  const panelMode = useCookbookStore((state) => state.panelMode);
+  const isModalOpen = useCookbookStore((state) => state.isModalOpen);
+  const modalMode = useCookbookStore((state) => state.modalMode);
   const nameInput = useCookbookStore((state) => state.nameInput);
   const query = useCookbookStore((state) => state.query);
   const recipes = useCookbookStore((state) => state.recipes);
-  const closePanel = useCookbookStore((state) => state.closePanel);
-  const resetPanel = useCookbookStore((state) => state.reset);
+  const closeModal = useCookbookStore((state) => state.closeModal);
+  const resetModal = useCookbookStore((state) => state.resetModal);
   const setName = useCookbookStore((state) => state.setName);
   const setQuery = useCookbookStore((state) => state.setQuery);
   const upsertRecipe = useCookbookStore((state) => state.upsertRecipe);
@@ -36,17 +36,17 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
 
   const onSave = useCallback(() => {
     upsertRecipe(nameInput, ingredients, activeRecipeId);
-    closePanel();
-  }, [upsertRecipe, closePanel, nameInput, ingredients, activeRecipeId]);
+    closeModal();
+  }, [upsertRecipe, closeModal, nameInput, ingredients, activeRecipeId]);
 
   const onLoad = useCallback(
     (id: string) => {
       const loaded = load(id);
       if (loaded) {
-        closePanel();
+        closeModal();
       }
     },
-    [load, closePanel],
+    [load, closeModal],
   );
 
   const onExportCurrent = useCallback(() => {
@@ -73,11 +73,11 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
 
   const filtered = useMemo(() => recipes.filter((recipe) => recipe.name.toLowerCase().includes(query.toLowerCase())), [recipes, query]);
 
-  const title = panelMode === 'save' ? 'Add to Cookbook' : 'Open from Cookbook';
+  const title = modalMode === 'save' ? 'Add to Cookbook' : 'Open from Cookbook';
 
   const headerActions = useMemo(() => {
     const isSaveDisabled = !nameInput.trim() || isRecipeEmpty;
-    return panelMode === 'save' ? (
+    return modalMode === 'save' ? (
       <>
         <TooltipButton
           aria-label="Export the current recipe to a file"
@@ -117,11 +117,11 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
         />
       </>
     );
-  }, [panelMode, nameInput, isRecipeEmpty, recipes.length, onExportCurrent, onSave, onTriggerImport, onExportAll]);
+  }, [modalMode, nameInput, isRecipeEmpty, recipes.length, onExportCurrent, onSave, onTriggerImport, onExportAll]);
 
   const bodyContent = useMemo(
     () =>
-      panelMode === 'save' ? (
+      modalMode === 'save' ? (
         <CookbookSave isRecipeEmpty={isRecipeEmpty} nameRef={nameRef} onNameChange={setName} onSave={onSave} nameInput={nameInput} />
       ) : (
         <CookbookLoad
@@ -135,16 +135,16 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
           query={query}
         />
       ),
-    [panelMode, nameInput, isRecipeEmpty, onSave, setName, query, filtered, recipes.length, onFileImport, deleteRecipe, onLoad, setQuery],
+    [modalMode, nameInput, isRecipeEmpty, onSave, setName, query, filtered, recipes.length, onFileImport, deleteRecipe, onLoad, setQuery],
   );
 
   return (
     <Modal
       contentClassName="max-h-[80vh]"
       headerActions={headerActions}
-      isOpen={isPanelOpen}
-      onClose={closePanel}
-      onExited={resetPanel}
+      isOpen={isModalOpen}
+      onClose={closeModal}
+      onExited={resetModal}
       size="lg"
       title={title}
       titleId="cookbook-modal-title"

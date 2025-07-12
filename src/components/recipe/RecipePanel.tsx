@@ -3,6 +3,7 @@ import { memo, useCallback, useId, useMemo, useState } from 'react';
 import { errorHandler, ingredientRegistry, kitchen } from '../../app/container';
 import { openCookbook } from '../../helpers/cookbookHelper';
 import { useDragMove } from '../../hooks/useDragMove';
+import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -27,6 +28,7 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
   const ingredientStatuses = useKitchenStore((state) => state.ingredientStatuses);
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
   const inputPanelIngId = useKitchenStore((state) => state.inputPanelIngId);
+  const isCookbookOpen = useCookbookStore((state) => state.isModalOpen);
   const theme = useThemeStore((state) => state.theme);
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -130,6 +132,7 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
         tooltipContent="Save to Cookbook"
         tooltipPosition="bottom"
         variant="stealth"
+        tooltipDisabled={isCookbookOpen}
       />,
       <TooltipButton
         key="load"
@@ -140,6 +143,7 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
         tooltipContent="Open Cookbook"
         tooltipPosition="bottom"
         variant="stealth"
+        tooltipDisabled={isCookbookOpen}
       />,
       <TooltipButton
         key="autocook"
@@ -164,7 +168,7 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
         variant="danger"
       />,
     ];
-  }, [ingredients.length, isAutoCookEnabled, clear, handleSave, handleLoad, theme]);
+  }, [ingredients.length, isAutoCookEnabled, clear, handleSave, handleLoad, theme, isCookbookOpen]);
 
   const content = useMemo(() => {
     if (ingredients.length === 0) {
