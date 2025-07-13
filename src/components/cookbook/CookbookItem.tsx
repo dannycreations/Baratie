@@ -61,7 +61,7 @@ export const CookbookItem = memo(function CookbookItem({ recipe, onLoad, onDelet
   const leftColumn = (
     <>
       <Tooltip content={recipe.name} position="top">
-        <p className={`cursor-default truncate text-base font-medium text-${theme.contentPrimary}`}>{recipe.name}</p>
+        <p className={`cursor-default truncate text-sm font-medium text-${theme.contentPrimary}`}>{recipe.name}</p>
       </Tooltip>
       <p className={`text-xs text-${theme.contentTertiary}`}>
         Last Updated: {formatTimestamp(recipe.updatedAt)} ({recipe.ingredients.length} steps)
@@ -98,7 +98,7 @@ export const CookbookItem = memo(function CookbookItem({ recipe, onLoad, onDelet
   return (
     <li className="list-none">
       <ItemListLayout
-        className={`h-11 rounded-md bg-${theme.surfaceTertiary} p-3 transition-colors duration-150 hover:bg-${theme.surfaceHover}`}
+        className={`h-16 rounded-md bg-${theme.surfaceTertiary} p-3 transition-colors duration-150 hover:bg-${theme.surfaceHover}`}
         leftContent={leftColumn}
         leftClass="grow min-w-0 mr-2"
         rightContent={rightColumn}

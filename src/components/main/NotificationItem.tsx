@@ -115,7 +115,7 @@ export const NotificationItem = memo(function NotificationItem({ notification }:
       <div className="flex items-start p-4">
         <div className="flex-shrink-0 pt-0.5">{renderIcon()}</div>
         <div className="ml-3 flex-1">
-          {notification.title && <h3 className={`text-base font-semibold text-${theme.contentPrimary}`}>{notification.title}</h3>}
+          {notification.title && <h3 className={`text-sm font-semibold text-${theme.contentPrimary}`}>{notification.title}</h3>}
           <p className={messageClasses}>{notification.message}</p>
         </div>
         <div className="ml-4 flex-shrink-0">

@@ -11,6 +11,7 @@ import { useThemeStore } from '../../stores/useThemeStore';
 import { Button, TooltipButton } from '../shared/Button';
 import { AlertTriangleIcon, CheckIcon, GitMergeIcon, Loader2Icon, Trash2Icon } from '../shared/Icon';
 import { StringInput } from '../shared/input/StringInput';
+import { ItemListLayout } from '../shared/layout/ItemListLayout';
 import { Modal } from '../shared/Modal';
 import { Tooltip } from '../shared/Tooltip';
 import { EmptyView } from '../shared/View';
@@ -36,9 +37,9 @@ const TabButton = memo(function TabButton({ children, isActive, onClick }: TabBu
     'rounded-t-md',
     'transition-colors',
     'duration-150',
-    'focus:outline-none',
+    'outline-none',
     isActive ? `border-b-2 border-${theme.infoBorder} text-${theme.infoFg}` : `border-b-2 border-transparent text-${theme.contentTertiary}`,
-    `focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-${theme.surfaceSecondary} focus-visible:ring-${theme.ring}`,
+    `focus:ring-2 focus:ring-offset-2 focus:ring-offset-${theme.surfaceSecondary} focus:ring-${theme.ring}`,
   ]
     .filter(Boolean)
     .join(' ');
@@ -83,10 +84,8 @@ const AppearanceSettings = memo(function AppearanceSettings() {
   const setTheme = useThemeStore((state) => state.setTheme);
 
   const handleSelectTheme = useCallback(
-    (event: MouseEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>) => {
-      if (!(event.currentTarget instanceof HTMLDivElement)) return;
-      const rawThemeId = event.currentTarget.dataset.themeId;
-      const themeToSet = APP_THEMES.find((theme) => theme.id === rawThemeId);
+    (themeId: string) => {
+      const themeToSet = APP_THEMES.find((theme) => theme.id === themeId);
       if (themeToSet) {
         setTheme(themeToSet.id);
       }
@@ -99,43 +98,72 @@ const AppearanceSettings = memo(function AppearanceSettings() {
       <p id="theme-group-label" className={`mb-3 text-sm text-${theme.contentTertiary}`}>
         Select a color theme for the application.
       </p>
-      <div className={`overflow-hidden rounded-md border border-${theme.borderPrimary}`}>
-        {APP_THEMES.map((item, index) => {
+      <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+        {APP_THEMES.map((item) => {
           const isChecked = id === item.id;
-          const radioClasses = [
-            'flex',
-            'cursor-pointer',
-            'items-center',
-            'justify-between',
-            'p-4',
-            'outline-none',
-            `hover:bg-${theme.surfaceHover}`,
-            `focus:ring-2 focus:ring-${theme.ring}`,
-            index > 0 && `border-t border-${theme.borderPrimary}`,
+          const leftContent = (
+            <div className="flex flex-col justify-center gap-1">
+              <span className={`font-medium text-sm ${isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`}`}>{item.name}</span>
+              <PalettePreview theme={item.theme} />
+            </div>
+          );
+
+          const rightContent = isChecked ? (
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-500/20">
+              <CheckIcon aria-hidden="true" className={`text-${theme.infoFg}`} size={16} />
+            </div>
+          ) : null;
+
+          const itemLayoutClasses = [
+            'h-16',
+            'rounded-md',
+            'p-3',
+            'border-2',
+            'transition-all',
+            'duration-150',
+            isChecked
+              ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
+              : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:bg-${theme.surfaceMuted} hover:border-${theme.borderSecondary}`,
           ]
             .filter(Boolean)
             .join(' ');
-          const nameClasses = ['font-medium', isChecked ? `text-${theme.infoFg}` : `text-${theme.contentSecondary}`].filter(Boolean).join(' ');
+
+          const liClasses = [
+            'list-none',
+            'cursor-pointer',
+            'rounded-md',
+            'outline-none',
+            `focus:ring-2 focus:ring-offset-2 focus:ring-offset-${theme.surfaceSecondary} focus:ring-${theme.ring}`,
+          ]
+            .filter(Boolean)
+            .join(' ');
 
           return (
-            <div
+            <li
               key={item.id}
               role="radio"
               aria-checked={isChecked}
-              tabIndex={isChecked ? 0 : -1}
-              data-theme-id={item.id}
-              className={radioClasses}
-              onClick={handleSelectTheme}
+              tabIndex={0}
+              className={liClasses}
+              onClick={() => handleSelectTheme(item.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleSelectTheme(item.id);
+                }
+              }}
             >
-              <div className="flex items-center gap-4">
-                <span className={nameClasses}>{item.name}</span>
-                <PalettePreview theme={item.theme} />
-              </div>
-              {isChecked && <CheckIcon aria-hidden="true" className={`text-${theme.infoFg}`} size={20} />}
-            </div>
+              <ItemListLayout
+                className={itemLayoutClasses}
+                leftContent={leftContent}
+                leftClass="grow min-w-0"
+                rightContent={rightContent}
+                rightClass="flex shrink-0 items-center"
+              />
+            </li>
           );
         })}
-      </div>
+      </ul>
     </div>
   );
 });
@@ -265,35 +293,45 @@ const ExtensionSettings = memo(function ExtensionSettings() {
         {extensions.length === 0 ? (
           <EmptyView>No extensions have been installed yet.</EmptyView>
         ) : (
-          <ul className={`space-y-2 rounded-md border border-${theme.borderPrimary} p-2`}>
+          <ul className="space-y-1.5">
             {extensions.map((extension) => {
               const isDeleting = deletingId === extension.id;
               const deleteButtonTip = isDeleting ? 'Confirm Deletion' : 'Remove Extension';
               const deleteButtonLabel = isDeleting ? `Confirm removal of extension ${extension.name}` : `Remove extension ${extension.name}`;
               const deleteButtonClasses = isDeleting ? getConfirmClasses(theme) : undefined;
 
+              const leftContent = (
+                <div className="flex flex-col">
+                  <span className={`font-medium text-${theme.contentPrimary}`}>{extension.name}</span>
+                  <span className={`text-xs text-${theme.contentTertiary}`}>{extension.id}</span>
+                </div>
+              );
+
+              const rightContent = (
+                <div className="flex items-center gap-4">
+                  <ExtensionItemStatus status={extension.status} errors={extension.errors} />
+                  <TooltipButton
+                    aria-label={deleteButtonLabel}
+                    className={deleteButtonClasses}
+                    data-extension-id={extension.id}
+                    icon={isDeleting ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
+                    size="sm"
+                    tooltipContent={deleteButtonTip}
+                    variant="danger"
+                    onClick={handleDelete}
+                  />
+                </div>
+              );
+
               return (
-                <li
-                  key={extension.id}
-                  className={`flex items-center justify-between rounded-md bg-${theme.surfaceTertiary} p-3 text-sm transition-colors hover:bg-${theme.surfaceMuted}`}
-                >
-                  <div className="flex flex-col gap-1">
-                    <span className={`font-medium text-${theme.contentPrimary}`}>{extension.name}</span>
-                    <span className={`text-xs text-${theme.contentTertiary}`}>{extension.id}</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <ExtensionItemStatus status={extension.status} errors={extension.errors} />
-                    <TooltipButton
-                      aria-label={deleteButtonLabel}
-                      className={deleteButtonClasses}
-                      data-extension-id={extension.id}
-                      icon={isDeleting ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
-                      size="sm"
-                      tooltipContent={deleteButtonTip}
-                      variant="danger"
-                      onClick={handleDelete}
-                    />
-                  </div>
+                <li key={extension.id} className="list-none">
+                  <ItemListLayout
+                    className={`h-16 rounded-md bg-${theme.surfaceTertiary} p-3 text-sm transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
+                    leftContent={leftContent}
+                    leftClass="grow min-w-0 mr-2"
+                    rightContent={rightContent}
+                    rightClass="flex shrink-0 items-center"
+                  />
                 </li>
               );
             })}

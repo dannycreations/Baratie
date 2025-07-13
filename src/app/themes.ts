@@ -72,10 +72,52 @@ const DARK_THEME: AppTheme = {
   favoriteFgHover: 'yellow-300',
 };
 
+const LIGHT_THEME: AppTheme = {
+  theme: '#FFF8F1',
+  backdrop: 'amber-100/70',
+  ring: 'orange-400',
+  contentPrimary: 'amber-900',
+  contentSecondary: 'amber-800',
+  contentTertiary: 'amber-600',
+  contentDisabled: 'amber-500',
+  surfacePrimary: 'amber-100',
+  surfaceSecondary: 'amber-200',
+  surfaceTertiary: 'amber-300',
+  surfaceHover: 'amber-400',
+  surfaceMuted: 'amber-300/50',
+  borderPrimary: 'amber-400',
+  borderSecondary: 'amber-500',
+  accentBg: 'orange-500',
+  accentBgHover: 'orange-400',
+  accentFg: 'black',
+  dangerBg: 'red-600/50',
+  dangerBgHover: 'red-600/20',
+  dangerFg: 'red-500',
+  dangerBorder: 'red-600',
+  warningBg: 'yellow-600/50',
+  warningFg: 'yellow-500',
+  warningBorder: 'yellow-600',
+  successBg: 'green-600/50',
+  successFg: 'green-500',
+  successBorder: 'green-600',
+  infoBg: 'orange-500/50',
+  infoFg: 'orange-600',
+  infoBorder: 'orange-500',
+  scrollbarThumb: '#FCD5B2',
+  scrollbarThumbHover: '#FDBA74',
+  favoriteFg: 'yellow-600',
+  favoriteFgHover: 'yellow-700',
+};
+
 export const APP_THEMES = [
   {
     id: 'dark',
     name: 'Baratie Dark',
     theme: DARK_THEME,
+  },
+  {
+    id: 'light',
+    name: 'Sunrise Light',
+    theme: LIGHT_THEME,
   },
 ] as const;

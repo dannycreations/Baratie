@@ -15,22 +15,19 @@ interface ThemeState {
   readonly setTheme: (id: ThemeId) => void;
 }
 
-const DEFAULT_DARK_THEME = APP_THEMES.find((t) => t.id === 'dark')!;
+const DEFAULT_THEME = APP_THEMES[0];
 
 export const useThemeStore = create<ThemeState>()(
   subscribeWithSelector((set) => {
-    let id = DEFAULT_DARK_THEME.id;
-    let theme = DEFAULT_DARK_THEME.theme;
+    let id: ThemeId = DEFAULT_THEME.id;
+    let theme = DEFAULT_THEME.theme;
 
     try {
-      const stored = localStorage.getItem(STORAGE_THEME);
-      if (stored) {
-        const potentialThemeName = JSON.parse(stored);
-        const themeConfig = APP_THEMES.find((theme) => theme.id === potentialThemeName);
-        if (themeConfig) {
-          id = themeConfig.id;
-          theme = themeConfig.theme;
-        }
+      const themeName = storage.get(STORAGE_THEME, 'Theme');
+      const themeConfig = APP_THEMES.find((theme) => theme.id === themeName);
+      if (themeConfig) {
+        id = themeConfig.id;
+        theme = themeConfig.theme;
       }
     } catch (error) {
       logger.warn('Could not load theme from storage, using default.', error);
@@ -41,7 +38,7 @@ export const useThemeStore = create<ThemeState>()(
       theme,
       setTheme(id: ThemeId) {
         const newTheme = APP_THEMES.find((theme) => theme.id === id)?.theme;
-        set({ theme: newTheme || DEFAULT_DARK_THEME.theme, id });
+        set({ theme: newTheme || DEFAULT_THEME.theme, id });
       },
     };
   }),

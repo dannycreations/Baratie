@@ -65,7 +65,7 @@ const SpiceRenderer = memo(function SpiceRenderer({ spice, value: rawValue, onSp
         return (
           <textarea
             id={id}
-            className={`w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-2 text-${theme.contentPrimary} outline-none placeholder:text-${theme.contentTertiary} focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`}
+            className={`w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-2 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} outline-none focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`}
             placeholder={spice.placeholder}
             rows={4}
             value={value}

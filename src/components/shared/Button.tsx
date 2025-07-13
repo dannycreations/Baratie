@@ -87,7 +87,7 @@ export const Button = memo(function Button({
     [disabled, loading, onClick],
   );
 
-  const baseClasses = `inline-flex items-center justify-center border font-medium outline-none transition-all duration-150 ease-in-out focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
+  const baseClasses = `inline-flex items-center justify-center border font-medium transition-all duration-150 ease-in-out outline-none focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
   const shapeClass = children ? 'rounded-md' : 'rounded-full';
   const loadingClass = loading ? 'opacity-60' : '';
   const variantClass = getVariantClasses(variant, theme);

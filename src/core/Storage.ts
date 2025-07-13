@@ -1,7 +1,7 @@
 import { errorHandler } from '../app/container';
 
 export class Storage {
-  public get(key: string, context: string, reviver?: (key: string, value: unknown) => unknown): unknown {
+  public get<T = unknown>(key: string, context: string, reviver?: (key: string, value: unknown) => unknown): T {
     const { result } = errorHandler.attempt(
       () => {
         const storedValue = localStorage.getItem(key);

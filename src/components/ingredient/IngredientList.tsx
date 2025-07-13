@@ -114,7 +114,7 @@ export const IngredientList = memo(function IngredientList<T extends IngredientD
             id={buttonId}
             aria-controls={panelId}
             aria-expanded={isExpanded}
-            className={`flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-3 text-left text-${theme.contentSecondary} outline-none hover:bg-${theme.surfaceHover} focus:outline-none`}
+            className={`flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-3 text-left text-${theme.contentSecondary} outline-none hover:bg-${theme.surfaceHover}`}
             onClick={() => handleCategoryToggle(category)}
           >
             {renderHeader ? renderHeader(category) : <span className="font-medium">{category.description}</span>}
