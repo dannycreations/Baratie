@@ -10,14 +10,14 @@ interface SearchInputProps {
   readonly className?: string;
   readonly id: string;
   readonly placeholder?: string;
-  readonly searchTerm: string;
-  readonly onSearchChange: (term: string) => void;
+  readonly query: string;
+  readonly onQueryChange: (query: string) => void;
 }
 
 export const SearchInput = memo(function SearchInput({
   id,
-  searchTerm,
-  onSearchChange,
+  query,
+  onQueryChange,
   className = '',
   placeholder = 'Search...',
   ariaLabel,
@@ -25,9 +25,9 @@ export const SearchInput = memo(function SearchInput({
 }: SearchInputProps): JSX.Element {
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      onSearchChange(event.target.value);
+      onQueryChange(event.target.value);
     },
-    [onSearchChange],
+    [onQueryChange],
   );
 
   return (
@@ -37,7 +37,7 @@ export const SearchInput = memo(function SearchInput({
       className={className}
       placeholder={placeholder}
       type="search"
-      value={searchTerm}
+      value={query}
       onChange={handleChange}
       {...rest}
     />

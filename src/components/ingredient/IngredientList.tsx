@@ -27,7 +27,7 @@ export const IngredientList = memo(function IngredientList<T extends IngredientD
   const [expandedCategories, setExpandedCategories] = useState<Set<symbol>>(new Set());
   const theme = useThemeStore((state) => state.theme);
 
-  const onCategoryToggle = useCallback((category: symbol) => {
+  const handleCategoryToggle = useCallback((category: symbol) => {
     setExpandedCategories((current) => {
       if (current.has(category)) {
         return new Set<symbol>();
@@ -55,7 +55,7 @@ export const IngredientList = memo(function IngredientList<T extends IngredientD
         const panelId = `${categoryIdBase}-content`;
 
         const header = renderCategoryHeader ? (
-          renderCategoryHeader(category, isExpanded, onCategoryToggle)
+          renderCategoryHeader(category, isExpanded, handleCategoryToggle)
         ) : (
           <h3 className="contents">
             <button
@@ -63,7 +63,7 @@ export const IngredientList = memo(function IngredientList<T extends IngredientD
               aria-controls={panelId}
               aria-expanded={isExpanded}
               className={`flex h-12 w-full items-center justify-between p-3 text-left focus:outline-none focus:ring-2 focus:ring-inset ${theme.itemBg} ${theme.textSecondary} ${theme.itemBgHover} ${theme.accentRing}`}
-              onClick={() => onCategoryToggle(category)}
+              onClick={() => handleCategoryToggle(category)}
             >
               <span className="font-medium">{category.description}</span>
               <ChevronRightIcon

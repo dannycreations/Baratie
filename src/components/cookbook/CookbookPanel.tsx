@@ -10,6 +10,7 @@ import { CookbookLoad } from './CookbookLoad';
 import { CookbookSave } from './CookbookSave';
 
 import type { ChangeEvent, JSX } from 'react';
+import type { RecipeBookItem } from '../../core/IngredientRegistry';
 
 export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
   const isModalOpen = useCookbookStore((state) => state.isModalOpen);
@@ -34,29 +35,29 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
 
   const isRecipeEmpty = ingredients.length === 0;
 
-  const onSave = useCallback(() => {
+  const handleSave = useCallback(() => {
     upsertRecipe(nameInput, ingredients, activeRecipeId);
     closeModal();
   }, [upsertRecipe, closeModal, nameInput, ingredients, activeRecipeId]);
 
-  const onLoad = useCallback(
+  const handleLoad = useCallback(
     (id: string) => {
-      const loaded = load(id);
-      if (loaded) {
+      const loadedRecipe = load(id);
+      if (loadedRecipe) {
         closeModal();
       }
     },
     [load, closeModal],
   );
 
-  const onExportCurrent = useCallback(() => {
+  const handleExportCurrent = useCallback(() => {
     exportSingle(nameInput, ingredients);
   }, [nameInput, ingredients]);
 
-  const onExportAll = useCallback(() => exportAll(recipes), [recipes]);
-  const onTriggerImport = useCallback(() => importRef.current?.click(), []);
+  const handleExportAll = useCallback(() => exportAll(recipes), [recipes]);
+  const handleTriggerImport = useCallback(() => importRef.current?.click(), []);
 
-  const onFileImport = useCallback(
+  const handleFileImport = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       const operationId = ++importOperationRef.current;
       const file = event.target.files?.[0];
@@ -71,7 +72,10 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
     [onMerge],
   );
 
-  const filtered = useMemo(() => recipes.filter((recipe) => recipe.name.toLowerCase().includes(query.toLowerCase())), [recipes, query]);
+  const filtered = useMemo<readonly RecipeBookItem[]>(
+    () => recipes.filter((recipe) => recipe.name.toLowerCase().includes(query.toLowerCase())),
+    [recipes, query],
+  );
 
   const title = modalMode === 'save' ? 'Add to Cookbook' : 'Open from Cookbook';
 
@@ -83,7 +87,7 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
           aria-label="Export the current recipe to a file"
           disabled={isSaveDisabled}
           icon={<DownloadCloudIcon size={20} />}
-          onClick={onExportCurrent}
+          onClick={handleExportCurrent}
           tooltipContent="Export Recipe to JSON"
           variant="stealth"
         />
@@ -91,7 +95,7 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
           aria-label="Save the current recipe to the cookbook"
           disabled={isSaveDisabled}
           icon={<SaveIcon size={20} />}
-          onClick={onSave}
+          onClick={handleSave}
           tooltipContent="Save to Browser Storage"
           variant="primary"
         >
@@ -103,7 +107,7 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
         <TooltipButton
           aria-label="Import recipes from a JSON file"
           icon={<UploadCloudIcon size={20} />}
-          onClick={onTriggerImport}
+          onClick={handleTriggerImport}
           tooltipContent="Import from JSON File"
           variant="stealth"
         />
@@ -111,31 +115,31 @@ export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
           aria-label="Export all saved recipes to a file"
           disabled={recipes.length === 0}
           icon={<DownloadCloudIcon size={20} />}
-          onClick={onExportAll}
+          onClick={handleExportAll}
           tooltipContent="Export All Saved Recipes"
           variant="stealth"
         />
       </>
     );
-  }, [modalMode, nameInput, isRecipeEmpty, recipes.length, onExportCurrent, onSave, onTriggerImport, onExportAll]);
+  }, [modalMode, nameInput, isRecipeEmpty, recipes.length, handleExportCurrent, handleSave, handleTriggerImport, handleExportAll]);
 
   const bodyContent = useMemo(
     () =>
       modalMode === 'save' ? (
-        <CookbookSave isRecipeEmpty={isRecipeEmpty} nameRef={nameRef} onNameChange={setName} onSave={onSave} nameInput={nameInput} />
+        <CookbookSave isRecipeEmpty={isRecipeEmpty} nameRef={nameRef} onNameChange={setName} onSave={handleSave} nameInput={nameInput} />
       ) : (
         <CookbookLoad
           importRef={importRef}
           recipes={filtered}
           onDelete={deleteRecipe}
-          onImport={onFileImport}
-          onLoad={onLoad}
+          onImport={handleFileImport}
+          onLoad={handleLoad}
           onQueryChange={setQuery}
           totalRecipes={recipes.length}
           query={query}
         />
       ),
-    [modalMode, nameInput, isRecipeEmpty, onSave, setName, query, filtered, recipes.length, onFileImport, deleteRecipe, onLoad, setQuery],
+    [modalMode, nameInput, isRecipeEmpty, handleSave, setName, query, filtered, recipes.length, handleFileImport, deleteRecipe, handleLoad, setQuery],
   );
 
   return (

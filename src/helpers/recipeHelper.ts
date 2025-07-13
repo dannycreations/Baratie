@@ -31,9 +31,9 @@ export function setIngredientSpices(id: string, newSpices: Record<string, unknow
 }
 
 export function setRecipe(ingredients: readonly Ingredient[], activeRecipeId: string | null = null): void {
-  useRecipeStore.getState().set(ingredients, activeRecipeId);
+  useRecipeStore.getState().setRecipe(ingredients, activeRecipeId);
 }
 
-export function updateSpiceValue(id: string, spiceId: string, rawValue: string | boolean | number, spice: SpiceDefinition): void {
+export function updateSpice(id: string, spiceId: string, rawValue: string | boolean | number, spice: SpiceDefinition): void {
   useRecipeStore.getState().updateSpice(id, spiceId, rawValue, spice);
 }

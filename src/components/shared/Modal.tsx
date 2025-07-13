@@ -107,7 +107,7 @@ export const Modal = memo(function Modal({
   }
 
   const modalSizeClass = MODAL_SIZE_MAP[size] || MODAL_SIZE_MAP.lg;
-  const modalBaseClasses = [
+  const modalClasses = [
     'flex',
     'w-full',
     'flex-col',
@@ -122,17 +122,17 @@ export const Modal = memo(function Modal({
     .filter(Boolean)
     .join(' ');
 
-  const backdropAnimClass = isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active';
-  const contentAnimClass = isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active';
+  const backdropAnimation = isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active';
+  const contentAnimation = isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active';
 
   errorHandler.assert(document.body, 'document.body is not available for Modal portal.', 'Modal Creation');
 
-  const headerLeftContent = (
+  const leftHeader = (
     <h2 id={titleId} className={`flex-grow truncate pr-2 text-xl font-semibold ${theme.textPrimary}`}>
       {title}
     </h2>
   );
-  const headerRightContent = (
+  const rightHeader = (
     <>
       {headerActions && <div className="flex flex-shrink-0 items-center space-x-2">{headerActions}</div>}
       <Button
@@ -149,7 +149,7 @@ export const Modal = memo(function Modal({
   return createPortal(
     <div
       ref={backdropRef}
-      className={`fixed inset-0 z-[500] flex items-center justify-center p-4 backdrop-blur-sm ${theme.modalBackdrop} ${backdropAnimClass}`}
+      className={`fixed inset-0 z-[500] flex items-center justify-center p-4 backdrop-blur-sm ${theme.modalBackdrop} ${backdropAnimation}`}
       onClick={handleBackdropClick}
     >
       <div
@@ -159,12 +159,12 @@ export const Modal = memo(function Modal({
         aria-busy={!isOpen}
         aria-labelledby={!hideHeader && title ? titleId : undefined}
         aria-modal="true"
-        className={[modalBaseClasses, contentAnimClass].join(' ')}
+        className={[modalClasses, contentAnimation].join(' ')}
         tabIndex={-1}
       >
         {!hideHeader && (
           <header className={`flex h-12 flex-shrink-0 items-center justify-between border-b p-3 ${theme.inputBorder}`}>
-            <HeaderLayout leftContent={headerLeftContent} rightContent={headerRightContent} />
+            <HeaderLayout leftContent={leftHeader} rightContent={rightHeader} />
           </header>
         )}
         <main className={`flex-grow overflow-y-auto p-3 ${bodyClassName}`}>{children}</main>

@@ -28,9 +28,9 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
   const [query, setQuery] = useState('');
   const listId = useId();
 
-  const allIngredients = useMemo(() => ingredientRegistry.getAllIngredients(), [registryVersion]);
+  const allIngredients = useMemo<readonly IngredientDefinition[]>(() => ingredientRegistry.getAllIngredients(), [registryVersion]);
 
-  const ingredientsByCategory = useMemo(() => {
+  const ingredientsByCategory = useMemo<Map<symbol, IngredientDefinition[]>>(() => {
     const grouped = new Map<symbol, IngredientDefinition[]>();
 
     for (const ingredient of allIngredients) {
@@ -46,7 +46,7 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
     return new Map([...grouped.entries()].sort((a, b) => (a[0].description ?? '').localeCompare(b[0].description ?? '')));
   }, [allIngredients]);
 
-  const filtered = useMemo(() => {
+  const filtered = useMemo<Map<symbol, readonly IngredientDefinition[]>>(() => {
     const lowerQuery = query.toLowerCase();
     if (!lowerQuery) {
       return ingredientsByCategory;
@@ -187,11 +187,11 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
         listContent={content}
         listId={listId}
         listWrapperClassName="mt-2 flex-grow overflow-y-auto"
-        onSearchChange={setQuery}
+        onQueryChange={setQuery}
+        query={query}
         searchAriaLabel="Search ingredients or categories"
         searchId="ingredient-manager-search"
         searchPlaceholder="Search Ingredients..."
-        searchTerm={query}
       />
     </Modal>
   );

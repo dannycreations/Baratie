@@ -10,8 +10,8 @@ interface LineNumberProps {
 
 export function useLineNumber({ textAreaRef, logicalLines, showLineNumbers }: LineNumberProps): readonly (number | null)[] {
   const [lineNumbers, setLineNumbers] = useState<readonly (number | null)[]>([]);
-  const logicalLinesRef = useRef(logicalLines);
-  logicalLinesRef.current = logicalLines;
+  const linesRef = useRef(logicalLines);
+  linesRef.current = logicalLines;
 
   const calculate = useCallback(() => {
     const textarea = textAreaRef.current;
@@ -20,45 +20,45 @@ export function useLineNumber({ textAreaRef, logicalLines, showLineNumbers }: Li
       return;
     }
 
-    const currentLogicalLines = logicalLinesRef.current;
+    const currentLines = linesRef.current;
     const styles = window.getComputedStyle(textarea);
     const font = styles.font;
 
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
-    let characterWidth = 8;
+    let charWidth = 8;
     if (context) {
       context.font = font;
-      characterWidth = context.measureText('M').width;
+      charWidth = context.measureText('M').width;
     }
-    if (characterWidth <= 0) {
-      setLineNumbers(currentLogicalLines.map((_, i) => i + 1));
+    if (charWidth <= 0) {
+      setLineNumbers(currentLines.map((_, i) => i + 1));
       return;
     }
 
-    const paddingHorizontal = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
-    const contentWidth = textarea.clientWidth - paddingHorizontal;
+    const xPadding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+    const contentWidth = textarea.clientWidth - xPadding;
     if (contentWidth <= 0) {
-      setLineNumbers(currentLogicalLines.map((_, i) => i + 1));
+      setLineNumbers(currentLines.map((_, i) => i + 1));
       return;
     }
 
-    const maxCharsPerLine = Math.floor(contentWidth / characterWidth);
-    if (maxCharsPerLine <= 0) {
-      setLineNumbers(currentLogicalLines.map((_, i) => i + 1));
+    const maxLineChars = Math.floor(contentWidth / charWidth);
+    if (maxLineChars <= 0) {
+      setLineNumbers(currentLines.map((_, i) => i + 1));
       return;
     }
 
-    const visualLinesPerLine = currentLogicalLines.map((line) => Math.max(1, Math.ceil(line.length / maxCharsPerLine)));
-    const cumulativeLines: number[] = [];
-    visualLinesPerLine.reduce((accumulator, value) => {
+    const visualLines = currentLines.map((line) => Math.max(1, Math.ceil(line.length / maxLineChars)));
+    const lineSums: number[] = [];
+    visualLines.reduce((accumulator, value) => {
       const newTotal = accumulator + value;
-      cumulativeLines.push(newTotal);
+      lineSums.push(newTotal);
       return newTotal;
     }, 0);
 
-    const totalLines = cumulativeLines.length > 0 ? cumulativeLines[cumulativeLines.length - 1] : 0;
-    if (totalLines === 0 && currentLogicalLines.length > 0) {
+    const totalLines = lineSums.length > 0 ? lineSums[lineSums.length - 1] : 0;
+    if (totalLines === 0 && currentLines.length > 0) {
       setLineNumbers([1]);
       return;
     }
@@ -66,7 +66,7 @@ export function useLineNumber({ textAreaRef, logicalLines, showLineNumbers }: Li
     const finalNumbers: (number | null)[] = [];
     let lastLineIndex = -1;
     for (let visualLineIndex = 1; visualLineIndex <= totalLines; visualLineIndex++) {
-      const logicalLineIndex = cumulativeLines.findIndex((sum) => visualLineIndex <= sum);
+      const logicalLineIndex = lineSums.findIndex((sum) => visualLineIndex <= sum);
       if (logicalLineIndex !== lastLineIndex) {
         finalNumbers.push(logicalLineIndex + 1);
       } else {

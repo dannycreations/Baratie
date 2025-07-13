@@ -175,7 +175,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
   load(id) {
     const recipeToLoad = get().recipes.find((recipe) => recipe.id === id);
     if (recipeToLoad) {
-      useRecipeStore.getState().set([...recipeToLoad.ingredients], recipeToLoad.id);
+      useRecipeStore.getState().setRecipe([...recipeToLoad.ingredients], recipeToLoad.id);
       showNotification(`Recipe '${recipeToLoad.name}' loaded.`, 'success', 'Cookbook Action');
       return recipeToLoad;
     }

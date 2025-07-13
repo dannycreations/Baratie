@@ -33,7 +33,7 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
   const config = isInput ? inputPanelConfig : outputPanelConfig;
   const title = config?.title || (isInput ? 'Input' : 'Output');
 
-  const onFileSelect = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
     const operationId = ++importOperationRef.current;
     const file = event.target.files?.[0];
     if (file) {
@@ -47,17 +47,17 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
     }
   }, []);
 
-  const onTriggerFileSelect = useCallback(() => {
+  const handleTriggerFileSelect = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
 
-  const onClearInput = useCallback(() => {
+  const handleClearInput = useCallback(() => {
     if (isInput) {
       kitchen.setInputData('');
     }
   }, [isInput]);
 
-  const onDownloadOutput = useCallback(() => {
+  const handleDownloadOutput = useCallback(() => {
     const now = new Date();
     const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now
       .getHours()
@@ -67,7 +67,7 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
     triggerDownload(data, fileName);
   }, [data]);
 
-  const onSpiceChange = useCallback(
+  const handleSpiceChange = useCallback(
     (spiceId: string, rawValue: string | boolean | number, spice: SpiceDefinition) => {
       if (inputPanelConfig?.mode !== 'spiceEditor') return;
       updateSpice(inputPanelConfig.targetIngredientId, spiceId, rawValue, spice);
@@ -87,7 +87,7 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
           <TooltipButton
             aria-label="Open a text file as input"
             icon={<FileTextIcon size={18} />}
-            onClick={onTriggerFileSelect}
+            onClick={handleTriggerFileSelect}
             size="sm"
             tooltipContent="Open File..."
             tooltipPosition="left"
@@ -98,7 +98,7 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
               aria-label="Clear data from the input panel"
               disabled={data.length === 0}
               icon={<Trash2Icon size={18} />}
-              onClick={onClearInput}
+              onClick={handleClearInput}
               size="sm"
               tooltipContent="Clear Input Panel"
               tooltipPosition="left"
@@ -114,7 +114,7 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
           aria-label="Save output to a file"
           disabled={data.length === 0}
           icon={<DownloadCloudIcon size={18} />}
-          onClick={onDownloadOutput}
+          onClick={handleDownloadOutput}
           size="sm"
           tooltipContent="Save Output"
           tooltipPosition="left"
@@ -123,7 +123,7 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
         <CopyButton textToCopy={data} tooltipPosition="left" />
       </>
     );
-  }, [isInput, data, inputPanelConfig, onClearInput, onTriggerFileSelect, onDownloadOutput]);
+  }, [isInput, data, inputPanelConfig, handleClearInput, handleTriggerFileSelect, handleDownloadOutput]);
 
   const content = useMemo(() => {
     if (isInput) {
@@ -139,7 +139,7 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
               containerClassName="space-y-3"
               currentSpices={targetIngredient.spices}
               ingredientDefinition={definition}
-              onSpiceChange={onSpiceChange}
+              onSpiceChange={handleSpiceChange}
             />
           </div>
         );
@@ -152,7 +152,7 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
             className="hidden"
             aria-hidden="true"
             accept="text/*,.json,.csv,application/xml"
-            onChange={onFileSelect}
+            onChange={handleFileSelect}
           />
           <TextareaInput
             ariaLabel="Input Panel for Raw Data"
@@ -181,7 +181,7 @@ export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelPro
         wrapperClass="flex-1 min-h-0"
       />
     );
-  }, [isInput, inputPanelConfig, ingredients, onSpiceChange, onFileSelect, data, outputPanelConfig]);
+  }, [isInput, inputPanelConfig, ingredients, handleSpiceChange, handleFileSelect, data, outputPanelConfig]);
 
   return (
     <SectionLayout

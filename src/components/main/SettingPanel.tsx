@@ -18,6 +18,7 @@ import { EmptyView } from '../shared/View';
 import type { ChangeEvent, JSX, KeyboardEvent, MouseEvent } from 'react';
 import type { AppTheme } from '../../app/themes';
 import type { Extension } from '../../stores/useExtensionStore';
+import type { SettingTab } from '../../stores/useSettingStore';
 
 interface TabButtonProps {
   readonly children: string;
@@ -131,7 +132,13 @@ const AppearanceSettings = memo(function AppearanceSettings() {
   );
 });
 
-const ExtensionItemStatus = memo(function ExtensionItemStatus({ status, errors }: { status: Extension['status']; errors?: readonly string[] }) {
+const ExtensionItemStatus = memo(function ExtensionItemStatus({
+  status,
+  errors,
+}: {
+  readonly status: Extension['status'];
+  readonly errors?: readonly string[];
+}) {
   const theme = useThemeStore((state) => state.theme);
 
   const statusMap = {
@@ -180,7 +187,7 @@ const ExtensionSettings = memo(function ExtensionSettings() {
     duration: CONFIRM_TIMEOUT_MS,
   });
 
-  const handleAddClick = useCallback(async () => {
+  const handleAdd = useCallback(async () => {
     if (!url.trim() || isLoading) return;
     setIsLoading(true);
     try {
@@ -198,13 +205,13 @@ const ExtensionSettings = memo(function ExtensionSettings() {
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
       if (event.key === 'Enter') {
-        handleAddClick();
+        handleAdd();
       }
     },
-    [handleAddClick],
+    [handleAdd],
   );
 
-  const handleDeleteClick = useCallback(
+  const handleDelete = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       if (!(event.currentTarget instanceof HTMLButtonElement)) return;
       const extensionId = event.currentTarget.dataset.extensionId;
@@ -240,7 +247,7 @@ const ExtensionSettings = memo(function ExtensionSettings() {
           onChange={handleUrlChange}
           onKeyDown={handleKeyDown}
         />
-        <Button icon={<GitMergeIcon size={20} />} loading={isLoading} size="md" onClick={handleAddClick}>
+        <Button icon={<GitMergeIcon size={20} />} loading={isLoading} size="md" onClick={handleAdd}>
           Add
         </Button>
       </div>
@@ -276,7 +283,7 @@ const ExtensionSettings = memo(function ExtensionSettings() {
                       size="sm"
                       tooltipContent={deleteButtonTip}
                       variant="danger"
-                      onClick={handleDeleteClick}
+                      onClick={handleDelete}
                     />
                   </div>
                 </li>
@@ -296,13 +303,12 @@ export const SettingPanel = memo(function SettingPanel(): JSX.Element {
   const setActiveTab = useSettingStore((state) => state.setActiveTab);
   const theme = useThemeStore((state) => state.theme);
 
-  const showAppearanceTab = useCallback(() => {
-    setActiveTab('appearance');
-  }, [setActiveTab]);
-
-  const showExtensionsTab = useCallback(() => {
-    setActiveTab('extensions');
-  }, [setActiveTab]);
+  const handleTabSelect = useCallback(
+    (tab: SettingTab) => {
+      setActiveTab(tab);
+    },
+    [setActiveTab],
+  );
 
   const bodyContent = useMemo(() => {
     switch (activeTab) {
@@ -318,10 +324,10 @@ export const SettingPanel = memo(function SettingPanel(): JSX.Element {
   return (
     <Modal isOpen={isModalOpen} onClose={closeModal} size="xl" title="Settings" contentClassName="flex max-h-[80vh] flex-col" bodyClassName="p-0">
       <div role="tablist" aria-label="Settings categories" className={`flex border-b px-3 ${theme.inputBorder}`}>
-        <TabButton isActive={activeTab === 'appearance'} onClick={showAppearanceTab}>
+        <TabButton isActive={activeTab === 'appearance'} onClick={() => handleTabSelect('appearance')}>
           Appearance
         </TabButton>
-        <TabButton isActive={activeTab === 'extensions'} onClick={showExtensionsTab}>
+        <TabButton isActive={activeTab === 'extensions'} onClick={() => handleTabSelect('extensions')}>
           Extensions
         </TabButton>
       </div>

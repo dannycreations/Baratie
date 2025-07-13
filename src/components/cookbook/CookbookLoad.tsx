@@ -16,7 +16,7 @@ interface CookbookLoadProps {
   readonly onDelete: (id: string) => void;
   readonly onImport: (event: ChangeEvent<HTMLInputElement>) => void;
   readonly onLoad: (id: string) => void;
-  readonly onQueryChange: (term: string) => void;
+  readonly onQueryChange: (query: string) => void;
 }
 
 export const CookbookLoad = memo(function CookbookLoad({
@@ -51,11 +51,11 @@ export const CookbookLoad = memo(function CookbookLoad({
         }
         listId={listId}
         listWrapperClassName="flex-grow overflow-y-auto pt-3"
-        onSearchChange={onQueryChange}
+        query={query}
+        onQueryChange={onQueryChange}
         searchAriaLabel="Search saved recipes"
         searchId="recipe-search"
         searchPlaceholder="Search Saved Recipes..."
-        searchTerm={query}
         searchWrapperClassName={`border-b pb-3 ${theme.inputBorder}`}
       />
       <input ref={importRef} type="file" accept=".json" onChange={onImport} className="hidden" aria-hidden="true" />

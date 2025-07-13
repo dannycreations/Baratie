@@ -13,7 +13,7 @@ interface RecipeState {
   readonly clear: () => void;
   readonly removeIngredient: (id: string) => void;
   readonly reorderIngredients: (draggedId: string, targetId: string) => void;
-  readonly set: (ingredients: readonly Ingredient[], activeRecipeId?: string | null) => void;
+  readonly setRecipe: (ingredients: readonly Ingredient[], activeRecipeId?: string | null) => void;
   readonly setActiveRecipeId: (id: string | null) => void;
   readonly setIngredientSpices: (id: string, newSpices: Readonly<Record<string, unknown>>) => void;
   readonly updateSpice: (id: string, spiceId: string, rawValue: string | boolean | number, spice: Readonly<SpiceDefinition>) => void;
@@ -68,7 +68,7 @@ export const useRecipeStore = create<RecipeState>()(
       set({ ingredients: currentRecipe });
     },
 
-    set(ingredients, activeRecipeId = null) {
+    setRecipe(ingredients, activeRecipeId = null) {
       const validIngredients = ingredients.map((ingredient) => {
         const ingredientDefinition = ingredientRegistry.getIngredient(ingredient.name);
         if (ingredientDefinition) {

@@ -79,11 +79,15 @@ export const RecipeItem = memo(function RecipeItem({
   const hasSpices = !!definition.spices && definition.spices.length > 0;
   const isEditorVisible = isEditing && !isSpiceInInput && !isDragged;
 
-  const handleDoubleClick = useCallback(() => {
-    if (hasSpices && !isSpiceInInput) {
-      handleEditToggle();
-    }
-  }, [hasSpices, isSpiceInInput, handleEditToggle]);
+  const handleDoubleClick = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      if (hasSpices && !isSpiceInInput) {
+        event.preventDefault();
+        handleEditToggle();
+      }
+    },
+    [hasSpices, isSpiceInInput, handleEditToggle],
+  );
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {

@@ -42,7 +42,7 @@ export const CookbookItem = memo(function CookbookItem({ recipe, onLoad, onDelet
     duration: CONFIRM_TIMEOUT_MS,
   });
 
-  const onDeleteClick = useCallback(() => {
+  const handleDelete = useCallback(() => {
     if (isDeleting) {
       onDelete(recipe.id);
     } else {
@@ -50,13 +50,13 @@ export const CookbookItem = memo(function CookbookItem({ recipe, onLoad, onDelet
     }
   }, [isDeleting, onDelete, recipe.id]);
 
-  const onLoadClick = useCallback(() => {
+  const handleLoad = useCallback(() => {
     onLoad(recipe.id);
   }, [onLoad, recipe.id]);
 
-  const deleteButtonTip = isDeleting ? 'Confirm Deletion' : 'Delete Recipe';
-  const deleteButtonLabel = isDeleting ? `Confirm deletion of ${recipe.name}` : `Delete the recipe: ${recipe.name}`;
-  const deleteButtonClasses = isDeleting ? getConfirmClasses(theme) : undefined;
+  const deleteTip = isDeleting ? 'Confirm Deletion' : 'Delete Recipe';
+  const deleteLabel = isDeleting ? `Confirm deletion of ${recipe.name}` : `Delete the recipe: ${recipe.name}`;
+  const deleteClasses = isDeleting ? getConfirmClasses(theme) : undefined;
 
   const leftColumn = (
     <>
@@ -74,7 +74,7 @@ export const CookbookItem = memo(function CookbookItem({ recipe, onLoad, onDelet
       <TooltipButton
         aria-label={`Load the recipe: ${recipe.name}`}
         icon={<UploadCloudIcon size={18} />}
-        onClick={onLoadClick}
+        onClick={handleLoad}
         size="sm"
         tooltipContent="Load Recipe"
         tooltipPosition="left"
@@ -83,12 +83,12 @@ export const CookbookItem = memo(function CookbookItem({ recipe, onLoad, onDelet
         Load
       </TooltipButton>
       <TooltipButton
-        aria-label={deleteButtonLabel}
-        className={deleteButtonClasses}
+        aria-label={deleteLabel}
+        className={deleteClasses}
         icon={isDeleting ? <AlertTriangleIcon className={theme.errorText} size={18} /> : <Trash2Icon size={18} />}
-        onClick={onDeleteClick}
+        onClick={handleDelete}
         size="sm"
-        tooltipContent={deleteButtonTip}
+        tooltipContent={deleteTip}
         tooltipPosition="left"
         variant="danger"
       />

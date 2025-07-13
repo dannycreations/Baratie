@@ -13,7 +13,7 @@ export function useConditionalTimer({ callback, duration, state = 'running', res
   const timerIdRef = useRef<number | null>(null);
   const remainingTimeRef = useRef(duration);
   const startTimeRef = useRef<number | null>(null);
-  const savedCallback = useRef(callback);
+  const savedCallback = useRef<() => void>(callback);
 
   useEffect(() => {
     savedCallback.current = callback;

@@ -171,7 +171,7 @@ export async function importFromFile(file: File): Promise<RecipeBookItem[] | nul
   if (!jsonData) return null;
 
   const recipes = (Array.isArray(jsonData) ? jsonData : [jsonData])
-    .map((recipe) => sanitizeRecipe(recipe, 'fileImport'))
+    .map((rawRecipe) => sanitizeRecipe(rawRecipe, 'fileImport'))
     .filter((recipe): recipe is RecipeBookItem => recipe !== null);
   if (recipes.length === 0) {
     showNotification('No valid recipes were found in the selected file.', 'warning', 'Import Notice');
@@ -183,7 +183,7 @@ export async function importFromFile(file: File): Promise<RecipeBookItem[] | nul
 export function initRecipes(): void {
   const recipes = storage.get(STORAGE_COOKBOOK, 'Saved Recipes');
   const sanitized = (Array.isArray(recipes) ? recipes : [])
-    .map((recipe) => sanitizeRecipe(recipe, 'storage'))
+    .map((rawRecipe) => sanitizeRecipe(rawRecipe, 'storage'))
     .filter((recipe): recipe is RecipeBookItem => recipe !== null);
   useCookbookStore.getState().setRecipes(sanitized);
 }
@@ -210,6 +210,6 @@ export function setRecipeName(name: string): void {
   useCookbookStore.getState().setName(name);
 }
 
-export function setSearchQuery(term: string): void {
+export function setQuery(term: string): void {
   useCookbookStore.getState().setQuery(term);
 }

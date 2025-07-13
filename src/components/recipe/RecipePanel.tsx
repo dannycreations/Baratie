@@ -37,15 +37,15 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
 
   const {
     dragId,
-    onDragStart: onDragStartBase,
-    onDragEnter: onDragEnterBase,
-    onDragOver: onDragOverBase,
-    onDragEnd: onDragEndBase,
+    onDragStart: onMoveStart,
+    onDragEnter: onMoveEnter,
+    onDragOver: onMoveOver,
+    onDragEnd: onMoveEnd,
   } = useDragMove({
     onDragMove: reorderIngredients,
   });
 
-  const onEditToggle = useCallback(
+  const handleEditToggle = useCallback(
     (ingredient: Ingredient) => {
       if (inputPanelIngId === ingredient.id) {
         setEditingId(null);
@@ -56,40 +56,40 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
     [inputPanelIngId],
   );
 
-  const onDragStart = useCallback(
+  const handleDragStart = useCallback(
     (event: DragEvent<HTMLElement>, ingredient: Ingredient) => {
-      onDragStartBase(event, ingredient.id);
+      onMoveStart(event, ingredient.id);
       event.dataTransfer.setData('application/x-baratie-recipe-item-id', ingredient.id);
     },
-    [onDragStartBase],
+    [onMoveStart],
   );
 
-  const onIngredientEnter = useCallback((event: DragEvent<HTMLDivElement>) => {
+  const handleDragEnter = useCallback((event: DragEvent<HTMLDivElement>) => {
     if (event.dataTransfer.types.includes('application/x-baratie-ingredient-type')) {
       setIsDraggingIngredient(true);
     }
   }, []);
 
-  const onIngredientLeave = useCallback((event: DragEvent<HTMLDivElement>) => {
+  const handleDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => {
     if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) {
       return;
     }
     setIsDraggingIngredient(false);
   }, []);
 
-  const onIngredientOver = useCallback(
+  const handleDragOver = useCallback(
     (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault();
       if (event.dataTransfer.types.includes('application/x-baratie-ingredient-type')) {
         event.dataTransfer.dropEffect = 'copy';
       } else {
-        onDragOverBase(event);
+        onMoveOver(event);
       }
     },
-    [onDragOverBase],
+    [onMoveOver],
   );
 
-  const onIngredientDrop = useCallback(
+  const handleDrop = useCallback(
     (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault();
       setIsDraggingIngredient(false);
@@ -195,13 +195,13 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
             isDragged={dragId === ingredient.id}
             isEditing={editingId === ingredient.id && ingredient.id !== inputPanelIngId}
             isSpiceInInput={ingredient.id === inputPanelIngId}
-            onDragEnd={onDragEndBase}
-            onDragEnter={onDragEnterBase}
-            onDragOver={onDragOverBase}
-            onDragStart={onDragStart}
+            onDragEnd={onMoveEnd}
+            onDragEnter={onMoveEnter}
+            onDragOver={onMoveOver}
+            onDragStart={handleDragStart}
             onRemove={removeIngredient}
             onSpiceChange={updateSpice}
-            onEditToggle={onEditToggle}
+            onEditToggle={handleEditToggle}
           />
         ))}
         {isDraggingIngredient && <DropzoneLayout mode="placeholder" text="Drop to add ingredient" variant="add" />}
@@ -215,13 +215,13 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
     dragId,
     editingId,
     inputPanelIngId,
-    onDragEndBase,
-    onDragEnterBase,
-    onDragOverBase,
-    onDragStart,
+    onMoveEnd,
+    onMoveEnter,
+    onMoveOver,
+    handleDragStart,
     removeIngredient,
     updateSpice,
-    onEditToggle,
+    handleEditToggle,
   ]);
 
   const listClasses = [
@@ -244,10 +244,10 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
     >
       <div
         className="flex h-full flex-col"
-        onDragEnter={onIngredientEnter}
-        onDragLeave={onIngredientLeave}
-        onDragOver={onIngredientOver}
-        onDrop={onIngredientDrop}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
       >
         <SearchListLayout listContent={content} listId={listId} listWrapperClassName={listClasses} showSearch={false} />
       </div>

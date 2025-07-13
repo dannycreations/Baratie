@@ -41,35 +41,35 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
 
   const listId = useId();
 
-  const allIngredients = useMemo(() => ingredientRegistry.getAllIngredients(), [registryVersion]);
+  const allIngredients = useMemo<readonly IngredientDefinition[]>(() => ingredientRegistry.getAllIngredients(), [registryVersion]);
   const ingredientsByCat = useSearchIngredients(allIngredients, query, favorites, disabledCategories, disabledIngredients);
   const totalIngredients = allIngredients.length;
-  const visibleIngredients = useMemo(
+  const visibleIngredients = useMemo<number>(
     () => allIngredients.filter((ing) => !disabledCategories.includes(ing.category) && !disabledIngredients.includes(ing.name)).length,
     [allIngredients, disabledCategories, disabledIngredients],
   );
 
-  const onRecipeDragEnter = useCallback((event: DragEvent<HTMLDivElement>) => {
+  const handleDragEnterRecipe = useCallback((event: DragEvent<HTMLDivElement>) => {
     if (event.dataTransfer.types.includes('application/x-baratie-recipe-item-id')) {
       setDragOverRecipe(true);
     }
   }, []);
 
-  const onRecipeDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => {
+  const handleDragLeaveRecipe = useCallback((event: DragEvent<HTMLDivElement>) => {
     if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) {
       return;
     }
     setDragOverRecipe(false);
   }, []);
 
-  const onRecipeDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
+  const handleDragOverRecipe = useCallback((event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     if (event.dataTransfer.types.includes('application/x-baratie-recipe-item-id')) {
       event.dataTransfer.dropEffect = 'move';
     }
   }, []);
 
-  const onRecipeDrop = useCallback(
+  const handleDropRecipe = useCallback(
     (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault();
       const id = event.dataTransfer.getData('application/x-baratie-recipe-item-id');
@@ -224,21 +224,21 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
     >
       <div
         className="flex h-full flex-col"
-        onDragEnter={onRecipeDragEnter}
-        onDragLeave={onRecipeDragLeave}
-        onDragOver={onRecipeDragOver}
-        onDrop={onRecipeDrop}
+        onDragEnter={handleDragEnterRecipe}
+        onDragLeave={handleDragLeaveRecipe}
+        onDragOver={handleDragOverRecipe}
+        onDrop={handleDropRecipe}
       >
         {isDragOverRecipe && <DropzoneLayout mode="overlay" text="Drop to Remove from Recipe" variant="remove" />}
         <SearchListLayout
           listContent={<IngredientList itemsByCategory={ingredientsByCat} renderItem={renderIngredient} query={query} />}
           listId={listId}
-          onSearchChange={setQuery}
+          onQueryChange={setQuery}
+          query={query}
           searchAriaLabel="Search for ingredients"
           searchClassName="mb-3"
           searchId="ingredient-search"
           searchPlaceholder="Search Ingredients..."
-          searchTerm={query}
         />
       </div>
       <IngredientManager />

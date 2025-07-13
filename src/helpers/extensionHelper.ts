@@ -135,9 +135,9 @@ export async function initExtensions(): Promise<void> {
   const extensions: Extension[] = [];
 
   if (Array.isArray(rawExtensions)) {
-    for (const raw of rawExtensions) {
-      if (isStorableExtension(raw)) {
-        extensions.push({ ...raw, status: 'loading', errors: [], ingredients: [] });
+    for (const rawExtension of rawExtensions) {
+      if (isStorableExtension(rawExtension)) {
+        extensions.push({ ...rawExtension, status: 'loading', errors: [], ingredients: [] });
       }
     }
   }
@@ -212,7 +212,7 @@ export function removeExtension(id: string): void {
   if (ingredientsToRemove.length > 0) {
     ingredientRegistry.unregisterIngredients(ingredientsToRemove);
 
-    const { ingredients: currentRecipe, set: setRecipe } = useRecipeStore.getState();
+    const { ingredients: currentRecipe, setRecipe } = useRecipeStore.getState();
     const updatedRecipe = currentRecipe.filter((ing) => !ingredientsToRemove.includes(ing.name));
     if (updatedRecipe.length < currentRecipe.length) {
       const activeRecipeId = useRecipeStore.getState().activeRecipeId;

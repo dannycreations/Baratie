@@ -18,8 +18,8 @@ import {
   mergeRecipes,
   openCookbook,
   saveAllRecipes,
+  setQuery,
   setRecipeName,
-  setSearchQuery,
   upsertRecipe,
 } from './helpers/cookbookHelper';
 import { addExtension, removeExtension } from './helpers/extensionHelper';
@@ -34,7 +34,7 @@ import {
   reorderIngredients,
   setIngredientSpices,
   setRecipe,
-  updateSpiceValue,
+  updateSpice,
 } from './helpers/recipeHelper';
 import { readAsBase64, readAsText, triggerDownload } from './utilities/fileUtil';
 
@@ -78,7 +78,7 @@ const BARATIE_API = {
       open: openCookbook,
       saveAll: saveAllRecipes,
       setName: setRecipeName,
-      setQuery: setSearchQuery,
+      setQuery,
     },
     extension: {
       add: addExtension,
@@ -89,8 +89,8 @@ const BARATIE_API = {
     },
     file: {
       download: triggerDownload,
-      readB64: readAsBase64,
-      readText: readAsText,
+      readAsBase64,
+      readAsText,
     },
     notification: {
       show: showNotification,
@@ -106,7 +106,7 @@ const BARATIE_API = {
       reorder: reorderIngredients,
       set: setRecipe,
       setSpices: setIngredientSpices,
-      updateSpice: updateSpiceValue,
+      updateSpice,
     },
   },
 } as const;

@@ -13,23 +13,23 @@ interface BaseSearchListProps {
 }
 
 type SearchEnabledProps = {
-  readonly onSearchChange: (term: string) => void;
+  readonly onQueryChange: (query: string) => void;
+  readonly query: string;
   readonly searchAriaLabel: string;
   readonly searchClassName?: string;
   readonly searchId: string;
   readonly searchPlaceholder?: string;
-  readonly searchTerm: string;
   readonly searchWrapperClassName?: string;
   readonly showSearch?: true;
 };
 
 type SearchDisabledProps = {
-  readonly onSearchChange?: never;
+  readonly onQueryChange?: never;
+  readonly query?: never;
   readonly searchAriaLabel?: never;
   readonly searchClassName?: never;
   readonly searchId?: never;
   readonly searchPlaceholder?: never;
-  readonly searchTerm?: never;
   readonly searchWrapperClassName?: never;
   readonly showSearch: false;
 };
@@ -50,8 +50,8 @@ export const SearchListLayout = memo(function SearchListLayout(props: SearchList
             ariaLabel={props.searchAriaLabel}
             className={props.searchClassName}
             placeholder={props.searchPlaceholder}
-            searchTerm={props.searchTerm}
-            onSearchChange={props.onSearchChange}
+            query={props.query}
+            onQueryChange={props.onQueryChange}
           />
         </div>
       )}
