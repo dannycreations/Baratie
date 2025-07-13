@@ -30,18 +30,18 @@ export const CardLayout = memo(function CardLayout({
   const headerClass = [
     'flex',
     'h-12',
-    'flex-shrink-0',
+    'shrink-0',
     'items-center',
     'justify-between',
+    `border-b border-${theme.borderPrimary}`,
+    `bg-${theme.surfaceTertiary}`,
     'p-3',
-    theme.textPrimary,
-    theme.cardHeaderBg,
-    theme.cardHeaderBorder,
+    `text-${theme.contentPrimary}`,
   ]
     .filter(Boolean)
     .join(' ');
-  const contentClass = ['flex-grow', 'overflow-auto', 'p-3', contentClassName].filter(Boolean).join(' ');
-  const containerClass = ['flex', 'flex-col', 'overflow-hidden', 'rounded-lg', theme.cardBg, className].filter(Boolean).join(' ');
+  const contentClass = ['grow', 'overflow-auto', 'p-3', contentClassName].filter(Boolean).join(' ');
+  const containerClass = ['flex', 'flex-col', 'overflow-hidden', 'rounded-lg', `bg-${theme.surfaceSecondary}`, className].filter(Boolean).join(' ');
 
   return (
     <section role="region" aria-live={ariaLive} aria-labelledby={titleId} className={containerClass}>

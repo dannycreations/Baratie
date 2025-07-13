@@ -29,8 +29,8 @@ export const DropzoneLayout = memo(function DropzoneLayout({
   const theme = useThemeStore((state) => state.theme);
 
   const dropzoneThemeMap: Readonly<Record<DropzoneVariant, string>> = {
-    add: `${theme.dropzoneAddBorder} ${theme.dropzoneAddBg} ${theme.dropzoneAddText}`,
-    remove: `${theme.dropzoneRemoveBorder} ${theme.dropzoneRemoveBg} ${theme.dropzoneRemoveText}`,
+    add: `border-${theme.infoBorder} bg-${theme.infoBg} text-${theme.infoFg}`,
+    remove: `border-${theme.dangerBorder} bg-${theme.dangerBg} text-${theme.dangerFg}`,
   };
 
   const combinedClasses = [

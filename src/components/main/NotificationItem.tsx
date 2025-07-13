@@ -16,17 +16,17 @@ interface NotifyItemProps {
 }
 
 type NotificationTheme = {
-  readonly bar: string;
-  readonly border: string;
-  readonly icon: string;
+  readonly barColor: string;
+  readonly borderColor: string;
+  readonly iconColor: string;
 };
 
 function getNotificationTheme(theme: AppTheme, type: NotificationType): NotificationTheme {
   const map: Record<NotificationType, NotificationTheme> = {
-    error: { bar: theme.errorBg, border: theme.errorBorder, icon: theme.errorTextStrong },
-    info: { bar: theme.infoBg, border: theme.infoBorder, icon: theme.infoText },
-    success: { bar: theme.successBg, border: theme.successBorder, icon: theme.successTextStrong },
-    warning: { bar: theme.warningBg, border: theme.warningBorder, icon: theme.warningTextStrong },
+    error: { barColor: theme.dangerBg, borderColor: theme.dangerBorder, iconColor: theme.dangerFg },
+    info: { barColor: theme.infoBg, borderColor: theme.infoBorder, iconColor: theme.infoFg },
+    success: { barColor: theme.successBg, borderColor: theme.successBorder, iconColor: theme.successFg },
+    warning: { barColor: theme.warningBg, borderColor: theme.warningBorder, iconColor: theme.warningFg },
   };
   return map[type] || map.info;
 }
@@ -66,20 +66,21 @@ export const NotificationItem = memo(function NotificationItem({ notification }:
     };
   }, [isExiting, notification.id]);
 
+  const { iconColor, borderColor, barColor } = getNotificationTheme(theme, notification.type);
+
   const renderIcon = (): JSX.Element => {
     switch (notification.type) {
       case 'success':
-        return <CheckIcon className={iconColor} size={22} />;
+        return <CheckIcon className={`text-${iconColor}`} size={22} />;
       case 'error':
       case 'warning':
-        return <AlertTriangleIcon className={iconColor} size={22} />;
+        return <AlertTriangleIcon className={`text-${iconColor}`} size={22} />;
       case 'info':
       default:
-        return <InfoIcon className={iconColor} size={22} />;
+        return <InfoIcon className={`text-${iconColor}`} size={22} />;
     }
   };
 
-  const { icon: iconColor, border: borderClass, bar: barBgClass } = getNotificationTheme(theme, notification.type);
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
   const duration = notification.duration ?? NOTIFY_DURATION_MS;
 
@@ -90,15 +91,17 @@ export const NotificationItem = memo(function NotificationItem({ notification }:
     'overflow-hidden',
     'rounded-lg',
     'border-l-4',
-    theme.cardBg,
-    borderClass,
+    `border-${borderColor}`,
+    `bg-${theme.surfaceSecondary}`,
     animationClass,
     isPaused && 'notification-paused',
   ]
     .filter(Boolean)
     .join(' ');
 
-  const messageClasses = ['allow-text-selection', 'text-sm', theme.textSecondary, notification.title && 'mt-1'].filter(Boolean).join(' ');
+  const messageClasses = ['text-sm', `text-${theme.contentSecondary}`, 'allow-text-selection', notification.title && 'mt-1']
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div
@@ -112,13 +115,13 @@ export const NotificationItem = memo(function NotificationItem({ notification }:
       <div className="flex items-start p-4">
         <div className="flex-shrink-0 pt-0.5">{renderIcon()}</div>
         <div className="ml-3 flex-1">
-          {notification.title && <h3 className={`text-md font-semibold ${theme.textPrimary}`}>{notification.title}</h3>}
+          {notification.title && <h3 className={`text-base font-semibold text-${theme.contentPrimary}`}>{notification.title}</h3>}
           <p className={messageClasses}>{notification.message}</p>
         </div>
         <div className="ml-4 flex-shrink-0">
           <Button
             aria-label="Close notification"
-            className={`-mt-1 -mr-1 ${theme.textTertiary} ${theme.textPrimaryHover}`}
+            className={`-mr-1 -mt-1 text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`}
             icon={<XIcon size={20} />}
             onClick={startExit}
             size="sm"
@@ -128,10 +131,10 @@ export const NotificationItem = memo(function NotificationItem({ notification }:
         </div>
       </div>
       {!isExiting && (
-        <div className={`absolute inset-x-0 bottom-0 h-1 ${theme.itemBg}`}>
+        <div className={`absolute inset-x-0 bottom-0 h-1 bg-${theme.surfaceTertiary}`}>
           <div
             key={`${notification.id}-${notification.resetAt ?? 0}`}
-            className={`progress-bar-fill h-full ${barBgClass}`}
+            className={`h-full bg-${barColor} progress-bar-fill`}
             style={{
               animationDuration: `${duration}ms`,
             }}

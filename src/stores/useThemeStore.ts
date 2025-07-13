@@ -56,14 +56,14 @@ useThemeStore.subscribe(
 
     const themeColorMeta = document.getElementById('theme-color-meta');
     if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', theme.themeColor);
+      themeColorMeta.setAttribute('content', theme.theme);
     }
 
     const body = document.body;
     if (prevTheme) {
-      body.classList.remove(prevTheme.pageBg, prevTheme.pageText);
+      body.classList.remove(`bg-${prevTheme.surfacePrimary}`, `text-${prevTheme.contentPrimary}`);
     }
-    body.classList.add(theme.pageBg, theme.pageText);
+    body.classList.add(`bg-${theme.surfacePrimary}`, `text-${theme.contentPrimary}`);
   },
   { fireImmediately: true },
 );

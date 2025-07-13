@@ -1,28 +1,37 @@
 import { memo, useCallback, useState } from 'react';
 
+import { errorHandler, ingredientRegistry } from '../../app/container';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { ChevronRightIcon } from '../shared/Icon';
+import { ItemListLayout } from '../shared/layout/ItemListLayout';
+import { Tooltip } from '../shared/Tooltip';
 import { EmptyView } from '../shared/View';
 
-import type { JSX } from 'react';
+import type { DragEvent, JSX, ReactNode } from 'react';
 import type { IngredientDefinition } from '../../core/IngredientRegistry';
 
 export interface IngredientListProps<T extends IngredientDefinition> {
   readonly emptyMessage?: string;
   readonly itemsByCategory: ReadonlyMap<symbol, readonly T[]>;
   readonly noResultsMessage?: (query: string) => string;
-  readonly renderHeader?: (category: symbol) => JSX.Element;
-  readonly renderItem: (item: T, category: symbol) => JSX.Element;
   readonly query: string;
+  readonly renderHeader?: (category: symbol) => JSX.Element;
+  readonly renderItemActions?: (item: T) => ReactNode;
+  readonly renderItemPrefix?: (item: T) => ReactNode;
+  readonly onItemDragStart?: (event: DragEvent<HTMLElement>, item: T) => void;
+  readonly isItemDisabled?: (item: T) => boolean;
 }
 
 export const IngredientList = memo(function IngredientList<T extends IngredientDefinition>({
   itemsByCategory,
   query,
-  renderItem,
   renderHeader,
   emptyMessage = 'No ingredients available.',
   noResultsMessage = (term) => `No ingredients match search for "${term}".`,
+  renderItemActions,
+  renderItemPrefix,
+  onItemDragStart,
+  isItemDisabled,
 }: IngredientListProps<T>): JSX.Element {
   const [expandedCategories, setExpandedCategories] = useState<Set<symbol>>(new Set());
   const theme = useThemeStore((state) => state.theme);
@@ -38,13 +47,59 @@ export const IngredientList = memo(function IngredientList<T extends IngredientD
 
   if (itemsByCategory.size === 0) {
     return (
-      <EmptyView className="flex flex-grow flex-col items-center justify-center py-4">
+      <EmptyView className="flex grow flex-col items-center justify-center py-4">
         {query.trim() !== '' ? noResultsMessage(query) : emptyMessage}
       </EmptyView>
     );
   }
 
   const categoryEntries = Array.from(itemsByCategory.entries());
+
+  const renderListItem = (item: T) => {
+    const ingredientName = item.name.description ?? 'Unnamed Ingredient';
+    const ingredientIdString = ingredientRegistry.getStringFromSymbol(item.name);
+    errorHandler.assert(ingredientIdString, `Could not get string from symbol for ingredient: ${ingredientName}`, 'Render Ingredient');
+
+    const isDisabled = isItemDisabled?.(item) ?? false;
+    const nameClasses = [
+      'cursor-default',
+      'truncate',
+      'pr-2',
+      'text-sm',
+      'transition-colors',
+      'duration-150',
+      isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`,
+      `group-hover:text-${theme.infoFg}`,
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    const leftColumn = (
+      <div className="flex min-w-0 items-center gap-3">
+        {renderItemPrefix?.(item)}
+        <Tooltip content={item.description} position="top" tooltipClassName="max-w-xs">
+          <span className={nameClasses}>{ingredientName}</span>
+        </Tooltip>
+      </div>
+    );
+
+    const rightColumn = renderItemActions?.(item);
+
+    const handleDragStart = (event: DragEvent<HTMLElement>) => {
+      onItemDragStart?.(event, item);
+    };
+
+    return (
+      <li key={item.name.toString()} data-ingredient-id={ingredientIdString} draggable={!!onItemDragStart} onDragStart={handleDragStart}>
+        <ItemListLayout
+          className={`group h-11 rounded-md bg-${theme.surfaceTertiary} px-2 py-1.5 transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
+          leftContent={leftColumn}
+          leftClass="grow min-w-0"
+          rightContent={rightColumn}
+        />
+      </li>
+    );
+  };
 
   return (
     <>
@@ -59,7 +114,7 @@ export const IngredientList = memo(function IngredientList<T extends IngredientD
             id={buttonId}
             aria-controls={panelId}
             aria-expanded={isExpanded}
-            className={`flex h-12 w-full items-center justify-between p-3 text-left focus:outline-none ${theme.itemBg} ${theme.textSecondary} ${theme.itemBgHover}`}
+            className={`flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-3 text-left text-${theme.contentSecondary} outline-none hover:bg-${theme.surfaceHover} focus:outline-none`}
             onClick={() => handleCategoryToggle(category)}
           >
             {renderHeader ? renderHeader(category) : <span className="font-medium">{category.description}</span>}
@@ -83,11 +138,11 @@ export const IngredientList = memo(function IngredientList<T extends IngredientD
                 id={panelId}
                 role="region"
                 aria-labelledby={buttonId}
-                className={`max-h-64 overflow-y-auto p-3 ${theme.itemBgMuted}`}
+                className={`max-h-64 overflow-y-auto bg-${theme.surfaceMuted} p-3`}
                 aria-hidden={!isExpanded}
               >
                 <ul className="space-y-1.5" aria-labelledby={buttonId}>
-                  {items.map((item) => renderItem(item, category))}
+                  {items.map((item) => renderListItem(item))}
                 </ul>
               </div>
             )}

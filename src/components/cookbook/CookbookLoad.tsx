@@ -44,19 +44,19 @@ export const CookbookLoad = memo(function CookbookLoad({
               ))}
             </ul>
           ) : (
-            <EmptyView className="flex h-full w-full flex-grow flex-col items-center justify-center p-4">
+            <EmptyView className="flex h-full w-full grow flex-col items-center justify-center p-4">
               {totalRecipes === 0 ? 'You have not saved any recipes yet.' : `No recipes found for "${query}".`}
             </EmptyView>
           )
         }
         listId={listId}
-        listWrapperClassName="flex-grow overflow-y-auto pt-3"
+        listWrapperClassName="grow overflow-y-auto pt-3"
         query={query}
         onQueryChange={onQueryChange}
         searchAriaLabel="Search saved recipes"
         searchId="recipe-search"
         searchPlaceholder="Search Saved Recipes..."
-        searchWrapperClassName={`border-b pb-3 ${theme.border}`}
+        searchWrapperClassName={`border-b border-${theme.borderPrimary} pb-3`}
       />
       <input ref={importRef} type="file" accept=".json" onChange={onImport} className="hidden" aria-hidden="true" />
     </>

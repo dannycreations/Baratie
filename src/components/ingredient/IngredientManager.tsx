@@ -4,10 +4,8 @@ import { ingredientRegistry } from '../../app/container';
 import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { BooleanInput } from '../shared/input/BooleanInput';
-import { ItemListLayout } from '../shared/layout/ItemListLayout';
 import { SearchListLayout } from '../shared/layout/SearchListLayout';
 import { Modal } from '../shared/Modal';
-import { Tooltip } from '../shared/Tooltip';
 import { EmptyView } from '../shared/View';
 import { IngredientList } from './IngredientList';
 
@@ -78,7 +76,9 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
         <>
           <div className="flex items-center gap-3">
             <BooleanInput id={`${categoryId}-toggle`} checked={!isCategoryDisabled} onChange={() => toggleCategory(category)} />
-            <label className={`cursor-pointer font-medium ${isCategoryDisabled ? `${theme.textQuaternary} line-through` : theme.textSecondary}`}>
+            <label
+              className={`cursor-pointer font-medium ${isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}`}
+            >
               {category.description}
             </label>
           </div>
@@ -88,59 +88,48 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
     [disabledCategories, toggleCategory, theme],
   );
 
-  const renderItem = useCallback(
+  const renderItemPrefix = useCallback(
     (ingredient: IngredientDefinition) => {
       const isCategoryDisabled = disabledCategories.includes(ingredient.category);
       const ingredientName = ingredient.name.description ?? 'Unnamed Ingredient';
       const ingredientId = `manager-ingredient-${ingredientName.replace(/\s+/g, '-')}`;
       const isIngredientDisabled = disabledIngredients.includes(ingredient.name);
-      const isDisabled = isCategoryDisabled || isIngredientDisabled;
-
-      const labelClasses = [
-        'cursor-pointer truncate text-sm transition-colors duration-150',
-        theme.accentTextGroupHover,
-        isDisabled ? `${theme.textQuaternary} line-through` : theme.textSecondary,
-      ]
-        .filter(Boolean)
-        .join(' ');
-
-      const leftColumn = (
-        <div className="flex items-center gap-3">
-          <BooleanInput
-            id={ingredientId}
-            checked={!isIngredientDisabled}
-            disabled={isCategoryDisabled}
-            onChange={() => toggleIngredient(ingredient.name)}
-          />
-          <Tooltip content={ingredient.description} position="top" tooltipClassName="max-w-xs">
-            <label className={`cursor-default ${labelClasses}`}>{ingredientName}</label>
-          </Tooltip>
-        </div>
-      );
 
       return (
-        <li key={ingredient.name.toString()}>
-          <ItemListLayout
-            className={`group h-11 rounded-md px-2 py-1.5 transition-colors duration-150 ${theme.itemBg} ${theme.itemBgMutedHover}`}
-            leftContent={leftColumn}
-            leftClass="min-w-0 flex-grow"
-          />
-        </li>
+        <BooleanInput
+          id={ingredientId}
+          checked={!isIngredientDisabled}
+          disabled={isCategoryDisabled}
+          onChange={() => toggleIngredient(ingredient.name)}
+        />
       );
     },
-    [disabledCategories, disabledIngredients, toggleIngredient, theme],
+    [disabledCategories, disabledIngredients, toggleIngredient],
+  );
+
+  const isItemDisabled = useCallback(
+    (ingredient: IngredientDefinition) => {
+      return disabledCategories.includes(ingredient.category) || disabledIngredients.includes(ingredient.name);
+    },
+    [disabledCategories, disabledIngredients],
   );
 
   const content = useMemo(() => {
     if (filtered.size === 0 && query.trim() !== '') {
       return (
-        <EmptyView className="flex h-full w-full flex-grow flex-col items-center justify-center p-4">
-          {`No Ingredients Found for "${query}".`}
-        </EmptyView>
+        <EmptyView className="flex h-full w-full grow flex-col items-center justify-center p-4">{`No Ingredients Found for "${query}".`}</EmptyView>
       );
     }
-    return <IngredientList itemsByCategory={filtered} renderHeader={renderHeader} renderItem={renderItem} query={query} />;
-  }, [filtered, query, renderHeader, renderItem]);
+    return (
+      <IngredientList
+        itemsByCategory={filtered}
+        renderHeader={renderHeader}
+        renderItemPrefix={renderItemPrefix}
+        isItemDisabled={isItemDisabled}
+        query={query}
+      />
+    );
+  }, [filtered, query, renderHeader, renderItemPrefix, isItemDisabled]);
 
   return (
     <Modal isOpen={isModalOpen} onClose={closeModal} title="Manage Ingredients" size="lg" contentClassName="max-h-[80vh]">
@@ -148,7 +137,7 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
         containerClassName="flex h-full flex-col"
         listContent={content}
         listId={listId}
-        listWrapperClassName="mt-2 flex-grow overflow-y-auto"
+        listWrapperClassName="grow mt-2 overflow-y-auto"
         onQueryChange={setQuery}
         query={query}
         searchAriaLabel="Search ingredients or categories"

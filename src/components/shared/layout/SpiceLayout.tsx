@@ -65,7 +65,7 @@ const SpiceRenderer = memo(function SpiceRenderer({ spice, value: rawValue, onSp
         return (
           <textarea
             id={id}
-            className={`w-full rounded-md border p-2 outline-none disabled:cursor-not-allowed disabled:opacity-50 ${theme.border} ${theme.inputBg} ${theme.inputText} ${theme.textPlaceholder} focus:ring-2 focus:${theme.ascentRing}`}
+            className={`w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-2 text-${theme.contentPrimary} outline-none placeholder:text-${theme.contentTertiary} focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`}
             placeholder={spice.placeholder}
             rows={4}
             value={value}
@@ -92,7 +92,7 @@ const SpiceRenderer = memo(function SpiceRenderer({ spice, value: rawValue, onSp
   const fieldSetClass = isBoolean
     ? 'flex flex-row items-center justify-start gap-x-3'
     : 'flex flex-col gap-y-1 gap-x-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start';
-  const inputWrapperClass = isBoolean ? 'flex h-8 items-center' : 'w-full sm:w-auto sm:min-w-44 sm:flex-grow';
+  const inputWrapperClass = isBoolean ? 'flex h-8 items-center' : 'w-full sm:w-auto sm:min-w-44 sm:grow';
 
   return (
     <FormLayout
@@ -128,13 +128,13 @@ export const SpiceLayout = memo(function SpiceLayout({
   }, []);
 
   if (!ingredientDefinition.spices || ingredientDefinition.spices.length === 0) {
-    return <p className={`text-sm italic ${theme.textTertiary}`}>This ingredient has no configurable options.</p>;
+    return <p className={`text-sm italic text-${theme.contentTertiary}`}>This ingredient has no configurable options.</p>;
   }
 
   const visibleSpices = getVisibleSpices(ingredientDefinition, currentSpices);
 
   if (visibleSpices.length === 0) {
-    return <p className={`text-sm italic ${theme.textTertiary}`}>No options are available. Adjust other values to see more.</p>;
+    return <p className={`text-sm italic text-${theme.contentTertiary}`}>No options are available. Adjust other values to see more.</p>;
   }
 
   return (

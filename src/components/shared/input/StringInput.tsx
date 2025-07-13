@@ -34,15 +34,15 @@ export const StringInput = memo(function StringInput({
     'w-full',
     'rounded-md',
     'border',
+    `border-${theme.borderPrimary}`,
+    `bg-${theme.surfaceTertiary}`,
     'p-2',
+    `text-${theme.contentPrimary}`,
     'outline-none',
+    `placeholder:text-${theme.contentTertiary}`,
+    `focus:ring-2 focus:ring-${theme.ring}`,
     'disabled:cursor-not-allowed',
     'disabled:opacity-50',
-    theme.inputText,
-    theme.textPlaceholder,
-    theme.inputBg,
-    theme.border,
-    `focus:ring-2 focus:${theme.ascentRing}`,
   ]
     .filter(Boolean)
     .join(' ');

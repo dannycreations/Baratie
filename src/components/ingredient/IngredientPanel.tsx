@@ -11,14 +11,12 @@ import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
 import { PlusIcon, PreferencesIcon, SettingsIcon, StarIcon } from '../shared/Icon';
 import { DropzoneLayout } from '../shared/layout/DropzoneLayout';
-import { ItemListLayout } from '../shared/layout/ItemListLayout';
 import { SearchListLayout } from '../shared/layout/SearchListLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
-import { Tooltip } from '../shared/Tooltip';
 import { IngredientList } from './IngredientList';
 import { IngredientManager } from './IngredientManager';
 
-import type { DragEvent, JSX, MouseEvent } from 'react';
+import type { DragEvent, JSX } from 'react';
 import type { IngredientDefinition } from '../../core/IngredientRegistry';
 
 export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
@@ -82,39 +80,26 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
     [removeIngredient, setDraggedItemId],
   );
 
-  const handleDragStart = useCallback((event: DragEvent<HTMLElement>) => {
-    const typeString = event.currentTarget.dataset.ingredientId;
+  const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: IngredientDefinition) => {
+    const typeString = ingredientRegistry.getStringFromSymbol(item.name);
     errorHandler.assert(typeString, 'Ingredient ID not found on dragged element.', 'Ingredient Drag');
     event.dataTransfer.setData('application/x-baratie-ingredient-type', typeString);
     event.dataTransfer.effectAllowed = 'copy';
   }, []);
 
   const handleToggleFavorite = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      const typeString = event.currentTarget.dataset.ingredientId;
-      errorHandler.assert(typeString, 'Ingredient ID not found on favorite button.', 'Toggle Favorite');
-      const typeSymbol = ingredientRegistry.getSymbolFromString(typeString);
-      errorHandler.assert(typeSymbol, `Symbol not found for ID: ${typeString}`, 'Toggle Favorite');
+    (typeSymbol: symbol) => {
       toggle(typeSymbol);
     },
     [toggle],
   );
 
   const handleAddIngredient = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      const typeString = event.currentTarget.dataset.ingredientId;
-      errorHandler.assert(typeString, 'Ingredient ID not found on add button.', 'Add Ingredient');
-      const typeSymbol = ingredientRegistry.getSymbolFromString(typeString);
-      errorHandler.assert(typeSymbol, `Symbol not found for ID: ${typeString}`, 'Add Ingredient');
+    (typeSymbol: symbol) => {
       addIngredient(typeSymbol);
     },
     [addIngredient],
   );
-
-  const preventMouseDefault = useCallback((event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-  }, []);
 
   const headerActions = useMemo(
     () => (
@@ -144,43 +129,28 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
     [totalIngredients, visibleIngredients, openIngredientModal, openSettingModal, isIngredientOpen, isSettingOpen],
   );
 
-  const renderItem = useCallback(
+  const renderItemActions = useCallback(
     (item: IngredientDefinition) => {
       const ingredientName = item.name.description ?? 'Unnamed Ingredient';
       const isFavorite = favorites.includes(item.name);
-      const ingredientIdString = ingredientRegistry.getStringFromSymbol(item.name);
-      errorHandler.assert(ingredientIdString, `Could not get string from symbol for ingredient: ${ingredientName}`, 'Render Ingredient');
 
       const favoriteButtonClasses = [
         'opacity-70',
+        isFavorite ? `text-${theme.favoriteFg}` : `text-${theme.contentTertiary}`,
+        isFavorite ? `hover:text-${theme.favoriteFgHover}` : `hover:text-${theme.favoriteFg}`,
         'group-hover:opacity-100',
-        isFavorite ? theme.starFavorite : theme.textTertiary,
-        isFavorite ? theme.starFavoriteHover : theme.starNonFavoriteHover,
       ]
         .filter(Boolean)
         .join(' ');
 
-      const leftColumn = (
-        <Tooltip content={item.description} position="top" tooltipClassName="max-w-xs">
-          <span
-            className={`truncate pr-2 text-sm cursor-default transition-colors duration-150 ${theme.textSecondary} ${theme.accentTextGroupHover}`}
-          >
-            {ingredientName}
-          </span>
-        </Tooltip>
-      );
-
-      const rightColumn = (
+      return (
         <>
           <TooltipButton
             aria-label={isFavorite ? `Remove '${ingredientName}' from favorites` : `Add '${ingredientName}' to favorites`}
             aria-pressed={isFavorite}
             className={favoriteButtonClasses}
-            data-ingredient-id={ingredientIdString}
-            draggable={false}
             icon={<StarIcon isFilled={isFavorite} size={18} />}
-            onClick={handleToggleFavorite}
-            onMouseDown={preventMouseDefault}
+            onClick={() => handleToggleFavorite(item.name)}
             size="sm"
             tooltipContent={isFavorite ? `Remove '${ingredientName}' from favorites` : `Add '${ingredientName}' to favorites`}
             tooltipPosition="top"
@@ -189,11 +159,8 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
           <TooltipButton
             aria-label={`Add '${ingredientName}' to the recipe`}
             className="opacity-70 group-hover:opacity-100"
-            data-ingredient-id={ingredientIdString}
-            draggable={false}
             icon={<PlusIcon size={18} />}
-            onClick={handleAddIngredient}
-            onMouseDown={preventMouseDefault}
+            onClick={() => handleAddIngredient(item.name)}
             size="sm"
             tooltipContent={`Add '${ingredientName}' to Recipe`}
             tooltipPosition="top"
@@ -201,24 +168,14 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
           />
         </>
       );
-
-      return (
-        <li key={item.name.toString()} data-ingredient-id={ingredientIdString} draggable={true} onDragStart={handleDragStart}>
-          <ItemListLayout
-            className={`group h-11 rounded-md px-2 py-1.5 transition-colors duration-150 ${theme.itemBg} ${theme.itemBgMutedHover}`}
-            leftContent={leftColumn}
-            rightContent={rightColumn}
-          />
-        </li>
-      );
     },
-    [favorites, theme, handleDragStart, handleToggleFavorite, handleAddIngredient, preventMouseDefault],
+    [favorites, theme, handleToggleFavorite, handleAddIngredient],
   );
 
   return (
     <SectionLayout
       cardClassName="flex-1 min-h-0"
-      cardContentClassName={`relative flex h-full flex-col p-2 ${theme.textTertiary}`}
+      cardContentClassName={`relative flex h-full flex-col p-2 text-${theme.contentTertiary}`}
       headerActions={headerActions}
       title="Ingredients"
     >
@@ -231,7 +188,14 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
       >
         {isDragOverRecipe && <DropzoneLayout mode="overlay" text="Drop to Remove from Recipe" variant="remove" />}
         <SearchListLayout
-          listContent={<IngredientList itemsByCategory={ingredientsByCat} renderItem={renderItem} query={query} />}
+          listContent={
+            <IngredientList
+              itemsByCategory={ingredientsByCat}
+              renderItemActions={renderItemActions}
+              onItemDragStart={handleItemDragStart}
+              query={query}
+            />
+          }
           listId={listId}
           onQueryChange={setQuery}
           query={query}

@@ -89,18 +89,18 @@ function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
 
 export const EmptyView = memo(function EmptyView({
   children,
-  className = 'flex flex-grow flex-col items-center justify-center p-4',
+  className = 'flex grow flex-col items-center justify-center p-4',
   textClassName,
   icon,
   title,
 }: EmptyViewProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);
-  const finalClass = textClassName ?? `break-all text-center text-sm ${theme.textTertiary}`;
+  const finalClass = textClassName ?? `break-all text-center text-sm text-${theme.contentTertiary}`;
 
   return (
     <div role="status" aria-live="polite" className={className}>
       {icon && (
-        <div aria-hidden="true" className={`mb-2 ${theme.textQuaternary}`}>
+        <div aria-hidden="true" className={`mb-2 text-${theme.contentTertiary}`}>
           {icon}
         </div>
       )}
@@ -118,9 +118,9 @@ export const ErrorView = memo(function ErrorView({ error, errorInfo }: ErrorView
     return null;
   }
 
-  const detailsClasses = `max-h-48 overflow-y-auto rounded-md mt-6 p-3 text-left text-xs ${theme.itemBg}`;
-  const summaryClasses = `cursor-pointer font-medium ${theme.textTertiary} ${theme.textSecondaryHover}`;
-  const preClasses = `allow-text-selection mt-2 whitespace-pre-wrap ${theme.textSecondary}`;
+  const detailsClasses = `mt-6 max-h-48 overflow-y-auto rounded-md bg-${theme.surfaceTertiary} p-3 text-left text-xs`;
+  const summaryClasses = `cursor-pointer font-medium text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`;
+  const preClasses = `mt-2 whitespace-pre-wrap text-${theme.contentSecondary} allow-text-selection`;
 
   return (
     <details ref={detailsElementRef} className={detailsClasses}>

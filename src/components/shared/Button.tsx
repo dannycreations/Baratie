@@ -51,11 +51,11 @@ const ICON_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
 
 const getVariantClasses = (variant: ButtonVariant, theme: AppTheme): string => {
   const variantMap: Record<ButtonVariant, string> = {
-    primary: `${theme.borderTransparent} ${theme.accentBg} ${theme.buttonPrimaryText} ${theme.buttonPrimaryBgHover}`,
-    secondary: `${theme.itemBg} ${theme.textSecondary} ${theme.itemBgHover} ${theme.textPrimaryHover}`,
-    danger: `${theme.buttonDangerBorder} ${theme.transparent} ${theme.errorText} ${theme.buttonDangerBgHover} ${theme.buttonDangerTextHover}`,
-    stealth: `${theme.borderTransparent} ${theme.transparent} ${theme.textTertiary} ${theme.buttonStealthBgHover} ${theme.accentTextHover}`,
-    outline: `${theme.border} ${theme.transparent} ${theme.textSecondary} ${theme.buttonOutlineBorderHover} ${theme.buttonOutlineBgHover}`,
+    primary: `border-transparent bg-${theme.accentBg} text-${theme.accentFg} hover:bg-${theme.accentBgHover}`,
+    secondary: `bg-${theme.surfaceTertiary} text-${theme.contentSecondary} hover:bg-${theme.surfaceHover} hover:text-${theme.contentPrimary}`,
+    danger: `border-${theme.dangerBorder} bg-transparent text-${theme.dangerFg} hover:bg-${theme.dangerBgHover}`,
+    stealth: `border-transparent bg-transparent text-${theme.contentTertiary} hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}`,
+    outline: `border-${theme.borderPrimary} bg-transparent text-${theme.contentSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
   };
   return variantMap[variant] || variantMap.primary;
 };
@@ -87,9 +87,9 @@ export const Button = memo(function Button({
     [disabled, loading, onClick],
   );
 
-  const baseClasses = `inline-flex items-center justify-center border font-medium transition-all duration-150 ease-in-out focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:${theme.ascentRing}`;
+  const baseClasses = `inline-flex items-center justify-center border font-medium outline-none transition-all duration-150 ease-in-out focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
   const shapeClass = children ? 'rounded-md' : 'rounded-full';
-  const loadingClass = loading ? 'cursor-not-allowed opacity-60' : '';
+  const loadingClass = loading ? 'opacity-60' : '';
   const variantClass = getVariantClasses(variant, theme);
   const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
   const widthClass = fullWidth ? 'w-full' : '';
@@ -137,7 +137,7 @@ export const CopyButton = memo(function CopyButton({ textToCopy, tooltipPosition
   return (
     <TooltipButton
       aria-label={isCopied ? 'Result Copied to Clipboard' : 'Copy Result to Clipboard'}
-      className={isCopied ? `${theme.successText} ${theme.buttonSuccessBgHover} ${theme.buttonSuccessTextHover}` : ''}
+      className={isCopied ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : ''}
       disabled={!textToCopy || isCopied}
       icon={isCopied ? <CheckIcon size={18} /> : <CopyIcon size={18} />}
       onClick={handleCopy}

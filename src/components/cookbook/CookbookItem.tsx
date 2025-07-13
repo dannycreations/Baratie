@@ -61,9 +61,9 @@ export const CookbookItem = memo(function CookbookItem({ recipe, onLoad, onDelet
   const leftColumn = (
     <>
       <Tooltip content={recipe.name} position="top">
-        <p className={`truncate font-medium text-md cursor-default ${theme.textPrimary}`}>{recipe.name}</p>
+        <p className={`cursor-default truncate text-base font-medium text-${theme.contentPrimary}`}>{recipe.name}</p>
       </Tooltip>
-      <p className={`text-xs ${theme.textTertiary}`}>
+      <p className={`text-xs text-${theme.contentTertiary}`}>
         Last Updated: {formatTimestamp(recipe.updatedAt)} ({recipe.ingredients.length} steps)
       </p>
     </>
@@ -85,7 +85,7 @@ export const CookbookItem = memo(function CookbookItem({ recipe, onLoad, onDelet
       <TooltipButton
         aria-label={deleteLabel}
         className={deleteClasses}
-        icon={isDeleting ? <AlertTriangleIcon className={theme.errorText} size={18} /> : <Trash2Icon size={18} />}
+        icon={isDeleting ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
         onClick={handleDelete}
         size="sm"
         tooltipContent={deleteTip}
@@ -98,11 +98,11 @@ export const CookbookItem = memo(function CookbookItem({ recipe, onLoad, onDelet
   return (
     <li className="list-none">
       <ItemListLayout
-        className={`flex h-11 items-center justify-between rounded-md p-3 transition-colors duration-150 ${theme.itemBg} ${theme.itemBgHover}`}
+        className={`h-11 rounded-md bg-${theme.surfaceTertiary} p-3 transition-colors duration-150 hover:bg-${theme.surfaceHover}`}
         leftContent={leftColumn}
-        leftClass="min-w-0 flex-grow mr-2"
+        leftClass="grow min-w-0 mr-2"
         rightContent={rightColumn}
-        rightClass="flex flex-shrink-0 items-center space-x-2"
+        rightClass="flex shrink-0 items-center space-x-2"
       />
     </li>
   );

@@ -19,14 +19,14 @@ export const LoadingScreen = memo(function LoadingScreen(): JSX.Element {
     'flex-col',
     'items-center',
     'justify-center',
+    `bg-${theme.surfacePrimary}`,
     'transition-opacity',
     'duration-300',
-    theme.pageBg,
   ]
     .filter(Boolean)
     .join(' ');
 
-  const titleClasses = ['mt-6', 'text-2xl', 'font-semibold', 'tracking-wider', isError ? theme.errorText : theme.textSecondary]
+  const titleClasses = ['mt-6', 'text-2xl', 'font-semibold', 'tracking-wider', isError ? `text-${theme.dangerFg}` : `text-${theme.contentSecondary}`]
     .filter(Boolean)
     .join(' ');
 
@@ -34,11 +34,11 @@ export const LoadingScreen = memo(function LoadingScreen(): JSX.Element {
     <div role="status" aria-live="polite" aria-label={isError ? 'Application Failed to Load' : 'Loading Application'} className={containerClasses}>
       <div className="flex flex-col items-center p-4 text-center">
         {isError ? (
-          <AlertTriangleIcon className={theme.errorText} size={48} />
+          <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={48} />
         ) : (
           <svg
             aria-hidden="true"
-            className={`h-12 w-12 animate-spin ${theme.accentText}`}
+            className={`h-12 w-12 animate-spin text-${theme.infoFg}`}
             fill="none"
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
@@ -52,7 +52,7 @@ export const LoadingScreen = memo(function LoadingScreen(): JSX.Element {
           </svg>
         )}
         <h1 className={titleClasses}>{isError ? 'Kitchen on Fire!' : 'Opening the Baratie'}</h1>
-        <p key={message} className={`fade-in-text mt-2 ${theme.textTertiary}`}>
+        <p key={message} className={`mt-2 text-${theme.contentTertiary} fade-in-text`}>
           {isError ? `Galley Disaster: ${message}` : message}
         </p>
       </div>

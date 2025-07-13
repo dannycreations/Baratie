@@ -32,9 +32,9 @@ interface RecipeItemProps {
 function getStatusBorder(theme: AppTheme, status: CookingStatusType): string {
   const statusBorders: Readonly<Record<CookingStatusType, string>> = {
     idle: '',
-    error: theme.errorBorderStrong,
-    success: theme.successBorderStrong,
-    warning: theme.warningBorderStrong,
+    error: theme.dangerBorder,
+    success: theme.successBorder,
+    warning: theme.warningBorder,
   };
   return statusBorders[status];
 }
@@ -105,25 +105,26 @@ export const RecipeItem = memo(function RecipeItem({
   }${isEditorVisible ? '. The options editor is expanded.' : ''}`;
 
   const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
+  const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
   const classes = [
     'group',
     'flex',
     'flex-col',
     'items-stretch',
     'rounded-md',
+    `bg-${theme.surfaceTertiary}`,
     'text-sm',
     'transition-all',
     'duration-200',
     'ease-in-out',
-    theme.itemBg,
-    isDragged ? `z-10 scale-[0.97] opacity-60 !${theme.itemBgActive}` : 'scale-100 opacity-100',
-    statusBorder,
+    isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100',
+    statusBorderClass,
     hasSpices && isEditorVisible && 'pb-1',
   ]
     .filter(Boolean)
     .join(' ');
 
-  const grabHandleClasses = `mr-2 cursor-grab transition-colors ${theme.textQuaternary} group-hover:${theme.textSecondary}`;
+  const grabHandleClasses = `mr-2 cursor-grab text-${theme.contentTertiary} transition-colors group-hover:text-${theme.contentSecondary}`;
 
   const leftColumn = (
     <>
@@ -133,7 +134,7 @@ export const RecipeItem = memo(function RecipeItem({
         </span>
       </Tooltip>
       <Tooltip content={definition.name.description} position="top">
-        <span className={`truncate pr-2 font-medium cursor-default ${theme.textPrimary}`}>{ingredient.name.description}</span>
+        <span className={`cursor-default truncate pr-2 font-medium text-${theme.contentPrimary}`}>{ingredient.name.description}</span>
       </Tooltip>
     </>
   );
@@ -145,7 +146,7 @@ export const RecipeItem = memo(function RecipeItem({
           aria-controls={`options-${ingredient.id}`}
           aria-expanded={isEditorVisible}
           aria-label={settingsTooltip}
-          className={isEditorVisible ? '' : `${theme.textTertiary} ${theme.accentTextHover}`}
+          className={isEditorVisible ? '' : `text-${theme.contentTertiary} hover:text-${theme.infoFg}`}
           icon={<PreferencesIcon size={18} />}
           onClick={handleEditToggle}
           size="sm"
@@ -156,7 +157,7 @@ export const RecipeItem = memo(function RecipeItem({
       )}
       <TooltipButton
         aria-label={`Remove ingredient "${ingredient.name.description}" from recipe`}
-        className="opacity-50 group-hover:opacity-100 hover:!opacity-100"
+        className="opacity-50 hover:!opacity-100 group-hover:opacity-100"
         icon={<XIcon size={18} />}
         onClick={handleRemove}
         size="sm"
@@ -179,15 +180,15 @@ export const RecipeItem = memo(function RecipeItem({
       tabIndex={hasSpices && !isSpiceInInput ? 0 : -1}
     >
       <ItemListLayout
-        className="h-12 w-full cursor-default p-3"
+        className="h-12 cursor-default p-3"
         leftContent={leftColumn}
-        leftClass="min-w-0 flex flex-grow items-center"
+        leftClass="flex grow items-center min-w-0"
         rightContent={rightColumn}
       />
       {hasSpices && (
         <>
           {isSpiceInInput && (
-            <div className={`mx-1 mb-1 rounded-md border py-2 text-center text-xs italic ${theme.itemSpiceBg} ${theme.itemSpiceBorder}`}>
+            <div className={`mx-1 mb-1 rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} py-2 text-center text-xs italic`}>
               Options are managed in the Input panel.
             </div>
           )}
@@ -198,7 +199,7 @@ export const RecipeItem = memo(function RecipeItem({
               onDoubleClick={(event: MouseEvent<HTMLDivElement>): void => event.stopPropagation()}
             >
               <div className="max-h-96 overflow-y-auto px-1">
-                <div className={`rounded-md border p-3 pt-3 pl-3 pr-3 ${theme.itemSpiceBg} ${theme.itemSpiceBorder}`}>
+                <div className={`rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-3`}>
                   <SpiceLayout currentSpices={ingredient.spices} ingredientDefinition={definition} onSpiceChange={handleSpiceChange} />
                 </div>
               </div>

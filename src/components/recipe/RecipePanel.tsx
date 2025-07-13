@@ -116,10 +116,11 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
     const autoCookLabel = isAutoCookEnabled ? 'Pause Automatic Cooking' : 'Resume Automatic Cooking and Run';
 
     const autoCookClasses = [
-      isAutoCookEnabled ? theme.warningText : theme.successText,
-      isAutoCookEnabled ? theme.buttonWarningTextHover : theme.buttonSuccessTextHover,
-      isAutoCookEnabled ? theme.buttonWarningBgHover : theme.buttonSuccessBgHover,
-    ].join(' ');
+      isAutoCookEnabled ? `text-${theme.warningFg}` : `text-${theme.successFg}`,
+      isAutoCookEnabled ? `hover:!bg-${theme.warningBg}` : `hover:!bg-${theme.successBg}`,
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     return [
       <TooltipButton
@@ -176,7 +177,7 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
         return <DropzoneLayout mode="full" text="Drop to add ingredient" variant="add" />;
       }
       return (
-        <EmptyView className="flex h-full flex-grow flex-col items-center justify-center p-3">
+        <EmptyView className="flex h-full grow flex-col items-center justify-center p-3">
           No ingredients have been added.
           <br />
           Select from the Ingredients panel or drag them here.
@@ -225,12 +226,12 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
   ]);
 
   const listClasses = [
-    'flex-grow',
+    'grow',
     'overflow-y-auto',
+    `text-${theme.contentTertiary}`,
     'transition-colors',
     'duration-200',
-    theme.textTertiary,
-    isDraggingIngredient && theme.dropzoneRecipeBg,
+    isDraggingIngredient && `bg-${theme.surfaceMuted}`,
   ]
     .filter(Boolean)
     .join(' ');
@@ -238,7 +239,7 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
   return (
     <SectionLayout
       cardClassName="flex-1 min-h-0"
-      cardContentClassName={`relative flex h-full flex-col p-2 ${theme.textTertiary}`}
+      cardContentClassName={`relative flex h-full flex-col p-2 text-${theme.contentTertiary}`}
       headerActions={headerActions}
       title="Recipe"
     >

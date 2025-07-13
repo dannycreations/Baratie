@@ -29,8 +29,8 @@ export const FormLayout = memo(function FormLayout({
   const theme = useThemeStore((state) => state.theme);
 
   const fieldSetClasses = fieldSetClass ?? 'flex flex-col gap-y-1 gap-x-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start';
-  const labelClasses = labelClass ?? `font-medium text-sm ${theme.textSecondary}`;
-  const labelWrapClasses = labelWrapperClass ?? 'sm:flex-shrink-0';
+  const labelClasses = labelClass ?? `font-medium text-sm text-${theme.contentSecondary}`;
+  const labelWrapClasses = labelWrapperClass ?? 'sm:shrink-0';
   const inputWrapClasses = inputWrapperClass ?? '';
 
   const labelElement = (

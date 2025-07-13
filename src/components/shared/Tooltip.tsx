@@ -169,12 +169,12 @@ export const Tooltip = memo(function Tooltip({
 
   const tooltipArrows: Readonly<Record<TooltipPosition, string>> = useMemo(
     () => ({
-      bottom: `absolute bottom-full h-0 w-0 border-x-transparent border-t-transparent border-b-${theme.ascentTooltip}`,
-      left: `absolute left-full h-0 w-0 border-y-transparent border-r-transparent border-l-${theme.ascentTooltip}`,
-      right: `absolute right-full h-0 w-0 border-y-transparent border-l-transparent border-r-${theme.ascentTooltip}`,
-      top: `absolute top-full h-0 w-0 border-x-transparent border-b-transparent border-t-${theme.ascentTooltip}`,
+      bottom: `absolute bottom-full h-0 w-0 border-x-transparent border-t-transparent border-b-${theme.backdrop}`,
+      left: `absolute left-full h-0 w-0 border-y-transparent border-r-transparent border-l-${theme.backdrop}`,
+      right: `absolute right-full h-0 w-0 border-y-transparent border-l-transparent border-r-${theme.backdrop}`,
+      top: `absolute top-full h-0 w-0 border-x-transparent border-b-transparent border-t-${theme.backdrop}`,
     }),
-    [],
+    [theme.backdrop],
   );
   const arrowClasses = tooltipArrows[position] || tooltipArrows.top;
   const visibilityClass = isVisible && isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
@@ -200,20 +200,20 @@ export const Tooltip = memo(function Tooltip({
   const tooltipClasses = [
     'z-[1000]',
     'max-w-xs',
-    'whitespace-pre-line',
     'rounded-md',
     'border',
+    `border-${theme.surfaceTertiary}`,
+    `bg-${theme.backdrop}`,
     'px-2.5',
     'py-1.5',
     'text-xs',
     'font-medium',
+    `text-${theme.contentPrimary}`,
+    'whitespace-pre-line',
     'backdrop-blur-sm',
     'transition-opacity',
     'duration-150',
     'ease-in-out',
-    theme.tooltipText,
-    `bg-${theme.ascentTooltip}`,
-    theme.tooltipBorder,
     visibilityClass,
     tooltipClassName,
   ]

@@ -48,7 +48,7 @@ export const CookbookSave = memo(function CookbookSave({ nameInput, onNameChange
           />
         )}
       </FormLayout>
-      {isRecipeEmpty && <p className={`mt-2 text-sm ${theme.warningText}`}>The current recipe is empty. Add ingredients to save or export.</p>}
+      {isRecipeEmpty && <p className={`mt-2 text-sm text-${theme.warningFg}`}>The current recipe is empty. Add ingredients to save or export.</p>}
     </>
   );
 });

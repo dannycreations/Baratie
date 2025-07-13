@@ -107,7 +107,17 @@ export const Modal = memo(function Modal({
   }
 
   const modalSizeClass = MODAL_SIZE_MAP[size] || MODAL_SIZE_MAP.lg;
-  const modalClasses = ['flex', 'w-full', 'flex-col', 'rounded-lg', 'border', theme.cardBg, theme.border, modalSizeClass, contentClassName]
+  const modalClasses = [
+    'flex',
+    'w-full',
+    'flex-col',
+    'rounded-lg',
+    'border',
+    `border-${theme.borderPrimary}`,
+    `bg-${theme.surfaceSecondary}`,
+    modalSizeClass,
+    contentClassName,
+  ]
     .filter(Boolean)
     .join(' ');
 
@@ -117,13 +127,13 @@ export const Modal = memo(function Modal({
   errorHandler.assert(document.body, 'document.body is not available for Modal portal.', 'Modal Creation');
 
   const leftHeader = (
-    <h2 id={titleId} className={`flex-grow truncate pr-2 text-xl font-semibold ${theme.textPrimary}`}>
+    <h2 id={titleId} className={`grow truncate pr-2 text-xl font-semibold text-${theme.contentPrimary}`}>
       {title}
     </h2>
   );
   const rightHeader = (
     <>
-      {headerActions && <div className="flex flex-shrink-0 items-center space-x-2">{headerActions}</div>}
+      {headerActions && <div className="flex shrink-0 items-center space-x-2">{headerActions}</div>}
       <Button
         aria-label={`Close ${title || 'modal'}`}
         className={headerActions ? 'ml-2' : ''}
@@ -138,7 +148,7 @@ export const Modal = memo(function Modal({
   return createPortal(
     <div
       ref={backdropRef}
-      className={`fixed inset-0 z-[500] flex items-center justify-center p-4 backdrop-blur-sm ${theme.modalBackdrop} ${backdropAnimation}`}
+      className={`fixed inset-0 z-[500] flex items-center justify-center bg-${theme.backdrop} p-4 backdrop-blur-sm ${backdropAnimation}`}
       onClick={handleBackdropClick}
     >
       <div
@@ -152,13 +162,13 @@ export const Modal = memo(function Modal({
         tabIndex={-1}
       >
         {!hideHeader && (
-          <header className={`flex h-12 flex-shrink-0 items-center justify-between border-b p-3 ${theme.border}`}>
+          <header className={`flex h-12 shrink-0 items-center justify-between border-b border-${theme.borderPrimary} p-3`}>
             <HeaderLayout leftContent={leftHeader} rightContent={rightHeader} />
           </header>
         )}
-        <main className={`flex-grow overflow-y-auto p-3 ${bodyClassName}`}>{children}</main>
+        <main className={`grow overflow-y-auto p-3 ${bodyClassName}`}>{children}</main>
         {!hideFooter && footerContent && (
-          <footer className={`flex flex-shrink-0 justify-end space-x-3 border-t p-3 ${theme.border}`}>{footerContent}</footer>
+          <footer className={`flex shrink-0 justify-end space-x-3 border-t border-${theme.borderPrimary} p-3`}>{footerContent}</footer>
         )}
       </div>
     </div>,

@@ -1,5 +1,5 @@
 import type { AppTheme } from '../app/themes';
 
 export function getConfirmClasses(theme: AppTheme): string {
-  return ['border', theme.errorBorderLight, theme.errorBgLight, theme.errorTextLight, theme.errorBgHover].join(' ');
+  return ['border', `border-${theme.dangerBorder}`, `bg-${theme.dangerBg}`, `text-${theme.dangerFg}`, `hover:bg-${theme.dangerBgHover}`].join(' ');
 }

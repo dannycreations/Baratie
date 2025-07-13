@@ -63,21 +63,21 @@ export const TextareaInput = memo(function TextareaInput({
     'w-full',
     'resize-none',
     'p-2.5',
+    `text-${theme.contentPrimary}`,
     'outline-none',
     'allow-text-selection',
+    `placeholder:text-${theme.contentTertiary}`,
     'disabled:cursor-not-allowed',
-    theme.inputText,
-    theme.textPlaceholder,
   ];
 
   const baseTextClasses = [
     ...commonTextClasses,
     'rounded-md',
     'border',
+    `border-${theme.borderPrimary}`,
+    `bg-${theme.surfaceSecondary}`,
+    `focus:ring-2 focus:ring-${theme.ring}`,
     'disabled:opacity-50',
-    theme.textareaBg,
-    theme.border,
-    `focus:ring-2 focus:${theme.ascentRing}`,
   ]
     .filter(Boolean)
     .join(' ');
@@ -88,9 +88,9 @@ export const TextareaInput = memo(function TextareaInput({
     'overflow-hidden',
     'rounded-md',
     'border',
-    theme.textareaBg,
-    theme.border,
-    `focus-within:ring-2 focus-within:${theme.ascentRing}`,
+    `border-${theme.borderPrimary}`,
+    `bg-${theme.surfaceSecondary}`,
+    `focus-within:ring-2 focus-within:ring-${theme.ring}`,
   ]
     .filter(Boolean)
     .join(' ');
@@ -127,13 +127,13 @@ export const TextareaInput = memo(function TextareaInput({
       'shrink-0',
       'select-none',
       'overflow-y-hidden',
+      `border-r border-${theme.borderPrimary}`,
+      `bg-${theme.surfaceSecondary}`,
       'py-2.5',
-      'pr-2',
       'pl-2.5',
+      'pr-2',
       'text-right',
-      theme.textareaBg,
-      theme.textQuaternary,
-      `border-r ${theme.border}`,
+      `text-${theme.contentTertiary}`,
     ]
       .filter(Boolean)
       .join(' ');

@@ -28,17 +28,7 @@ const ERROR_DESCRIPTION_ID = 'error-dialog-description';
 function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);
 
-  const backdropClasses = [
-    'fixed',
-    'inset-0',
-    'z-[800]',
-    'flex',
-    'items-center',
-    'justify-center',
-    'p-4',
-    'backdrop-blur-sm',
-    theme.modalBackdropHeavy,
-  ]
+  const backdropClasses = ['fixed', 'inset-0', 'z-[800]', 'flex', 'items-center', 'justify-center', `bg-${theme.backdrop}`, 'p-4', 'backdrop-blur-sm']
     .filter(Boolean)
     .join(' ');
 
@@ -47,13 +37,13 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
     'max-w-md',
     'rounded-lg',
     'border',
+    `border-${theme.dangerBorder}`,
+    `bg-${theme.surfaceSecondary}`,
     'p-6',
     'text-center',
     'sm:max-w-lg',
     'md:max-w-2xl',
     'md:p-8',
-    theme.cardBg,
-    theme.errorBorderLight,
   ]
     .filter(Boolean)
     .join(' ');
@@ -67,13 +57,13 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
       className={backdropClasses}
     >
       <div className={dialogClasses}>
-        <div role="img" aria-label="Warning" className={`mb-4 text-5xl ${theme.errorTextStrong}`}>
+        <div role="img" aria-label="Warning" className={`mb-4 text-5xl text-${theme.dangerFg}`}>
           ⚠️
         </div>
-        <h2 id="error-dialog-title" className={`mb-3 text-2xl font-bold ${theme.errorText}`}>
+        <h2 id="error-dialog-title" className={`mb-3 text-2xl font-bold text-${theme.dangerFg}`}>
           A Kitchen Catastrophe!
         </h2>
-        <p id={ERROR_DESCRIPTION_ID} className={`mb-6 ${theme.textSecondary}`}>
+        <p id={ERROR_DESCRIPTION_ID} className={`mb-6 text-${theme.contentSecondary}`}>
           A sudden squall has hit the galley! Reloading might calm the seas.
         </p>
         <Button

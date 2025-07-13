@@ -38,7 +38,7 @@ function BaratieView(): JSX.Element {
   }
 
   return (
-    <div className={`h-screen w-screen overflow-hidden ${theme.pageBg} ${theme.pageText}`}>
+    <div className={`h-screen w-screen overflow-hidden bg-${theme.surfacePrimary} text-${theme.contentPrimary}`}>
       <main
         aria-label="Main Application Workspace"
         className="flex h-full w-full flex-col gap-4 overflow-y-auto p-4 md:flex-row md:overflow-hidden"

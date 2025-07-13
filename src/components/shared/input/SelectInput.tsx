@@ -27,22 +27,22 @@ export const SelectInput = memo(function SelectInput({
   const theme = useThemeStore((state) => state.theme);
   const selectInputStyle = [
     'w-full',
+    'appearance-none',
     'rounded-md',
     'border',
+    `border-${theme.borderPrimary}`,
+    `bg-${theme.surfaceTertiary}`,
     'p-2',
-    'outline-none',
-    'appearance-none',
     'pr-8',
+    `text-${theme.contentPrimary}`,
+    'outline-none',
     'transition-colors',
     'duration-150',
+    `placeholder:text-${theme.contentTertiary}`,
+    `hover:bg-${theme.surfaceHover}`,
+    `focus:ring-2 focus:ring-${theme.ring}`,
     'disabled:cursor-not-allowed',
     'disabled:opacity-50',
-    theme.inputText,
-    theme.textPlaceholder,
-    theme.inputBg,
-    theme.inputBgHover,
-    theme.border,
-    `focus:ring-2 focus:${theme.ascentRing}`,
   ]
     .filter(Boolean)
     .join(' ');
@@ -53,12 +53,12 @@ export const SelectInput = memo(function SelectInput({
     <div className="relative w-full">
       <select id={id} value={value} className={finalClasses} disabled={disabled} onChange={onChange} aria-label={ariaLabel} {...rest}>
         {options.map((option) => (
-          <option key={String(option.value)} value={String(option.value)} className={`${theme.cardBg} ${theme.textSecondary}`}>
+          <option key={String(option.value)} value={String(option.value)} className={`bg-${theme.surfaceSecondary} text-${theme.contentSecondary}`}>
             {option.label}
           </option>
         ))}
       </select>
-      <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${theme.textTertiary}`}>
+      <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-${theme.contentTertiary}`}>
         <ChevronDownIcon aria-hidden="true" size={20} />
       </div>
     </div>

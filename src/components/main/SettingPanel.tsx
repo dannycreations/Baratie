@@ -29,8 +29,16 @@ interface TabButtonProps {
 const TabButton = memo(function TabButton({ children, isActive, onClick }: TabButtonProps) {
   const theme = useThemeStore((state) => state.theme);
   const classes = [
-    'px-4 py-2 text-sm font-medium focus:outline-none transition-colors duration-150',
-    isActive ? `${theme.tabActiveText} ${theme.tabBorder}` : `${theme.tabInactiveText} border-b-2 ${theme.borderTransparent}`,
+    'px-4',
+    'py-2',
+    'text-sm',
+    'font-medium',
+    'rounded-t-md',
+    'transition-colors',
+    'duration-150',
+    'focus:outline-none',
+    isActive ? `border-b-2 border-${theme.infoBorder} text-${theme.infoFg}` : `border-b-2 border-transparent text-${theme.contentTertiary}`,
+    `focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-${theme.surfaceSecondary} focus-visible:ring-${theme.ring}`,
   ]
     .filter(Boolean)
     .join(' ');
@@ -47,18 +55,23 @@ interface PalettePreviewProps {
 
 const PalettePreview = memo(function PalettePreview({ theme }: PalettePreviewProps) {
   const swatchColors = [
-    { class: theme.pageBg, title: 'Page BG' },
-    { class: theme.cardBg, title: 'Card BG' },
-    { class: theme.accentBg, title: 'Accent' },
-    { class: theme.swatchTextBg, title: 'Text' },
-    { class: theme.swatchSuccessBg, title: 'Success' },
-    { class: theme.swatchErrorBg, title: 'Error' },
+    { color: theme.surfacePrimary, title: 'Page BG' },
+    { color: theme.surfaceSecondary, title: 'Card BG' },
+    { color: theme.accentBg, title: 'Accent' },
+    { color: theme.contentPrimary, title: 'Text' },
+    { color: theme.successFg, title: 'Success' },
+    { color: theme.dangerFg, title: 'Error' },
   ];
 
   return (
     <div className="flex items-center space-x-1.5" aria-label="Theme color palette preview">
-      {swatchColors.map(({ class: colorClass, title }, index) => (
-        <div key={`${title}-${index}`} className={`h-4 w-4 rounded-full border ${theme.border} ${colorClass}`} title={title} aria-label={title} />
+      {swatchColors.map(({ color, title }, index) => (
+        <div
+          key={`${title}-${index}`}
+          className={`h-4 w-4 rounded-full border border-${theme.borderPrimary} bg-${color}`}
+          title={title}
+          aria-label={title}
+        />
       ))}
     </div>
   );
@@ -83,10 +96,10 @@ const AppearanceSettings = memo(function AppearanceSettings() {
 
   return (
     <div role="radiogroup" aria-labelledby="theme-group-label">
-      <p id="theme-group-label" className={`mb-3 text-sm ${theme.textTertiary}`}>
+      <p id="theme-group-label" className={`mb-3 text-sm text-${theme.contentTertiary}`}>
         Select a color theme for the application.
       </p>
-      <div className={`overflow-hidden rounded-md border ${theme.border}`}>
+      <div className={`overflow-hidden rounded-md border border-${theme.borderPrimary}`}>
         {APP_THEMES.map((item, index) => {
           const isChecked = id === item.id;
           const radioClasses = [
@@ -95,14 +108,14 @@ const AppearanceSettings = memo(function AppearanceSettings() {
             'items-center',
             'justify-between',
             'p-4',
-            'focus:outline-none',
-            `focus:ring-2 focus:${theme.ascentRing}`,
-            theme.itemBgHover,
-            index > 0 && `border-t ${theme.border}`,
+            'outline-none',
+            `hover:bg-${theme.surfaceHover}`,
+            `focus:ring-2 focus:ring-${theme.ring}`,
+            index > 0 && `border-t border-${theme.borderPrimary}`,
           ]
             .filter(Boolean)
             .join(' ');
-          const nameClasses = ['font-medium', isChecked ? theme.accentText : theme.textSecondary].filter(Boolean).join(' ');
+          const nameClasses = ['font-medium', isChecked ? `text-${theme.infoFg}` : `text-${theme.contentSecondary}`].filter(Boolean).join(' ');
 
           return (
             <div
@@ -118,7 +131,7 @@ const AppearanceSettings = memo(function AppearanceSettings() {
                 <span className={nameClasses}>{item.name}</span>
                 <PalettePreview theme={item.theme} />
               </div>
-              {isChecked && <CheckIcon aria-hidden="true" className={theme.accentText} size={20} />}
+              {isChecked && <CheckIcon aria-hidden="true" className={`text-${theme.infoFg}`} size={20} />}
             </div>
           );
         })}
@@ -137,15 +150,15 @@ const ExtensionItemStatus = memo(function ExtensionItemStatus({
   const theme = useThemeStore((state) => state.theme);
 
   const statusMap = {
-    loading: { icon: <Loader2Icon className="animate-spin" size={16} />, text: 'Loading...', color: theme.textTertiary },
-    loaded: { icon: <CheckIcon size={16} />, text: 'Loaded', color: theme.successText },
-    error: { icon: <AlertTriangleIcon size={16} />, text: 'Error', color: theme.errorText },
-    partial: { icon: <AlertTriangleIcon size={16} />, text: 'Partial', color: theme.warningText },
+    loading: { icon: <Loader2Icon className="animate-spin" size={16} />, text: 'Loading...', color: theme.contentTertiary },
+    loaded: { icon: <CheckIcon size={16} />, text: 'Loaded', color: theme.successFg },
+    error: { icon: <AlertTriangleIcon size={16} />, text: 'Error', color: theme.dangerFg },
+    partial: { icon: <AlertTriangleIcon size={16} />, text: 'Partial', color: theme.warningFg },
   };
 
   const current = statusMap[status] || statusMap.error;
   const content = (
-    <div className={`flex items-center gap-1.5 text-xs font-medium ${current.color}`}>
+    <div className={`flex items-center gap-1.5 text-xs font-medium text-${current.color}`}>
       {current.icon}
       <span>{current.text}</span>
     </div>
@@ -225,9 +238,9 @@ const ExtensionSettings = memo(function ExtensionSettings() {
   return (
     <div className="space-y-4">
       <div>
-        <p className={`text-sm ${theme.textTertiary}`}>
+        <p className={`text-sm text-${theme.contentTertiary}`}>
           Add external ingredients by providing a link to a public GitHub repository. The repository must contain a{' '}
-          <code className={`rounded-md p-1 text-xs ${theme.itemSpiceBg} ${theme.textSecondary}`}>manifest.json</code> file.
+          <code className={`rounded-md bg-${theme.surfaceHover} p-1 text-xs text-${theme.contentSecondary}`}>manifest.json</code> file.
         </p>
       </div>
 
@@ -248,11 +261,11 @@ const ExtensionSettings = memo(function ExtensionSettings() {
       </div>
 
       <div>
-        <h4 className={`mb-2 text-md font-medium ${theme.textSecondary}`}>Installed Extensions</h4>
+        <h4 className={`mb-2 text-base font-medium text-${theme.contentSecondary}`}>Installed Extensions</h4>
         {extensions.length === 0 ? (
           <EmptyView>No extensions have been installed yet.</EmptyView>
         ) : (
-          <ul className={`space-y-2 rounded-md border p-2 ${theme.border}`}>
+          <ul className={`space-y-2 rounded-md border border-${theme.borderPrimary} p-2`}>
             {extensions.map((extension) => {
               const isDeleting = deletingId === extension.id;
               const deleteButtonTip = isDeleting ? 'Confirm Deletion' : 'Remove Extension';
@@ -262,11 +275,11 @@ const ExtensionSettings = memo(function ExtensionSettings() {
               return (
                 <li
                   key={extension.id}
-                  className={`flex items-center justify-between rounded-md p-3 text-sm transition-colors ${theme.itemBg} ${theme.itemBgMutedHover}`}
+                  className={`flex items-center justify-between rounded-md bg-${theme.surfaceTertiary} p-3 text-sm transition-colors hover:bg-${theme.surfaceMuted}`}
                 >
                   <div className="flex flex-col gap-1">
-                    <span className={`font-medium ${theme.textPrimary}`}>{extension.name}</span>
-                    <span className={`text-xs ${theme.textTertiary}`}>{extension.id}</span>
+                    <span className={`font-medium text-${theme.contentPrimary}`}>{extension.name}</span>
+                    <span className={`text-xs text-${theme.contentTertiary}`}>{extension.id}</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <ExtensionItemStatus status={extension.status} errors={extension.errors} />
@@ -274,7 +287,7 @@ const ExtensionSettings = memo(function ExtensionSettings() {
                       aria-label={deleteButtonLabel}
                       className={deleteButtonClasses}
                       data-extension-id={extension.id}
-                      icon={isDeleting ? <AlertTriangleIcon className={theme.errorText} size={18} /> : <Trash2Icon size={18} />}
+                      icon={isDeleting ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
                       size="sm"
                       tooltipContent={deleteButtonTip}
                       variant="danger"
@@ -318,7 +331,7 @@ export const SettingPanel = memo(function SettingPanel(): JSX.Element {
 
   return (
     <Modal isOpen={isModalOpen} onClose={closeModal} size="xl" title="Settings" contentClassName="flex max-h-[80vh] flex-col" bodyClassName="p-0">
-      <div role="tablist" aria-label="Settings categories" className={`flex border-b px-3 ${theme.border}`}>
+      <div role="tablist" aria-label="Settings categories" className={`flex border-b border-${theme.borderPrimary} px-3`}>
         <TabButton isActive={activeTab === 'appearance'} onClick={() => handleTabSelect('appearance')}>
           Appearance
         </TabButton>
