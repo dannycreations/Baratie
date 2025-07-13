@@ -117,8 +117,8 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
 
     const autoCookClasses = [
       isAutoCookEnabled ? theme.warningText : theme.successText,
-      isAutoCookEnabled ? theme.warningButtonTextHover : theme.successButtonTextHover,
-      isAutoCookEnabled ? theme.warningButtonBgHover : theme.successButtonBgHover,
+      isAutoCookEnabled ? theme.buttonWarningTextHover : theme.buttonSuccessTextHover,
+      isAutoCookEnabled ? theme.buttonWarningBgHover : theme.buttonSuccessBgHover,
     ].join(' ');
 
     return [

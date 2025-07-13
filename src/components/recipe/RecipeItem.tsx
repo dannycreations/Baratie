@@ -32,9 +32,9 @@ interface RecipeItemProps {
 function getStatusBorder(theme: AppTheme, status: CookingStatusType): string {
   const statusBorders: Readonly<Record<CookingStatusType, string>> = {
     idle: '',
-    error: theme.errorBorderRecipe,
-    success: theme.successBorderRecipe,
-    warning: theme.warningBorderRecipe,
+    error: theme.errorBorderStrong,
+    success: theme.successBorderStrong,
+    warning: theme.warningBorderStrong,
   };
   return statusBorders[status];
 }
@@ -115,16 +115,15 @@ export const RecipeItem = memo(function RecipeItem({
     'transition-all',
     'duration-200',
     'ease-in-out',
-    theme.shadow,
     theme.itemBg,
-    isDragged ? `z-10 scale-[0.97] opacity-60 !${theme.itemBgHovered} ${theme.shadow2xl}` : 'scale-100 opacity-100',
+    isDragged ? `z-10 scale-[0.97] opacity-60 !${theme.itemBgActive}` : 'scale-100 opacity-100',
     statusBorder,
     hasSpices && isEditorVisible && 'pb-1',
   ]
     .filter(Boolean)
     .join(' ');
 
-  const grabHandleClasses = `mr-2 cursor-grab transition-colors ${theme.textQuaternary} ${theme.groupHoverSecondary}`;
+  const grabHandleClasses = `mr-2 cursor-grab transition-colors ${theme.textQuaternary} group-hover:${theme.textSecondary}`;
 
   const leftColumn = (
     <>

@@ -58,12 +58,7 @@ const PalettePreview = memo(function PalettePreview({ theme }: PalettePreviewPro
   return (
     <div className="flex items-center space-x-1.5" aria-label="Theme color palette preview">
       {swatchColors.map(({ class: colorClass, title }, index) => (
-        <div
-          key={`${title}-${index}`}
-          className={`h-4 w-4 rounded-full border ${theme.inputBorder} ${colorClass}`}
-          title={title}
-          aria-label={title}
-        />
+        <div key={`${title}-${index}`} className={`h-4 w-4 rounded-full border ${theme.border} ${colorClass}`} title={title} aria-label={title} />
       ))}
     </div>
   );
@@ -91,7 +86,7 @@ const AppearanceSettings = memo(function AppearanceSettings() {
       <p id="theme-group-label" className={`mb-3 text-sm ${theme.textTertiary}`}>
         Select a color theme for the application.
       </p>
-      <div className={`overflow-hidden rounded-md border ${theme.inputBorder}`}>
+      <div className={`overflow-hidden rounded-md border ${theme.border}`}>
         {APP_THEMES.map((item, index) => {
           const isChecked = id === item.id;
           const radioClasses = [
@@ -101,9 +96,9 @@ const AppearanceSettings = memo(function AppearanceSettings() {
             'justify-between',
             'p-4',
             'focus:outline-none',
-            `focus:ring-2 focus:ring-inset ${theme.accentRing}`,
+            `focus:ring-2 focus:${theme.ascentRing}`,
             theme.itemBgHover,
-            index > 0 && `border-t ${theme.inputBorder}`,
+            index > 0 && `border-t ${theme.border}`,
           ]
             .filter(Boolean)
             .join(' ');
@@ -257,7 +252,7 @@ const ExtensionSettings = memo(function ExtensionSettings() {
         {extensions.length === 0 ? (
           <EmptyView>No extensions have been installed yet.</EmptyView>
         ) : (
-          <ul className={`space-y-2 rounded-md border p-2 ${theme.inputBorder}`}>
+          <ul className={`space-y-2 rounded-md border p-2 ${theme.border}`}>
             {extensions.map((extension) => {
               const isDeleting = deletingId === extension.id;
               const deleteButtonTip = isDeleting ? 'Confirm Deletion' : 'Remove Extension';
@@ -323,7 +318,7 @@ export const SettingPanel = memo(function SettingPanel(): JSX.Element {
 
   return (
     <Modal isOpen={isModalOpen} onClose={closeModal} size="xl" title="Settings" contentClassName="flex max-h-[80vh] flex-col" bodyClassName="p-0">
-      <div role="tablist" aria-label="Settings categories" className={`flex border-b px-3 ${theme.inputBorder}`}>
+      <div role="tablist" aria-label="Settings categories" className={`flex border-b px-3 ${theme.border}`}>
         <TabButton isActive={activeTab === 'appearance'} onClick={() => handleTabSelect('appearance')}>
           Appearance
         </TabButton>

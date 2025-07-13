@@ -3,7 +3,6 @@ import { memo, useCallback, useId, useMemo, useState } from 'react';
 import { ingredientRegistry } from '../../app/container';
 import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { ChevronRightIcon } from '../shared/Icon';
 import { BooleanInput } from '../shared/input/BooleanInput';
 import { ItemListLayout } from '../shared/layout/ItemListLayout';
 import { SearchListLayout } from '../shared/layout/SearchListLayout';
@@ -12,7 +11,7 @@ import { Tooltip } from '../shared/Tooltip';
 import { EmptyView } from '../shared/View';
 import { IngredientList } from './IngredientList';
 
-import type { JSX, KeyboardEvent } from 'react';
+import type { JSX } from 'react';
 import type { IngredientDefinition } from '../../core/IngredientRegistry';
 
 export const IngredientManager = memo(function IngredientManager(): JSX.Element {
@@ -70,60 +69,26 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
     return filteredMap;
   }, [ingredientsByCategory, query]);
 
-  const renderManagerHeader = useCallback(
-    (category: symbol, isExpanded: boolean, onToggle: (category: symbol) => void) => {
+  const renderHeader = useCallback(
+    (category: symbol) => {
       const categoryId = `manager-category-${(category.description ?? '').replace(/\s+/g, '-')}`;
       const isCategoryDisabled = disabledCategories.includes(category);
-      const categoryDescription = category.description ?? '';
 
       return (
-        <div
-          aria-expanded={isExpanded}
-          aria-label={`Toggle Category ${categoryDescription} Details`}
-          className={`flex h-12 w-full cursor-pointer items-center justify-between p-3 focus:outline-none focus:ring-2 focus:ring-inset ${theme.itemBg} ${theme.itemBgHover} ${theme.accentRing}`}
-          onClick={() => onToggle(category)}
-          onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              onToggle(category);
-            }
-          }}
-          role="button"
-          tabIndex={0}
-        >
-          <div
-            className="flex items-center gap-3"
-            onClick={(event) => event.stopPropagation()}
-            onKeyDown={(event) => {
-              if (event.key === ' ' || event.key === 'Enter') event.stopPropagation();
-            }}
-            role="presentation"
-          >
-            <BooleanInput
-              id={`${categoryId}-toggle`}
-              ariaLabel={`Enable or Disable Category: ${categoryDescription}`}
-              checked={!isCategoryDisabled}
-              onChange={() => toggleCategory(category)}
-            />
-            <label
-              htmlFor={`${categoryId}-toggle`}
-              className={`cursor-pointer font-medium ${isCategoryDisabled ? `${theme.textQuaternary} line-through` : theme.textSecondary}`}
-            >
-              {categoryDescription}
+        <>
+          <div className="flex items-center gap-3">
+            <BooleanInput id={`${categoryId}-toggle`} checked={!isCategoryDisabled} onChange={() => toggleCategory(category)} />
+            <label className={`cursor-pointer font-medium ${isCategoryDisabled ? `${theme.textQuaternary} line-through` : theme.textSecondary}`}>
+              {category.description}
             </label>
           </div>
-          <ChevronRightIcon
-            aria-hidden="true"
-            className={`flex-shrink-0 transform transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
-            size={20}
-          />
-        </div>
+        </>
       );
     },
     [disabledCategories, toggleCategory, theme],
   );
 
-  const renderManagerItem = useCallback(
+  const renderItem = useCallback(
     (ingredient: IngredientDefinition) => {
       const isCategoryDisabled = disabledCategories.includes(ingredient.category);
       const ingredientName = ingredient.name.description ?? 'Unnamed Ingredient';
@@ -140,18 +105,15 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
         .join(' ');
 
       const leftColumn = (
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex items-center gap-3">
           <BooleanInput
             id={ingredientId}
-            ariaLabel={`Toggle ingredient ${ingredientName}`}
             checked={!isIngredientDisabled}
             disabled={isCategoryDisabled}
             onChange={() => toggleIngredient(ingredient.name)}
           />
           <Tooltip content={ingredient.description} position="top" tooltipClassName="max-w-xs">
-            <label htmlFor={ingredientId} className={labelClasses}>
-              {ingredientName}
-            </label>
+            <label className={`cursor-default ${labelClasses}`}>{ingredientName}</label>
           </Tooltip>
         </div>
       );
@@ -177,8 +139,8 @@ export const IngredientManager = memo(function IngredientManager(): JSX.Element 
         </EmptyView>
       );
     }
-    return <IngredientList itemsByCategory={filtered} renderCategoryHeader={renderManagerHeader} renderItem={renderManagerItem} query={query} />;
-  }, [filtered, query, renderManagerHeader, renderManagerItem]);
+    return <IngredientList itemsByCategory={filtered} renderHeader={renderHeader} renderItem={renderItem} query={query} />;
+  }, [filtered, query, renderHeader, renderItem]);
 
   return (
     <Modal isOpen={isModalOpen} onClose={closeModal} title="Manage Ingredients" size="lg" contentClassName="max-h-[80vh]">

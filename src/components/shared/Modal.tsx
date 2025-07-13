@@ -107,18 +107,7 @@ export const Modal = memo(function Modal({
   }
 
   const modalSizeClass = MODAL_SIZE_MAP[size] || MODAL_SIZE_MAP.lg;
-  const modalClasses = [
-    'flex',
-    'w-full',
-    'flex-col',
-    'rounded-lg',
-    'border',
-    theme.cardBg,
-    theme.inputBorder,
-    theme.shadow2xl,
-    modalSizeClass,
-    contentClassName,
-  ]
+  const modalClasses = ['flex', 'w-full', 'flex-col', 'rounded-lg', 'border', theme.cardBg, theme.border, modalSizeClass, contentClassName]
     .filter(Boolean)
     .join(' ');
 
@@ -163,13 +152,13 @@ export const Modal = memo(function Modal({
         tabIndex={-1}
       >
         {!hideHeader && (
-          <header className={`flex h-12 flex-shrink-0 items-center justify-between border-b p-3 ${theme.inputBorder}`}>
+          <header className={`flex h-12 flex-shrink-0 items-center justify-between border-b p-3 ${theme.border}`}>
             <HeaderLayout leftContent={leftHeader} rightContent={rightHeader} />
           </header>
         )}
         <main className={`flex-grow overflow-y-auto p-3 ${bodyClassName}`}>{children}</main>
         {!hideFooter && footerContent && (
-          <footer className={`flex flex-shrink-0 justify-end space-x-3 border-t p-3 ${theme.inputBorder}`}>{footerContent}</footer>
+          <footer className={`flex flex-shrink-0 justify-end space-x-3 border-t p-3 ${theme.border}`}>{footerContent}</footer>
         )}
       </div>
     </div>,

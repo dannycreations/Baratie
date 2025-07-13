@@ -76,8 +76,8 @@ export const TextareaInput = memo(function TextareaInput({
     'border',
     'disabled:opacity-50',
     theme.textareaBg,
-    theme.inputBorder,
-    theme.inputFocusRing,
+    theme.border,
+    `focus:ring-2 focus:${theme.ascentRing}`,
   ]
     .filter(Boolean)
     .join(' ');
@@ -88,15 +88,14 @@ export const TextareaInput = memo(function TextareaInput({
     'overflow-hidden',
     'rounded-md',
     'border',
-    'focus-within:ring-2',
     theme.textareaBg,
-    theme.inputBorder,
-    theme.inputFocusRing,
+    theme.border,
+    `focus-within:ring-2 focus-within:${theme.ascentRing}`,
   ]
     .filter(Boolean)
     .join(' ');
 
-  const linedTextClasses = [...commonTextClasses, theme.textareaLinedBg].filter(Boolean).join(' ');
+  const linedTextClasses = [...commonTextClasses, 'bg-transparent'].filter(Boolean).join(' ');
 
   const renderStandard = (): JSX.Element => (
     <div className={['relative', wrapperClass].filter(Boolean).join(' ')} {...dropZoneProps}>
@@ -133,8 +132,8 @@ export const TextareaInput = memo(function TextareaInput({
       'pl-2.5',
       'text-right',
       theme.textareaBg,
-      theme.linedGutterText,
-      theme.linedGutterBorder,
+      theme.textQuaternary,
+      `border-r ${theme.border}`,
     ]
       .filter(Boolean)
       .join(' ');

@@ -41,8 +41,8 @@ export const SelectInput = memo(function SelectInput({
     theme.textPlaceholder,
     theme.inputBg,
     theme.inputBgHover,
-    theme.inputBorder,
-    theme.inputFocusRing,
+    theme.border,
+    `focus:ring-2 focus:${theme.ascentRing}`,
   ]
     .filter(Boolean)
     .join(' ');

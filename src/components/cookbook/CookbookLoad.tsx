@@ -56,7 +56,7 @@ export const CookbookLoad = memo(function CookbookLoad({
         searchAriaLabel="Search saved recipes"
         searchId="recipe-search"
         searchPlaceholder="Search Saved Recipes..."
-        searchWrapperClassName={`border-b pb-3 ${theme.inputBorder}`}
+        searchWrapperClassName={`border-b pb-3 ${theme.border}`}
       />
       <input ref={importRef} type="file" accept=".json" onChange={onImport} className="hidden" aria-hidden="true" />
     </>

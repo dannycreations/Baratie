@@ -169,12 +169,12 @@ export const Tooltip = memo(function Tooltip({
 
   const tooltipArrows: Readonly<Record<TooltipPosition, string>> = useMemo(
     () => ({
-      bottom: `absolute bottom-full h-0 w-0 border-x-transparent border-t-transparent ${theme.tooltipArrowBottom}`,
-      left: `absolute left-full h-0 w-0 border-y-transparent border-r-transparent ${theme.tooltipArrowLeft}`,
-      right: `absolute right-full h-0 w-0 border-y-transparent border-l-transparent ${theme.tooltipArrowRight}`,
-      top: `absolute top-full h-0 w-0 border-x-transparent border-b-transparent ${theme.tooltipArrowTop}`,
+      bottom: `absolute bottom-full h-0 w-0 border-x-transparent border-t-transparent border-b-${theme.ascentTooltip}`,
+      left: `absolute left-full h-0 w-0 border-y-transparent border-r-transparent border-l-${theme.ascentTooltip}`,
+      right: `absolute right-full h-0 w-0 border-y-transparent border-l-transparent border-r-${theme.ascentTooltip}`,
+      top: `absolute top-full h-0 w-0 border-x-transparent border-b-transparent border-t-${theme.ascentTooltip}`,
     }),
-    [theme],
+    [],
   );
   const arrowClasses = tooltipArrows[position] || tooltipArrows.top;
   const visibilityClass = isVisible && isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
@@ -212,9 +212,8 @@ export const Tooltip = memo(function Tooltip({
     'duration-150',
     'ease-in-out',
     theme.tooltipText,
-    theme.tooltipBg,
+    `bg-${theme.ascentTooltip}`,
     theme.tooltipBorder,
-    theme.shadowLg,
     visibilityClass,
     tooltipClassName,
   ]

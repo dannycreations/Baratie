@@ -41,9 +41,8 @@ export const StringInput = memo(function StringInput({
     theme.inputText,
     theme.textPlaceholder,
     theme.inputBg,
-    theme.inputBorder,
-    theme.inputFocusNoBorder,
-    theme.inputFocusRing,
+    theme.border,
+    `focus:ring-2 focus:${theme.ascentRing}`,
   ]
     .filter(Boolean)
     .join(' ');

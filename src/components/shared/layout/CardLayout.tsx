@@ -41,7 +41,7 @@ export const CardLayout = memo(function CardLayout({
     .filter(Boolean)
     .join(' ');
   const contentClass = ['flex-grow', 'overflow-auto', 'p-3', contentClassName].filter(Boolean).join(' ');
-  const containerClass = ['flex', 'flex-col', 'overflow-hidden', 'rounded-lg', theme.cardBg, theme.shadowXl, className].filter(Boolean).join(' ');
+  const containerClass = ['flex', 'flex-col', 'overflow-hidden', 'rounded-lg', theme.cardBg, className].filter(Boolean).join(' ');
 
   return (
     <section role="region" aria-live={ariaLive} aria-labelledby={titleId} className={containerClass}>

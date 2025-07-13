@@ -24,15 +24,14 @@ export const BooleanInput = memo(function BooleanInput({
   const theme = useThemeStore((state) => state.theme);
 
   const containerClasses = `relative inline-flex cursor-pointer items-center ${className}`;
-  const peerFocusClasses = `peer-focus:ring-2 peer-focus:ring-offset-2 ${theme.accentRing} ${theme.inputBooleanFocusRing}`;
 
   const switchClasses = [
     `peer h-6 w-11 rounded-full after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:content-[''] after:transition-all peer-focus:outline-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50`,
     theme.inputBg,
     theme.inputBooleanHandle,
-    theme.accentBgChecked,
-    theme.inputCheckedHandle,
-    peerFocusClasses,
+    `peer-checked:${theme.accentBg}`,
+    'peer-checked:after:translate-x-full',
+    `peer-focus:ring-2 peer-focus:${theme.ascentRing}`,
   ]
     .filter(Boolean)
     .join(' ');

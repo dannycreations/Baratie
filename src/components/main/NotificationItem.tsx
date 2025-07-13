@@ -23,10 +23,10 @@ type NotificationTheme = {
 
 function getNotificationTheme(theme: AppTheme, type: NotificationType): NotificationTheme {
   const map: Record<NotificationType, NotificationTheme> = {
-    error: { bar: theme.errorBg, border: theme.errorBorder, icon: theme.errorTextDark },
+    error: { bar: theme.errorBg, border: theme.errorBorder, icon: theme.errorTextStrong },
     info: { bar: theme.infoBg, border: theme.infoBorder, icon: theme.infoText },
-    success: { bar: theme.successBg, border: theme.successBorder, icon: theme.successTextDark },
-    warning: { bar: theme.warningBg, border: theme.warningBorder, icon: theme.warningTextDark },
+    success: { bar: theme.successBg, border: theme.successBorder, icon: theme.successTextStrong },
+    warning: { bar: theme.warningBg, border: theme.warningBorder, icon: theme.warningTextStrong },
   };
   return map[type] || map.info;
 }
@@ -91,7 +91,6 @@ export const NotificationItem = memo(function NotificationItem({ notification }:
     'rounded-lg',
     'border-l-4',
     theme.cardBg,
-    theme.shadow2xl,
     borderClass,
     animationClass,
     isPaused && 'notification-paused',

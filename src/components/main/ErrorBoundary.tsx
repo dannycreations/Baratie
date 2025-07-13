@@ -54,7 +54,6 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
     'md:p-8',
     theme.cardBg,
     theme.errorBorderLight,
-    theme.shadow2xl,
   ]
     .filter(Boolean)
     .join(' ');
@@ -68,7 +67,7 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
       className={backdropClasses}
     >
       <div className={dialogClasses}>
-        <div role="img" aria-label="Warning" className={`mb-4 text-5xl ${theme.errorTextDark}`}>
+        <div role="img" aria-label="Warning" className={`mb-4 text-5xl ${theme.errorTextStrong}`}>
           ⚠️
         </div>
         <h2 id="error-dialog-title" className={`mb-3 text-2xl font-bold ${theme.errorText}`}>

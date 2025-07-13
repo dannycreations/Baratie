@@ -144,11 +144,11 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
     [totalIngredients, visibleIngredients, openIngredientModal, openSettingModal, isIngredientOpen, isSettingOpen],
   );
 
-  const renderIngredient = useCallback(
-    (ingredient: IngredientDefinition) => {
-      const ingredientName = ingredient.name.description ?? 'Unnamed Ingredient';
-      const isFavorite = favorites.includes(ingredient.name);
-      const ingredientIdString = ingredientRegistry.getStringFromSymbol(ingredient.name);
+  const renderItem = useCallback(
+    (item: IngredientDefinition) => {
+      const ingredientName = item.name.description ?? 'Unnamed Ingredient';
+      const isFavorite = favorites.includes(item.name);
+      const ingredientIdString = ingredientRegistry.getStringFromSymbol(item.name);
       errorHandler.assert(ingredientIdString, `Could not get string from symbol for ingredient: ${ingredientName}`, 'Render Ingredient');
 
       const favoriteButtonClasses = [
@@ -161,7 +161,7 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
         .join(' ');
 
       const leftColumn = (
-        <Tooltip content={ingredient.description} position="top" tooltipClassName="max-w-xs">
+        <Tooltip content={item.description} position="top" tooltipClassName="max-w-xs">
           <span
             className={`truncate pr-2 text-sm cursor-default transition-colors duration-150 ${theme.textSecondary} ${theme.accentTextGroupHover}`}
           >
@@ -203,7 +203,7 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
       );
 
       return (
-        <li key={ingredient.name.toString()} data-ingredient-id={ingredientIdString} draggable={true} onDragStart={handleDragStart}>
+        <li key={item.name.toString()} data-ingredient-id={ingredientIdString} draggable={true} onDragStart={handleDragStart}>
           <ItemListLayout
             className={`group h-11 rounded-md px-2 py-1.5 transition-colors duration-150 ${theme.itemBg} ${theme.itemBgMutedHover}`}
             leftContent={leftColumn}
@@ -231,7 +231,7 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
       >
         {isDragOverRecipe && <DropzoneLayout mode="overlay" text="Drop to Remove from Recipe" variant="remove" />}
         <SearchListLayout
-          listContent={<IngredientList itemsByCategory={ingredientsByCat} renderItem={renderIngredient} query={query} />}
+          listContent={<IngredientList itemsByCategory={ingredientsByCat} renderItem={renderItem} query={query} />}
           listId={listId}
           onQueryChange={setQuery}
           query={query}
