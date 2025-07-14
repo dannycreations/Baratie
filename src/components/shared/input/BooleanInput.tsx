@@ -12,8 +12,8 @@ interface BooleanInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   readonly onChange: ChangeEventHandler<HTMLInputElement>;
 }
 
-export const BooleanInput = memo(
-  ({ id, checked, onChange, className = '', disabled = false, ariaLabel, ...rest }: BooleanInputProps): JSX.Element => {
+export const BooleanInput = memo<BooleanInputProps>(
+  ({ id, checked, onChange, className = '', disabled = false, ariaLabel, ...rest }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
     const containerClasses = `relative inline-flex cursor-pointer items-center ${className}`;

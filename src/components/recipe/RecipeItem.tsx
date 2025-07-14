@@ -10,7 +10,7 @@ import { Tooltip } from '../shared/Tooltip';
 
 import type { DragEvent, JSX, KeyboardEvent, MouseEvent } from 'react';
 import type { AppTheme } from '../../app/themes';
-import type { Ingredient, SpiceDefinition } from '../../core/IngredientRegistry';
+import type { Ingredient, SpiceDefinition, SpiceValue } from '../../core/IngredientRegistry';
 import type { CookingStatusType } from '../../core/Kitchen';
 
 interface RecipeItemProps {
@@ -25,7 +25,7 @@ interface RecipeItemProps {
   readonly onDragOver: (event: DragEvent<HTMLElement>) => void;
   readonly onDragStart: (event: DragEvent<HTMLElement>, ingredient: Ingredient) => void;
   readonly onRemove: (id: string) => void;
-  readonly onSpiceChange: (ingredientId: string, spiceId: string, newValue: string | boolean | number, spice: SpiceDefinition) => void;
+  readonly onSpiceChange: (ingredientId: string, spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => void;
   readonly onEditToggle: (ingredient: Ingredient) => void;
 }
 
@@ -39,7 +39,7 @@ function getStatusBorder(theme: AppTheme, status: CookingStatusType): string {
   return statusBorders[status];
 }
 
-export const RecipeItem = memo(
+export const RecipeItem = memo<RecipeItemProps>(
   ({
     ingredient,
     isEditing,
@@ -54,7 +54,7 @@ export const RecipeItem = memo(
     onDragEnter,
     onDragEnd,
     onDragOver,
-  }: RecipeItemProps): JSX.Element => {
+  }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
     const definition = ingredientRegistry.getIngredient(ingredient.name);
@@ -71,7 +71,7 @@ export const RecipeItem = memo(
     const handleEditToggle = useCallback(() => onEditToggle(ingredient), [onEditToggle, ingredient]);
 
     const handleSpiceChange = useCallback(
-      (spiceId: string, newValue: string | boolean | number, spice: SpiceDefinition) => {
+      (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => {
         onSpiceChange(ingredient.id, spiceId, newValue, spice);
       },
       [onSpiceChange, ingredient.id],

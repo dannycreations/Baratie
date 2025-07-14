@@ -31,7 +31,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
 
   const nameRef = useRef<HTMLInputElement>(null);
   const importRef = useRef<HTMLInputElement>(null);
-  const importOperationRef = useRef(0);
+  const importOperationRef = useRef<number>(0);
 
   const isRecipeEmpty = ingredients.length === 0;
 
@@ -79,7 +79,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
 
   const title = modalMode === 'save' ? 'Add to Cookbook' : 'Open from Cookbook';
 
-  const headerActions = useMemo(() => {
+  const headerActions = useMemo<JSX.Element>(() => {
     const isSaveDisabled = !nameInput.trim() || isRecipeEmpty;
     return modalMode === 'save' ? (
       <>
@@ -123,7 +123,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
     );
   }, [modalMode, nameInput, isRecipeEmpty, recipes.length, handleExportCurrent, handleSave, handleTriggerImport, handleExportAll]);
 
-  const bodyContent = useMemo(
+  const bodyContent = useMemo<JSX.Element>(
     () =>
       modalMode === 'save' ? (
         <CookbookSave isRecipeEmpty={isRecipeEmpty} nameRef={nameRef} onNameChange={setName} onSave={handleSave} nameInput={nameInput} />

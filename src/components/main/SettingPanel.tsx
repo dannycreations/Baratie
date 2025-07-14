@@ -20,6 +20,7 @@ import type { ChangeEvent, JSX, KeyboardEvent, MouseEvent } from 'react';
 import type { AppTheme } from '../../app/themes';
 import type { Extension } from '../../stores/useExtensionStore';
 import type { SettingTab } from '../../stores/useSettingStore';
+import type { ThemeId } from '../../stores/useThemeStore';
 
 interface TabButtonProps {
   readonly children: string;
@@ -27,7 +28,7 @@ interface TabButtonProps {
   readonly onClick: () => void;
 }
 
-const TabButton = memo(({ children, isActive, onClick }: TabButtonProps): JSX.Element => {
+const TabButton = memo<TabButtonProps>(({ children, isActive, onClick }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const classes = [
     'px-4',
@@ -54,7 +55,7 @@ interface PalettePreviewProps {
   readonly theme: AppTheme;
 }
 
-const PalettePreview = memo(({ theme }: PalettePreviewProps): JSX.Element => {
+const PalettePreview = memo<PalettePreviewProps>(({ theme }): JSX.Element => {
   const swatchColors = [
     { color: theme.surfacePrimary, title: 'Page BG' },
     { color: theme.surfaceSecondary, title: 'Card BG' },
@@ -84,7 +85,7 @@ const AppearanceSettings = memo((): JSX.Element => {
   const setTheme = useThemeStore((state) => state.setTheme);
 
   const handleSelectTheme = useCallback(
-    (themeId: string) => {
+    (themeId: ThemeId) => {
       const themeToSet = APP_THEMES.find((theme) => theme.id === themeId);
       if (themeToSet) {
         setTheme(themeToSet.id);
@@ -162,7 +163,12 @@ const AppearanceSettings = memo((): JSX.Element => {
   );
 });
 
-const ExtensionItemStatus = memo(({ status, errors }: { readonly status: Extension['status']; readonly errors?: readonly string[] }): JSX.Element => {
+interface ExtensionItemStatusProps {
+  readonly status: Extension['status'];
+  readonly errors?: readonly string[];
+}
+
+const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
   const statusMap = {
@@ -344,7 +350,7 @@ export const SettingPanel = memo((): JSX.Element => {
     [setActiveTab],
   );
 
-  const bodyContent = useMemo(() => {
+  const bodyContent = useMemo<JSX.Element | null>(() => {
     switch (activeTab) {
       case 'appearance':
         return <AppearanceSettings />;

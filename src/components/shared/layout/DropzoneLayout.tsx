@@ -20,7 +20,7 @@ const DROPZONE_MODE_MAP: Readonly<Record<DropzoneMode, string>> = {
   placeholder: 'mt-1.5 h-14 text-sm',
 };
 
-export const DropzoneLayout = memo(({ text, variant = 'add', mode = 'placeholder', className = '' }: DropzoneProps): JSX.Element => {
+export const DropzoneLayout = memo<DropzoneProps>(({ text, variant = 'add', mode = 'placeholder', className = '' }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
   const dropzoneThemeMap: Readonly<Record<DropzoneVariant, string>> = {

@@ -111,7 +111,7 @@ export const RecipePanel = memo((): JSX.Element => {
     openCookbook({ mode: 'load' });
   }, []);
 
-  const headerActions = useMemo(() => {
+  const headerActions = useMemo<JSX.Element[]>(() => {
     const autoCookTooltip = isAutoCookEnabled ? 'Pause Auto-Cooking' : 'Resume Auto-Cooking';
     const autoCookLabel = isAutoCookEnabled ? 'Pause Automatic Cooking' : 'Resume Automatic Cooking and Run';
 
@@ -171,7 +171,7 @@ export const RecipePanel = memo((): JSX.Element => {
     ];
   }, [ingredients.length, isAutoCookEnabled, clear, handleSave, handleLoad, theme, isCookbookOpen]);
 
-  const content = useMemo(() => {
+  const content = useMemo<JSX.Element>(() => {
     if (ingredients.length === 0) {
       if (isDraggingIngredient) {
         return <DropzoneLayout mode="full" text="Drop to add ingredient" variant="add" />;

@@ -4,7 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { errorHandler, ingredientRegistry, logger } from '../app/container';
 import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
 
-import type { Ingredient, SpiceDefinition } from '../core/IngredientRegistry';
+import type { Ingredient, SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
 
 interface RecipeState {
   readonly activeRecipeId: string | null;
@@ -16,7 +16,7 @@ interface RecipeState {
   readonly setRecipe: (ingredients: readonly Ingredient[], activeRecipeId?: string | null) => void;
   readonly setActiveRecipeId: (id: string | null) => void;
   readonly setIngredientSpices: (id: string, newSpices: Readonly<Record<string, unknown>>) => void;
-  readonly updateSpice: (id: string, spiceId: string, rawValue: string | boolean | number, spice: Readonly<SpiceDefinition>) => void;
+  readonly updateSpice: (id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>) => void;
 }
 
 export const useRecipeStore = create<RecipeState>()(
@@ -78,7 +78,7 @@ export const useRecipeStore = create<RecipeState>()(
         logger.warn(
           `Ingredient definition not found for type "${String(ingredient.name)}" during setRecipe. Options may not be correctly validated.`,
         );
-        return { ...ingredient, spices: ingredient.spices };
+        return ingredient;
       });
 
       const newActiveRecipeId = validIngredients.length > 0 ? activeRecipeId : null;
@@ -90,15 +90,24 @@ export const useRecipeStore = create<RecipeState>()(
     },
 
     setIngredientSpices(id, newSpices) {
-      const ingredientToUpdate = get().ingredients.find((ingredient) => ingredient.id === id);
-      errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${id}" not found for spice update.`, 'Recipe Update Spices');
+      set((state) => {
+        const ingredientToUpdate = state.ingredients.find((ingredient) => ingredient.id === id);
+        errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${id}" not found for spice update.`, 'Recipe Update Spices');
 
-      const ingredientDefinition = ingredientRegistry.getIngredient(ingredientToUpdate.name);
-      const validatedSpices = ingredientDefinition ? validateSpices(ingredientDefinition, newSpices) : newSpices;
+        const ingredientDefinition = ingredientRegistry.getIngredient(ingredientToUpdate.name);
+        if (!ingredientDefinition) {
+          logger.warn(
+            `Cannot update spices for ingredient "${ingredientToUpdate.name.description}" because its definition is missing. Spices will not be updated.`,
+          );
+          return {};
+        }
 
-      set((state) => ({
-        ingredients: state.ingredients.map((ingredient) => (ingredient.id === id ? { ...ingredient, spices: validatedSpices } : ingredient)),
-      }));
+        const validatedSpices = validateSpices(ingredientDefinition, newSpices);
+
+        return {
+          ingredients: state.ingredients.map((ingredient) => (ingredient.id === id ? { ...ingredient, spices: validatedSpices } : ingredient)),
+        };
+      });
     },
 
     updateSpice(id, spiceId, rawValue, spice) {

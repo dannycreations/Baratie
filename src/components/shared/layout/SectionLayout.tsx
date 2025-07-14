@@ -13,8 +13,8 @@ interface SectionLayoutProps {
   readonly title: ReactNode;
 }
 
-export const SectionLayout = memo(
-  ({ title, headerActions, children, cardClassName, cardContentClassName, ariaLive }: SectionLayoutProps): JSX.Element => {
+export const SectionLayout = memo<SectionLayoutProps>(
+  ({ title, headerActions, children, cardClassName, cardContentClassName, ariaLive }): JSX.Element => {
     const content = typeof children === 'function' ? children() : children;
     return (
       <CardLayout ariaLive={ariaLive} className={cardClassName} contentClassName={cardContentClassName} headerActions={headerActions} title={title}>

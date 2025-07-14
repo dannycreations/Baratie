@@ -16,7 +16,7 @@ interface StringInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, '
   readonly onChange: ChangeEventHandler<HTMLInputElement>;
 }
 
-export const StringInput = memo(
+export const StringInput = memo<StringInputProps>(
   ({
     id,
     value,
@@ -29,7 +29,7 @@ export const StringInput = memo(
     ariaLabel,
     ariaControls,
     ...rest
-  }: StringInputProps): JSX.Element => {
+  }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const standardInputStyle = [
       'w-full',

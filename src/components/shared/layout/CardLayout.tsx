@@ -15,8 +15,8 @@ interface CardLayoutProps {
   readonly title: ReactNode;
 }
 
-export const CardLayout = memo(
-  ({ title, headerActions, children, className = '', contentClassName = '', ariaLive }: CardLayoutProps): JSX.Element => {
+export const CardLayout = memo<CardLayoutProps>(
+  ({ title, headerActions, children, className = '', contentClassName = '', ariaLive }): JSX.Element => {
     const contentRef = useOverflowScroll<HTMLDivElement>({ xClassName: 'pr-2', yClassName: 'pb-2' });
     const titleId = useId();
     const theme = useThemeStore((state) => state.theme);

@@ -56,7 +56,7 @@ export const IngredientList = memo(
 
     const categoryEntries = Array.from(itemsByCategory.entries());
 
-    const renderListItem = (item: T) => {
+    const renderListItem = (item: T): JSX.Element => {
       const ingredientName = item.name.description ?? 'Unnamed Ingredient';
       const ingredientIdString = ingredientRegistry.getStringFromSymbol(item.name);
       errorHandler.assert(ingredientIdString, `Could not get string from symbol for ingredient: ${ingredientName}`, 'Render Ingredient');

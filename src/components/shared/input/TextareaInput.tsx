@@ -23,7 +23,7 @@ interface TextareaInputProps
   readonly onChange?: (value: string) => void;
 }
 
-export const TextareaInput = memo(
+export const TextareaInput = memo<TextareaInputProps>(
   ({
     value,
     onChange,
@@ -36,7 +36,7 @@ export const TextareaInput = memo(
     disabled = false,
     showLineNumbers = false,
     ...rest
-  }: TextareaInputProps): JSX.Element => {
+  }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const lineNumbersRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);

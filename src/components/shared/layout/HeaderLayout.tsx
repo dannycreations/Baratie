@@ -7,7 +7,7 @@ interface HeaderLayoutProps {
   readonly rightContent?: ReactNode;
 }
 
-export const HeaderLayout = memo(({ leftContent, rightContent }: HeaderLayoutProps): JSX.Element => {
+export const HeaderLayout = memo<HeaderLayoutProps>(({ leftContent, rightContent }): JSX.Element => {
   return (
     <>
       {leftContent}

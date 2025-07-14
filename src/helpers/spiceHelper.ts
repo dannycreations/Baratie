@@ -1,12 +1,12 @@
 import { errorHandler, logger } from '../app/container';
 import { InputType } from '../core/InputType';
 
-import type { IngredientDefinition, SpiceDefinition } from '../core/IngredientRegistry';
+import type { IngredientDefinition, SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
 
 function isSpiceVisible(
   spice: Readonly<SpiceDefinition>,
   allSpices: readonly SpiceDefinition[],
-  currentSpices: Readonly<Record<string, unknown>>,
+  currentSpices: Readonly<Record<string, SpiceValue>>,
 ): boolean {
   if (!spice.dependsOn || spice.dependsOn.length === 0) return true;
 
@@ -22,7 +22,7 @@ function isSpiceVisible(
   });
 }
 
-function prepareSelectValue(newValue: string | boolean | number, spice: Readonly<SpiceDefinition>): string | boolean | number {
+function prepareSelectValue(newValue: SpiceValue, spice: Readonly<SpiceDefinition>): SpiceValue {
   if (spice.type !== 'select') {
     return newValue;
   }
@@ -32,7 +32,7 @@ function prepareSelectValue(newValue: string | boolean | number, spice: Readonly
 
 export function getVisibleSpices(
   ingredientDefinition: Readonly<IngredientDefinition>,
-  currentSpices: Readonly<Record<string, unknown>>,
+  currentSpices: Readonly<Record<string, SpiceValue>>,
 ): SpiceDefinition[] {
   const allSpices = ingredientDefinition.spices || [];
   if (!allSpices.length) return [];
@@ -41,11 +41,11 @@ export function getVisibleSpices(
 
 export function updateAndValidate(
   ingredientDefinition: Readonly<IngredientDefinition>,
-  currentSpices: Readonly<Record<string, unknown>>,
+  currentSpices: Readonly<Record<string, SpiceValue>>,
   spiceId: string,
-  rawValue: string | boolean | number,
+  rawValue: SpiceValue,
   spice: Readonly<SpiceDefinition>,
-): Record<string, unknown> {
+): Record<string, SpiceValue> {
   const processedValue = prepareSelectValue(rawValue, spice);
   const newSpices = { ...currentSpices, [spiceId]: processedValue };
   return validateSpices(ingredientDefinition, newSpices);
@@ -54,8 +54,8 @@ export function updateAndValidate(
 export function validateSpices(
   ingredientDefinition: Readonly<IngredientDefinition>,
   rawSpices: Readonly<Record<string, unknown>>,
-): Record<string, unknown> {
-  const validatedSpices: Record<string, unknown> = {};
+): Record<string, SpiceValue> {
+  const validatedSpices: Record<string, SpiceValue> = {};
   if (!ingredientDefinition.spices) return {};
 
   for (const spice of ingredientDefinition.spices) {
@@ -76,7 +76,7 @@ export function validateSpices(
       case 'select': {
         const selectedValue = input.getValue();
         const isValidOption = spice.options.some((opt) => String(opt.value) === String(selectedValue));
-        validatedSpices[spice.id] = isValidOption ? prepareSelectValue(String(selectedValue), spice) : spice.value;
+        validatedSpices[spice.id] = isValidOption ? prepareSelectValue(selectedValue as SpiceValue, spice) : spice.value;
         break;
       }
       case 'string':
@@ -86,10 +86,9 @@ export function validateSpices(
         validatedSpices[spice.id] = input.cast('string', { trim: false, value: spice.value }).getValue();
         break;
       default: {
-        const unhandled: never = spice;
-        const spiceId = (unhandled as SpiceDefinition).id;
-        logger.warn(`An unhandled spice type was encountered: ${spiceId}`);
-        validatedSpices[spiceId] = input.getValue();
+        const unhandled = spice as SpiceDefinition;
+        logger.warn(`An unhandled spice type was encountered: ${unhandled.id}`);
+        validatedSpices[unhandled.id] = input.getValue() as SpiceValue;
       }
     }
   }

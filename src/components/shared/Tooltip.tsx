@@ -21,8 +21,8 @@ export interface TooltipProps {
 const ARROW_SIZE_PX = 5;
 const TOOLTIP_GAP_PX = 8;
 
-export const Tooltip = memo(
-  ({ content, children, position = 'top', delay = 200, className = '', tooltipClassName = '', disabled = false }: TooltipProps): JSX.Element => {
+export const Tooltip = memo<TooltipProps>(
+  ({ content, children, position = 'top', delay = 200, className = '', tooltipClassName = '', disabled = false }): JSX.Element => {
     const { activeId, setActiveId } = useTooltipStore();
     const theme = useThemeStore((state) => state.theme);
 
@@ -172,6 +172,30 @@ export const Tooltip = memo(
     const arrowClasses = tooltipArrows[position] || tooltipArrows.top;
     const visibilityClass = isVisible && isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
 
+    const tooltipClasses = useMemo(
+      () =>
+        [
+          'z-[1000]',
+          'max-w-xs',
+          'rounded-md',
+          `bg-${theme.backdrop}`,
+          'px-3',
+          'py-1.5',
+          'text-sm',
+          `text-${theme.accentFg}`,
+          'font-medium',
+          'shadow-lg',
+          'transition-opacity',
+          'duration-150',
+          'whitespace-pre-line',
+          visibilityClass,
+          tooltipClassName,
+        ]
+          .filter(Boolean)
+          .join(' '),
+      [theme.backdrop, theme.accentFg, visibilityClass, tooltipClassName],
+    );
+
     const triggerClasses = ['relative', 'inline-flex', className].filter(Boolean).join(' ');
     const triggerElement = (
       <div
@@ -189,29 +213,6 @@ export const Tooltip = memo(
     if (disabled || !content) {
       return triggerElement;
     }
-
-    const tooltipClasses = [
-      'z-[1000]',
-      'max-w-xs',
-      'rounded-md',
-      'border',
-      `border-${theme.surfaceTertiary}`,
-      `bg-${theme.backdrop}`,
-      'px-2.5',
-      'py-1.5',
-      'text-xs',
-      'font-medium',
-      `text-${theme.contentPrimary}`,
-      'whitespace-pre-line',
-      'backdrop-blur-sm',
-      'transition-opacity',
-      'duration-150',
-      'ease-in-out',
-      visibilityClass,
-      tooltipClassName,
-    ]
-      .filter(Boolean)
-      .join(' ');
 
     const tooltipElement = isVisible
       ? createPortal(

@@ -1,6 +1,6 @@
 import { useRecipeStore } from '../stores/useRecipeStore';
 
-import type { Ingredient, SpiceDefinition } from '../core/IngredientRegistry';
+import type { Ingredient, SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
 
 export function addIngredient(type: symbol, initialSpices?: Record<string, unknown>): void {
   useRecipeStore.getState().addIngredient(type, initialSpices);
@@ -34,6 +34,6 @@ export function setRecipe(ingredients: readonly Ingredient[], activeRecipeId: st
   useRecipeStore.getState().setRecipe(ingredients, activeRecipeId);
 }
 
-export function updateSpice(id: string, spiceId: string, rawValue: string | boolean | number, spice: SpiceDefinition): void {
+export function updateSpice(id: string, spiceId: string, rawValue: SpiceValue, spice: SpiceDefinition): void {
   useRecipeStore.getState().updateSpice(id, spiceId, rawValue, spice);
 }

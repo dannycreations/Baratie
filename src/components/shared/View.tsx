@@ -87,8 +87,8 @@ function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
   }
 }
 
-export const EmptyView = memo(
-  ({ children, className = 'flex grow flex-col items-center justify-center p-4', textClassName, icon, title }: EmptyViewProps): JSX.Element => {
+export const EmptyView = memo<EmptyViewProps>(
+  ({ children, className = 'flex grow flex-col items-center justify-center p-4', textClassName, icon, title }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const finalClass = textClassName ?? `break-all text-center text-sm text-${theme.contentTertiary}`;
 
@@ -106,7 +106,7 @@ export const EmptyView = memo(
   },
 );
 
-export const ErrorView = memo(({ error, errorInfo }: ErrorViewProps): JSX.Element | null => {
+export const ErrorView = memo<ErrorViewProps>(({ error, errorInfo }): JSX.Element | null => {
   const detailsElementRef = useOverflowScroll<HTMLDetailsElement>({ xClassName: 'pr-2', yClassName: 'pb-2' });
   const theme = useThemeStore((state) => state.theme);
 

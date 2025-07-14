@@ -101,7 +101,7 @@ export const IngredientPanel = memo((): JSX.Element => {
     [addIngredient],
   );
 
-  const headerActions = useMemo(
+  const headerActions = useMemo<JSX.Element>(
     () => (
       <>
         <TooltipButton
@@ -130,7 +130,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   );
 
   const renderItemActions = useCallback(
-    (item: IngredientDefinition) => {
+    (item: IngredientDefinition): JSX.Element => {
       const ingredientName = item.name.description ?? 'Unnamed Ingredient';
       const isFavorite = favorites.includes(item.name);
 

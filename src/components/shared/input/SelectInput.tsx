@@ -1,22 +1,44 @@
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { ChevronDownIcon } from '../Icon';
 
 import type { ChangeEventHandler, JSX, SelectHTMLAttributes } from 'react';
+import type { SpiceValue } from '../../../core/IngredientRegistry';
 
-interface SelectInputProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'value'> {
+interface SelectInputProps<T extends SpiceValue> extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'value'> {
   readonly ariaLabel?: string;
   readonly className?: string;
   readonly id: string;
-  readonly options: readonly { readonly label: string; readonly value: string | number | boolean }[];
-  readonly value: string;
-  readonly onChange: ChangeEventHandler<HTMLSelectElement>;
+  readonly options: readonly { readonly label: string; readonly value: T }[];
+  readonly value: T;
+  readonly onChange: (value: T) => void;
 }
 
 export const SelectInput = memo(
-  ({ id, value, onChange, options, className = '', disabled = false, ariaLabel, ...rest }: SelectInputProps): JSX.Element => {
+  <T extends SpiceValue>({
+    id,
+    value,
+    onChange,
+    options,
+    className = '',
+    disabled = false,
+    ariaLabel,
+    ...rest
+  }: SelectInputProps<T>): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
+
+    const handleChange = useCallback<ChangeEventHandler<HTMLSelectElement>>(
+      (event) => {
+        const stringValue = event.target.value;
+        const selectedOption = options.find((opt) => String(opt.value) === stringValue);
+        if (selectedOption) {
+          onChange(selectedOption.value);
+        }
+      },
+      [options, onChange],
+    );
+
     const selectInputStyle = [
       'w-full',
       'appearance-none',
@@ -43,7 +65,7 @@ export const SelectInput = memo(
 
     return (
       <div className="relative w-full">
-        <select id={id} value={value} className={finalClasses} disabled={disabled} onChange={onChange} aria-label={ariaLabel} {...rest}>
+        <select id={id} value={String(value)} className={finalClasses} disabled={disabled} onChange={handleChange} aria-label={ariaLabel} {...rest}>
           {options.map((option) => (
             <option key={String(option.value)} value={String(option.value)} className={`bg-${theme.surfaceSecondary} text-${theme.contentSecondary}`}>
               {option.label}

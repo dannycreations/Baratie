@@ -19,8 +19,8 @@ interface CookbookLoadProps {
   readonly onQueryChange: (query: string) => void;
 }
 
-export const CookbookLoad = memo(
-  ({ query, onQueryChange, recipes, totalRecipes, onLoad, onDelete, importRef, onImport }: CookbookLoadProps): JSX.Element => {
+export const CookbookLoad = memo<CookbookLoadProps>(
+  ({ query, onQueryChange, recipes, totalRecipes, onLoad, onDelete, importRef, onImport }): JSX.Element => {
     const listId = useId();
     const theme = useThemeStore((state) => state.theme);
 

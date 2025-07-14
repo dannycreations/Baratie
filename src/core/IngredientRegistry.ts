@@ -2,10 +2,12 @@ import { logger } from '../app/container';
 import { useIngredientStore } from '../stores/useIngredientStore';
 import { InputType } from './InputType';
 
+export type SpiceValue = string | number | boolean;
+
 export interface Ingredient {
   readonly id: string;
   readonly name: symbol;
-  readonly spices: Readonly<Record<string, unknown>>;
+  readonly spices: Readonly<Record<string, SpiceValue>>;
 }
 
 export interface RecipeBookItem {
@@ -41,7 +43,7 @@ export interface IngredientDefinition<T = unknown, InType = unknown, OutType = u
 
 export interface SpiceDependency {
   readonly spiceId: string;
-  readonly value: string | number | boolean | readonly (string | number | boolean)[];
+  readonly value: SpiceValue | readonly SpiceValue[];
 }
 
 export type SpiceDefinition = StringSpice | TextareaSpice | NumberSpice | BooleanSpice | SelectSpice;
@@ -96,8 +98,8 @@ type NumberSpice = BaseSpice<'number', number> & {
   readonly step?: number;
 };
 
-type SelectSpice = BaseSpice<'select', boolean | number | string> & {
-  readonly options: readonly { readonly label: string; readonly value: boolean | number | string }[];
+type SelectSpice = BaseSpice<'select', SpiceValue> & {
+  readonly options: readonly { readonly label: string; readonly value: SpiceValue }[];
   readonly max?: never;
   readonly min?: never;
   readonly placeholder?: never;

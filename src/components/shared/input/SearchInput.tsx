@@ -14,8 +14,8 @@ interface SearchInputProps {
   readonly onQueryChange: (query: string) => void;
 }
 
-export const SearchInput = memo(
-  ({ id, query, onQueryChange, className = '', placeholder = 'Search...', ariaLabel, ...rest }: SearchInputProps): JSX.Element => {
+export const SearchInput = memo<SearchInputProps>(
+  ({ id, query, onQueryChange, className = '', placeholder = 'Search...', ariaLabel, ...rest }): JSX.Element => {
     const handleChange = useCallback(
       (event: ChangeEvent<HTMLInputElement>) => {
         onQueryChange(event.target.value);

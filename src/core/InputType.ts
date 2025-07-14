@@ -215,7 +215,7 @@ export class InputType<T = unknown> {
       }
 
       default: {
-        const unhandled: never = targetType;
+        const unhandled = String(targetType);
         return handleFailure(new CastError(`Unhandled cast target type: ${unhandled}`));
       }
     }

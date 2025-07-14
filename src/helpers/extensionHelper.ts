@@ -131,7 +131,7 @@ function parseGitHubUrl(url: string): { owner: string; repo: string } | null {
 }
 
 export async function initExtensions(): Promise<void> {
-  const rawExtensions = storage.get(STORAGE_EXTENSIONS, 'Extensions');
+  const rawExtensions = storage.get<StorableExtension[]>(STORAGE_EXTENSIONS, 'Extensions');
   const extensions: Extension[] = [];
 
   if (Array.isArray(rawExtensions)) {
@@ -172,7 +172,7 @@ export async function addExtension(url: string): Promise<void> {
     if (!response.ok) {
       throw new Error(`Could not fetch manifest: ${response.statusText}`);
     }
-    const manifest = await response.json();
+    const manifest: unknown = await response.json();
 
     if (!isExtensionManifest(manifest)) {
       throw new Error('Manifest must contain a "name" and a non-empty "entry" (string or array).');

@@ -28,7 +28,7 @@ function formatTimestamp(timestamp: number): string {
   });
 }
 
-export const CookbookItem = memo(({ recipe, onLoad, onDelete }: CookbookItemProps): JSX.Element => {
+export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete }): JSX.Element => {
   const [isDeleting, setDeleting] = useState(false);
   const theme = useThemeStore((state) => state.theme);
 

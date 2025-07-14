@@ -68,7 +68,7 @@ export const IngredientManager = memo((): JSX.Element => {
   }, [ingredientsByCategory, query]);
 
   const renderHeader = useCallback(
-    (category: symbol) => {
+    (category: symbol): JSX.Element => {
       const categoryId = `manager-category-${(category.description ?? '').replace(/\s+/g, '-')}`;
       const isCategoryDisabled = disabledCategories.includes(category);
 
@@ -89,7 +89,7 @@ export const IngredientManager = memo((): JSX.Element => {
   );
 
   const renderItemPrefix = useCallback(
-    (ingredient: IngredientDefinition) => {
+    (ingredient: IngredientDefinition): JSX.Element => {
       const isCategoryDisabled = disabledCategories.includes(ingredient.category);
       const ingredientName = ingredient.name.description ?? 'Unnamed Ingredient';
       const ingredientId = `manager-ingredient-${ingredientName.replace(/\s+/g, '-')}`;
@@ -114,7 +114,7 @@ export const IngredientManager = memo((): JSX.Element => {
     [disabledCategories, disabledIngredients],
   );
 
-  const content = useMemo(() => {
+  const content = useMemo<JSX.Element>(() => {
     if (filtered.size === 0 && query.trim() !== '') {
       return (
         <EmptyView className="flex h-full w-full grow flex-col items-center justify-center p-4">{`No Ingredients Found for "${query}".`}</EmptyView>

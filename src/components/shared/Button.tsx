@@ -60,7 +60,7 @@ const getVariantClasses = (variant: ButtonVariant, theme: AppTheme): string => {
   return variantMap[variant] || variantMap.primary;
 };
 
-export const Button = memo(
+export const Button = memo<ButtonProps>(
   ({
     children,
     variant = 'primary',
@@ -74,7 +74,7 @@ export const Button = memo(
     type = 'button',
     onClick,
     ...props
-  }: ButtonProps): JSX.Element => {
+  }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
     const handleClick = useCallback(
@@ -126,7 +126,7 @@ export const Button = memo(
   },
 );
 
-export const CopyButton = memo(({ textToCopy, tooltipPosition = 'top' }: CopyButtonProps): JSX.Element => {
+export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition = 'top' }): JSX.Element => {
   const [isCopied, setIsCopied] = useState(false);
   const theme = useThemeStore((state) => state.theme);
 
@@ -157,8 +157,8 @@ export const CopyButton = memo(({ textToCopy, tooltipPosition = 'top' }: CopyBut
   );
 });
 
-export const TooltipButton = memo(
-  ({ tooltipContent, tooltipPosition, tooltipClassName, tooltipDisabled, ...buttonProps }: TooltipButtonProps): JSX.Element => {
+export const TooltipButton = memo<TooltipButtonProps>(
+  ({ tooltipContent, tooltipPosition, tooltipClassName, tooltipDisabled, ...buttonProps }): JSX.Element => {
     return (
       <Tooltip
         content={tooltipContent}

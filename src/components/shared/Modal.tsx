@@ -39,7 +39,7 @@ const MODAL_SIZE_MAP: Readonly<Record<ModalSize, string>> = {
   full: 'max-w-full sm:h-[90vh] sm:max-h-[90vh]',
 };
 
-export const Modal = memo(
+export const Modal = memo<ModalProps>(
   ({
     isOpen,
     onClose,
@@ -55,7 +55,7 @@ export const Modal = memo(
     hideFooter = false,
     contentClassName = '',
     bodyClassName = '',
-  }: ModalProps): JSX.Element | null => {
+  }): JSX.Element | null => {
     const [isRendered, setIsRendered] = useState(false);
     const theme = useThemeStore((state) => state.theme);
     const backdropRef = useRef<HTMLDivElement>(null);

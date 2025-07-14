@@ -11,13 +11,13 @@ import { SectionLayout } from '../shared/layout/SectionLayout';
 import { SpiceLayout } from '../shared/layout/SpiceLayout';
 
 import type { ChangeEvent, JSX } from 'react';
-import type { SpiceDefinition } from '../../core/IngredientRegistry';
+import type { SpiceDefinition, SpiceValue } from '../../core/IngredientRegistry';
 
 interface KitchenPanelProps {
   readonly type: 'input' | 'output';
 }
 
-export const KitchenPanel = memo(({ type }: KitchenPanelProps): JSX.Element => {
+export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const inputPanelConfig = useKitchenStore((state) => state.inputPanelConfig);
   const outputPanelConfig = useKitchenStore((state) => state.outputPanelConfig);
   const inputData = useKitchenStore((state) => state.inputData);
@@ -26,7 +26,7 @@ export const KitchenPanel = memo(({ type }: KitchenPanelProps): JSX.Element => {
   const updateSpice = useRecipeStore((state) => state.updateSpice);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const importOperationRef = useRef(0);
+  const importOperationRef = useRef<number>(0);
 
   const isInput = type === 'input';
   const data = isInput ? inputData : outputData;
@@ -68,14 +68,14 @@ export const KitchenPanel = memo(({ type }: KitchenPanelProps): JSX.Element => {
   }, [data]);
 
   const handleSpiceChange = useCallback(
-    (spiceId: string, rawValue: string | boolean | number, spice: SpiceDefinition) => {
+    (spiceId: string, rawValue: SpiceValue, spice: SpiceDefinition) => {
       if (inputPanelConfig?.mode !== 'spiceEditor') return;
       updateSpice(inputPanelConfig.targetIngredientId, spiceId, rawValue, spice);
     },
     [inputPanelConfig, updateSpice],
   );
 
-  const headerActions = useMemo(() => {
+  const headerActions = useMemo<JSX.Element>(() => {
     if (isInput) {
       let canClear = true;
       if (inputPanelConfig?.mode === 'textarea') {
@@ -125,7 +125,7 @@ export const KitchenPanel = memo(({ type }: KitchenPanelProps): JSX.Element => {
     );
   }, [isInput, data, inputPanelConfig, handleClearInput, handleTriggerFileSelect, handleDownloadOutput]);
 
-  const content = useMemo(() => {
+  const content = useMemo<JSX.Element | null>(() => {
     if (isInput) {
       if (inputPanelConfig?.mode === 'spiceEditor') {
         const targetIngredient = ingredients.find((ing) => ing.id === inputPanelConfig.targetIngredientId);

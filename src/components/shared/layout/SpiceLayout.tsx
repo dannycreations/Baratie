@@ -10,15 +10,15 @@ import { StringInput } from '../input/StringInput';
 import { FormLayout } from './FormLayout';
 
 import type { ChangeEvent, FormEvent, JSX, ReactNode } from 'react';
-import type { IngredientDefinition, SpiceDefinition } from '../../../core/IngredientRegistry';
+import type { IngredientDefinition, SpiceDefinition, SpiceValue } from '../../../core/IngredientRegistry';
 
 interface SpiceRendererProps {
-  readonly onSpiceChange: (spiceId: string, newValue: boolean | number | string, spice: SpiceDefinition) => void;
+  readonly onSpiceChange: (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => void;
   readonly spice: SpiceDefinition;
-  readonly value: unknown;
+  readonly value: SpiceValue | undefined | null;
 }
 
-const SpiceRenderer = memo(({ spice, value: rawValue, onSpiceChange }: SpiceRendererProps) => {
+const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpiceChange }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
   const handleBooleanChange = useCallback(
@@ -30,8 +30,8 @@ const SpiceRenderer = memo(({ spice, value: rawValue, onSpiceChange }: SpiceRend
     [onSpiceChange, spice],
   );
   const handleSelectChange = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      onSpiceChange(spice.id, event.target.value, spice);
+    (newValue: SpiceValue) => {
+      onSpiceChange(spice.id, newValue, spice);
     },
     [onSpiceChange, spice],
   );
@@ -76,13 +76,14 @@ const SpiceRenderer = memo(({ spice, value: rawValue, onSpiceChange }: SpiceRend
       case 'select': {
         const value = rawValue ?? spice.value;
         if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
-          return null;
+          logger.warn(`Invalid value type for select spice '${spice.id}': ${typeof value}. Reverting to default.`);
+          return <SelectInput id={id} options={spice.options} value={spice.value} onChange={handleSelectChange} />;
         }
-        return <SelectInput id={id} options={spice.options} value={String(value)} onChange={handleSelectChange} />;
+        return <SelectInput id={id} options={spice.options} value={value} onChange={handleSelectChange} />;
       }
       default: {
-        const exhaustiveCheck: never = spice;
-        logger.warn(`Unhandled spice type: ${(exhaustiveCheck as SpiceDefinition).type}`);
+        const unhandled = spice as SpiceDefinition;
+        logger.warn(`Unhandled spice type: ${unhandled.type}`);
         return null;
       }
     }
@@ -109,12 +110,12 @@ const SpiceRenderer = memo(({ spice, value: rawValue, onSpiceChange }: SpiceRend
 
 interface SpiceLayoutProps {
   readonly containerClassName?: string;
-  readonly currentSpices: Readonly<Record<string, unknown>>;
+  readonly currentSpices: Readonly<Record<string, SpiceValue>>;
   readonly ingredientDefinition: IngredientDefinition;
-  readonly onSpiceChange: (spiceId: string, newValue: boolean | number | string, spice: SpiceDefinition) => void;
+  readonly onSpiceChange: (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => void;
 }
 
-export const SpiceLayout = memo(({ ingredientDefinition, currentSpices, onSpiceChange, containerClassName }: SpiceLayoutProps): JSX.Element => {
+export const SpiceLayout = memo<SpiceLayoutProps>(({ ingredientDefinition, currentSpices, onSpiceChange, containerClassName }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const finalContainerClass = containerClassName || 'space-y-3';
 

@@ -11,7 +11,7 @@ const OVERFLOW_X_CLASSNAME = 'overflow-x-hidden';
 const OVERFLOW_Y_CLASSNAME = 'overflow-y-hidden';
 
 export function useOverflowScroll<T extends HTMLElement>({ xClassName, yClassName }: ScrollConfig): RefObject<T | null> {
-  const ref = useRef<T | null>(null);
+  const ref = useRef<T>(null);
 
   const manageClasses = useCallback((): void => {
     const element = ref.current;

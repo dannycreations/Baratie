@@ -16,8 +16,8 @@ interface FormLayoutProps {
   readonly labelWrapperClass?: string;
 }
 
-export const FormLayout = memo(
-  ({ label, inputId, children, description, fieldSetClass, labelWrapperClass, labelClass, inputWrapperClass }: FormLayoutProps): JSX.Element => {
+export const FormLayout = memo<FormLayoutProps>(
+  ({ label, inputId, children, description, fieldSetClass, labelWrapperClass, labelClass, inputWrapperClass }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
     const fieldSetClasses = fieldSetClass ?? 'flex flex-col gap-y-1 gap-x-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start';

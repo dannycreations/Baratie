@@ -40,22 +40,15 @@ import { readAsBase64, readAsText, triggerDownload } from './utilities/fileUtil'
 
 import type { BaratieOptions } from './app/Baratie';
 import type { NotificationMessage, NotificationType } from './app/constants';
-import type { Ingredient, IngredientContext, IngredientDefinition, RecipeBookItem, ResultType, SpiceDefinition } from './core/IngredientRegistry';
-
-export type {
-  BaratieOptions,
+import type {
   Ingredient,
   IngredientContext,
   IngredientDefinition,
-  InputType,
-  NotificationMessage,
-  NotificationType,
   RecipeBookItem,
   ResultType,
   SpiceDefinition,
-};
-
-export { create, React, ReactDOM, subscribeWithSelector };
+  SpiceValue,
+} from './core/IngredientRegistry';
 
 const BARATIE_API = {
   logger,
@@ -111,8 +104,27 @@ const BARATIE_API = {
   },
 } as const;
 
+type BaratieApi = typeof BARATIE_API;
+
+export type {
+  BaratieApi,
+  BaratieOptions,
+  Ingredient,
+  IngredientContext,
+  IngredientDefinition,
+  InputType,
+  NotificationMessage,
+  NotificationType,
+  RecipeBookItem,
+  ResultType,
+  SpiceDefinition,
+  SpiceValue,
+};
+
+export { create, React, ReactDOM, subscribeWithSelector };
+
 declare global {
-  var Baratie: typeof BARATIE_API;
+  var Baratie: BaratieApi;
 }
 
 if (typeof globalThis !== 'undefined') {
