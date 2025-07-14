@@ -41,7 +41,6 @@ export const StringInput = memo(function StringInput({
     `placeholder:text-${theme.contentTertiary}`,
     'outline-none',
     `focus:ring-2 focus:ring-${theme.ring}`,
-    'disabled:cursor-not-allowed',
     'disabled:opacity-50',
   ]
     .filter(Boolean)

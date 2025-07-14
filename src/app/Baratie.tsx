@@ -11,7 +11,6 @@ import { SettingPanel } from '../components/main/SettingPanel';
 import { RecipePanel } from '../components/recipe/RecipePanel';
 import { internalIngredients } from '../ingredients';
 import { useAppStore } from '../stores/useAppStore';
-import { useThemeStore } from '../stores/useThemeStore';
 import { appRegistry, errorHandler, ingredientRegistry, kitchen } from './container';
 
 import type { JSX } from 'react';
@@ -22,7 +21,6 @@ export interface BaratieOptions {
 
 function BaratieView(): JSX.Element {
   const isAppReady = useAppStore((state) => state.isInitialized);
-  const theme = useThemeStore((state) => state.theme);
 
   useEffect(() => {
     if (!isAppReady) {
@@ -38,7 +36,7 @@ function BaratieView(): JSX.Element {
   }
 
   return (
-    <div className={`h-screen w-screen overflow-hidden bg-${theme.surfacePrimary} text-${theme.contentPrimary}`}>
+    <div className="h-screen w-screen overflow-hidden">
       <main
         aria-label="Main Application Workspace"
         className="flex h-full w-full flex-col gap-4 overflow-y-auto p-4 md:flex-row md:overflow-hidden"

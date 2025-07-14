@@ -136,9 +136,8 @@ export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
 
       const favoriteButtonClasses = [
         'opacity-70',
-        isFavorite ? `text-${theme.favoriteFg}` : `text-${theme.contentTertiary}`,
-        isFavorite ? `hover:text-${theme.favoriteFgHover}` : `hover:text-${theme.favoriteFg}`,
         'group-hover:opacity-100',
+        isFavorite ? `text-${theme.favoriteFg} hover:text-${theme.favoriteFgHover}` : `text-${theme.contentTertiary} hover:text-${theme.favoriteFg}`,
       ]
         .filter(Boolean)
         .join(' ');

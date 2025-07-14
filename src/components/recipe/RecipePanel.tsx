@@ -225,14 +225,7 @@ export const RecipePanel = memo(function RecipePanel(): JSX.Element {
     handleEditToggle,
   ]);
 
-  const listClasses = [
-    'grow',
-    'overflow-y-auto',
-    `text-${theme.contentTertiary}`,
-    'transition-colors',
-    'duration-200',
-    isDraggingIngredient && `bg-${theme.surfaceMuted}`,
-  ]
+  const listClasses = ['grow', 'overflow-y-auto', 'transition-colors', 'duration-200', isDraggingIngredient && `bg-${theme.surfaceMuted}`]
     .filter(Boolean)
     .join(' ');
 

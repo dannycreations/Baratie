@@ -38,8 +38,8 @@ const TabButton = memo(function TabButton({ children, isActive, onClick }: TabBu
     'transition-colors',
     'duration-150',
     'outline-none',
-    isActive ? `border-b-2 border-${theme.infoBorder} text-${theme.infoFg}` : `border-b-2 border-transparent text-${theme.contentTertiary}`,
-    `focus:ring-2 focus:ring-offset-2 focus:ring-offset-${theme.surfaceSecondary} focus:ring-${theme.ring}`,
+    'border-b-2',
+    isActive ? `border-${theme.infoBorder} text-${theme.infoFg}` : `border-transparent text-${theme.contentTertiary}`,
   ]
     .filter(Boolean)
     .join(' ');
@@ -128,13 +128,7 @@ const AppearanceSettings = memo(function AppearanceSettings() {
             .filter(Boolean)
             .join(' ');
 
-          const liClasses = [
-            'list-none',
-            'cursor-pointer',
-            'rounded-md',
-            'outline-none',
-            `focus:ring-2 focus:ring-offset-2 focus:ring-offset-${theme.surfaceSecondary} focus:ring-${theme.ring}`,
-          ]
+          const liClasses = ['list-none', 'cursor-pointer', 'rounded-md', 'outline-none', `focus:ring-2 focus:ring-${theme.ring}`]
             .filter(Boolean)
             .join(' ');
 

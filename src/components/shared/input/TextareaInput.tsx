@@ -67,7 +67,6 @@ export const TextareaInput = memo(function TextareaInput({
     'outline-none',
     'allow-text-selection',
     `placeholder:text-${theme.contentTertiary}`,
-    'disabled:cursor-not-allowed',
   ];
 
   const baseTextClasses = [

@@ -32,7 +32,8 @@ export const SelectInput = memo(function SelectInput({
     'border',
     `border-${theme.borderPrimary}`,
     `bg-${theme.surfaceTertiary}`,
-    'p-2',
+    'py-2',
+    'pl-2',
     'pr-8',
     `text-${theme.contentPrimary}`,
     'transition-colors',
@@ -41,7 +42,6 @@ export const SelectInput = memo(function SelectInput({
     `hover:bg-${theme.surfaceHover}`,
     'outline-none',
     `focus:ring-2 focus:ring-${theme.ring}`,
-    'disabled:cursor-not-allowed',
     'disabled:opacity-50',
   ]
     .filter(Boolean)

@@ -65,7 +65,7 @@ const SpiceRenderer = memo(function SpiceRenderer({ spice, value: rawValue, onSp
         return (
           <textarea
             id={id}
-            className={`w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-2 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} outline-none focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`}
+            className={`w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-2 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} outline-none focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50`}
             placeholder={spice.placeholder}
             rows={4}
             value={value}
@@ -90,7 +90,7 @@ const SpiceRenderer = memo(function SpiceRenderer({ spice, value: rawValue, onSp
 
   const isBoolean = spice.type === 'boolean';
   const fieldSetClass = isBoolean
-    ? 'flex flex-row items-center justify-start gap-x-3'
+    ? 'flex items-center justify-start gap-x-3'
     : 'flex flex-col gap-y-1 gap-x-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start';
   const inputWrapperClass = isBoolean ? 'flex h-8 items-center' : 'w-full sm:w-auto sm:min-w-44 sm:grow';
 

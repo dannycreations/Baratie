@@ -47,7 +47,6 @@ export const BooleanInput = memo(function BooleanInput({
     `peer-focus:ring-2 peer-focus:ring-${theme.ring}`,
     `peer-checked:bg-${theme.accentBg}`,
     'peer-checked:after:translate-x-full',
-    'peer-disabled:cursor-not-allowed',
     'peer-disabled:opacity-50',
   ]
     .filter(Boolean)
