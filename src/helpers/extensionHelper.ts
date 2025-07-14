@@ -10,20 +10,22 @@ import type { Extension, ExtensionManifest } from '../stores/useExtensionStore';
 
 type StorableExtension = Omit<Extension, 'status' | 'errors' | 'registeredIngredients'>;
 
+function isValidEntry(entry: unknown): entry is string | readonly string[] {
+  if (typeof entry === 'string' && entry.trim()) {
+    return true;
+  }
+  return Array.isArray(entry) && entry.length > 0 && entry.every((item) => typeof item === 'string' && item.trim());
+}
+
 function isExtensionManifest(obj: unknown): obj is ExtensionManifest {
   if (typeof obj !== 'object' || obj === null) return false;
   const manifest = obj as Record<string, unknown>;
   const { name, entry } = manifest;
-  if (typeof name !== 'string' || !name) {
+
+  if (typeof name !== 'string' || !name.trim()) {
     return false;
   }
-  if (typeof entry === 'string' && entry) {
-    return true;
-  }
-  if (Array.isArray(entry) && entry.length > 0 && entry.every((item) => typeof item === 'string')) {
-    return true;
-  }
-  return false;
+  return isValidEntry(entry);
 }
 
 function isStorableExtension(obj: unknown): obj is StorableExtension {
@@ -31,16 +33,10 @@ function isStorableExtension(obj: unknown): obj is StorableExtension {
   const ext = obj as Record<string, unknown>;
   const { id, url, name, entry } = ext;
 
-  if (typeof id !== 'string' || typeof url !== 'string' || typeof name !== 'string') {
+  if (typeof id !== 'string' || !id.trim() || typeof url !== 'string' || !url.trim() || typeof name !== 'string' || !name.trim()) {
     return false;
   }
-  if (typeof entry === 'string') {
-    return true;
-  }
-  if (Array.isArray(entry) && entry.every((item) => typeof item === 'string')) {
-    return true;
-  }
-  return false;
+  return isValidEntry(entry);
 }
 
 async function loadAndExecuteExtension(extension: Extension): Promise<void> {

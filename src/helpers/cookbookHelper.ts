@@ -1,8 +1,7 @@
 import { STORAGE_COOKBOOK } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger, storage } from '../app/container';
-import { InputType } from '../core/InputType';
 import { useCookbookStore } from '../stores/useCookbookStore';
-import { readAsText, triggerDownload } from '../utilities/fileUtil';
+import { readAsText, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
 import { showNotification } from './notificationHelper';
 import { validateSpices } from './spiceHelper';
 
@@ -38,6 +37,16 @@ function isRawIngredient(data: unknown): data is RawIngredient {
   );
 }
 
+function getString(obj: Record<string, unknown>, key: string, fallback: string): string {
+  const value = obj[key];
+  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+}
+
+function getNumber(obj: Record<string, unknown>, key: string, fallback: number): number {
+  const value = obj[key];
+  return typeof value === 'number' ? value : fallback;
+}
+
 function sanitizeRecipe(recipeData: unknown, source: 'fileImport' | 'storage'): RecipeBookItem | null {
   if (typeof recipeData !== 'object' || recipeData === null) {
     logger.warn(`Skipping non-object item during recipe sanitization from ${source}:`, recipeData);
@@ -45,10 +54,10 @@ function sanitizeRecipe(recipeData: unknown, source: 'fileImport' | 'storage'): 
   }
   const rawRecipe = recipeData as Record<string, unknown>;
 
-  const id = typeof rawRecipe.id === 'string' && rawRecipe.id.trim() ? rawRecipe.id.trim() : crypto.randomUUID();
-  const name = typeof rawRecipe.name === 'string' && rawRecipe.name.trim() ? rawRecipe.name.trim() : `Untitled from ${source}`;
-  const createdAt = typeof rawRecipe.createdAt === 'number' ? rawRecipe.createdAt : Date.now();
-  const updatedAt = typeof rawRecipe.updatedAt === 'number' ? rawRecipe.updatedAt : Date.now();
+  const id = getString(rawRecipe, 'id', crypto.randomUUID());
+  const name = getString(rawRecipe, 'name', `Untitled from ${source}`);
+  const createdAt = getNumber(rawRecipe, 'createdAt', Date.now());
+  const updatedAt = getNumber(rawRecipe, 'updatedAt', Date.now());
   const rawIngredients: readonly unknown[] = Array.isArray(rawRecipe.ingredients) ? rawRecipe.ingredients : [];
   const validIngredients: Ingredient[] = [];
 
@@ -73,9 +82,8 @@ function sanitizeRecipe(recipeData: unknown, source: 'fileImport' | 'storage'): 
 
   if (validIngredients.length !== rawIngredients.length && rawIngredients.length > 0) {
     const ingredientDifference = rawIngredients.length - validIngredients.length;
-    const plural = ingredientDifference > 1;
-    const ingredientText = `ingredient${plural ? 's' : ''}`;
-    const verbText = plural ? 'were' : 'was';
+    const ingredientText = `ingredient${ingredientDifference > 1 ? 's' : ''}`;
+    const verbText = ingredientDifference > 1 ? 'were' : 'was';
     showNotification(
       `Recipe '${name}' had ${ingredientDifference} invalid ${ingredientText} that ${verbText} removed.`,
       'warning',
@@ -151,7 +159,7 @@ export function exportSingle(name: string, ingredients: readonly Ingredient[]): 
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
-  const fileName = `${new InputType(recipeToExport.name).asFileName('recipe')}.json`;
+  const fileName = `${sanitizeFileName(recipeToExport.name, 'recipe')}.json`;
   triggerDownload(JSON.stringify(serializeRecipe(recipeToExport), null, 2), fileName);
   showNotification(`Recipe '${recipeToExport.name}' is ready for download.`, 'success', 'Export Successful');
 }

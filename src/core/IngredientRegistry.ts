@@ -19,7 +19,6 @@ export interface RecipeBookItem {
 }
 
 export interface IngredientContext {
-  readonly cookVersion: number;
   readonly currentIndex: number;
   readonly ingredient: Ingredient;
   readonly initialInput: string;

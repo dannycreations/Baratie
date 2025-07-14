@@ -57,7 +57,7 @@ const getVariantClasses = (variant: ButtonVariant, theme: AppTheme): string => {
     stealth: `border-transparent bg-transparent text-${theme.contentTertiary} hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}`,
     outline: `border-${theme.borderPrimary} bg-transparent text-${theme.contentSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
   };
-  return variantMap[variant] || variantMap.primary;
+  return variantMap[variant];
 };
 
 export const Button = memo<ButtonProps>(

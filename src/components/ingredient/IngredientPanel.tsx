@@ -173,8 +173,8 @@ export const IngredientPanel = memo((): JSX.Element => {
 
   return (
     <SectionLayout
-      cardClassName="flex-1 min-h-0"
-      cardContentClassName={`relative flex h-full flex-col p-2 text-${theme.contentTertiary}`}
+      className="h-[50vh] min-h-0 md:h-auto md:flex-1"
+      contentClassName={`relative flex h-full flex-col p-2 text-${theme.contentTertiary}`}
       headerActions={headerActions}
       title="Ingredients"
     >

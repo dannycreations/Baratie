@@ -31,40 +31,48 @@ function mergeRecipeLists(
   existingRecipes: readonly RecipeBookItem[],
   recipesToImport: readonly RecipeBookItem[],
 ): { readonly mergedList: readonly RecipeBookItem[]; readonly added: number; readonly updated: number; readonly skipped: number } {
-  const mergedList = [...existingRecipes];
-  const existingById = new Map<string, RecipeBookItem>(existingRecipes.map((recipe) => [recipe.id, recipe]));
-  const existingNames = new Set<string>(existingRecipes.map((r) => r.name.toLowerCase()));
+  const mergedById = new Map<string, RecipeBookItem>(existingRecipes.map((recipe) => [recipe.id, recipe]));
+  const finalNames = new Set<string>(existingRecipes.map((r) => r.name.toLowerCase()));
   let added = 0;
   let updated = 0;
   let skipped = 0;
 
   for (const item of recipesToImport) {
-    const existingItem = existingById.get(item.id);
+    const existingItem = mergedById.get(item.id);
+
     if (existingItem) {
       if (item.updatedAt > existingItem.updatedAt) {
-        const index = mergedList.findIndex((recipe) => recipe.id === item.id);
-        if (index !== -1) {
-          mergedList[index] = item;
-          updated++;
-        }
+        mergedById.set(item.id, item);
+        updated++;
       } else {
         skipped++;
       }
     } else {
       let uniqueName = item.name;
       let counter = 1;
-      while (existingNames.has(uniqueName.toLowerCase()) && counter < 100) {
+      while (finalNames.has(uniqueName.toLowerCase()) && counter < 100) {
         uniqueName = `${item.name} (Imported ${counter})`;
         counter++;
       }
-      mergedList.push({ ...item, name: uniqueName });
-      existingNames.add(uniqueName.toLowerCase());
+      const newItem = { ...item, name: uniqueName };
+      mergedById.set(newItem.id, newItem);
+      finalNames.add(uniqueName.toLowerCase());
       added++;
     }
   }
 
+  const mergedList = Array.from(mergedById.values());
   mergedList.sort((a, b) => b.updatedAt - a.updatedAt);
   return { mergedList, added, updated, skipped };
+}
+
+function createIngredientHash(ingredients: readonly Ingredient[]): string {
+  return JSON.stringify(
+    ingredients.map((ing) => ({
+      name: ingredientRegistry.getStringFromSymbol(ing.name) ?? ing.name.toString(),
+      spices: ing.spices,
+    })),
+  );
 }
 
 function createInitialName(allRecipes: readonly RecipeBookItem[], ingredients: readonly Ingredient[]): string {
@@ -80,22 +88,8 @@ function createInitialName(allRecipes: readonly RecipeBookItem[], ingredients: r
     }
   }
 
-  const currentHash = JSON.stringify(
-    ingredients.map((ing) => ({
-      name: ingredientRegistry.getStringFromSymbol(ing.name) ?? ing.name.toString(),
-      spices: ing.spices,
-    })),
-  );
-
-  const existingRecipe = allRecipes.find((recipe) => {
-    const recipeHash = JSON.stringify(
-      recipe.ingredients.map((ing) => ({
-        name: ingredientRegistry.getStringFromSymbol(ing.name) ?? ing.name.toString(),
-        spices: ing.spices,
-      })),
-    );
-    return recipeHash === currentHash;
-  });
+  const currentHash = createIngredientHash(ingredients);
+  const existingRecipe = allRecipes.find((recipe) => createIngredientHash(recipe.ingredients) === currentHash);
 
   if (existingRecipe) {
     return existingRecipe.name;

@@ -25,8 +25,8 @@ interface ErrorOptions {
 
 interface AttemptOptions extends Partial<ErrorOptions> {}
 
-interface AttemptResult<T, E> {
-  readonly error: E | AppError | null;
+interface AttemptResult<T> {
+  readonly error: AppError | null;
   readonly result: T | null;
 }
 
@@ -48,7 +48,7 @@ export class ErrorHandler {
     throw error;
   }
 
-  public attempt<T, E = Error>(fn: () => T, context?: string, options?: AttemptOptions): AttemptResult<T, E> {
+  public attempt<T>(fn: () => T, context?: string, options?: AttemptOptions): AttemptResult<T> {
     try {
       const result = fn();
       return { result, error: null };
@@ -61,7 +61,7 @@ export class ErrorHandler {
     }
   }
 
-  public async attemptAsync<T, E = Error>(fn: () => T | Promise<T>, context?: string, options?: AttemptOptions): Promise<AttemptResult<T, E>> {
+  public async attemptAsync<T>(fn: () => T | Promise<T>, context?: string, options?: AttemptOptions): Promise<AttemptResult<T>> {
     try {
       const result = await fn();
       return { result, error: null };

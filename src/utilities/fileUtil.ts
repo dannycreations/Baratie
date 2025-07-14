@@ -73,6 +73,43 @@ export function readAsText(file: File): Promise<string> {
   );
 }
 
+export function sanitizeFileName(name: string, fallbackName = 'file'): string {
+  const MAX_BASENAME_LENGTH = 200;
+  const trimmedName = name.trim();
+
+  if (!trimmedName) {
+    return `${fallbackName}.dat`;
+  }
+
+  let sanitized = trimmedName.replace(/[^a-z0-9_.-]/gi, '_').replace(/_{2,}/g, '_');
+
+  if (sanitized === '.' || sanitized === '..') {
+    sanitized = `${fallbackName}.dat`;
+  }
+
+  const extensionIndex = sanitized.lastIndexOf('.');
+  let baseName: string;
+  let extension: string;
+
+  if (extensionIndex <= 0) {
+    baseName = sanitized;
+    extension = '';
+  } else {
+    baseName = sanitized.substring(0, extensionIndex);
+    extension = sanitized.substring(extensionIndex);
+  }
+
+  if (!baseName) {
+    baseName = fallbackName;
+  }
+
+  if (baseName.length > MAX_BASENAME_LENGTH) {
+    baseName = baseName.substring(0, MAX_BASENAME_LENGTH).replace(/_$/, '');
+  }
+
+  return `${baseName.toLowerCase()}${extension.toLowerCase()}`;
+}
+
 export function triggerDownload(data: string, fileName: string, mimeType = 'text/plain', isBase64 = false): void {
   errorHandler.attempt(
     () => {

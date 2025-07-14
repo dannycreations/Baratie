@@ -13,9 +13,9 @@ interface ErrorBoundaryProps {
 }
 
 interface ErrorBoundaryState {
-  readonly hasError: boolean;
-  readonly error: Error | null;
-  readonly errorInfo: ErrorInfo | null;
+  hasError: boolean;
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
 }
 
 interface ErrorDisplayProps {
@@ -28,25 +28,8 @@ const ERROR_DESCRIPTION_ID = 'error-dialog-description';
 function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);
 
-  const backdropClasses = ['fixed', 'inset-0', 'z-[800]', 'flex', 'items-center', 'justify-center', `bg-${theme.backdrop}`, 'p-4', 'backdrop-blur-sm']
-    .filter(Boolean)
-    .join(' ');
-
-  const dialogClasses = [
-    'w-full',
-    'max-w-md',
-    'rounded-lg',
-    'border',
-    `border-${theme.dangerBorder}`,
-    `bg-${theme.surfaceSecondary}`,
-    'p-6',
-    'text-center',
-    'sm:max-w-lg',
-    'md:max-w-2xl',
-    'md:p-8',
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const backdropClasses = `fixed inset-0 z-[800] flex items-center justify-center bg-${theme.backdrop} p-4 backdrop-blur-sm`;
+  const dialogClasses = `w-full max-w-md rounded-lg border border-${theme.dangerBorder} bg-${theme.surfaceSecondary} p-6 text-center sm:max-w-lg md:max-w-2xl md:p-8`;
 
   return (
     <div

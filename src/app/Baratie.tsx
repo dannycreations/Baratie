@@ -43,21 +43,13 @@ function BaratieView(): JSX.Element {
         role="main"
       >
         <section aria-label="Ingredient and Recipe Management" className="flex w-full flex-col gap-4 md:flex-1 md:flex-row md:overflow-hidden">
-          <div className="flex h-[50vh] w-full min-h-0 flex-col md:h-auto md:flex-1">
-            <IngredientPanel />
-          </div>
-          <div className="flex h-[50vh] w-full min-h-0 flex-col md:h-auto md:flex-1">
-            <RecipePanel />
-          </div>
+          <IngredientPanel />
+          <RecipePanel />
         </section>
 
         <section aria-label="Input and Output Panels" className="flex w-full flex-col gap-4 md:flex-1 md:overflow-hidden">
-          <div className="flex h-[50vh] w-full min-h-0 flex-col md:h-1/2">
-            <KitchenPanel type="input" />
-          </div>
-          <div className="flex h-[50vh] w-full min-h-0 flex-col md:h-1/2">
-            <KitchenPanel type="output" />
-          </div>
+          <KitchenPanel type="input" />
+          <KitchenPanel type="output" />
         </section>
       </main>
 

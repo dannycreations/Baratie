@@ -1,5 +1,5 @@
 import { CATEGORY_FLOW, KEY_REPEAT_STEP } from '../app/constants';
-import { errorHandler, kitchen, logger } from '../app/container';
+import { errorHandler, ingredientRegistry, kitchen, logger } from '../app/container';
 import { AppError } from '../core/ErrorHandler';
 import { InputType } from '../core/InputType';
 
@@ -75,7 +75,7 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
       return null;
     }
 
-    const { ingredient: currentIngredient, currentIndex, initialInput, recipe, cookVersion } = context;
+    const { ingredient: currentIngredient, currentIndex, initialInput, recipe } = context;
     const ingredientName = currentIngredient.name.description ?? 'Unnamed Ingredient';
 
     const ingredientsToRepeat = recipe.slice(0, currentIndex);
@@ -101,7 +101,29 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
         const collectedOutputs: string[] = [];
         for (let repetitionIndex = 0; repetitionIndex < repeatCount; repetitionIndex++) {
           const { result: output, error } = await errorHandler.attemptAsync(
-            () => kitchen.cookSubRecipe(ingredientsToRepeat, initialInput, context, cookVersion),
+            async () => {
+              let currentData = initialInput;
+              for (const ingredient of ingredientsToRepeat) {
+                const definition = ingredientRegistry.getIngredient(ingredient.name);
+                errorHandler.assert(definition, `Definition for '${ingredient.name.description}' not found during sub-recipe execution.`);
+
+                const subIndex = context.recipe.findIndex((i) => i.id === ingredient.id);
+                errorHandler.assert(subIndex !== -1, `Could not find original index for '${ingredient.name.description}'.`);
+
+                const subContext: IngredientContext = { ...context, currentIndex: subIndex, ingredient };
+                const runResult = await definition.run(new InputType(currentData), ingredient.spices, subContext);
+
+                if (runResult === null) {
+                  continue;
+                }
+
+                const output = 'output' in runResult ? runResult.output : runResult;
+                errorHandler.assert(output instanceof InputType, `Ingredient '${ingredient.name.description}' returned an invalid result type.`);
+
+                currentData = output.cast('string').getValue();
+              }
+              return currentData;
+            },
             `Ingredient: ${ingredientName} > Repetition ${repetitionIndex + 1} (Attempt ${attempt + 1})`,
             {
               genericMessage: `An error occurred during repetition ${repetitionIndex + 1} for '${ingredientName}'.`,

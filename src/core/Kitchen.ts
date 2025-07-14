@@ -12,8 +12,6 @@ import type {
   InputPanelConfig,
   OutputPanelConfig,
   PanelControlConfig,
-  PanelControlSignal,
-  ResultType,
 } from './IngredientRegistry';
 
 export type CookingStatusType = 'idle' | 'error' | 'success' | 'warning';
@@ -45,29 +43,9 @@ interface IngredientRunResult {
   readonly inputPanelIngId?: string | null;
 }
 
-interface ProcessedRunResult {
-  readonly nextData: string;
-  readonly panelInstruction: PanelControlConfig | undefined;
-  readonly status: CookingStatusType;
-}
-
-function isPanelSignal(value: unknown): value is PanelControlSignal {
-  if (typeof value !== 'object' || value === null || value instanceof InputType) {
-    return false;
-  }
-  return 'output' in value && (value as { output: unknown }).output instanceof InputType;
-}
-
-class CookCancelledError extends Error {
-  public constructor() {
-    super('Cook operation cancelled by a newer request.');
-    this.name = 'CookCancelledError';
-  }
-}
-
 export class Kitchen {
-  private cookVersion = 0;
   private isCooking = false;
+  private hasPendingCook = false;
   private timeoutId: number | null = null;
   private intervalMs = 0;
 
@@ -83,27 +61,27 @@ export class Kitchen {
         this.timeoutId = null;
         logger.info('Auto-cook disabled, pending scheduled cook cancelled.');
       }
+      this.hasPendingCook = false;
     }
   };
 
   public async cook(): Promise<void> {
-    this.cookVersion++;
-    const cookId = this.cookVersion;
-
-    if (this.timeoutId) {
-      clearTimeout(this.timeoutId);
-      this.timeoutId = null;
-    }
-
     if (this.isCooking) {
-      logger.info('Cook request queued; another cook is in progress.', { queuedVersion: cookId });
+      logger.info('Cook request queued; another cook is in progress.');
+      this.hasPendingCook = true;
       return;
     }
 
     this.isCooking = true;
-    logger.info(`Starting cook, version ${cookId}.`);
+    this.hasPendingCook = false;
+    logger.info('Starting cook.');
 
     try {
+      if (this.timeoutId) {
+        clearTimeout(this.timeoutId);
+        this.timeoutId = null;
+      }
+
       const { inputData } = useKitchenStore.getState();
       const recipe = useRecipeStore.getState().ingredients;
 
@@ -112,43 +90,19 @@ export class Kitchen {
         this.setCookingInterval(0);
       }
 
-      const result = await this.cookRecipe(recipe, inputData, cookId);
+      const result = await this.cookRecipe(recipe, inputData);
 
-      if (this.cookVersion === cookId) {
-        useKitchenStore.getState().setCookingResult(result);
-        this.scheduleNextCook();
-      }
+      useKitchenStore.getState().setCookingResult(result);
+      this.scheduleNextCook();
     } catch (error) {
-      if (error instanceof CookCancelledError) {
-        logger.info(error.message);
-      } else {
-        if (this.cookVersion === cookId) {
-          this.scheduleNextCook();
-        }
-        throw error;
-      }
+      this.scheduleNextCook();
+      throw error;
     } finally {
       this.isCooking = false;
-      if (this.cookVersion > cookId) {
+      if (this.hasPendingCook) {
         this.triggerCook();
       }
     }
-  }
-
-  public async cookSubRecipe(subRecipe: readonly Ingredient[], input: string, parentContext: IngredientContext, cookId: number): Promise<string> {
-    let currentData = input;
-    for (const subIngredient of subRecipe) {
-      if (this.cookVersion !== cookId) throw new CookCancelledError();
-
-      const subDefinition = ingredientRegistry.getIngredient(subIngredient.name);
-      errorHandler.assert(subDefinition, `cookSubRecipe: Definition for '${subIngredient.name.description}' not found.`);
-      const subIndex = parentContext.recipe.findIndex((ingredient) => ingredient.id === subIngredient.id);
-      errorHandler.assert(subIndex !== -1, `cookSubRecipe: Could not find original index for '${subIngredient.name.description}'.`);
-      const subContext: IngredientContext = { ...parentContext, currentIndex: subIndex, ingredient: subIngredient };
-      const runResult = await subDefinition.run(new InputType(currentData), subIngredient.spices, subContext);
-      currentData = this.processRunResult(runResult, currentData, subIngredient).nextData;
-    }
-    return currentData;
   }
 
   public setCookingInterval(ms: number): void {
@@ -181,22 +135,21 @@ export class Kitchen {
     };
   }
 
-  private async cookRecipe(recipe: readonly Ingredient[], initialInput: string, cookId: number): Promise<RecipeCookResult> {
-    if (this.cookVersion !== cookId) throw new CookCancelledError();
+  private async cookRecipe(recipe: readonly Ingredient[], initialInput: string): Promise<RecipeCookResult> {
     if (recipe.length === 0) {
       return {
         inputPanelConfig: null,
         outputPanelConfig: null,
-        cookingStatus: 'idle',
+        cookingStatus: initialInput ? 'success' : 'idle',
         ingredientStatuses: {},
         inputPanelIngId: null,
-        outputData: '',
+        outputData: initialInput,
       };
     }
 
-    const loopResult = await this.executeRecipeLoop(recipe, initialInput, cookId);
+    const loopResult = await this.executeRecipeLoop(recipe, initialInput);
     const finalStatus: CookingStatusType = loopResult.globalError ? 'error' : loopResult.hasWarnings ? 'warning' : 'success';
-    logger.info(`Cook version ${this.cookVersion} finished with status: ${finalStatus}.`);
+    logger.info(`Cook finished with status: ${finalStatus}.`);
 
     return {
       inputPanelConfig: loopResult.lastInputConfig,
@@ -208,7 +161,7 @@ export class Kitchen {
     };
   }
 
-  private async executeRecipeLoop(recipe: readonly Ingredient[], initialInput: string, cookId: number): Promise<CookLoopResult> {
+  private async executeRecipeLoop(recipe: readonly Ingredient[], initialInput: string): Promise<CookLoopResult> {
     let cookedData = initialInput;
     const localStatuses: Record<string, CookingStatusType> = {};
     let lastInputConfig: InputPanelConfig | null = null;
@@ -218,8 +171,6 @@ export class Kitchen {
     let hasWarnings = false;
 
     for (let index = 0; index < recipe.length; index++) {
-      if (this.cookVersion !== cookId) throw new CookCancelledError();
-
       const ingredient = recipe[index];
       const definition = ingredientRegistry.getIngredient(ingredient.name);
       if (!definition) {
@@ -243,7 +194,6 @@ export class Kitchen {
         recipe,
         index,
         initialInput,
-        cookId,
       );
       cookedData = nextData;
       localStatuses[ingredient.id] = status;
@@ -268,24 +218,6 @@ export class Kitchen {
     return { cookedData, localStatuses, lastInputConfig, lastOutputConfig, lastInputPanelId, globalError, hasWarnings };
   }
 
-  private processRunResult(runResult: ResultType, currentData: string, ingredient: Ingredient): ProcessedRunResult {
-    if (runResult === null) {
-      logger.info(`Ingredient '${ingredient.name.description}' was skipped (returned null).`);
-      return { nextData: currentData, status: 'warning', panelInstruction: undefined };
-    }
-    if (isPanelSignal(runResult)) {
-      return {
-        nextData: runResult.output.cast('string').getValue(),
-        status: 'success',
-        panelInstruction: runResult.panelControl,
-      };
-    }
-    if (runResult instanceof InputType) {
-      return { nextData: runResult.cast('string').getValue(), status: 'success', panelInstruction: undefined };
-    }
-    errorHandler.assert(false, `Ingredient '${ingredient.name.description}' returned an invalid result type.`);
-  }
-
   private async runIngredient(
     ingredient: Ingredient,
     definition: IngredientDefinition,
@@ -293,33 +225,38 @@ export class Kitchen {
     recipe: readonly Ingredient[],
     currentIndex: number,
     initialInput: string,
-    cookId: number,
   ): Promise<IngredientRunResult> {
     errorHandler.assert(definition.run, `Runner for '${ingredient.name.description}' not found.`);
     logger.debug(`Running ingredient: ${ingredient.name.description}`, { id: ingredient.id, index: currentIndex });
 
-    const context: IngredientContext = { cookVersion: cookId, currentIndex, ingredient, initialInput, recipe };
+    const context: IngredientContext = { currentIndex, ingredient, initialInput, recipe };
     const { error, result } = await errorHandler.attemptAsync(() => definition.run(new InputType(currentData), ingredient.spices, context));
 
     if (error) {
-      if (error instanceof CookCancelledError) throw error;
       return { hasError: true, nextData: `Error: ${error.message}`, status: 'error' };
     }
 
-    const { nextData, panelInstruction, status } = this.processRunResult(result, currentData, ingredient);
-    if (status === 'error') {
-      return { hasError: true, nextData, status };
+    if (result === null) {
+      logger.info(`Ingredient '${ingredient.name.description}' was skipped (returned null).`);
+      return { hasError: false, nextData: currentData, status: 'warning' };
     }
+
+    const isPanelControlSignal = 'output' in result;
+    const output = isPanelControlSignal ? result.output : result;
+    const panelInstruction = isPanelControlSignal ? result.panelControl : undefined;
+
+    if (!(output instanceof InputType)) {
+      errorHandler.assert(false, `Ingredient '${ingredient.name.description}' returned an invalid result type.`);
+    }
+
+    const nextData = output.cast('string').getValue();
 
     let inputPanelIngId: string | null = null;
-    if (panelInstruction?.panelType === 'input') {
-      const inputConfig = panelInstruction.config;
-      if (inputConfig.mode === 'spiceEditor') {
-        inputPanelIngId = inputConfig.targetIngredientId;
-      }
+    if (panelInstruction?.panelType === 'input' && panelInstruction.config.mode === 'spiceEditor') {
+      inputPanelIngId = panelInstruction.config.targetIngredientId;
     }
 
-    return { hasError: false, inputPanelIngId, nextData, panelInstruction, status };
+    return { hasError: false, inputPanelIngId, nextData, panelInstruction, status: 'success' };
   }
 
   private scheduleNextCook(): void {
@@ -338,9 +275,7 @@ export class Kitchen {
 
   private triggerCook(): void {
     this.cook().catch((error) => {
-      if (!(error instanceof CookCancelledError)) {
-        logger.error('Error during automatic cook execution:', error);
-      }
+      logger.error('Error during automatic cook execution:', error);
     });
   }
 }

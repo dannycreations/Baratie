@@ -186,8 +186,8 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   return (
     <SectionLayout
       ariaLive={config ? 'polite' : undefined}
-      cardClassName="flex-1 min-h-0"
-      cardContentClassName="flex flex-col"
+      className="h-[50vh] min-h-0 md:h-1/2"
+      contentClassName="flex flex-col"
       headerActions={headerActions}
       title={title}
     >
