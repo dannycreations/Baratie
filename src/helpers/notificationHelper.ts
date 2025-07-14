@@ -1,12 +1,18 @@
 import { NOTIFY_DURATION_MS } from '../app/constants';
 import { useNotificationStore } from '../stores/useNotificationStore';
-import { debounce } from '../utilities/appUtil';
 
 import type { NotificationMessage, NotificationType } from '../app/constants';
 
-const DEBOUNCE_DELAY_MS = 300;
+export function clearNotifications(): void {
+  useNotificationStore.getState().setNotifications([]);
+}
 
-const showNotifications = debounce((message: string, type: NotificationType = 'info', title?: string, duration?: number): void => {
+export function removeNotification(id: string): void {
+  const { notifications, setNotifications } = useNotificationStore.getState();
+  setNotifications(notifications.filter((notification) => notification.id !== id));
+}
+
+export function showNotification(message: string, type: NotificationType = 'info', title?: string, duration?: number): void {
   const { notifications, setNotifications } = useNotificationStore.getState();
 
   const details: Omit<NotificationMessage, 'id' | 'resetAt'> = {
@@ -28,17 +34,4 @@ const showNotifications = debounce((message: string, type: NotificationType = 'i
     const newNotification: NotificationMessage = { ...details, id };
     setNotifications([...notifications, newNotification]);
   }
-}, DEBOUNCE_DELAY_MS);
-
-export function clearNotifications(): void {
-  useNotificationStore.getState().setNotifications([]);
-}
-
-export function removeNotification(id: string): void {
-  const { notifications, setNotifications } = useNotificationStore.getState();
-  setNotifications(notifications.filter((notification) => notification.id !== id));
-}
-
-export function showNotification(message: string, type: NotificationType = 'info', title?: string, duration?: number): void {
-  showNotifications(message, type, title, duration);
 }
