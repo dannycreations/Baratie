@@ -27,39 +27,6 @@ interface CookbookState {
   readonly setRecipes: (recipes: readonly RecipeBookItem[]) => void;
 }
 
-function findRecipeConflict(recipes: readonly RecipeBookItem[], name: string, activeRecipeId: string | null): RecipeBookItem | undefined {
-  const lowerCaseName = name.toLowerCase();
-  return recipes.find((recipe) => recipe.name.toLowerCase() === lowerCaseName && recipe.id !== activeRecipeId);
-}
-
-function upsertRecipe(
-  recipes: readonly RecipeBookItem[],
-  name: string,
-  ingredients: readonly Ingredient[],
-  activeRecipeId: string | null,
-): { readonly updatedList: readonly RecipeBookItem[]; readonly recipeId: string; readonly userMessage: string } {
-  const now = Date.now();
-  const updatedList = [...recipes];
-  const recipeIndex = activeRecipeId ? updatedList.findIndex((recipe) => recipe.id === activeRecipeId) : -1;
-  let userMessage: string;
-  let recipeId: string;
-
-  if (recipeIndex !== -1 && activeRecipeId) {
-    const originalRecipe = updatedList[recipeIndex];
-    updatedList[recipeIndex] = { ...originalRecipe, name, ingredients, updatedAt: now };
-    userMessage = `Recipe '${name}' was updated.`;
-    recipeId = activeRecipeId;
-  } else {
-    recipeId = crypto.randomUUID();
-    const newRecipe: RecipeBookItem = { id: recipeId, name, ingredients, createdAt: now, updatedAt: now };
-    updatedList.push(newRecipe);
-    userMessage = `Recipe '${name}' was saved.`;
-  }
-
-  updatedList.sort((a, b) => b.updatedAt - a.updatedAt);
-  return { updatedList, recipeId, userMessage };
-}
-
 function mergeRecipeLists(
   existingRecipes: readonly RecipeBookItem[],
   recipesToImport: readonly RecipeBookItem[],
@@ -142,16 +109,33 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     const { recipes } = get();
     const trimmedName = name.trim();
 
-    if (findRecipeConflict(recipes, trimmedName, activeRecipeId)) {
-      showNotification(`A different recipe named '${trimmedName}' already exists. Please choose a new name.`, 'warning', 'Save Error');
-      return;
+    const recipeById = activeRecipeId ? recipes.find((r) => r.id === activeRecipeId) : null;
+
+    const now = Date.now();
+    const updatedList = [...recipes];
+    let recipeToSave: RecipeBookItem;
+    let userMessage: string;
+
+    if (recipeById && recipeById.name.toLowerCase() === trimmedName.toLowerCase()) {
+      const index = updatedList.findIndex((r) => r.id === recipeById.id);
+      recipeToSave = { ...recipeById, name: trimmedName, ingredients, updatedAt: now };
+      if (index !== -1) {
+        updatedList[index] = recipeToSave;
+      } else {
+        updatedList.push(recipeToSave);
+      }
+      userMessage = `Recipe '${trimmedName}' was updated.`;
+    } else {
+      recipeToSave = { id: crypto.randomUUID(), name: trimmedName, ingredients, createdAt: now, updatedAt: now };
+      updatedList.push(recipeToSave);
+      userMessage = recipeById ? `Recipe '${trimmedName}' saved as a new copy.` : `Recipe '${trimmedName}' was saved.`;
     }
 
-    const { updatedList, recipeId, userMessage } = upsertRecipe(recipes, trimmedName, ingredients, activeRecipeId);
+    updatedList.sort((a, b) => b.updatedAt - a.updatedAt);
 
     if (saveAllRecipes(updatedList)) {
       set({ recipes: updatedList });
-      useRecipeStore.getState().setActiveRecipeId(recipeId);
+      useRecipeStore.getState().setActiveRecipeId(recipeToSave.id);
       showNotification(userMessage, 'success', 'Cookbook Action');
     }
   },
