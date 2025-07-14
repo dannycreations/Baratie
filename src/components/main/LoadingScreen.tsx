@@ -6,7 +6,7 @@ import { AlertTriangleIcon } from '../shared/Icon';
 
 import type { JSX } from 'react';
 
-export const LoadingScreen = memo(function LoadingScreen(): JSX.Element {
+export const LoadingScreen = memo((): JSX.Element => {
   const message = useAppStore((state) => state.loadingMessage);
   const isError = useAppStore((state) => state.loadingHasError);
   const theme = useThemeStore((state) => state.theme);

@@ -17,7 +17,7 @@ interface KitchenPanelProps {
   readonly type: 'input' | 'output';
 }
 
-export const KitchenPanel = memo(function KitchenPanel({ type }: KitchenPanelProps): JSX.Element {
+export const KitchenPanel = memo(({ type }: KitchenPanelProps): JSX.Element => {
   const inputPanelConfig = useKitchenStore((state) => state.inputPanelConfig);
   const outputPanelConfig = useKitchenStore((state) => state.outputPanelConfig);
   const inputData = useKitchenStore((state) => state.inputData);

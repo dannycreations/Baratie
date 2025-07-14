@@ -15,49 +15,44 @@ interface CardLayoutProps {
   readonly title: ReactNode;
 }
 
-export const CardLayout = memo(function CardLayout({
-  title,
-  headerActions,
-  children,
-  className = '',
-  contentClassName = '',
-  ariaLive,
-}: CardLayoutProps): JSX.Element {
-  const contentRef = useOverflowScroll<HTMLDivElement>({ xClassName: 'pr-2', yClassName: 'pb-2' });
-  const titleId = useId();
-  const theme = useThemeStore((state) => state.theme);
+export const CardLayout = memo(
+  ({ title, headerActions, children, className = '', contentClassName = '', ariaLive }: CardLayoutProps): JSX.Element => {
+    const contentRef = useOverflowScroll<HTMLDivElement>({ xClassName: 'pr-2', yClassName: 'pb-2' });
+    const titleId = useId();
+    const theme = useThemeStore((state) => state.theme);
 
-  const headerClass = [
-    'flex',
-    'h-12',
-    'shrink-0',
-    'items-center',
-    'justify-between',
-    `border-b border-${theme.borderPrimary}`,
-    `bg-${theme.surfaceTertiary}`,
-    'p-3',
-    `text-${theme.contentPrimary}`,
-  ]
-    .filter(Boolean)
-    .join(' ');
-  const contentClass = ['grow', 'overflow-auto', 'p-3', contentClassName].filter(Boolean).join(' ');
-  const containerClass = ['flex', 'flex-col', 'overflow-hidden', 'rounded-lg', `bg-${theme.surfaceSecondary}`, className].filter(Boolean).join(' ');
+    const headerClass = [
+      'flex',
+      'h-12',
+      'shrink-0',
+      'items-center',
+      'justify-between',
+      `border-b border-${theme.borderPrimary}`,
+      `bg-${theme.surfaceTertiary}`,
+      'p-3',
+      `text-${theme.contentPrimary}`,
+    ]
+      .filter(Boolean)
+      .join(' ');
+    const contentClass = ['grow', 'overflow-auto', 'p-3', contentClassName].filter(Boolean).join(' ');
+    const containerClass = ['flex', 'flex-col', 'overflow-hidden', 'rounded-lg', `bg-${theme.surfaceSecondary}`, className].filter(Boolean).join(' ');
 
-  return (
-    <section role="region" aria-live={ariaLive} aria-labelledby={titleId} className={containerClass}>
-      <div className={headerClass}>
-        <HeaderLayout
-          leftContent={
-            <h2 id={titleId} className="text-lg font-semibold">
-              {title}
-            </h2>
-          }
-          rightContent={headerActions}
-        />
-      </div>
-      <div ref={contentRef} className={contentClass}>
-        {children}
-      </div>
-    </section>
-  );
-});
+    return (
+      <section role="region" aria-live={ariaLive} aria-labelledby={titleId} className={containerClass}>
+        <div className={headerClass}>
+          <HeaderLayout
+            leftContent={
+              <h2 id={titleId} className="text-lg font-semibold">
+                {title}
+              </h2>
+            }
+            rightContent={headerActions}
+          />
+        </div>
+        <div ref={contentRef} className={contentClass}>
+          {children}
+        </div>
+      </section>
+    );
+  },
+);

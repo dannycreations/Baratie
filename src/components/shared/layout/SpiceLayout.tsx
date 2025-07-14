@@ -18,7 +18,7 @@ interface SpiceRendererProps {
   readonly value: unknown;
 }
 
-const SpiceRenderer = memo(function SpiceRenderer({ spice, value: rawValue, onSpiceChange }: SpiceRendererProps) {
+const SpiceRenderer = memo(({ spice, value: rawValue, onSpiceChange }: SpiceRendererProps) => {
   const theme = useThemeStore((state) => state.theme);
 
   const handleBooleanChange = useCallback(
@@ -114,12 +114,7 @@ interface SpiceLayoutProps {
   readonly onSpiceChange: (spiceId: string, newValue: boolean | number | string, spice: SpiceDefinition) => void;
 }
 
-export const SpiceLayout = memo(function SpiceLayout({
-  ingredientDefinition,
-  currentSpices,
-  onSpiceChange,
-  containerClassName,
-}: SpiceLayoutProps): JSX.Element {
+export const SpiceLayout = memo(({ ingredientDefinition, currentSpices, onSpiceChange, containerClassName }: SpiceLayoutProps): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const finalContainerClass = containerClassName || 'space-y-3';
 

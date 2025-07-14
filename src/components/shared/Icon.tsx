@@ -1,6 +1,6 @@
 import { forwardRef, memo } from 'react';
 
-import type { ReactNode, SVGProps } from 'react';
+import type { JSX, ReactNode, SVGProps } from 'react';
 
 export interface IconProps extends SVGProps<SVGSVGElement> {
   readonly className?: string;
@@ -23,7 +23,7 @@ export function createIcon<P extends IconProps = IconProps>({ iconName, defaultP
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
 
-  const Component = forwardRef<SVGSVGElement, P>(function IconComponent(props, ref) {
+  const Component = forwardRef<SVGSVGElement, P>((props, ref): JSX.Element => {
     const { size = 24, className = '', ...rest } = props;
     const computedDefaultProps = typeof defaultProps === 'function' ? defaultProps(props as P) : defaultProps;
 

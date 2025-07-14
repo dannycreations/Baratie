@@ -14,7 +14,7 @@ interface CookbookSaveProps {
   readonly onSave: () => void;
 }
 
-export const CookbookSave = memo(function CookbookSave({ nameInput, onNameChange, onSave, isRecipeEmpty, nameRef }: CookbookSaveProps): JSX.Element {
+export const CookbookSave = memo(({ nameInput, onNameChange, onSave, isRecipeEmpty, nameRef }: CookbookSaveProps): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
   const handleKeyDown = useCallback(

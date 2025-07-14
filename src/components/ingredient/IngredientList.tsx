@@ -22,133 +22,135 @@ export interface IngredientListProps<T extends IngredientDefinition> {
   readonly isItemDisabled?: (item: T) => boolean;
 }
 
-export const IngredientList = memo(function IngredientList<T extends IngredientDefinition>({
-  itemsByCategory,
-  query,
-  renderHeader,
-  emptyMessage = 'No ingredients available.',
-  noResultsMessage = (term) => `No ingredients match search for "${term}".`,
-  renderItemActions,
-  renderItemPrefix,
-  onItemDragStart,
-  isItemDisabled,
-}: IngredientListProps<T>): JSX.Element {
-  const [expandedCategories, setExpandedCategories] = useState<Set<symbol>>(new Set());
-  const theme = useThemeStore((state) => state.theme);
+export const IngredientList = memo(
+  <T extends IngredientDefinition>({
+    itemsByCategory,
+    query,
+    renderHeader,
+    emptyMessage = 'No ingredients available.',
+    noResultsMessage = (term) => `No ingredients match search for "${term}".`,
+    renderItemActions,
+    renderItemPrefix,
+    onItemDragStart,
+    isItemDisabled,
+  }: IngredientListProps<T>): JSX.Element => {
+    const [expandedCategories, setExpandedCategories] = useState<Set<symbol>>(new Set());
+    const theme = useThemeStore((state) => state.theme);
 
-  const handleCategoryToggle = useCallback((category: symbol) => {
-    setExpandedCategories((current) => {
-      if (current.has(category)) {
-        return new Set<symbol>();
-      }
-      return new Set<symbol>([category]);
-    });
-  }, []);
+    const handleCategoryToggle = useCallback((category: symbol) => {
+      setExpandedCategories((current) => {
+        if (current.has(category)) {
+          return new Set<symbol>();
+        }
+        return new Set<symbol>([category]);
+      });
+    }, []);
 
-  if (itemsByCategory.size === 0) {
-    return (
-      <EmptyView className="flex grow flex-col items-center justify-center py-4">
-        {query.trim() !== '' ? noResultsMessage(query) : emptyMessage}
-      </EmptyView>
-    );
-  }
+    if (itemsByCategory.size === 0) {
+      return (
+        <EmptyView className="flex grow flex-col items-center justify-center py-4">
+          {query.trim() !== '' ? noResultsMessage(query) : emptyMessage}
+        </EmptyView>
+      );
+    }
 
-  const categoryEntries = Array.from(itemsByCategory.entries());
+    const categoryEntries = Array.from(itemsByCategory.entries());
 
-  const renderListItem = (item: T) => {
-    const ingredientName = item.name.description ?? 'Unnamed Ingredient';
-    const ingredientIdString = ingredientRegistry.getStringFromSymbol(item.name);
-    errorHandler.assert(ingredientIdString, `Could not get string from symbol for ingredient: ${ingredientName}`, 'Render Ingredient');
+    const renderListItem = (item: T) => {
+      const ingredientName = item.name.description ?? 'Unnamed Ingredient';
+      const ingredientIdString = ingredientRegistry.getStringFromSymbol(item.name);
+      errorHandler.assert(ingredientIdString, `Could not get string from symbol for ingredient: ${ingredientName}`, 'Render Ingredient');
 
-    const isDisabled = isItemDisabled?.(item) ?? false;
-    const nameClasses = [
-      'cursor-default',
-      'truncate',
-      'pr-2',
-      'text-sm',
-      'transition-colors',
-      'duration-150',
-      isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`,
-      `group-hover:text-${theme.infoFg}`,
-    ]
-      .filter(Boolean)
-      .join(' ');
+      const isDisabled = isItemDisabled?.(item) ?? false;
+      const nameClasses = [
+        'cursor-default',
+        'truncate',
+        'pr-2',
+        'text-sm',
+        'transition-colors',
+        'duration-150',
+        isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`,
+        `group-hover:text-${theme.infoFg}`,
+      ]
+        .filter(Boolean)
+        .join(' ');
 
-    const leftColumn = (
-      <div className="flex min-w-0 items-center gap-3">
-        {renderItemPrefix?.(item)}
-        <Tooltip content={item.description} position="top" tooltipClassName="max-w-xs">
-          <span className={nameClasses}>{ingredientName}</span>
-        </Tooltip>
-      </div>
-    );
+      const leftColumn = (
+        <div className="flex min-w-0 items-center gap-3">
+          {renderItemPrefix?.(item)}
+          <Tooltip content={item.description} position="top" tooltipClassName="max-w-xs">
+            <span className={nameClasses}>{ingredientName}</span>
+          </Tooltip>
+        </div>
+      );
 
-    const rightColumn = renderItemActions?.(item);
+      const rightColumn = renderItemActions?.(item);
 
-    const handleDragStart = (event: DragEvent<HTMLElement>) => {
-      onItemDragStart?.(event, item);
+      const handleDragStart = (event: DragEvent<HTMLElement>) => {
+        onItemDragStart?.(event, item);
+      };
+
+      return (
+        <li key={item.name.toString()} data-ingredient-id={ingredientIdString} draggable={!!onItemDragStart} onDragStart={handleDragStart}>
+          <ItemListLayout
+            className={`group h-11 rounded-md bg-${theme.surfaceTertiary} px-2 py-1.5 transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
+            leftContent={leftColumn}
+            leftClass="grow min-w-0"
+            rightContent={rightColumn}
+          />
+        </li>
+      );
     };
 
     return (
-      <li key={item.name.toString()} data-ingredient-id={ingredientIdString} draggable={!!onItemDragStart} onDragStart={handleDragStart}>
-        <ItemListLayout
-          className={`group h-11 rounded-md bg-${theme.surfaceTertiary} px-2 py-1.5 transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
-          leftContent={leftColumn}
-          leftClass="grow min-w-0"
-          rightContent={rightColumn}
-        />
-      </li>
+      <>
+        {categoryEntries.map(([category, items], index) => {
+          const isExpanded = query.trim() !== '' || expandedCategories.has(category);
+          const categoryId = `category-panel-${(category.description || '').replace(/\s+/g, '-').toLowerCase()}`;
+          const buttonId = `${categoryId}-button`;
+          const panelId = `${categoryId}-content`;
+
+          const header = (
+            <button
+              id={buttonId}
+              aria-controls={panelId}
+              aria-expanded={isExpanded}
+              className={`flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-3 text-left text-${theme.contentSecondary} outline-none hover:bg-${theme.surfaceHover}`}
+              onClick={() => handleCategoryToggle(category)}
+            >
+              {renderHeader ? renderHeader(category) : <span className="font-medium">{category.description}</span>}
+              <ChevronRightIcon
+                aria-hidden="true"
+                className={`transform transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
+                size={20}
+              />
+            </button>
+          );
+
+          const containerClasses = ['overflow-hidden rounded-md', !isExpanded && index < categoryEntries.length - 1 ? 'mb-2' : '']
+            .filter(Boolean)
+            .join(' ');
+
+          return (
+            <div key={category.toString()} className={containerClasses}>
+              {header}
+              {isExpanded && (
+                <div
+                  id={panelId}
+                  role="region"
+                  aria-labelledby={buttonId}
+                  className={`max-h-64 overflow-y-auto bg-${theme.surfaceMuted} p-3`}
+                  aria-hidden={!isExpanded}
+                >
+                  <ul className="space-y-1.5" aria-labelledby={buttonId}>
+                    {items.map((item) => renderListItem(item))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </>
     );
-  };
-
-  return (
-    <>
-      {categoryEntries.map(([category, items], index) => {
-        const isExpanded = query.trim() !== '' || expandedCategories.has(category);
-        const categoryId = `category-panel-${(category.description || '').replace(/\s+/g, '-').toLowerCase()}`;
-        const buttonId = `${categoryId}-button`;
-        const panelId = `${categoryId}-content`;
-
-        const header = (
-          <button
-            id={buttonId}
-            aria-controls={panelId}
-            aria-expanded={isExpanded}
-            className={`flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-3 text-left text-${theme.contentSecondary} outline-none hover:bg-${theme.surfaceHover}`}
-            onClick={() => handleCategoryToggle(category)}
-          >
-            {renderHeader ? renderHeader(category) : <span className="font-medium">{category.description}</span>}
-            <ChevronRightIcon
-              aria-hidden="true"
-              className={`transform transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
-              size={20}
-            />
-          </button>
-        );
-
-        const containerClasses = ['overflow-hidden rounded-md', !isExpanded && index < categoryEntries.length - 1 ? 'mb-2' : '']
-          .filter(Boolean)
-          .join(' ');
-
-        return (
-          <div key={category.toString()} className={containerClasses}>
-            {header}
-            {isExpanded && (
-              <div
-                id={panelId}
-                role="region"
-                aria-labelledby={buttonId}
-                className={`max-h-64 overflow-y-auto bg-${theme.surfaceMuted} p-3`}
-                aria-hidden={!isExpanded}
-              >
-                <ul className="space-y-1.5" aria-labelledby={buttonId}>
-                  {items.map((item) => renderListItem(item))}
-                </ul>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </>
-  );
-});
+  },
+);

@@ -13,18 +13,13 @@ interface SectionLayoutProps {
   readonly title: ReactNode;
 }
 
-export const SectionLayout = memo(function SectionLayout({
-  title,
-  headerActions,
-  children,
-  cardClassName,
-  cardContentClassName,
-  ariaLive,
-}: SectionLayoutProps): JSX.Element {
-  const content = typeof children === 'function' ? children() : children;
-  return (
-    <CardLayout ariaLive={ariaLive} className={cardClassName} contentClassName={cardContentClassName} headerActions={headerActions} title={title}>
-      {content}
-    </CardLayout>
-  );
-});
+export const SectionLayout = memo(
+  ({ title, headerActions, children, cardClassName, cardContentClassName, ariaLive }: SectionLayoutProps): JSX.Element => {
+    const content = typeof children === 'function' ? children() : children;
+    return (
+      <CardLayout ariaLive={ariaLive} className={cardClassName} contentClassName={cardContentClassName} headerActions={headerActions} title={title}>
+        {content}
+      </CardLayout>
+    );
+  },
+);

@@ -16,51 +16,53 @@ interface StringInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, '
   readonly onChange: ChangeEventHandler<HTMLInputElement>;
 }
 
-export const StringInput = memo(function StringInput({
-  id,
-  value,
-  onChange,
-  type = 'text',
-  placeholder,
-  className = '',
-  inputRef,
-  disabled = false,
-  ariaLabel,
-  ariaControls,
-  ...rest
-}: StringInputProps): JSX.Element {
-  const theme = useThemeStore((state) => state.theme);
-  const standardInputStyle = [
-    'w-full',
-    'rounded-md',
-    'border',
-    `border-${theme.borderPrimary}`,
-    `bg-${theme.surfaceTertiary}`,
-    'p-2',
-    `text-${theme.contentPrimary}`,
-    `placeholder:text-${theme.contentTertiary}`,
-    'outline-none',
-    `focus:ring-2 focus:ring-${theme.ring}`,
-    'disabled:opacity-50',
-  ]
-    .filter(Boolean)
-    .join(' ');
+export const StringInput = memo(
+  ({
+    id,
+    value,
+    onChange,
+    type = 'text',
+    placeholder,
+    className = '',
+    inputRef,
+    disabled = false,
+    ariaLabel,
+    ariaControls,
+    ...rest
+  }: StringInputProps): JSX.Element => {
+    const theme = useThemeStore((state) => state.theme);
+    const standardInputStyle = [
+      'w-full',
+      'rounded-md',
+      'border',
+      `border-${theme.borderPrimary}`,
+      `bg-${theme.surfaceTertiary}`,
+      'p-2',
+      `text-${theme.contentPrimary}`,
+      `placeholder:text-${theme.contentTertiary}`,
+      'outline-none',
+      `focus:ring-2 focus:ring-${theme.ring}`,
+      'disabled:opacity-50',
+    ]
+      .filter(Boolean)
+      .join(' ');
 
-  const finalClasses = [standardInputStyle, className].filter(Boolean).join(' ');
+    const finalClasses = [standardInputStyle, className].filter(Boolean).join(' ');
 
-  return (
-    <input
-      id={id}
-      ref={inputRef}
-      type={type}
-      value={value}
-      className={finalClasses}
-      disabled={disabled}
-      placeholder={placeholder}
-      onChange={onChange}
-      aria-label={ariaLabel}
-      aria-controls={ariaControls}
-      {...rest}
-    />
-  );
-});
+    return (
+      <input
+        id={id}
+        ref={inputRef}
+        type={type}
+        value={value}
+        className={finalClasses}
+        disabled={disabled}
+        placeholder={placeholder}
+        onChange={onChange}
+        aria-label={ariaLabel}
+        aria-controls={ariaControls}
+        {...rest}
+      />
+    );
+  },
+);

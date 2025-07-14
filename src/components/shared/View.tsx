@@ -34,9 +34,9 @@ function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
     }
   }
 
-  function hasCause(e: unknown): e is { cause: unknown } {
+  const hasCause = (e: unknown): e is { cause: unknown } => {
     return typeof e === 'object' && e !== null && 'cause' in e;
-  }
+  };
 
   if (hasCause(error)) {
     const cause = error.cause;
@@ -87,30 +87,26 @@ function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
   }
 }
 
-export const EmptyView = memo(function EmptyView({
-  children,
-  className = 'flex grow flex-col items-center justify-center p-4',
-  textClassName,
-  icon,
-  title,
-}: EmptyViewProps): JSX.Element {
-  const theme = useThemeStore((state) => state.theme);
-  const finalClass = textClassName ?? `break-all text-center text-sm text-${theme.contentTertiary}`;
+export const EmptyView = memo(
+  ({ children, className = 'flex grow flex-col items-center justify-center p-4', textClassName, icon, title }: EmptyViewProps): JSX.Element => {
+    const theme = useThemeStore((state) => state.theme);
+    const finalClass = textClassName ?? `break-all text-center text-sm text-${theme.contentTertiary}`;
 
-  return (
-    <div role="status" aria-live="polite" className={className}>
-      {icon && (
-        <div aria-hidden="true" className={`mb-2 text-${theme.contentTertiary}`}>
-          {icon}
-        </div>
-      )}
-      {title && <h3 className={`mb-1 text-lg font-semibold ${finalClass}`}>{title}</h3>}
-      <div className={finalClass}>{children}</div>
-    </div>
-  );
-});
+    return (
+      <div role="status" aria-live="polite" className={className}>
+        {icon && (
+          <div aria-hidden="true" className={`mb-2 text-${theme.contentTertiary}`}>
+            {icon}
+          </div>
+        )}
+        {title && <h3 className={`mb-1 text-lg font-semibold ${finalClass}`}>{title}</h3>}
+        <div className={finalClass}>{children}</div>
+      </div>
+    );
+  },
+);
 
-export const ErrorView = memo(function ErrorView({ error, errorInfo }: ErrorViewProps): JSX.Element | null {
+export const ErrorView = memo(({ error, errorInfo }: ErrorViewProps): JSX.Element | null => {
   const detailsElementRef = useOverflowScroll<HTMLDetailsElement>({ xClassName: 'pr-2', yClassName: 'pb-2' });
   const theme = useThemeStore((state) => state.theme);
 

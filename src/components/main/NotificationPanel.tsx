@@ -5,7 +5,7 @@ import { NotificationItem } from './NotificationItem';
 
 import type { JSX } from 'react';
 
-export const NotificationPanel = memo(function NotificationPanel(): JSX.Element | null {
+export const NotificationPanel = memo((): JSX.Element | null => {
   const messages = useNotificationStore((state) => state.notifications);
 
   if (!messages.length) {

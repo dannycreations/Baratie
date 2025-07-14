@@ -36,7 +36,7 @@ type SearchDisabledProps = {
 
 type SearchListLayoutProps = BaseSearchListProps & (SearchEnabledProps | SearchDisabledProps);
 
-export const SearchListLayout = memo(function SearchListLayout(props: SearchListLayoutProps): JSX.Element {
+export const SearchListLayout = memo((props: SearchListLayoutProps): JSX.Element => {
   const { containerClassName = 'flex h-full flex-col', listContent, listId, listWrapperClassName = 'grow overflow-y-auto' } = props;
   const listScrollRef = useOverflowScroll<HTMLDivElement>({ yClassName: 'pr-1' });
 

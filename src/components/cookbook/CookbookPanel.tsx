@@ -12,7 +12,7 @@ import { CookbookSave } from './CookbookSave';
 import type { ChangeEvent, JSX } from 'react';
 import type { RecipeBookItem } from '../../core/IngredientRegistry';
 
-export const CookbookPanel = memo(function CookbookPanel(): JSX.Element | null {
+export const CookbookPanel = memo((): JSX.Element | null => {
   const isModalOpen = useCookbookStore((state) => state.isModalOpen);
   const modalMode = useCookbookStore((state) => state.modalMode);
   const nameInput = useCookbookStore((state) => state.nameInput);

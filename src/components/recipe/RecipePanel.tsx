@@ -18,7 +18,7 @@ import { RecipeItem } from './RecipeItem';
 import type { DragEvent, JSX } from 'react';
 import type { Ingredient } from '../../core/IngredientRegistry';
 
-export const RecipePanel = memo(function RecipePanel(): JSX.Element {
+export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
   const addIngredient = useRecipeStore((state) => state.addIngredient);
   const clear = useRecipeStore((state) => state.clear);

@@ -19,7 +19,7 @@ import { IngredientManager } from './IngredientManager';
 import type { DragEvent, JSX } from 'react';
 import type { IngredientDefinition } from '../../core/IngredientRegistry';
 
-export const IngredientPanel = memo(function IngredientPanel(): JSX.Element {
+export const IngredientPanel = memo((): JSX.Element => {
   const favorites = useFavoriteStore((state) => state.favorites);
   const toggle = useFavoriteStore((state) => state.toggle);
   const addIngredient = useRecipeStore((state) => state.addIngredient);

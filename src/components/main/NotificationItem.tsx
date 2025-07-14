@@ -31,7 +31,7 @@ function getNotificationTheme(theme: AppTheme, type: NotificationType): Notifica
   return map[type] || map.info;
 }
 
-export const NotificationItem = memo(function NotificationItem({ notification }: NotifyItemProps): JSX.Element {
+export const NotificationItem = memo(({ notification }: NotifyItemProps): JSX.Element => {
   const [isExiting, setExiting] = useState(false);
   const [isPaused, setPaused] = useState(false);
   const theme = useThemeStore((state) => state.theme);

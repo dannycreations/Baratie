@@ -27,7 +27,7 @@ interface TabButtonProps {
   readonly onClick: () => void;
 }
 
-const TabButton = memo(function TabButton({ children, isActive, onClick }: TabButtonProps) {
+const TabButton = memo(({ children, isActive, onClick }: TabButtonProps): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const classes = [
     'px-4',
@@ -54,7 +54,7 @@ interface PalettePreviewProps {
   readonly theme: AppTheme;
 }
 
-const PalettePreview = memo(function PalettePreview({ theme }: PalettePreviewProps) {
+const PalettePreview = memo(({ theme }: PalettePreviewProps): JSX.Element => {
   const swatchColors = [
     { color: theme.surfacePrimary, title: 'Page BG' },
     { color: theme.surfaceSecondary, title: 'Card BG' },
@@ -78,7 +78,7 @@ const PalettePreview = memo(function PalettePreview({ theme }: PalettePreviewPro
   );
 });
 
-const AppearanceSettings = memo(function AppearanceSettings() {
+const AppearanceSettings = memo((): JSX.Element => {
   const id = useThemeStore((state) => state.id);
   const theme = useThemeStore((state) => state.theme);
   const setTheme = useThemeStore((state) => state.setTheme);
@@ -162,13 +162,7 @@ const AppearanceSettings = memo(function AppearanceSettings() {
   );
 });
 
-const ExtensionItemStatus = memo(function ExtensionItemStatus({
-  status,
-  errors,
-}: {
-  readonly status: Extension['status'];
-  readonly errors?: readonly string[];
-}) {
+const ExtensionItemStatus = memo(({ status, errors }: { readonly status: Extension['status']; readonly errors?: readonly string[] }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
   const statusMap = {
@@ -199,7 +193,7 @@ const ExtensionItemStatus = memo(function ExtensionItemStatus({
   return content;
 });
 
-const ExtensionSettings = memo(function ExtensionSettings() {
+const ExtensionSettings = memo((): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const extensions = useExtensionStore((state) => state.extensions);
 
@@ -270,7 +264,7 @@ const ExtensionSettings = memo(function ExtensionSettings() {
         <StringInput
           id="extension-url-input"
           ariaLabel="GitHub Repository URL"
-          className="flex-grow"
+          className="grow"
           disabled={isLoading}
           placeholder="https://github.com/user/repository"
           value={url}
@@ -336,7 +330,7 @@ const ExtensionSettings = memo(function ExtensionSettings() {
   );
 });
 
-export const SettingPanel = memo(function SettingPanel(): JSX.Element {
+export const SettingPanel = memo((): JSX.Element => {
   const isModalOpen = useSettingStore((state) => state.isModalOpen);
   const activeTab = useSettingStore((state) => state.activeTab);
   const closeModal = useSettingStore((state) => state.closeModal);

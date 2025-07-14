@@ -14,32 +14,26 @@ interface SearchInputProps {
   readonly onQueryChange: (query: string) => void;
 }
 
-export const SearchInput = memo(function SearchInput({
-  id,
-  query,
-  onQueryChange,
-  className = '',
-  placeholder = 'Search...',
-  ariaLabel,
-  ...rest
-}: SearchInputProps): JSX.Element {
-  const handleChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      onQueryChange(event.target.value);
-    },
-    [onQueryChange],
-  );
+export const SearchInput = memo(
+  ({ id, query, onQueryChange, className = '', placeholder = 'Search...', ariaLabel, ...rest }: SearchInputProps): JSX.Element => {
+    const handleChange = useCallback(
+      (event: ChangeEvent<HTMLInputElement>) => {
+        onQueryChange(event.target.value);
+      },
+      [onQueryChange],
+    );
 
-  return (
-    <StringInput
-      id={id}
-      ariaLabel={ariaLabel}
-      className={className}
-      placeholder={placeholder}
-      type="search"
-      value={query}
-      onChange={handleChange}
-      {...rest}
-    />
-  );
-});
+    return (
+      <StringInput
+        id={id}
+        ariaLabel={ariaLabel}
+        className={className}
+        placeholder={placeholder}
+        type="search"
+        value={query}
+        onChange={handleChange}
+        {...rest}
+      />
+    );
+  },
+);

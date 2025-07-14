@@ -12,7 +12,7 @@ import { IngredientList } from './IngredientList';
 import type { JSX } from 'react';
 import type { IngredientDefinition } from '../../core/IngredientRegistry';
 
-export const IngredientManager = memo(function IngredientManager(): JSX.Element {
+export const IngredientManager = memo((): JSX.Element => {
   const isModalOpen = useIngredientStore((state) => state.isModalOpen);
   const closeModal = useIngredientStore((state) => state.closeModal);
   const disabledCategories = useIngredientStore((state) => state.disabledCategories);

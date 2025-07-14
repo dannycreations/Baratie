@@ -16,6 +16,6 @@ interface NumberInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, '
   readonly onChange: ChangeEventHandler<HTMLInputElement>;
 }
 
-export const NumberInput = memo(function NumberInput(props: NumberInputProps): JSX.Element {
+export const NumberInput = memo((props: NumberInputProps): JSX.Element => {
   return <StringInput type="number" {...props} />;
 });

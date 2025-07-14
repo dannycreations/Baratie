@@ -60,65 +60,73 @@ const getVariantClasses = (variant: ButtonVariant, theme: AppTheme): string => {
   return variantMap[variant] || variantMap.primary;
 };
 
-export const Button = memo(function Button({
-  children,
-  variant = 'primary',
-  size = 'md',
-  icon,
-  iconPosition = 'left',
-  fullWidth = false,
-  loading = false,
-  className = '',
-  disabled = false,
-  type = 'button',
-  onClick,
-  ...props
-}: ButtonProps): JSX.Element {
-  const theme = useThemeStore((state) => state.theme);
+export const Button = memo(
+  ({
+    children,
+    variant = 'primary',
+    size = 'md',
+    icon,
+    iconPosition = 'left',
+    fullWidth = false,
+    loading = false,
+    className = '',
+    disabled = false,
+    type = 'button',
+    onClick,
+    ...props
+  }: ButtonProps): JSX.Element => {
+    const theme = useThemeStore((state) => state.theme);
 
-  const handleClick = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      if (disabled || loading) {
-        event.preventDefault();
-        return;
-      }
-      onClick?.(event);
-    },
-    [disabled, loading, onClick],
-  );
+    const handleClick = useCallback(
+      (event: MouseEvent<HTMLButtonElement>) => {
+        if (disabled || loading) {
+          event.preventDefault();
+          return;
+        }
+        onClick?.(event);
+      },
+      [disabled, loading, onClick],
+    );
 
-  const baseClasses = `inline-flex items-center justify-center border font-medium transition-all duration-150 ease-in-out outline-none focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
-  const shapeClass = children ? 'rounded-md' : 'rounded-full';
-  const loadingClass = loading ? 'opacity-60' : '';
-  const variantClass = getVariantClasses(variant, theme);
-  const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
-  const widthClass = fullWidth ? 'w-full' : '';
+    const baseClasses = `inline-flex items-center justify-center border font-medium transition-all duration-150 ease-in-out outline-none focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
+    const shapeClass = children ? 'rounded-md' : 'rounded-full';
+    const loadingClass = loading ? 'opacity-60' : '';
+    const variantClass = getVariantClasses(variant, theme);
+    const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
+    const widthClass = fullWidth ? 'w-full' : '';
 
-  const finalClassName = [baseClasses, shapeClass, loadingClass, variantClass, sizeClass, widthClass, className].filter(Boolean).join(' ');
+    const finalClassName = [baseClasses, shapeClass, loadingClass, variantClass, sizeClass, widthClass, className].filter(Boolean).join(' ');
 
-  const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-1.5' : 'ml-1.5') : '';
-  const loadingSpinner = (
-    <svg aria-hidden="true" className={`h-4 w-4 animate-spin ${iconMarginClass}`} fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" />
-    </svg>
-  );
+    const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-1.5' : 'ml-1.5') : '';
+    const loadingSpinner = (
+      <svg
+        aria-hidden="true"
+        className={`h-4 w-4 animate-spin ${iconMarginClass}`}
+        fill="none"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" />
+      </svg>
+    );
 
-  const showIconLeft = iconPosition === 'left';
-  const showIconRight = iconPosition === 'right';
+    const showIconLeft = iconPosition === 'left';
+    const showIconRight = iconPosition === 'right';
 
-  return (
-    <button type={type} className={finalClassName.trim()} disabled={loading || disabled} onClick={handleClick} {...props}>
-      {loading && showIconLeft && loadingSpinner}
-      {icon && showIconLeft && <span className={iconMarginClass}>{icon}</span>}
-      {children}
-      {icon && showIconRight && <span className={iconMarginClass}>{icon}</span>}
-      {loading && (showIconRight || !children) && loadingSpinner}
-    </button>
-  );
-});
+    return (
+      <button type={type} className={finalClassName.trim()} disabled={loading || disabled} onClick={handleClick} {...props}>
+        {loading && showIconLeft && loadingSpinner}
+        {icon && showIconLeft && <span className={iconMarginClass}>{icon}</span>}
+        {children}
+        {icon && showIconRight && <span className={iconMarginClass}>{icon}</span>}
+        {loading && (showIconRight || !children) && loadingSpinner}
+      </button>
+    );
+  },
+);
 
-export const CopyButton = memo(function CopyButton({ textToCopy, tooltipPosition = 'top' }: CopyButtonProps): JSX.Element {
+export const CopyButton = memo(({ textToCopy, tooltipPosition = 'top' }: CopyButtonProps): JSX.Element => {
   const [isCopied, setIsCopied] = useState(false);
   const theme = useThemeStore((state) => state.theme);
 
@@ -149,21 +157,17 @@ export const CopyButton = memo(function CopyButton({ textToCopy, tooltipPosition
   );
 });
 
-export const TooltipButton = memo(function TooltipButton({
-  tooltipContent,
-  tooltipPosition,
-  tooltipClassName,
-  tooltipDisabled,
-  ...buttonProps
-}: TooltipButtonProps): JSX.Element {
-  return (
-    <Tooltip
-      content={tooltipContent}
-      disabled={tooltipDisabled || buttonProps.disabled}
-      position={tooltipPosition}
-      tooltipClassName={tooltipClassName}
-    >
-      <Button {...buttonProps} />
-    </Tooltip>
-  );
-});
+export const TooltipButton = memo(
+  ({ tooltipContent, tooltipPosition, tooltipClassName, tooltipDisabled, ...buttonProps }: TooltipButtonProps): JSX.Element => {
+    return (
+      <Tooltip
+        content={tooltipContent}
+        disabled={tooltipDisabled || buttonProps.disabled}
+        position={tooltipPosition}
+        tooltipClassName={tooltipClassName}
+      >
+        <Button {...buttonProps} />
+      </Tooltip>
+    );
+  },
+);

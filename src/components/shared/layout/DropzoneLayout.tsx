@@ -15,17 +15,12 @@ interface DropzoneProps {
 }
 
 const DROPZONE_MODE_MAP: Readonly<Record<DropzoneMode, string>> = {
-  full: 'h-full w-full flex-grow p-3',
+  full: 'h-full w-full grow p-3',
   overlay: 'pointer-events-none absolute inset-0 z-10 p-4',
   placeholder: 'mt-1.5 h-14 text-sm',
 };
 
-export const DropzoneLayout = memo(function DropzoneLayout({
-  text,
-  variant = 'add',
-  mode = 'placeholder',
-  className = '',
-}: DropzoneProps): JSX.Element {
+export const DropzoneLayout = memo(({ text, variant = 'add', mode = 'placeholder', className = '' }: DropzoneProps): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
   const dropzoneThemeMap: Readonly<Record<DropzoneVariant, string>> = {
