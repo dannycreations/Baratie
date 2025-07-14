@@ -72,6 +72,14 @@ function createInitialName(allRecipes: readonly RecipeBookItem[], ingredients: r
     return '';
   }
 
+  const activeRecipeId = useRecipeStore.getState().activeRecipeId;
+  if (activeRecipeId) {
+    const activeRecipe = allRecipes.find((recipe) => recipe.id === activeRecipeId);
+    if (activeRecipe) {
+      return activeRecipe.name;
+    }
+  }
+
   const currentHash = JSON.stringify(
     ingredients.map((ing) => ({
       name: ingredientRegistry.getStringFromSymbol(ing.name) ?? ing.name.toString(),
