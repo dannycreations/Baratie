@@ -43,7 +43,7 @@ export class ErrorHandler {
       return;
     }
 
-    const error = new AppError(techMessage, context, options.genericMessage || options.defaultMessage);
+    const error = new AppError(techMessage, context, options.genericMessage ?? options.defaultMessage);
     this.handle(error, undefined, options);
     throw error;
   }
@@ -53,7 +53,7 @@ export class ErrorHandler {
       const result = fn();
       return { result, error: null };
     } catch (error: unknown) {
-      const handlerOptions = { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
+      const handlerOptions = this.getOptions(options);
       const newError = this.buildError(error, context || 'Sync Operation', handlerOptions.defaultMessage, handlerOptions.genericMessage);
 
       this.handle(newError, undefined, handlerOptions);
@@ -66,7 +66,7 @@ export class ErrorHandler {
       const result = await fn();
       return { result, error: null };
     } catch (error: unknown) {
-      const handlerOptions = { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
+      const handlerOptions = this.getOptions(options);
       const newError = this.buildError(error, context || 'Async Operation', handlerOptions.defaultMessage, handlerOptions.genericMessage);
 
       this.handle(newError, undefined, handlerOptions);
@@ -75,11 +75,11 @@ export class ErrorHandler {
   }
 
   public handle(error: unknown, callerContext?: string, options: Partial<ErrorOptions> = {}): void {
-    const handlerOptions = { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
+    const handlerOptions = this.getOptions(options);
     const newError = this.buildError(error, callerContext, handlerOptions.defaultMessage, handlerOptions.genericMessage);
-    const effectiveContext = newError.context || 'Application';
-    const displayMessage = newError.userMessage || ErrorHandler.DEFAULT_ERROR_CONFIG.defaultMessage!;
-    const notificationTitle = handlerOptions.notificationTitle || `Error: ${effectiveContext}`;
+    const effectiveContext = newError.context ?? 'Application';
+    const displayMessage = newError.userMessage ?? ErrorHandler.DEFAULT_ERROR_CONFIG.defaultMessage!;
+    const notificationTitle = handlerOptions.notificationTitle ?? `Error: ${effectiveContext}`;
 
     if (handlerOptions.shouldLog) {
       logger.error(`Context: ${effectiveContext} | ${newError.name}: ${newError.message}`, {
@@ -102,32 +102,27 @@ export class ErrorHandler {
     }
   }
 
-  private buildError(error: unknown, callerContext?: string, defaultMessage?: string, genericMessage?: string): AppError {
-    let baseMessage: string;
-    let baseContext: string | undefined;
-    let baseUserMessage: string | undefined;
-    let baseCause: unknown;
+  private getOptions(options: Partial<ErrorOptions> = {}): Readonly<ErrorOptions> {
+    return { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
+  }
 
+  private buildError(error: unknown, callerContext?: string, defaultMessage?: string, genericMessage?: string): AppError {
     if (error instanceof AppError) {
-      baseMessage = error.message;
-      baseContext = error.context;
-      baseUserMessage = error.userMessage;
-      baseCause = error.cause ?? error;
-    } else if (error instanceof Error) {
-      baseMessage = error.message;
-      baseCause = error;
-    } else {
-      try {
-        baseMessage = `Unknown error: ${JSON.stringify(error)}`;
-      } catch {
-        baseMessage = `Unknown error: ${String(error)}`;
-      }
-      baseCause = error;
+      const finalContext = callerContext ?? error.context;
+      const finalUserMessage = genericMessage ?? error.userMessage ?? defaultMessage;
+      return new AppError(error.message, finalContext, finalUserMessage, error.cause ?? error);
     }
 
-    const finalContext = callerContext || baseContext;
-    const finalUserMessage = genericMessage || baseUserMessage || defaultMessage;
+    if (error instanceof Error) {
+      return new AppError(error.message, callerContext, genericMessage ?? defaultMessage, error);
+    }
 
-    return new AppError(baseMessage, finalContext, finalUserMessage, baseCause);
+    let errorMessage: string;
+    try {
+      errorMessage = `Unknown error: ${JSON.stringify(error)}`;
+    } catch {
+      errorMessage = `Unknown error: ${String(error)}`;
+    }
+    return new AppError(errorMessage, callerContext, genericMessage ?? defaultMessage, error);
   }
 }

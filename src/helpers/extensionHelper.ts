@@ -39,6 +39,20 @@ function isStorableExtension(obj: unknown): obj is StorableExtension {
   return isValidEntry(entry);
 }
 
+async function fetchAndExecuteScript(scriptUrl: string): Promise<void> {
+  const response = await fetch(scriptUrl);
+  if (!response.ok) {
+    throw new Error(`Fetch failed: ${response.statusText}`);
+  }
+  const scriptContent = await response.text();
+  try {
+    new Function('Baratie', scriptContent)(window.Baratie);
+  } catch (error) {
+    const execError = error instanceof Error ? error.message : String(error);
+    throw new Error(`Execution failed: ${execError}`);
+  }
+}
+
 async function loadAndExecuteExtension(extension: Extension): Promise<void> {
   const { id, url, name, entry } = extension;
   const { setExtensionStatus, setIngredients } = useExtensionStore.getState();
@@ -51,41 +65,31 @@ async function loadAndExecuteExtension(extension: Extension): Promise<void> {
 
   const originalRegister = ingredientRegistry.registerIngredient.bind(ingredientRegistry);
   const newlyRegisteredSymbols: symbol[] = [];
-
-  ingredientRegistry.registerIngredient = <T>(definition: IngredientDefinition<T>) => {
-    const defWithExtensionId = { ...definition, extensionId: id };
-    originalRegister(defWithExtensionId);
-    newlyRegisteredSymbols.push(defWithExtensionId.name);
-  };
-
   const entryPoints = Array.isArray(entry) ? entry : [entry];
   const successLogs: string[] = [];
   const errorLogs: string[] = [];
 
-  for (const entryPoint of entryPoints) {
-    if (!entryPoint.trim()) continue;
-    const scriptUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}@latest/${entryPoint}`;
-    try {
-      const response = await fetch(scriptUrl);
-      if (!response.ok) {
-        throw new Error(`Fetch failed for ${entryPoint}: ${response.statusText}`);
-      }
-      const scriptContent = await response.text();
+  try {
+    ingredientRegistry.registerIngredient = <T>(definition: IngredientDefinition<T>) => {
+      const defWithExtensionId = { ...definition, extensionId: id };
+      originalRegister(defWithExtensionId);
+      newlyRegisteredSymbols.push(defWithExtensionId.name);
+    };
 
+    for (const entryPoint of entryPoints) {
+      if (!entryPoint.trim()) continue;
+      const scriptUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}@latest/${entryPoint}`;
       try {
-        new Function('Baratie', scriptContent)(window.Baratie);
+        await fetchAndExecuteScript(scriptUrl);
         successLogs.push(entryPoint);
       } catch (error) {
-        const execError = error instanceof Error ? error.message : String(error);
-        throw new Error(`Execution of ${entryPoint} failed: ${execError}`);
+        const loadError = error instanceof Error ? error.message : String(error);
+        errorLogs.push(`Error in '${entryPoint}': ${loadError}`);
       }
-    } catch (error) {
-      const loadError = error instanceof Error ? error.message : String(error);
-      errorLogs.push(loadError);
     }
+  } finally {
+    ingredientRegistry.registerIngredient = originalRegister;
   }
-
-  ingredientRegistry.registerIngredient = originalRegister;
 
   if (newlyRegisteredSymbols.length > 0) {
     setIngredients(id, newlyRegisteredSymbols);
@@ -108,21 +112,18 @@ async function loadAndExecuteExtension(extension: Extension): Promise<void> {
 }
 
 function parseGitHubUrl(url: string): { owner: string; repo: string } | null {
-  try {
-    const urlObject = new URL(url.startsWith('http') ? url : `https://${url}`);
-    if (urlObject.hostname !== 'github.com') {
-      return null;
-    }
-    const pathParts = urlObject.pathname.split('/').filter(Boolean);
-    if (pathParts.length >= 2) {
-      return { owner: pathParts[0], repo: pathParts[1].replace('.git', '') };
-    }
-  } catch {
-    const parts = url.split('/').filter(Boolean);
-    if (parts.length >= 2 && parts[0] !== 'http:' && parts[0] !== 'https:') {
-      return { owner: parts[0], repo: parts[1].replace('.git', '') };
-    }
+  const trimmedUrl = url.trim();
+
+  const githubUrlMatch = trimmedUrl.match(/^(?:https?:\/\/)?github\.com\/([^/]+)\/([^/.]+)/);
+  if (githubUrlMatch) {
+    return { owner: githubUrlMatch[1], repo: githubUrlMatch[2].replace('.git', '') };
   }
+
+  const simplePathMatch = trimmedUrl.match(/^([^/.]+)\/([^/.]+)/);
+  if (simplePathMatch) {
+    return { owner: simplePathMatch[1], repo: simplePathMatch[2].replace('.git', '') };
+  }
+
   return null;
 }
 

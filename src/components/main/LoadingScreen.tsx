@@ -11,24 +11,8 @@ export const LoadingScreen = memo((): JSX.Element => {
   const isError = useAppStore((state) => state.loadingHasError);
   const theme = useThemeStore((state) => state.theme);
 
-  const containerClasses = [
-    'fixed',
-    'inset-0',
-    'z-[900]',
-    'flex',
-    'flex-col',
-    'items-center',
-    'justify-center',
-    `bg-${theme.surfacePrimary}`,
-    'transition-opacity',
-    'duration-300',
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  const titleClasses = ['mt-6', 'text-2xl', 'font-semibold', 'tracking-wider', isError ? `text-${theme.dangerFg}` : `text-${theme.contentSecondary}`]
-    .filter(Boolean)
-    .join(' ');
+  const containerClasses = `fixed inset-0 z-[900] flex flex-col items-center justify-center bg-${theme.surfacePrimary} transition-opacity duration-300`;
+  const titleClasses = `mt-6 text-2xl font-semibold tracking-wider ${isError ? `text-${theme.dangerFg}` : `text-${theme.contentSecondary}`}`;
 
   return (
     <div role="status" aria-live="polite" aria-label={isError ? 'Application Failed to Load' : 'Loading Application'} className={containerClasses}>

@@ -53,7 +53,7 @@ const getVariantClasses = (variant: ButtonVariant, theme: AppTheme): string => {
   const variantMap: Record<ButtonVariant, string> = {
     primary: `border-transparent bg-${theme.accentBg} text-${theme.accentFg} hover:bg-${theme.accentBgHover}`,
     secondary: `bg-${theme.surfaceTertiary} text-${theme.contentSecondary} hover:bg-${theme.surfaceHover} hover:text-${theme.contentPrimary}`,
-    danger: `border-${theme.dangerBorder} bg-transparent text-${theme.dangerFg} hover:bg-${theme.dangerBgHover}`,
+    danger: `border-transparent border-${theme.dangerBorder} text-${theme.accentFg} hover:bg-${theme.dangerBgHover}`,
     stealth: `border-transparent bg-transparent text-${theme.contentTertiary} hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}`,
     outline: `border-${theme.borderPrimary} bg-transparent text-${theme.contentSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
   };

@@ -13,6 +13,11 @@ interface RawIngredient {
   readonly spices: Readonly<Record<string, unknown>>;
 }
 
+interface SanitizationResult {
+  readonly recipe: RecipeBookItem | null;
+  readonly warning: string | null;
+}
+
 interface SerializedRecipeItem extends Omit<RecipeBookItem, 'ingredients'> {
   readonly ingredients: readonly {
     readonly id: string;
@@ -47,10 +52,32 @@ function getNumber(obj: Record<string, unknown>, key: string, fallback: number):
   return typeof value === 'number' ? value : fallback;
 }
 
-function sanitizeRecipe(recipeData: unknown, source: 'fileImport' | 'storage'): RecipeBookItem | null {
+function sanitizeIngredient(rawIngredient: unknown, source: 'fileImport' | 'storage', recipeName: string): Ingredient | null {
+  if (!isRawIngredient(rawIngredient)) {
+    logger.warn(`Skipping ingredient with invalid structure from ${source} for recipe '${recipeName}':`, rawIngredient);
+    return null;
+  }
+
+  const ingredientNameSymbol = ingredientRegistry.getSymbolFromString(rawIngredient.name);
+  if (!ingredientNameSymbol) {
+    logger.warn(`Skipping unknown ingredient name '${rawIngredient.name}' from ${source} for recipe '${recipeName}'.`);
+    return null;
+  }
+
+  const definition = ingredientRegistry.getIngredient(ingredientNameSymbol);
+  if (!definition) {
+    logger.warn(`Definition not found for known name symbol: '${rawIngredient.name}'.`);
+    return null;
+  }
+
+  const validatedSpices = validateSpices(definition, rawIngredient.spices);
+  return { id: rawIngredient.id, name: ingredientNameSymbol, spices: validatedSpices };
+}
+
+function sanitizeRecipe(recipeData: unknown, source: 'fileImport' | 'storage'): SanitizationResult {
   if (typeof recipeData !== 'object' || recipeData === null) {
     logger.warn(`Skipping non-object item during recipe sanitization from ${source}:`, recipeData);
-    return null;
+    return { recipe: null, warning: null };
   }
   const rawRecipe = recipeData as Record<string, unknown>;
 
@@ -61,38 +88,23 @@ function sanitizeRecipe(recipeData: unknown, source: 'fileImport' | 'storage'): 
   const rawIngredients: readonly unknown[] = Array.isArray(rawRecipe.ingredients) ? rawRecipe.ingredients : [];
   const validIngredients: Ingredient[] = [];
 
-  for (const rawIngredient of rawIngredients) {
-    if (!isRawIngredient(rawIngredient)) {
-      logger.warn(`Skipping ingredient with invalid structure from ${source} for recipe '${name}':`, rawIngredient);
-      continue;
+  for (const raw of rawIngredients) {
+    const validIngredient = sanitizeIngredient(raw, source, name);
+    if (validIngredient) {
+      validIngredients.push(validIngredient);
     }
-    const ingredientNameSymbol = ingredientRegistry.getSymbolFromString(rawIngredient.name);
-    if (!ingredientNameSymbol) {
-      logger.warn(`Skipping unknown ingredient name '${rawIngredient.name}' from ${source} for recipe '${name}'.`);
-      continue;
-    }
-    const definition = ingredientRegistry.getIngredient(ingredientNameSymbol);
-    if (!definition) {
-      logger.warn(`Definition not found for known name symbol: '${rawIngredient.name}'.`);
-      continue;
-    }
-    const validatedSpices = validateSpices(definition, rawIngredient.spices);
-    validIngredients.push({ id: rawIngredient.id, name: ingredientNameSymbol, spices: validatedSpices });
   }
 
+  let warning: string | null = null;
   if (validIngredients.length !== rawIngredients.length && rawIngredients.length > 0) {
     const ingredientDifference = rawIngredients.length - validIngredients.length;
     const ingredientText = `ingredient${ingredientDifference > 1 ? 's' : ''}`;
     const verbText = ingredientDifference > 1 ? 'were' : 'was';
-    showNotification(
-      `Recipe '${name}' had ${ingredientDifference} invalid ${ingredientText} that ${verbText} removed.`,
-      'warning',
-      'Recipe Load Notice',
-      7000,
-    );
+    warning = `Recipe '${name}' had ${ingredientDifference} invalid ${ingredientText} that ${verbText} removed.`;
   }
 
-  return { id, name, ingredients: validIngredients, createdAt, updatedAt };
+  const recipe: RecipeBookItem = { id, name, ingredients: validIngredients, createdAt, updatedAt };
+  return { recipe, warning };
 }
 
 function serializeRecipe(recipe: Readonly<RecipeBookItem>): SerializedRecipeItem {
@@ -178,9 +190,16 @@ export async function importFromFile(file: File): Promise<RecipeBookItem[] | nul
   const { result: jsonData } = errorHandler.attempt<unknown>(() => JSON.parse(content), 'JSON Parsing for Import');
   if (!jsonData) return null;
 
-  const recipes = (Array.isArray(jsonData) ? jsonData : [jsonData])
-    .map((rawRecipe) => sanitizeRecipe(rawRecipe, 'fileImport'))
-    .filter((recipe): recipe is RecipeBookItem => recipe !== null);
+  const results = (Array.isArray(jsonData) ? jsonData : [jsonData]).map((rawRecipe) => sanitizeRecipe(rawRecipe, 'fileImport'));
+
+  const recipes = results.map((res) => res.recipe).filter((recipe): recipe is RecipeBookItem => recipe !== null);
+
+  for (const { warning } of results) {
+    if (warning) {
+      showNotification(warning, 'warning', 'Recipe Load Notice', 7000);
+    }
+  }
+
   if (recipes.length === 0) {
     showNotification('No valid recipes were found in the selected file.', 'warning', 'Import Notice');
     return null;
@@ -191,7 +210,7 @@ export async function importFromFile(file: File): Promise<RecipeBookItem[] | nul
 export function initRecipes(): void {
   const recipes = storage.get(STORAGE_COOKBOOK, 'Saved Recipes');
   const sanitized = (Array.isArray(recipes) ? recipes : [])
-    .map((rawRecipe) => sanitizeRecipe(rawRecipe, 'storage'))
+    .map((rawRecipe) => sanitizeRecipe(rawRecipe, 'storage').recipe)
     .filter((recipe): recipe is RecipeBookItem => recipe !== null);
   useCookbookStore.getState().setRecipes(sanitized);
 }

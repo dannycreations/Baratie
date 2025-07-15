@@ -39,29 +39,8 @@ export const SelectInput = memo(
       [options, onChange],
     );
 
-    const selectInputStyle = [
-      'w-full',
-      'appearance-none',
-      'rounded-md',
-      'border',
-      `border-${theme.borderPrimary}`,
-      `bg-${theme.surfaceTertiary}`,
-      'py-2',
-      'pl-2',
-      'pr-8',
-      `text-${theme.contentPrimary}`,
-      'transition-colors',
-      'duration-150',
-      `placeholder:text-${theme.contentTertiary}`,
-      `hover:bg-${theme.surfaceHover}`,
-      'outline-none',
-      `focus:ring-2 focus:ring-${theme.ring}`,
-      'disabled:opacity-50',
-    ]
-      .filter(Boolean)
-      .join(' ');
-
-    const finalClasses = [selectInputStyle, className].filter(Boolean).join(' ');
+    const selectInputStyle = `w-full appearance-none rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} py-2 pl-2 pr-8 text-${theme.contentPrimary} transition-colors duration-150 placeholder:text-${theme.contentTertiary} hover:bg-${theme.surfaceHover} outline-none focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50`;
+    const finalClasses = `${selectInputStyle} ${className}`.trim();
 
     return (
       <div className="relative w-full">

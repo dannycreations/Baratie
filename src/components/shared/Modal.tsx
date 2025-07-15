@@ -108,22 +108,11 @@ export const Modal = memo<ModalProps>(
     }
 
     const modalSizeClass = MODAL_SIZE_MAP[size] || MODAL_SIZE_MAP.lg;
-    const modalClasses = [
-      'flex',
-      'w-full',
-      'flex-col',
-      'rounded-lg',
-      'border',
-      `border-${theme.borderPrimary}`,
-      `bg-${theme.surfaceSecondary}`,
-      modalSizeClass,
-      contentClassName,
-    ]
-      .filter(Boolean)
-      .join(' ');
-
     const backdropAnimation = isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active';
     const contentAnimation = isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active';
+
+    const modalClasses =
+      `flex w-full flex-col rounded-lg border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} ${modalSizeClass} ${contentClassName} ${contentAnimation}`.trim();
 
     errorHandler.assert(document.body, 'document.body is not available for Modal portal.', 'Modal Creation');
 
@@ -159,7 +148,7 @@ export const Modal = memo<ModalProps>(
           aria-busy={!isOpen}
           aria-labelledby={!hideHeader && title ? titleId : undefined}
           aria-modal="true"
-          className={[modalClasses, contentAnimation].join(' ')}
+          className={modalClasses}
           tabIndex={-1}
         >
           {!hideHeader && (

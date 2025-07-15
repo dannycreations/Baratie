@@ -171,32 +171,10 @@ export const Tooltip = memo<TooltipProps>(
     );
     const arrowClasses = tooltipArrows[position] || tooltipArrows.top;
     const visibilityClass = isVisible && isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
+    const tooltipClasses =
+      `z-[1000] max-w-xs rounded-md bg-${theme.backdrop} px-3 py-1.5 text-sm text-${theme.accentFg} font-medium shadow-lg transition-opacity duration-150 whitespace-pre-line ${visibilityClass} ${tooltipClassName}`.trim();
+    const triggerClasses = `relative inline-flex ${className}`.trim();
 
-    const tooltipClasses = useMemo(
-      () =>
-        [
-          'z-[1000]',
-          'max-w-xs',
-          'rounded-md',
-          `bg-${theme.backdrop}`,
-          'px-3',
-          'py-1.5',
-          'text-sm',
-          `text-${theme.accentFg}`,
-          'font-medium',
-          'shadow-lg',
-          'transition-opacity',
-          'duration-150',
-          'whitespace-pre-line',
-          visibilityClass,
-          tooltipClassName,
-        ]
-          .filter(Boolean)
-          .join(' '),
-      [theme.backdrop, theme.accentFg, visibilityClass, tooltipClassName],
-    );
-
-    const triggerClasses = ['relative', 'inline-flex', className].filter(Boolean).join(' ');
     const triggerElement = (
       <div
         ref={triggerRef}

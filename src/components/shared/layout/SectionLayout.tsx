@@ -21,21 +21,9 @@ export const SectionLayout = memo<SectionLayoutProps>(
     const titleId = useId();
     const theme = useThemeStore((state) => state.theme);
 
-    const headerClass = [
-      'flex',
-      'h-12',
-      'shrink-0',
-      'items-center',
-      'justify-between',
-      `border-b border-${theme.borderPrimary}`,
-      `bg-${theme.surfaceTertiary}`,
-      'p-3',
-      `text-${theme.contentPrimary}`,
-    ]
-      .filter(Boolean)
-      .join(' ');
-    const contentClass = ['grow', 'overflow-auto', 'p-3', contentClassName].filter(Boolean).join(' ');
-    const containerClass = ['flex', 'flex-col', 'overflow-hidden', 'rounded-lg', `bg-${theme.surfaceSecondary}`, className].filter(Boolean).join(' ');
+    const containerClass = `flex flex-col overflow-hidden rounded-lg bg-${theme.surfaceSecondary} ${className}`.trim();
+    const headerClass = `flex h-12 shrink-0 items-center justify-between border-b border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-3 text-${theme.contentPrimary}`;
+    const contentClass = `grow overflow-auto p-3 ${contentClassName}`.trim();
 
     return (
       <section role="region" aria-live={ariaLive} aria-labelledby={titleId} className={containerClass}>

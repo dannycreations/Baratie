@@ -78,28 +78,29 @@ export const RecipeItem = memo<RecipeItemProps>(
     );
 
     const hasSpices = !!definition.spices && definition.spices.length > 0;
-    const isEditorVisible = isEditing && !isSpiceInInput && !isDragged;
+    const canToggleEditor = hasSpices && !isSpiceInInput;
 
     const handleDoubleClick = useCallback(
       (event: MouseEvent<HTMLDivElement>) => {
-        if (hasSpices && !isSpiceInInput) {
+        if (canToggleEditor) {
           event.preventDefault();
           handleEditToggle();
         }
       },
-      [hasSpices, isSpiceInInput, handleEditToggle],
+      [canToggleEditor, handleEditToggle],
     );
 
     const handleKeyDown = useCallback(
       (event: KeyboardEvent<HTMLDivElement>) => {
-        if ((event.key === 'Enter' || event.key === ' ') && hasSpices && !isSpiceInInput) {
+        if (canToggleEditor && (event.key === 'Enter' || event.key === ' ')) {
           event.preventDefault();
           handleEditToggle();
         }
       },
-      [hasSpices, isSpiceInInput, handleEditToggle],
+      [canToggleEditor, handleEditToggle],
     );
 
+    const isEditorVisible = isEditing && !isSpiceInInput && !isDragged;
     const settingsTooltip = isSpiceInInput ? 'Options are in the Input panel' : isEditing ? 'Hide Options' : 'Edit Options';
     const ariaLabel = `Recipe Item: ${ingredient.name.description}. Status: ${isAutoCook ? status : 'Auto-Cook Disabled'}${
       isSpiceInInput ? '. Options are managed in the Input panel.' : ''
@@ -178,7 +179,7 @@ export const RecipeItem = memo<RecipeItemProps>(
         onDragEnter={handleDragEnter}
         onDragOver={onDragOver}
         onKeyDown={handleKeyDown}
-        tabIndex={hasSpices && !isSpiceInInput ? 0 : -1}
+        tabIndex={canToggleEditor ? 0 : -1}
       >
         <ItemListLayout
           className="h-12 cursor-default p-3"

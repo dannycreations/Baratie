@@ -58,50 +58,46 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
   const deleteLabel = isDeleting ? `Confirm deletion of ${recipe.name}` : `Delete the recipe: ${recipe.name}`;
   const deleteClasses = isDeleting ? getConfirmClasses(theme) : undefined;
 
-  const leftColumn = (
-    <>
-      <Tooltip content={recipe.name} position="top">
-        <p className={`cursor-default truncate text-sm font-medium text-${theme.contentPrimary}`}>{recipe.name}</p>
-      </Tooltip>
-      <p className={`text-xs text-${theme.contentTertiary}`}>
-        Last Updated: {formatTimestamp(recipe.updatedAt)} ({recipe.ingredients.length} steps)
-      </p>
-    </>
-  );
-
-  const rightColumn = (
-    <>
-      <TooltipButton
-        aria-label={`Load the recipe: ${recipe.name}`}
-        icon={<UploadCloudIcon size={18} />}
-        onClick={handleLoad}
-        size="sm"
-        tooltipContent="Load Recipe"
-        tooltipPosition="left"
-        variant="primary"
-      >
-        Load
-      </TooltipButton>
-      <TooltipButton
-        aria-label={deleteLabel}
-        className={deleteClasses}
-        icon={isDeleting ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
-        onClick={handleDelete}
-        size="sm"
-        tooltipContent={deleteTip}
-        tooltipPosition="left"
-        variant="danger"
-      />
-    </>
-  );
-
   return (
     <li className="list-none">
       <ItemListLayout
         className={`h-16 rounded-md bg-${theme.surfaceTertiary} p-3 transition-colors duration-150 hover:bg-${theme.surfaceHover}`}
-        leftContent={leftColumn}
+        leftContent={
+          <>
+            <Tooltip content={recipe.name} position="top">
+              <p className={`cursor-default truncate text-sm font-medium text-${theme.contentPrimary}`}>{recipe.name}</p>
+            </Tooltip>
+            <p className={`text-xs text-${theme.contentTertiary}`}>
+              Last Updated: {formatTimestamp(recipe.updatedAt)} ({recipe.ingredients.length} steps)
+            </p>
+          </>
+        }
         leftClass="grow min-w-0 mr-2"
-        rightContent={rightColumn}
+        rightContent={
+          <>
+            <TooltipButton
+              aria-label={`Load the recipe: ${recipe.name}`}
+              icon={<UploadCloudIcon size={18} />}
+              onClick={handleLoad}
+              size="sm"
+              tooltipContent="Load Recipe"
+              tooltipPosition="left"
+              variant="primary"
+            >
+              Load
+            </TooltipButton>
+            <TooltipButton
+              aria-label={deleteLabel}
+              className={deleteClasses}
+              icon={isDeleting ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
+              onClick={handleDelete}
+              size="sm"
+              tooltipContent={deleteTip}
+              tooltipPosition="left"
+              variant="danger"
+            />
+          </>
+        }
         rightClass="flex shrink-0 items-center space-x-2"
       />
     </li>

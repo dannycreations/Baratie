@@ -31,23 +31,8 @@ export const StringInput = memo<StringInputProps>(
     ...rest
   }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
-    const standardInputStyle = [
-      'w-full',
-      'rounded-md',
-      'border',
-      `border-${theme.borderPrimary}`,
-      `bg-${theme.surfaceTertiary}`,
-      'p-2',
-      `text-${theme.contentPrimary}`,
-      `placeholder:text-${theme.contentTertiary}`,
-      'outline-none',
-      `focus:ring-2 focus:ring-${theme.ring}`,
-      'disabled:opacity-50',
-    ]
-      .filter(Boolean)
-      .join(' ');
-
-    const finalClasses = [standardInputStyle, className].filter(Boolean).join(' ');
+    const standardInputStyle = `w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-2 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} outline-none focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50`;
+    const finalClasses = `${standardInputStyle} ${className}`.trim();
 
     return (
       <input

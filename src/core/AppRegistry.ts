@@ -60,28 +60,26 @@ export class AppRegistry {
       const postTasks = this.userTasks.filter((task) => task.type === 'postInit');
       const allTasks = [...preTasks, ...this.systemTasks, ...postTasks];
 
-      const { error } = await errorHandler.attemptAsync(
-        async () => {
-          for (const task of allTasks) {
-            logger.debug(`Executing init task: ${task.message}`);
-            useAppStore.getState().setLoadingMessage(task.message);
-            await task.handler?.();
-            await new Promise((resolve) => setTimeout(resolve, 200));
-          }
-        },
-        'App Initialization',
-        {
-          shouldNotify: false,
-        },
-      );
+      for (const task of allTasks) {
+        useAppStore.getState().setLoadingMessage(task.message);
+        logger.debug(`Executing init task: ${task.message}`);
 
-      if (error) {
-        const message = error instanceof Error ? error.message : 'An unknown error occurred';
-        useAppStore.getState().setLoadingMessage(`Initialization Failed: ${message}`, true);
-      } else {
-        useAppStore.getState().setInitialized(true);
-        logger.info('Application initialization sequence completed successfully.');
+        if (task.handler) {
+          const { error } = await errorHandler.attemptAsync(task.handler, `Init: ${task.message}`, {
+            genericMessage: `Failed during task: ${task.message}`,
+            shouldNotify: false,
+          });
+
+          if (error) {
+            useAppStore.getState().setLoadingMessage(error.userMessage || error.message, true);
+            return;
+          }
+        }
+        await new Promise((resolve) => setTimeout(resolve, 200));
       }
+
+      useAppStore.getState().setInitialized(true);
+      logger.info('Application initialization sequence completed successfully.');
     } finally {
       this.isRunning = false;
     }

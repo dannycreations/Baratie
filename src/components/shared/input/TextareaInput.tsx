@@ -59,61 +59,28 @@ export const TextareaInput = memo<TextareaInputProps>(
 
     const handleTextChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => onChange?.(event.target.value), [onChange]);
 
-    const commonTextClasses = [
-      'h-full',
-      'w-full',
-      'resize-none',
-      'p-2.5',
-      `text-${theme.contentPrimary}`,
-      'outline-none',
-      'allow-text-selection',
-      `placeholder:text-${theme.contentTertiary}`,
-    ];
+    const commonTextStyles = `h-full w-full resize-none p-2.5 text-${theme.contentPrimary} outline-none allow-text-selection placeholder:text-${theme.contentTertiary}`;
 
-    const baseTextClasses = [
-      ...commonTextClasses,
-      'rounded-md',
-      'border',
-      `border-${theme.borderPrimary}`,
-      `bg-${theme.surfaceSecondary}`,
-      `focus:ring-2 focus:ring-${theme.ring}`,
-      'disabled:opacity-50',
-    ]
-      .filter(Boolean)
-      .join(' ');
-
-    const boxTextClasses = [
-      'relative',
-      'flex',
-      'overflow-hidden',
-      'rounded-md',
-      'border',
-      `border-${theme.borderPrimary}`,
-      `bg-${theme.surfaceSecondary}`,
-      `focus-within:ring-2 focus-within:ring-${theme.ring}`,
-    ]
-      .filter(Boolean)
-      .join(' ');
-
-    const linedTextClasses = [...commonTextClasses, 'bg-transparent'].filter(Boolean).join(' ');
-
-    const renderStandard = (): JSX.Element => (
-      <div className={['relative', wrapperClass].filter(Boolean).join(' ')} {...dropZoneProps}>
-        <textarea
-          ref={textareaRef}
-          aria-label={ariaLabel}
-          className={[baseTextClasses, textareaClass].filter(Boolean).join(' ')}
-          disabled={disabled}
-          placeholder={placeholder}
-          readOnly={readOnly}
-          spellCheck={spellCheck}
-          value={value}
-          onChange={handleTextChange}
-          {...rest}
-        />
-        {isDragOver && <DropzoneLayout mode="overlay" text="Drop text file" variant="add" />}
-      </div>
-    );
+    const renderStandard = (): JSX.Element => {
+      const baseTextClasses = `${commonTextStyles} rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50`;
+      return (
+        <div className={`relative ${wrapperClass}`} {...dropZoneProps}>
+          <textarea
+            ref={textareaRef}
+            aria-label={ariaLabel}
+            className={`${baseTextClasses} ${textareaClass}`}
+            disabled={disabled}
+            placeholder={placeholder}
+            readOnly={readOnly}
+            spellCheck={spellCheck}
+            value={value}
+            onChange={handleTextChange}
+            {...rest}
+          />
+          {isDragOver && <DropzoneLayout mode="overlay" text="Drop text file" variant="add" />}
+        </div>
+      );
+    };
 
     const renderLined = (): JSX.Element => {
       const handleScroll = useCallback((event: UIEvent<HTMLTextAreaElement>) => {
@@ -121,22 +88,12 @@ export const TextareaInput = memo<TextareaInputProps>(
       }, []);
 
       const lineHeight = rest.style?.['lineHeight'] ?? '1.6';
-
-      const boxContainerClasses = [boxTextClasses, disabled && 'opacity-50', wrapperClass, textareaClass].filter(Boolean).join(' ');
-      const gutterClasses = [
-        'shrink-0',
-        'select-none',
-        'overflow-y-hidden',
-        `border-r border-${theme.borderPrimary}`,
-        `bg-${theme.surfaceSecondary}`,
-        'py-2.5',
-        'pl-2.5',
-        'pr-2',
-        'text-right',
-        `text-${theme.contentTertiary}`,
-      ]
-        .filter(Boolean)
-        .join(' ');
+      const boxContainerClasses =
+        `relative flex overflow-hidden rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} focus-within:ring-2 focus-within:ring-${theme.ring} ${
+          disabled ? 'opacity-50' : ''
+        } ${wrapperClass} ${textareaClass}`.trim();
+      const gutterClasses = `shrink-0 select-none overflow-y-hidden border-r border-${theme.borderPrimary} bg-${theme.surfaceSecondary} py-2.5 pl-2.5 pr-2 text-right text-${theme.contentTertiary}`;
+      const linedTextClasses = `${commonTextStyles} bg-transparent`;
 
       return (
         <div className={boxContainerClasses} {...dropZoneProps}>

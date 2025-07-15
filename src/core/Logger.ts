@@ -10,51 +10,6 @@ export enum LogLevel {
   SILENT = Infinity,
 }
 
-function formatArgument(value: unknown): unknown {
-  if (typeof value !== 'object' || value === null) {
-    return value;
-  }
-
-  try {
-    const cache = new Set();
-    return JSON.stringify(value, (_key: string, value: unknown) => {
-      if (typeof value === 'object' && value !== null) {
-        if (cache.has(value)) {
-          return '[Circular]';
-        }
-        cache.add(value);
-      }
-
-      if (value instanceof Error) {
-        const errorObject: Record<string, unknown> = {
-          message: value.message,
-          name: value.name,
-        };
-        if (value instanceof AppError) {
-          if (value.context) {
-            errorObject.context = value.context;
-          }
-          if (value.userMessage) {
-            errorObject.userMessage = value.userMessage;
-          }
-        }
-        if ('cause' in value && value.cause) {
-          const cause = value.cause;
-          errorObject.cause = cause instanceof Error ? { name: cause.name, message: cause.message, stack: cause.stack } : String(cause);
-        }
-        if (value.stack) {
-          errorObject.stack = value.stack;
-        }
-        return errorObject;
-      }
-      return value;
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    return `[Unserializable object: ${message}]`;
-  }
-}
-
 export class Logger {
   public level: LogLevel;
 
@@ -86,13 +41,52 @@ export class Logger {
     this.log(LogLevel.FATAL, message, ...args);
   }
 
+  private formatArgument(value: unknown): unknown {
+    if (typeof value !== 'object' || value === null) {
+      return value;
+    }
+
+    try {
+      const cache = new Set();
+      return JSON.stringify(value, (_key: string, val: unknown) => {
+        if (typeof val === 'object' && val !== null) {
+          if (cache.has(val)) {
+            return '[Circular]';
+          }
+          cache.add(val);
+        }
+
+        if (val instanceof Error) {
+          const errorObject: Record<string, unknown> = {
+            message: val.message,
+            name: val.name,
+          };
+          if (val instanceof AppError) {
+            if (val.context) errorObject.context = val.context;
+            if (val.userMessage) errorObject.userMessage = val.userMessage;
+          }
+          if ('cause' in val && val.cause) {
+            const cause = val.cause;
+            errorObject.cause = cause instanceof Error ? { name: cause.name, message: cause.message, stack: cause.stack } : String(cause);
+          }
+          if (val.stack) errorObject.stack = val.stack;
+          return errorObject;
+        }
+        return val;
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return `[Unserializable object: ${message}]`;
+    }
+  }
+
   private log(level: LogLevel, message?: unknown, ...args: unknown[]): void {
     if (level < this.level) {
       return;
     }
 
     const prefix = `[${LogLevel[level]}]`;
-    const data = [message, ...args].map(formatArgument);
+    const data = [message, ...args].map((arg) => this.formatArgument(arg));
 
     switch (level) {
       case LogLevel.TRACE:

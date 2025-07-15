@@ -38,12 +38,7 @@ export const IngredientList = memo(
     const theme = useThemeStore((state) => state.theme);
 
     const handleCategoryToggle = useCallback((category: symbol) => {
-      setExpandedCategories((current) => {
-        if (current.has(category)) {
-          return new Set<symbol>();
-        }
-        return new Set<symbol>([category]);
-      });
+      setExpandedCategories((current) => new Set<symbol>(current.has(category) ? [] : [category]));
     }, []);
 
     if (itemsByCategory.size === 0) {
