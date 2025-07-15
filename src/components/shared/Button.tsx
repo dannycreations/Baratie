@@ -6,7 +6,7 @@ import { useThemeStore } from '../../stores/useThemeStore';
 import { CheckIcon, CopyIcon } from './Icon';
 import { Tooltip } from './Tooltip';
 
-import type { ButtonHTMLAttributes, JSX, MouseEvent, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, JSX, ReactNode } from 'react';
 import type { AppTheme } from '../../app/themes';
 import type { TooltipProps } from './Tooltip';
 
@@ -77,17 +77,6 @@ export const Button = memo<ButtonProps>(
   }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
-    const handleClick = useCallback(
-      (event: MouseEvent<HTMLButtonElement>) => {
-        if (disabled || loading) {
-          event.preventDefault();
-          return;
-        }
-        onClick?.(event);
-      },
-      [disabled, loading, onClick],
-    );
-
     const baseClasses = `inline-flex items-center justify-center border font-medium transition-all duration-150 ease-in-out outline-none focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
     const loadingClass = loading ? 'opacity-60' : '';
@@ -115,7 +104,7 @@ export const Button = memo<ButtonProps>(
     const showIconRight = iconPosition === 'right';
 
     return (
-      <button type={type} className={finalClassName.trim()} disabled={loading || disabled} onClick={handleClick} {...props}>
+      <button type={type} className={finalClassName.trim()} disabled={loading || disabled} onClick={onClick} {...props}>
         {loading && showIconLeft && loadingSpinner}
         {icon && showIconLeft && <span className={iconMarginClass}>{icon}</span>}
         {children}
