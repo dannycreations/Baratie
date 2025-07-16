@@ -1,8 +1,8 @@
 import { memo } from 'react';
 
-import { AppError } from '../../core/ErrorHandler';
 import { useOverflowScroll } from '../../hooks/useOverflowScroll';
 import { useThemeStore } from '../../stores/useThemeStore';
+import { createErrorObject, objectStringify } from '../../utilities/errorUtil';
 
 import type { ErrorInfo, JSX, ReactNode } from 'react';
 
@@ -20,77 +20,18 @@ interface ErrorViewProps {
 }
 
 function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
-  const errorObject: Record<string, unknown> = {
-    name: error.name,
-    message: error.message,
-  };
-
-  if (error instanceof AppError) {
-    if (error.context) {
-      errorObject.context = error.context;
-    }
-    if (error.userMessage) {
-      errorObject.userMessage = error.userMessage;
-    }
-  }
-
-  const hasCause = (e: unknown): e is { cause: unknown } => {
-    return typeof e === 'object' && e !== null && 'cause' in e;
-  };
-
-  if (hasCause(error)) {
-    const cause = error.cause;
-    if (cause) {
-      errorObject.cause = cause instanceof Error ? { name: cause.name, message: cause.message, stack: cause.stack } : String(cause);
-    }
-  }
-
-  if (error.stack) {
-    errorObject.stack = error.stack.split('\n').map((line) => line.trim());
-  }
-
+  const errorObject = createErrorObject(error);
   if (errorInfo?.componentStack) {
     errorObject.componentStack = errorInfo.componentStack.split('\n').map((line) => line.trim());
   }
-
-  const cache = new Set();
-  const replacer = (_key: string, value: unknown) => {
-    if (typeof value === 'object' && value !== null) {
-      if (cache.has(value)) {
-        return '[Circular]';
-      }
-      cache.add(value);
-    }
-    if (value instanceof Error) {
-      return {
-        message: value.message,
-        name: value.name,
-        stack: value.stack,
-      };
-    }
-    return value;
-  };
-
-  try {
-    return JSON.stringify(errorObject, replacer, 2);
-  } catch {
-    return JSON.stringify(
-      {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-        note: 'Could not stringify the full error object, possibly due to circular references.',
-      },
-      null,
-      2,
-    );
-  }
+  return objectStringify(errorObject, 2);
 }
 
 export const EmptyView = memo<EmptyViewProps>(
   ({ children, className = 'flex grow flex-col items-center justify-center p-4', textClassName, icon, title }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
-    const finalClass = textClassName ?? `break-all text-center text-sm text-${theme.contentTertiary}`;
+    const titleClasses = `mb-1 text-lg font-semibold text-center text-${theme.contentSecondary}`;
+    const textClasses = textClassName ?? `break-all text-center text-sm text-${theme.contentTertiary}`;
 
     return (
       <div role="status" aria-live="polite" className={className}>
@@ -99,8 +40,8 @@ export const EmptyView = memo<EmptyViewProps>(
             {icon}
           </div>
         )}
-        {title && <h3 className={`mb-1 text-lg font-semibold ${finalClass}`}>{title}</h3>}
-        <div className={finalClass}>{children}</div>
+        {title && <h3 className={titleClasses}>{title}</h3>}
+        <div className={textClasses}>{children}</div>
       </div>
     );
   },

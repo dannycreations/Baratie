@@ -3,6 +3,7 @@ import { ingredientRegistry, logger, storage } from '../app/container';
 import { useExtensionStore } from '../stores/useExtensionStore';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
 import { useRecipeStore } from '../stores/useRecipeStore';
+import { isObjectLike } from '../utilities/appUtil';
 import { showNotification } from './notificationHelper';
 
 import type { IngredientDefinition } from '../core/IngredientRegistry';
@@ -29,7 +30,7 @@ function isValidEntry(entry: unknown): entry is string | readonly string[] {
 }
 
 function isStorableExtension(obj: unknown): obj is StorableExtension {
-  if (typeof obj !== 'object' || obj === null) return false;
+  if (!isObjectLike(obj)) return false;
   const { id, url, name, entry } = obj as Record<string, unknown>;
   return (
     typeof id === 'string' &&
@@ -43,7 +44,7 @@ function isStorableExtension(obj: unknown): obj is StorableExtension {
 }
 
 function isExtensionManifest(obj: unknown): obj is ExtensionManifest {
-  if (typeof obj !== 'object' || obj === null) return false;
+  if (!isObjectLike(obj)) return false;
   const { name, entry } = obj as Record<string, unknown>;
   return typeof name === 'string' && !!name.trim() && isValidEntry(entry);
 }

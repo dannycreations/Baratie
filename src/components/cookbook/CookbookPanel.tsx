@@ -1,6 +1,15 @@
 import { memo, useCallback, useMemo, useRef } from 'react';
 
-import { deleteRecipe, exportAll, exportSingle, importFromFile, loadRecipe, mergeRecipes, openCookbook } from '../../helpers/cookbookHelper';
+import {
+  deleteRecipe,
+  exportAll,
+  exportSingle,
+  importFromFile,
+  loadRecipe,
+  mergeRecipes,
+  openCookbook,
+  upsertRecipe,
+} from '../../helpers/cookbookHelper';
 import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { TooltipButton } from '../shared/Button';
@@ -84,7 +93,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const isSaveDisabled = !nameInput.trim() || isRecipeEmpty;
 
   const handleSave = useCallback(() => {
-    openCookbook({ mode: 'save', name: nameInput, ingredients, activeRecipeId });
+    upsertRecipe(nameInput, ingredients, activeRecipeId);
     closeModal();
   }, [closeModal, nameInput, ingredients, activeRecipeId]);
 

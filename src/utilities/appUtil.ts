@@ -16,3 +16,7 @@ export function uint8ArrayToBase64(bytes: Uint8Array): string {
   }
   return btoa(binary);
 }
+
+export function isObjectLike(value?: unknown): value is object {
+  return typeof value === 'object' && value !== null;
+}

@@ -1,4 +1,4 @@
-import { base64ToUint8Array, uint8ArrayToBase64 } from '../utilities/appUtil';
+import { base64ToUint8Array, isObjectLike, uint8ArrayToBase64 } from '../utilities/appUtil';
 
 export type InputDataType = keyof TypeMap;
 
@@ -26,15 +26,15 @@ export class InputType<T = unknown> {
     this.value = value;
   }
 
-  public cast(targetType: 'array', options?: { readonly value?: unknown[] }): InputType<unknown[]>;
-  public cast(targetType: 'arraybuffer', options?: { readonly value?: ArrayBuffer }): InputType<ArrayBuffer>;
-  public cast(targetType: 'boolean', options?: { readonly value?: boolean }): InputType<boolean>;
-  public cast(targetType: 'bytearray', options?: { readonly value?: Uint8Array }): InputType<Uint8Array>;
-  public cast(targetType: 'number', options?: { readonly max?: number; readonly min?: number; readonly value?: number }): InputType<number>;
-  public cast(targetType: 'object', options?: { readonly value?: object }): InputType<object>;
-  public cast(targetType: 'string', options?: { readonly trim?: boolean; readonly value?: string }): InputType<string>;
+  public cast(type: 'array', options?: { readonly value?: unknown[] }): InputType<unknown[]>;
+  public cast(type: 'arraybuffer', options?: { readonly value?: ArrayBuffer }): InputType<ArrayBuffer>;
+  public cast(type: 'boolean', options?: { readonly value?: boolean }): InputType<boolean>;
+  public cast(type: 'bytearray', options?: { readonly value?: Uint8Array }): InputType<Uint8Array>;
+  public cast(type: 'number', options?: { readonly max?: number; readonly min?: number; readonly value?: number }): InputType<number>;
+  public cast(type: 'object', options?: { readonly value?: object }): InputType<object>;
+  public cast(type: 'string', options?: { readonly trim?: boolean; readonly value?: string }): InputType<string>;
   public cast(
-    targetType: InputDataType,
+    type: InputDataType,
     options?: {
       readonly max?: number;
       readonly min?: number;
@@ -46,11 +46,11 @@ export class InputType<T = unknown> {
       if (typeof options?.value !== 'undefined') {
         return new InputType(options.value);
       }
-      const error = e || new CastError(`Casting to ${targetType} failed for value '${String(this.value)}' and no fallback was provided.`);
+      const error = e || new CastError(`Casting to ${type} failed for value '${String(this.value)}' and no fallback was provided.`);
       throw error;
     };
 
-    switch (targetType) {
+    switch (type) {
       case 'number':
         return this._castToNumber(options, handleFailure);
       case 'boolean':
@@ -66,7 +66,7 @@ export class InputType<T = unknown> {
       case 'string':
         return this._castToString(options);
       default: {
-        const unhandled = String(targetType);
+        const unhandled = String(type);
         return handleFailure(new CastError(`Unhandled cast target type: ${unhandled}`));
       }
     }
@@ -93,7 +93,7 @@ export class InputType<T = unknown> {
     if (typeof value === 'boolean') {
       return 'boolean';
     }
-    if (typeof value === 'object' && value !== null) {
+    if (isObjectLike(value)) {
       return 'object';
     }
 
@@ -152,13 +152,13 @@ export class InputType<T = unknown> {
   }
 
   private _castToObject(handleFailure: (e?: Error) => InputType<unknown>): InputType<object> {
-    if (typeof this.value === 'object' && this.value !== null && !Array.isArray(this.value)) {
+    if (isObjectLike(this.value) && !Array.isArray(this.value)) {
       return new InputType(this.value);
     }
     if (typeof this.value === 'string') {
       try {
         const parsed = JSON.parse(this.value);
-        if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+        if (isObjectLike(parsed) && !Array.isArray(parsed)) {
           return new InputType(parsed);
         }
       } catch (error) {}
@@ -228,7 +228,7 @@ export class InputType<T = unknown> {
       stringValue = uint8ArrayToBase64(new Uint8Array(this.value));
     } else if (this.value instanceof Uint8Array) {
       stringValue = uint8ArrayToBase64(this.value);
-    } else if (Array.isArray(this.value) || (typeof this.value === 'object' && this.value !== null)) {
+    } else if (isObjectLike(this.value)) {
       try {
         stringValue = JSON.stringify(this.value);
       } catch {

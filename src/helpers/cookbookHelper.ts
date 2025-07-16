@@ -2,6 +2,7 @@ import { STORAGE_COOKBOOK } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger, storage } from '../app/container';
 import { useCookbookStore } from '../stores/useCookbookStore';
 import { useRecipeStore } from '../stores/useRecipeStore';
+import { isObjectLike } from '../utilities/appUtil';
 import { readAsText, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
 import { showNotification } from './notificationHelper';
 import { validateSpices } from './spiceHelper';
@@ -32,17 +33,9 @@ type OpenCookbookArgs =
   | { readonly mode: 'save'; readonly ingredients: readonly Ingredient[]; readonly activeRecipeId: string | null; readonly name?: string };
 
 function isRawIngredient(data: unknown): data is RawIngredient {
-  if (typeof data !== 'object' || data === null) return false;
+  if (!isObjectLike(data)) return false;
   const { id, name, spices } = data as Record<string, unknown>;
-  return (
-    typeof id === 'string' &&
-    !!id.trim() &&
-    typeof name === 'string' &&
-    !!name.trim() &&
-    typeof spices === 'object' &&
-    spices !== null &&
-    !Array.isArray(spices)
-  );
+  return typeof id === 'string' && !!id.trim() && typeof name === 'string' && !!name.trim() && isObjectLike(spices) && !Array.isArray(spices);
 }
 
 function getString(obj: Record<string, unknown>, key: string, fallback: string): string {
@@ -78,7 +71,7 @@ function sanitizeIngredient(rawIngredient: unknown, source: 'fileImport' | 'stor
 }
 
 function sanitizeRecipe(recipeData: unknown, source: 'fileImport' | 'storage'): SanitizationResult {
-  if (typeof recipeData !== 'object' || recipeData === null) {
+  if (!isObjectLike(recipeData)) {
     logger.warn(`Skipping non-object item during recipe sanitization from ${source}:`, recipeData);
     return { recipe: null, warning: null };
   }
@@ -326,11 +319,10 @@ export function openCookbook(args: OpenCookbookArgs): void {
   const { ingredients, activeRecipeId } = args;
   const allRecipes = getAllRecipes();
 
-  const isQuickSaveAttempt = !args.name && activeRecipeId;
-  if (isQuickSaveAttempt) {
-    const existingRecipe = allRecipes.find((recipe) => recipe.id === activeRecipeId);
-    if (existingRecipe) {
-      upsertRecipe(existingRecipe.name, ingredients, activeRecipeId);
+  if (!args.name && activeRecipeId) {
+    const recipeToUpdate = allRecipes.find((recipe) => recipe.id === activeRecipeId);
+    if (recipeToUpdate) {
+      upsertRecipe(recipeToUpdate.name, ingredients, activeRecipeId);
       return;
     }
   }

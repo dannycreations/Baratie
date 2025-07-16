@@ -157,16 +157,7 @@ export const RecipePanel = memo((): JSX.Element => {
         />
       </>
     ),
-    [
-      ingredients.length,
-      isCookbookOpen,
-      isAutoCookEnabled,
-      autoCookLabel,
-      autoCookClasses,
-      autoCookTooltip,
-      handleSave,
-      handleLoad,
-    ],
+    [ingredients.length, isCookbookOpen, isAutoCookEnabled, autoCookLabel, autoCookClasses, autoCookTooltip, handleSave, handleLoad],
   );
 
   let content: JSX.Element;
