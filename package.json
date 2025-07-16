@@ -12,7 +12,7 @@
     "format": "prettier --write .",
     "clean": "rimraf -g \"*.tsbuildinfo\" \"dist\"",
     "update": "npm-check-updates -u -x @types/node",
-    "prepare": "pnpm run clean && pnpm run build",
+    "prepare": "husky && pnpm run clean && pnpm run build",
     "release": "pnpm run prepare && changeset publish --no-git-tag"
   },
   "files": [
@@ -31,6 +31,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
+    "husky": "^9.1.7",
     "npm-check-updates": "^18.0.1",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
