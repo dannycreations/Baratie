@@ -53,8 +53,8 @@ const ICON_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
 const getVariantClasses = (variant: ButtonVariant, theme: AppTheme): string => {
   const variantMap: Record<ButtonVariant, string> = {
     primary: `border-transparent bg-${theme.accentBg} text-${theme.accentFg} hover:bg-${theme.accentBgHover}`,
-    secondary: `bg-${theme.surfaceTertiary} text-${theme.contentSecondary} hover:bg-${theme.surfaceHover} hover:text-${theme.contentPrimary}`,
-    danger: `border-transparent border-${theme.dangerBorder} text-${theme.accentFg} hover:bg-${theme.dangerBgHover}`,
+    secondary: `border-transparent bg-${theme.surfaceTertiary} text-${theme.contentSecondary} hover:bg-${theme.surfaceHover} hover:text-${theme.contentPrimary}`,
+    danger: `border-${theme.dangerBorder} text-${theme.dangerFg} bg-transparent hover:bg-${theme.dangerBgHover}`,
     stealth: `border-transparent bg-transparent text-${theme.contentTertiary} hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}`,
     outline: `border-${theme.borderPrimary} bg-transparent text-${theme.contentSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
   };
