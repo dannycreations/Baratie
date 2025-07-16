@@ -319,14 +319,6 @@ export function openCookbook(args: OpenCookbookArgs): void {
   const { ingredients, activeRecipeId } = args;
   const allRecipes = getAllRecipes();
 
-  if (!args.name && activeRecipeId) {
-    const recipeToUpdate = allRecipes.find((recipe) => recipe.id === activeRecipeId);
-    if (recipeToUpdate) {
-      upsertRecipe(recipeToUpdate.name, ingredients, activeRecipeId);
-      return;
-    }
-  }
-
   const initialName = args.name ?? createInitialName(allRecipes, ingredients, activeRecipeId);
   useCookbookStore.getState().openModal({ name: initialName, mode: 'save' });
 }
