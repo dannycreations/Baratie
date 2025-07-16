@@ -10,9 +10,8 @@
     "dev": "vite",
     "build": "vite build && tsc --emitDeclarationOnly",
     "format": "prettier --write .",
-    "clean": "rimraf -g \"*.tsbuildinfo\" \"dist\"",
     "update": "npm-check-updates -u -x @types/node",
-    "prepare": "husky && pnpm run clean && pnpm run build",
+    "prepare": "husky && pnpm run build",
     "release": "pnpm run prepare && changeset publish --no-git-tag"
   },
   "files": [
@@ -34,7 +33,6 @@
     "husky": "^9.1.7",
     "npm-check-updates": "^18.0.1",
     "prettier": "^3.6.2",
-    "rimraf": "^6.0.1",
     "tailwindcss": "^4.1.11",
     "terser": "^5.43.1",
     "typescript": "^5.8.3",
