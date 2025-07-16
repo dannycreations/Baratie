@@ -12,6 +12,7 @@ import { SettingPanel } from '../components/setting/SettingPanel';
 import { internalIngredients } from '../ingredients';
 import { useAppStore } from '../stores/useAppStore';
 import { appRegistry, errorHandler, ingredientRegistry, kitchen } from './container';
+import { APP_STYLES } from './styles';
 
 import type { JSX } from 'react';
 
@@ -23,12 +24,9 @@ function BaratieView(): JSX.Element {
   const isAppReady = useAppStore((state) => state.isInitialized);
 
   useEffect(() => {
-    if (!isAppReady) {
-      return;
+    if (isAppReady) {
+      return kitchen.initAutoCook();
     }
-
-    const unsubscribe = kitchen.initAutoCook();
-    return () => unsubscribe();
   }, [isAppReady]);
 
   if (!isAppReady) {
@@ -60,8 +58,17 @@ function BaratieView(): JSX.Element {
   );
 }
 
+const APP_STYLES_ID = 'baratie-global-styles';
+
 export function createRoot(element: HTMLElement | null, options?: BaratieOptions): void {
   errorHandler.assert(element, 'Could not find the root element to mount the application.', 'Baratie Mount');
+
+  if (!document.getElementById(APP_STYLES_ID)) {
+    const style = document.createElement('style');
+    style.id = APP_STYLES_ID;
+    style.textContent = APP_STYLES;
+    document.head.appendChild(style);
+  }
 
   if (!options?.disableIngredients) {
     appRegistry.registerTask({

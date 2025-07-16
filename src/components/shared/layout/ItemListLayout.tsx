@@ -11,7 +11,7 @@ interface ItemListLayoutProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const ItemListLayout = memo<ItemListLayoutProps>(({ leftContent, rightContent, leftClass, rightClass, className, ...rest }): JSX.Element => {
-  const containerClass = ['flex w-full items-center justify-between', className].filter(Boolean).join(' ');
+  const containerClass = `flex w-full items-center justify-between ${className || ''}`.trim();
   const leftWrapClass = leftClass || 'grow min-w-0';
   const rightWrapClass = rightClass || 'flex shrink-0 items-center space-x-1';
 

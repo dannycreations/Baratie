@@ -18,10 +18,10 @@ function loadFilters(key: string, forCategories: boolean): symbol[] {
         allCategorySymbols.set(description, ingredient.category);
       }
     }
-    return validatedItems.map((item) => allCategorySymbols.get(item)).filter((s) => s !== undefined);
+    return validatedItems.map((item) => allCategorySymbols.get(item)).filter((s) => !!s);
   }
 
-  return validatedItems.map((item) => ingredientRegistry.getSymbolFromString(item)).filter((s) => s !== undefined);
+  return validatedItems.map((item) => ingredientRegistry.getSymbolFromString(item)).filter((s) => !!s);
 }
 
 export function initFilters(): void {

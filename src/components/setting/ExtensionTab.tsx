@@ -3,7 +3,7 @@ import { memo, useCallback, useState } from 'react';
 import { CONFIRM_TIMEOUT_MS } from '../../app/constants';
 import { addExtension, removeExtension } from '../../helpers/extensionHelper';
 import { getConfirmClasses } from '../../helpers/styleHelper';
-import { useConditionalTimer } from '../../hooks/useConditionalTimer';
+import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { useExtensionStore } from '../../stores/useExtensionStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { Button, TooltipButton } from '../shared/Button';
@@ -54,17 +54,16 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
 
 interface ExtensionItemProps {
   readonly extension: Extension;
-  readonly onDelete: (id: string) => void;
-  readonly deletingId: string | null;
 }
 
-const ExtensionItem = memo<ExtensionItemProps>(({ extension, onDelete, deletingId }): JSX.Element => {
+const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
-  const isDeleting = deletingId === extension.id;
 
-  const handleDeleteClick = (): void => {
-    onDelete(extension.id);
-  };
+  const handleConfirmDelete = useCallback(() => {
+    removeExtension(extension.id);
+  }, [extension.id]);
+
+  const { isConfirming: isDeleting, trigger: handleDeleteClick } = useConfirmAction(handleConfirmDelete, CONFIRM_TIMEOUT_MS);
 
   const deleteButtonTip = isDeleting ? 'Confirm Deletion' : 'Remove Extension';
   const deleteButtonLabel = isDeleting ? `Confirm removal of extension ${extension.name}` : `Remove extension ${extension.name}`;
@@ -111,17 +110,6 @@ export const ExtensionTab = memo((): JSX.Element => {
 
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  const resetDeleting = useCallback(() => {
-    setDeletingId(null);
-  }, []);
-
-  useConditionalTimer({
-    state: deletingId ? 'running' : 'stopped',
-    callback: resetDeleting,
-    duration: CONFIRM_TIMEOUT_MS,
-  });
 
   const handleAdd = useCallback(async () => {
     if (!url.trim() || isLoading) return;
@@ -145,18 +133,6 @@ export const ExtensionTab = memo((): JSX.Element => {
       }
     },
     [handleAdd],
-  );
-
-  const handleDelete = useCallback(
-    (extensionId: string) => {
-      if (deletingId === extensionId) {
-        removeExtension(extensionId);
-        setDeletingId(null);
-      } else {
-        setDeletingId(extensionId);
-      }
-    },
-    [deletingId],
   );
 
   return (
@@ -191,7 +167,7 @@ export const ExtensionTab = memo((): JSX.Element => {
         ) : (
           <ul className="space-y-1.5">
             {extensions.map((extension) => (
-              <ExtensionItem key={extension.id} extension={extension} deletingId={deletingId} onDelete={handleDelete} />
+              <ExtensionItem key={extension.id} extension={extension} />
             ))}
           </ul>
         )}

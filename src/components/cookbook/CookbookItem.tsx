@@ -1,8 +1,8 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback } from 'react';
 
 import { CONFIRM_TIMEOUT_MS } from '../../app/constants';
 import { getConfirmClasses } from '../../helpers/styleHelper';
-import { useConditionalTimer } from '../../hooks/useConditionalTimer';
+import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
 import { AlertTriangleIcon, Trash2Icon, UploadCloudIcon } from '../shared/Icon';
@@ -29,26 +29,13 @@ function formatTimestamp(timestamp: number): string {
 }
 
 export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete }): JSX.Element => {
-  const [isDeleting, setDeleting] = useState(false);
   const theme = useThemeStore((state) => state.theme);
 
-  const resetDeleting = useCallback(() => {
-    setDeleting(false);
-  }, []);
+  const handleConfirmDelete = useCallback(() => {
+    onDelete(recipe.id);
+  }, [onDelete, recipe.id]);
 
-  useConditionalTimer({
-    state: isDeleting ? 'running' : 'stopped',
-    callback: resetDeleting,
-    duration: CONFIRM_TIMEOUT_MS,
-  });
-
-  const handleDelete = useCallback(() => {
-    if (isDeleting) {
-      onDelete(recipe.id);
-    } else {
-      setDeleting(true);
-    }
-  }, [isDeleting, onDelete, recipe.id]);
+  const { isConfirming: isDeleting, trigger: handleDelete } = useConfirmAction(handleConfirmDelete, CONFIRM_TIMEOUT_MS);
 
   const handleLoad = useCallback(() => {
     onLoad(recipe.id);

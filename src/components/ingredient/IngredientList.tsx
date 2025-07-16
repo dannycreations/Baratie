@@ -34,18 +34,16 @@ export const IngredientList = memo(
     onItemDragStart,
     isItemDisabled,
   }: IngredientListProps<T>): JSX.Element => {
-    const [expandedCategories, setExpandedCategories] = useState<Set<symbol>>(new Set());
+    const [expandedCategory, setExpandedCategory] = useState<symbol | null>(null);
     const theme = useThemeStore((state) => state.theme);
 
     const handleCategoryToggle = useCallback((category: symbol) => {
-      setExpandedCategories((current) => new Set<symbol>(current.has(category) ? [] : [category]));
+      setExpandedCategory((current) => (current === category ? null : category));
     }, []);
 
     if (itemsByCategory.size === 0) {
       return (
-        <EmptyView className="flex grow flex-col items-center justify-center py-4">
-          {query.trim() !== '' ? noResultsMessage(query) : emptyMessage}
-        </EmptyView>
+        <EmptyView className="flex grow flex-col items-center justify-center py-4">{query.trim() ? noResultsMessage(query) : emptyMessage}</EmptyView>
       );
     }
 
@@ -57,18 +55,9 @@ export const IngredientList = memo(
       errorHandler.assert(ingredientIdString, `Could not get string from symbol for ingredient: ${ingredientName}`, 'Render Ingredient');
 
       const isDisabled = isItemDisabled?.(item) ?? false;
-      const nameClasses = [
-        'cursor-default',
-        'truncate',
-        'pr-2',
-        'text-sm',
-        'transition-colors',
-        'duration-150',
-        isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`,
-        `group-hover:text-${theme.infoFg}`,
-      ]
-        .filter(Boolean)
-        .join(' ');
+      const nameClasses = `cursor-default truncate pr-2 text-sm transition-colors duration-150 ${
+        isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`
+      } group-hover:text-${theme.infoFg}`;
 
       const leftColumn = (
         <div className="flex min-w-0 items-center gap-3">
@@ -100,7 +89,7 @@ export const IngredientList = memo(
     return (
       <>
         {categoryEntries.map(([category, items], index) => {
-          const isExpanded = query.trim() !== '' || expandedCategories.has(category);
+          const isExpanded = !!query.trim() || expandedCategory === category;
           const categoryId = `category-panel-${(category.description || '').replace(/\s+/g, '-').toLowerCase()}`;
           const buttonId = `${categoryId}-button`;
           const panelId = `${categoryId}-content`;
@@ -122,9 +111,7 @@ export const IngredientList = memo(
             </button>
           );
 
-          const containerClasses = ['overflow-hidden rounded-md', !isExpanded && index < categoryEntries.length - 1 ? 'mb-2' : '']
-            .filter(Boolean)
-            .join(' ');
+          const containerClasses = `overflow-hidden rounded-md ${!isExpanded && index < categoryEntries.length - 1 ? 'mb-2' : ''}`.trim();
 
           return (
             <div key={category.toString()} className={containerClasses}>

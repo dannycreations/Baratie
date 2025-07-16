@@ -17,20 +17,9 @@ interface TabButtonProps {
 
 const TabButton = memo<TabButtonProps>(({ children, isActive, onClick }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
-  const classes = [
-    'px-4',
-    'py-2',
-    'text-sm',
-    'font-medium',
-    'rounded-t-md',
-    'transition-colors',
-    'duration-150',
-    'outline-none',
-    'border-b-2',
-    isActive ? `border-${theme.infoBorder} text-${theme.infoFg}` : `border-transparent text-${theme.contentTertiary}`,
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const classes = `px-4 py-2 text-sm font-medium rounded-t-md transition-colors duration-150 outline-none border-b-2 ${
+    isActive ? `border-${theme.infoBorder} text-${theme.infoFg}` : `border-transparent text-${theme.contentTertiary}`
+  }`;
   return (
     <button role="tab" aria-selected={isActive} className={classes} onClick={onClick}>
       {children}

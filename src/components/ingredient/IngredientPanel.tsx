@@ -1,11 +1,12 @@
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 
 import { errorHandler, ingredientRegistry } from '../../app/container';
+import { toggleFavorite } from '../../helpers/favoriteHelper';
+import { addIngredient, removeIngredient } from '../../helpers/recipeHelper';
 import { useSearchIngredients } from '../../hooks/useSearch';
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useFavoriteStore } from '../../stores/useFavoriteStore';
 import { useIngredientStore } from '../../stores/useIngredientStore';
-import { useRecipeStore } from '../../stores/useRecipeStore';
 import { useSettingStore } from '../../stores/useSettingStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
@@ -21,9 +22,6 @@ import type { IngredientDefinition } from '../../core/IngredientRegistry';
 
 export const IngredientPanel = memo((): JSX.Element => {
   const favorites = useFavoriteStore((state) => state.favorites);
-  const toggle = useFavoriteStore((state) => state.toggle);
-  const addIngredient = useRecipeStore((state) => state.addIngredient);
-  const removeIngredient = useRecipeStore((state) => state.removeIngredient);
   const disabledCategories = useIngredientStore((state) => state.disabledCategories);
   const disabledIngredients = useIngredientStore((state) => state.disabledIngredients);
   const openIngredientModal = useIngredientStore((state) => state.openModal);
@@ -77,7 +75,7 @@ export const IngredientPanel = memo((): JSX.Element => {
       setDragOverRecipe(false);
       setDraggedItemId(null);
     },
-    [removeIngredient, setDraggedItemId],
+    [setDraggedItemId],
   );
 
   const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: IngredientDefinition) => {
@@ -86,20 +84,6 @@ export const IngredientPanel = memo((): JSX.Element => {
     event.dataTransfer.setData('application/x-baratie-ingredient-type', typeString);
     event.dataTransfer.effectAllowed = 'copy';
   }, []);
-
-  const handleToggleFavorite = useCallback(
-    (typeSymbol: symbol) => {
-      toggle(typeSymbol);
-    },
-    [toggle],
-  );
-
-  const handleAddIngredient = useCallback(
-    (typeSymbol: symbol) => {
-      addIngredient(typeSymbol);
-    },
-    [addIngredient],
-  );
 
   const headerActions = useMemo<JSX.Element>(
     () => (
@@ -134,13 +118,9 @@ export const IngredientPanel = memo((): JSX.Element => {
       const ingredientName = item.name.description ?? 'Unnamed Ingredient';
       const isFavorite = favorites.includes(item.name);
 
-      const favoriteButtonClasses = [
-        'opacity-70',
-        'group-hover:opacity-100',
-        isFavorite ? `text-${theme.favoriteFg} hover:text-${theme.favoriteFgHover}` : `text-${theme.contentTertiary} hover:text-${theme.favoriteFg}`,
-      ]
-        .filter(Boolean)
-        .join(' ');
+      const favoriteButtonClasses = `opacity-70 group-hover:opacity-100 ${
+        isFavorite ? `text-${theme.favoriteFg} hover:text-${theme.favoriteFgHover}` : `text-${theme.contentTertiary} hover:text-${theme.favoriteFg}`
+      }`;
 
       return (
         <>
@@ -149,7 +129,7 @@ export const IngredientPanel = memo((): JSX.Element => {
             aria-pressed={isFavorite}
             className={favoriteButtonClasses}
             icon={<StarIcon isFilled={isFavorite} size={18} />}
-            onClick={() => handleToggleFavorite(item.name)}
+            onClick={() => toggleFavorite(item.name)}
             size="sm"
             tooltipContent={isFavorite ? `Remove '${ingredientName}' from favorites` : `Add '${ingredientName}' to favorites`}
             tooltipPosition="top"
@@ -159,7 +139,7 @@ export const IngredientPanel = memo((): JSX.Element => {
             aria-label={`Add '${ingredientName}' to the recipe`}
             className="opacity-70 group-hover:opacity-100"
             icon={<PlusIcon size={18} />}
-            onClick={() => handleAddIngredient(item.name)}
+            onClick={() => addIngredient(item.name)}
             size="sm"
             tooltipContent={`Add '${ingredientName}' to Recipe`}
             tooltipPosition="top"
@@ -168,7 +148,7 @@ export const IngredientPanel = memo((): JSX.Element => {
         </>
       );
     },
-    [favorites, theme, handleToggleFavorite, handleAddIngredient],
+    [favorites, theme],
   );
 
   return (

@@ -1,6 +1,7 @@
-import { memo, useCallback, useMemo, useRef } from 'react';
+import { memo, useCallback, useRef } from 'react';
 
 import { errorHandler, ingredientRegistry, kitchen } from '../../app/container';
+import { updateSpice } from '../../helpers/recipeHelper';
 import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { readAsText, triggerDownload } from '../../utilities/fileUtil';
@@ -23,7 +24,6 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const inputData = useKitchenStore((state) => state.inputData);
   const outputData = useKitchenStore((state) => state.outputData);
   const ingredients = useRecipeStore((state) => state.ingredients);
-  const updateSpice = useRecipeStore((state) => state.updateSpice);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importOperationRef = useRef<number>(0);
@@ -72,126 +72,128 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
       if (inputPanelConfig?.mode !== 'spiceEditor') return;
       updateSpice(inputPanelConfig.targetIngredientId, spiceId, rawValue, spice);
     },
-    [inputPanelConfig, updateSpice],
+    [inputPanelConfig],
   );
 
-  const headerActions = useMemo<JSX.Element>(() => {
-    if (isInput) {
-      let canClear = true;
-      if (inputPanelConfig?.mode === 'textarea') {
-        canClear = inputPanelConfig.showClear;
-      }
-
+  const renderHeaderActions = (): JSX.Element => {
+    if (!isInput) {
       return (
         <>
           <TooltipButton
-            aria-label="Open a text file as input"
-            icon={<FileTextIcon size={18} />}
-            onClick={handleTriggerFileSelect}
+            aria-label="Save output to a file"
+            disabled={data.length === 0}
+            icon={<DownloadCloudIcon size={18} />}
+            onClick={handleDownloadOutput}
             size="sm"
-            tooltipContent="Open File..."
+            tooltipContent="Save Output"
             tooltipPosition="left"
             variant="stealth"
           />
-          {canClear && (
-            <TooltipButton
-              aria-label="Clear data from the input panel"
-              disabled={data.length === 0}
-              icon={<Trash2Icon size={18} />}
-              onClick={handleClearInput}
-              size="sm"
-              tooltipContent="Clear Input Panel"
-              tooltipPosition="left"
-              variant="danger"
-            />
-          )}
+          <CopyButton textToCopy={data} tooltipPosition="left" />
         </>
       );
     }
+
+    const showClearButton = inputPanelConfig?.mode !== 'textarea' || inputPanelConfig.showClear;
+
     return (
       <>
         <TooltipButton
-          aria-label="Save output to a file"
-          disabled={data.length === 0}
-          icon={<DownloadCloudIcon size={18} />}
-          onClick={handleDownloadOutput}
+          aria-label="Open a text file as input"
+          icon={<FileTextIcon size={18} />}
+          onClick={handleTriggerFileSelect}
           size="sm"
-          tooltipContent="Save Output"
+          tooltipContent="Open File..."
           tooltipPosition="left"
           variant="stealth"
         />
-        <CopyButton textToCopy={data} tooltipPosition="left" />
+        {showClearButton && (
+          <TooltipButton
+            aria-label="Clear data from the input panel"
+            disabled={data.length === 0}
+            icon={<Trash2Icon size={18} />}
+            onClick={handleClearInput}
+            size="sm"
+            tooltipContent="Clear Input Panel"
+            tooltipPosition="left"
+            variant="danger"
+          />
+        )}
       </>
     );
-  }, [isInput, data, inputPanelConfig, handleClearInput, handleTriggerFileSelect, handleDownloadOutput]);
+  };
 
-  const content = useMemo<JSX.Element | null>(() => {
-    if (isInput) {
-      if (inputPanelConfig?.mode === 'spiceEditor') {
-        const targetIngredient = ingredients.find((ing) => ing.id === inputPanelConfig.targetIngredientId);
-        if (!targetIngredient) return null;
-        const definition = ingredientRegistry.getIngredient(targetIngredient.name);
-        errorHandler.assert(definition, 'Could not find definition for target ingredient in spice editor.');
-
-        return (
-          <div className="overflow-y-auto p-3" aria-label={`Parameters for ${targetIngredient.name.description}`}>
-            <SpiceLayout
-              containerClassName="space-y-3"
-              currentSpices={targetIngredient.spices}
-              ingredientDefinition={definition}
-              onSpiceChange={handleSpiceChange}
-            />
-          </div>
-        );
-      }
+  const renderContent = (): JSX.Element | null => {
+    if (!isInput) {
       return (
-        <>
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-            aria-hidden="true"
-            accept="text/*,.json,.csv,application/xml"
-            onChange={handleFileSelect}
+        <TextareaInput
+          ariaLabel="Result from Recipe Cooking Action"
+          placeholder={outputPanelConfig?.placeholder || 'Your Results Will Be Presented Here.'}
+          readOnly
+          showLineNumbers={true}
+          spellCheck="false"
+          textareaClass="font-mono"
+          value={data}
+          wrapperClass="flex-1 min-h-0"
+        />
+      );
+    }
+
+    if (inputPanelConfig?.mode === 'spiceEditor') {
+      const targetIngredient = ingredients.find((ing) => ing.id === inputPanelConfig.targetIngredientId);
+      if (!targetIngredient) {
+        return null;
+      }
+
+      const definition = ingredientRegistry.getIngredient(targetIngredient.name);
+      errorHandler.assert(definition, 'Could not find definition for target ingredient in spice editor.');
+
+      return (
+        <div className="overflow-y-auto p-3" aria-label={`Parameters for ${targetIngredient.name.description}`}>
+          <SpiceLayout
+            containerClassName="space-y-3"
+            currentSpices={targetIngredient.spices}
+            ingredientDefinition={definition}
+            onSpiceChange={handleSpiceChange}
           />
-          <TextareaInput
-            ariaLabel="Input Panel for Raw Data"
-            disabled={inputPanelConfig?.disabled}
-            onChange={kitchen.setInputData}
-            placeholder={inputPanelConfig?.placeholder || 'Place Raw Ingredients Here.'}
-            showLineNumbers={true}
-            spellCheck="false"
-            textareaClass="font-mono"
-            value={data}
-            wrapperClass="flex-1 min-h-0"
-          />
-        </>
+        </div>
       );
     }
 
     return (
-      <TextareaInput
-        ariaLabel="Result from Recipe Cooking Action"
-        placeholder={outputPanelConfig?.placeholder || 'Your Results Will Be Presented Here.'}
-        readOnly
-        showLineNumbers={true}
-        spellCheck="false"
-        textareaClass="font-mono"
-        value={data}
-        wrapperClass="flex-1 min-h-0"
-      />
+      <>
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          aria-hidden="true"
+          accept="text/*,.json,.csv,application/xml"
+          onChange={handleFileSelect}
+        />
+        <TextareaInput
+          ariaLabel="Input Panel for Raw Data"
+          disabled={inputPanelConfig?.disabled}
+          onChange={kitchen.setInputData}
+          placeholder={inputPanelConfig?.placeholder || 'Place Raw Ingredients Here.'}
+          showLineNumbers={true}
+          spellCheck="false"
+          textareaClass="font-mono"
+          value={data}
+          wrapperClass="flex-1 min-h-0"
+        />
+      </>
     );
-  }, [isInput, inputPanelConfig, ingredients, handleSpiceChange, handleFileSelect, data, outputPanelConfig]);
+  };
 
   return (
     <SectionLayout
       ariaLive={config ? 'polite' : undefined}
       className="h-[50vh] min-h-0 md:h-1/2"
       contentClassName="flex flex-col"
-      headerActions={headerActions}
+      headerActions={renderHeaderActions()}
       title={title}
     >
-      {content}
+      {renderContent()}
     </SectionLayout>
   );
 });

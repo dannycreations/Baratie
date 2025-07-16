@@ -112,7 +112,7 @@ export class InputType<T = unknown> {
     options: { readonly max?: number; readonly min?: number; readonly value?: unknown } | undefined,
     handleFailure: (e?: Error) => InputType<unknown>,
   ): InputType<number> {
-    const stringValue = new InputType(this.value).cast('string', { trim: true }).getValue();
+    const stringValue = String(this.value ?? '').trim();
     let numericValue = Number(stringValue);
 
     if (isNaN(numericValue) || !isFinite(numericValue)) {
@@ -134,19 +134,21 @@ export class InputType<T = unknown> {
     if (typeof this.value === 'boolean') {
       return new InputType(this.value);
     }
-    if (this.value === null || typeof this.value === 'undefined') {
-      return new InputType(false);
-    }
 
-    const stringValue = new InputType(this.value).cast('string', { trim: true }).getValue();
-    if (stringValue.toLowerCase() === 'true' || stringValue === '1') {
-      return new InputType(true);
+    const stringValue = String(this.value ?? '')
+      .trim()
+      .toLowerCase();
+    switch (stringValue) {
+      case 'true':
+      case '1':
+        return new InputType(true);
+      case 'false':
+      case '0':
+      case '':
+        return new InputType(false);
+      default:
+        return handleFailure(new CastError(`Cannot unambiguously cast value to boolean: ${String(this.value)}`)) as InputType<boolean>;
     }
-    if (stringValue.toLowerCase() === 'false' || stringValue === '0' || stringValue === '') {
-      return new InputType(false);
-    }
-
-    return handleFailure(new CastError(`Cannot unambiguously cast value to boolean: ${String(this.value)}`)) as InputType<boolean>;
   }
 
   private _castToObject(handleFailure: (e?: Error) => InputType<unknown>): InputType<object> {

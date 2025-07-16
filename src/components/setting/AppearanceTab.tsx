@@ -73,23 +73,13 @@ export const AppearanceTab = memo((): JSX.Element => {
             </div>
           ) : null;
 
-          const itemLayoutClasses = [
-            'h-16',
-            'rounded-md',
-            'p-3',
-            'border-2',
-            'transition-all',
-            'duration-150',
+          const itemLayoutClasses = `h-16 rounded-md p-3 border-2 transition-all duration-150 ${
             isChecked
               ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
-              : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:bg-${theme.surfaceMuted} hover:border-${theme.borderSecondary}`,
-          ]
-            .filter(Boolean)
-            .join(' ');
+              : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:bg-${theme.surfaceMuted} hover:border-${theme.borderSecondary}`
+          }`;
 
-          const liClasses = ['list-none', 'cursor-pointer', 'rounded-md', 'outline-none', `focus:ring-2 focus:ring-${theme.ring}`]
-            .filter(Boolean)
-            .join(' ');
+          const liClasses = `list-none cursor-pointer rounded-md outline-none focus:ring-2 focus:ring-${theme.ring}`;
 
           return (
             <li

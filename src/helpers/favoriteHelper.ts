@@ -10,7 +10,7 @@ export function initFavorites(): void {
     if (Array.isArray(parsedFavorites)) {
       favorites = parsedFavorites
         .map((item) => (typeof item === 'string' ? ingredientRegistry.getSymbolFromString(item) : undefined))
-        .filter((s) => s !== undefined);
+        .filter((s) => !!s);
     } else {
       errorHandler.handle(
         new AppError(
@@ -25,5 +25,7 @@ export function initFavorites(): void {
 }
 
 export function toggleFavorite(type: symbol): void {
-  useFavoriteStore.getState().toggle(type);
+  const { favorites, setFavorites } = useFavoriteStore.getState();
+  const newFavorites = favorites.includes(type) ? favorites.filter((favorite) => favorite !== type) : [...favorites, type];
+  setFavorites(newFavorites);
 }

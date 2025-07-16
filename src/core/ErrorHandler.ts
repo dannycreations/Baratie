@@ -110,7 +110,7 @@ export class ErrorHandler {
     if (error instanceof AppError) {
       const finalContext = callerContext ?? error.context;
       const finalUserMessage = genericMessage ?? error.userMessage ?? defaultMessage;
-      return new AppError(error.message, finalContext, finalUserMessage, error.cause ?? error);
+      return new AppError(error.message, finalContext, finalUserMessage, error);
     }
 
     if (error instanceof Error) {

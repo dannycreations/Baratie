@@ -1,10 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { APP_STYLES } from '../app/styles';
-
-const APP_GLOBAL_STYLES = 'baratie-global-styles';
-
 interface AppState {
   readonly isInitialized: boolean;
   readonly loadingMessage: string;
@@ -27,17 +23,4 @@ export const useAppStore = create<AppState>()(
       set({ loadingMessage: message, loadingHasError: hasError });
     },
   })),
-);
-
-useAppStore.subscribe(
-  (state) => state.isInitialized,
-  (status) => {
-    if (!status && !document.getElementById(APP_GLOBAL_STYLES)) {
-      const style = document.createElement('style');
-      style.id = APP_GLOBAL_STYLES;
-      style.textContent = APP_STYLES;
-      document.head.appendChild(style);
-    }
-  },
-  { fireImmediately: true },
 );

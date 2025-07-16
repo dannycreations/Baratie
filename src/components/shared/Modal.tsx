@@ -7,7 +7,6 @@ import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { Button } from './Button';
 import { XIcon } from './Icon';
-import { HeaderLayout } from './layout/HeaderLayout';
 
 import type { JSX, MouseEvent, ReactNode } from 'react';
 
@@ -80,16 +79,17 @@ export const Modal = memo<ModalProps>(
     );
 
     useEffect(() => {
-      let timer: number;
       if (isOpen) {
         setIsRendered(true);
-      } else if (isRendered) {
-        timer = window.setTimeout(() => {
+        return;
+      }
+      if (isRendered) {
+        const timerId = window.setTimeout(() => {
           setIsRendered(false);
           onExited?.();
         }, ANIMATION_MODAL_MS);
+        return () => clearTimeout(timerId);
       }
-      return () => clearTimeout(timer);
     }, [isOpen, isRendered, onExited]);
 
     useEffect(() => {
@@ -116,25 +116,6 @@ export const Modal = memo<ModalProps>(
 
     errorHandler.assert(document.body, 'document.body is not available for Modal portal.', 'Modal Creation');
 
-    const leftHeader = (
-      <h2 id={titleId} className={`grow truncate pr-2 text-xl font-semibold text-${theme.contentPrimary}`}>
-        {title}
-      </h2>
-    );
-    const rightHeader = (
-      <>
-        {headerActions && <div className="flex shrink-0 items-center space-x-2">{headerActions}</div>}
-        <Button
-          aria-label={`Close ${title || 'modal'}`}
-          className={headerActions ? 'ml-2' : ''}
-          icon={<XIcon size={20} />}
-          onClick={onClose}
-          size="sm"
-          variant="stealth"
-        />
-      </>
-    );
-
     return createPortal(
       <div
         ref={backdropRef}
@@ -153,7 +134,20 @@ export const Modal = memo<ModalProps>(
         >
           {!hideHeader && (
             <header className={`flex h-12 shrink-0 items-center justify-between border-b border-${theme.borderPrimary} p-3`}>
-              <HeaderLayout leftContent={leftHeader} rightContent={rightHeader} />
+              <h2 id={titleId} className={`grow truncate pr-2 text-xl font-semibold text-${theme.contentPrimary}`}>
+                {title}
+              </h2>
+              <div className="flex shrink-0 items-center">
+                {headerActions && <div className="flex shrink-0 items-center space-x-2">{headerActions}</div>}
+                <Button
+                  aria-label={`Close ${title || 'modal'}`}
+                  className={headerActions ? 'ml-2' : ''}
+                  icon={<XIcon size={20} />}
+                  onClick={onClose}
+                  size="sm"
+                  variant="stealth"
+                />
+              </div>
             </header>
           )}
           <main className={`grow overflow-y-auto p-3 ${bodyClassName}`}>{children}</main>

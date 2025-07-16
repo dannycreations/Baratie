@@ -18,17 +18,27 @@ export interface TooltipProps {
   readonly tooltipClassName?: string;
 }
 
+interface TooltipPositionStyle {
+  readonly arrowLeft?: number;
+  readonly arrowTop?: number;
+  readonly isPositioned: boolean;
+  readonly left: number;
+  readonly top: number;
+}
+
 const ARROW_SIZE_PX = 5;
 const TOOLTIP_GAP_PX = 8;
+const INITIAL_TOOLTIP_STYLE: TooltipPositionStyle = {
+  top: -9999,
+  left: -9999,
+  isPositioned: false,
+};
 
 export const Tooltip = memo<TooltipProps>(
   ({ content, children, position = 'top', delay = 200, className = '', tooltipClassName = '', disabled = false }): JSX.Element => {
     const { activeId, setActiveId } = useTooltipStore();
     const theme = useThemeStore((state) => state.theme);
-
-    const [tooltipCoords, setTooltipCoords] = useState<{ top: number; left: number }>({ top: -9999, left: -9999 });
-    const [arrowOffset, setArrowOffset] = useState<{ left?: number; top?: number }>({});
-    const [isPositioned, setIsPositioned] = useState(false);
+    const [style, setStyle] = useState<TooltipPositionStyle>(INITIAL_TOOLTIP_STYLE);
 
     const timeoutRef = useRef<number | null>(null);
     const triggerRef = useRef<HTMLDivElement>(null);
@@ -76,15 +86,14 @@ export const Tooltip = memo<TooltipProps>(
 
     useEffect(() => {
       if (!isVisible) {
-        setIsPositioned(false);
+        setStyle(INITIAL_TOOLTIP_STYLE);
       }
     }, [isVisible]);
 
     useLayoutEffect(() => {
       const calculatePosition = () => {
-        if (!isVisible || !triggerRef.current || !tooltipRef.current) {
-          return;
-        }
+        if (!isVisible || !triggerRef.current || !tooltipRef.current) return;
+
         const triggerRect = triggerRef.current.getBoundingClientRect();
         const tooltipRect = tooltipRef.current.getBoundingClientRect();
         const viewportWidth = window.innerWidth;
@@ -92,7 +101,6 @@ export const Tooltip = memo<TooltipProps>(
 
         let newTop = 0;
         let newLeft = 0;
-
         const triggerCenterX = triggerRect.left + triggerRect.width / 2;
         const triggerCenterY = triggerRect.top + triggerRect.height / 2;
 
@@ -117,12 +125,11 @@ export const Tooltip = memo<TooltipProps>(
 
         newLeft = Math.max(TOOLTIP_GAP_PX, Math.min(newLeft, viewportWidth - tooltipRect.width - TOOLTIP_GAP_PX));
         newTop = Math.max(TOOLTIP_GAP_PX, Math.min(newTop, viewportHeight - tooltipRect.height - TOOLTIP_GAP_PX));
-
         const finalLeft = Math.round(newLeft);
         const finalTop = Math.round(newTop);
 
-        let arrowLeft: number | undefined = undefined;
-        let arrowTop: number | undefined = undefined;
+        let arrowLeft: number | undefined;
+        let arrowTop: number | undefined;
 
         switch (position) {
           case 'top':
@@ -137,12 +144,13 @@ export const Tooltip = memo<TooltipProps>(
             break;
         }
 
-        setTooltipCoords({ top: finalTop, left: finalLeft });
-        setArrowOffset({
-          left: arrowLeft !== undefined ? Math.round(arrowLeft) : undefined,
-          top: arrowTop !== undefined ? Math.round(arrowTop) : undefined,
+        setStyle({
+          top: finalTop,
+          left: finalLeft,
+          arrowLeft: arrowLeft !== undefined ? Math.round(arrowLeft) : undefined,
+          arrowTop: arrowTop !== undefined ? Math.round(arrowTop) : undefined,
+          isPositioned: true,
         });
-        setIsPositioned(true);
       };
 
       if (isVisible) {
@@ -155,8 +163,6 @@ export const Tooltip = memo<TooltipProps>(
           window.removeEventListener('resize', calculatePosition);
           window.removeEventListener('scroll', calculatePosition, true);
         };
-      } else {
-        setTooltipCoords({ top: -9999, left: -9999 });
       }
     }, [isVisible, position, content]);
 
@@ -170,7 +176,7 @@ export const Tooltip = memo<TooltipProps>(
       [theme.backdrop],
     );
     const arrowClasses = tooltipArrows[position] || tooltipArrows.top;
-    const visibilityClass = isVisible && isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
+    const visibilityClass = isVisible && style.isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
     const tooltipClasses =
       `z-[1000] max-w-xs rounded-md bg-${theme.backdrop} px-3 py-1.5 text-sm text-${theme.accentFg} font-medium shadow-lg transition-opacity duration-150 whitespace-pre-line ${visibilityClass} ${tooltipClassName}`.trim();
     const triggerClasses = `relative inline-flex ${className}`.trim();
@@ -200,9 +206,9 @@ export const Tooltip = memo<TooltipProps>(
             role="tooltip"
             className={tooltipClasses}
             style={{
-              left: `${tooltipCoords.left}px`,
+              left: `${style.left}px`,
               position: 'fixed',
-              top: `${tooltipCoords.top}px`,
+              top: `${style.top}px`,
             }}
           >
             {content}
@@ -210,8 +216,8 @@ export const Tooltip = memo<TooltipProps>(
               className={arrowClasses}
               style={{
                 borderWidth: `${ARROW_SIZE_PX}px`,
-                left: arrowOffset.left !== undefined ? `${arrowOffset.left}px` : undefined,
-                top: arrowOffset.top !== undefined ? `${arrowOffset.top}px` : undefined,
+                left: style.arrowLeft !== undefined ? `${style.arrowLeft}px` : undefined,
+                top: style.arrowTop !== undefined ? `${style.arrowTop}px` : undefined,
               }}
             />
           </div>,

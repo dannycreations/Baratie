@@ -114,13 +114,13 @@ export const IngredientManager = memo((): JSX.Element => {
     [disabledCategories, disabledIngredients],
   );
 
-  const content = useMemo<JSX.Element>(() => {
-    if (filtered.size === 0 && query.trim() !== '') {
-      return (
-        <EmptyView className="flex h-full w-full grow flex-col items-center justify-center p-4">{`No Ingredients Found for "${query}".`}</EmptyView>
-      );
-    }
-    return (
+  let content: JSX.Element;
+  if (filtered.size === 0 && query.trim()) {
+    content = (
+      <EmptyView className="flex h-full w-full grow flex-col items-center justify-center p-4">{`No Ingredients Found for "${query}".`}</EmptyView>
+    );
+  } else {
+    content = (
       <IngredientList
         itemsByCategory={filtered}
         renderHeader={renderHeader}
@@ -129,7 +129,7 @@ export const IngredientManager = memo((): JSX.Element => {
         query={query}
       />
     );
-  }, [filtered, query, renderHeader, renderItemPrefix, isItemDisabled]);
+  }
 
   return (
     <Modal isOpen={isModalOpen} onClose={closeModal} title="Manage Ingredients" size="lg" contentClassName="max-h-[80vh]">

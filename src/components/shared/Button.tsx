@@ -1,7 +1,8 @@
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 
 import { COPY_SUCCESS_MS } from '../../app/constants';
 import { errorHandler } from '../../app/container';
+import { useConditionalTimer } from '../../hooks/useConditionalTimer';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { CheckIcon, CopyIcon } from './Icon';
 import { Tooltip } from './Tooltip';
@@ -79,12 +80,12 @@ export const Button = memo<ButtonProps>(
 
     const baseClasses = `inline-flex items-center justify-center border font-medium transition-all duration-150 ease-in-out outline-none focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
-    const loadingClass = loading ? 'opacity-60' : '';
     const variantClass = getVariantClasses(variant, theme);
     const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
-    const widthClass = fullWidth ? 'w-full' : '';
 
-    const finalClassName = [baseClasses, shapeClass, loadingClass, variantClass, sizeClass, widthClass, className].filter(Boolean).join(' ');
+    const finalClassName = `${baseClasses} ${shapeClass} ${variantClass} ${sizeClass}${loading ? ' opacity-60' : ''}${
+      fullWidth ? ' w-full' : ''
+    } ${className}`.trim();
 
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-1.5' : 'ml-1.5') : '';
     const loadingSpinner = (
@@ -119,11 +120,11 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
   const [isCopied, setIsCopied] = useState(false);
   const theme = useThemeStore((state) => state.theme);
 
-  useEffect(() => {
-    if (!isCopied) return;
-    const timer = window.setTimeout(() => setIsCopied(false), COPY_SUCCESS_MS);
-    return () => clearTimeout(timer);
-  }, [isCopied]);
+  useConditionalTimer({
+    state: isCopied ? 'running' : 'stopped',
+    callback: () => setIsCopied(false),
+    duration: COPY_SUCCESS_MS,
+  });
 
   const handleCopy = useCallback(async (): Promise<void> => {
     if (!textToCopy) return;

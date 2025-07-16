@@ -17,11 +17,11 @@ export interface Extension extends ExtensionManifest {
   readonly ingredients?: readonly symbol[];
 }
 
-type StorableExtension = Omit<Extension, 'status' | 'errors' | 'ingredients'>;
+export type StorableExtension = Omit<Extension, 'status' | 'errors' | 'ingredients'>;
 
 interface ExtensionState {
   readonly extensions: readonly Extension[];
-  readonly addExtension: (extension: Extension) => void;
+  readonly add: (extension: Extension) => void;
   readonly remove: (id: string) => void;
   readonly setExtensions: (extensions: readonly Extension[]) => void;
   readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: readonly string[]) => void;
@@ -29,20 +29,15 @@ interface ExtensionState {
 }
 
 export const useExtensionStore = create<ExtensionState>()(
-  subscribeWithSelector((set, get) => ({
+  subscribeWithSelector((set) => ({
     extensions: [],
 
-    addExtension(extension) {
-      if (get().extensions.some((ext) => ext.id === extension.id)) {
-        return;
-      }
+    add(extension) {
       set((state) => ({ extensions: [...state.extensions, extension] }));
     },
 
     remove(id) {
-      set((state) => ({
-        extensions: state.extensions.filter((ext) => ext.id !== id),
-      }));
+      set((state) => ({ extensions: state.extensions.filter((ext) => ext.id !== id) }));
     },
 
     setExtensions(extensions) {

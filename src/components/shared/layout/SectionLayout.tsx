@@ -2,7 +2,6 @@ import { memo, useId } from 'react';
 
 import { useOverflowScroll } from '../../../hooks/useOverflowScroll';
 import { useThemeStore } from '../../../stores/useThemeStore';
-import { HeaderLayout } from './HeaderLayout';
 
 import type { JSX, ReactNode } from 'react';
 
@@ -28,14 +27,10 @@ export const SectionLayout = memo<SectionLayoutProps>(
     return (
       <section role="region" aria-live={ariaLive} aria-labelledby={titleId} className={containerClass}>
         <div className={headerClass}>
-          <HeaderLayout
-            leftContent={
-              <h2 id={titleId} className="text-lg font-semibold">
-                {title}
-              </h2>
-            }
-            rightContent={headerActions}
-          />
+          <h2 id={titleId} className="truncate pr-2 text-lg font-semibold">
+            {title}
+          </h2>
+          {headerActions && <div className="flex shrink-0 items-center space-x-1.5">{headerActions}</div>}
         </div>
         <div ref={contentRef} className={contentClass}>
           {children}

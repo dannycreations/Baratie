@@ -102,29 +102,20 @@ export const RecipeItem = memo<RecipeItemProps>(
 
     const isEditorVisible = isEditing && !isSpiceInInput && !isDragged;
     const settingsTooltip = isSpiceInInput ? 'Options are in the Input panel' : isEditing ? 'Hide Options' : 'Edit Options';
-    const ariaLabel = `Recipe Item: ${ingredient.name.description}. Status: ${isAutoCook ? status : 'Auto-Cook Disabled'}${
-      isSpiceInInput ? '. Options are managed in the Input panel.' : ''
-    }${isEditorVisible ? '. The options editor is expanded.' : ''}`;
+
+    const ariaLabelParts = [
+      `Recipe Item: ${definition.name.description}`,
+      `Status: ${isAutoCook ? status : 'Auto-Cook Disabled'}`,
+      isSpiceInInput ? 'Options are managed in the Input panel.' : '',
+      isEditorVisible ? 'The options editor is expanded.' : '',
+    ];
+    const ariaLabel = ariaLabelParts.filter(Boolean).join('. ');
 
     const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
     const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
-    const classes = [
-      'group',
-      'flex',
-      'flex-col',
-      'rounded-md',
-      `bg-${theme.surfaceTertiary}`,
-      'text-sm',
-      'transition-all',
-      'duration-200',
-      'ease-in-out',
-      'outline-none',
-      isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100',
-      statusBorderClass,
-      hasSpices && isEditorVisible && 'pb-1',
-    ]
-      .filter(Boolean)
-      .join(' ');
+    const classes = `group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm transition-all duration-200 ease-in-out outline-none ${
+      isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'
+    } ${statusBorderClass} ${hasSpices && isEditorVisible ? 'pb-1' : ''}`.trim();
 
     const grabHandleClasses = `mr-2 cursor-grab text-${theme.contentTertiary} transition-colors group-hover:text-${theme.contentSecondary}`;
 

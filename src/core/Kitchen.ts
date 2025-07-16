@@ -25,14 +25,14 @@ export interface RecipeCookResult {
   readonly outputData: string;
 }
 
-interface CookLoopResult {
-  readonly cookedData: string;
-  readonly globalError: boolean;
-  readonly hasWarnings: boolean;
-  readonly lastInputConfig: InputPanelConfig | null;
-  readonly lastOutputConfig: OutputPanelConfig | null;
-  readonly lastInputPanelId: string | null;
-  readonly localStatuses: Record<string, CookingStatusType>;
+interface RecipeLoopState {
+  cookedData: string;
+  localStatuses: Record<string, CookingStatusType>;
+  lastInputConfig: InputPanelConfig | null;
+  lastOutputConfig: OutputPanelConfig | null;
+  lastInputPanelId: string | null;
+  globalError: boolean;
+  hasWarnings: boolean;
 }
 
 interface IngredientRunResult {
@@ -161,18 +161,21 @@ export class Kitchen {
     };
   }
 
-  private async executeRecipeLoop(recipe: readonly Ingredient[], initialInput: string): Promise<CookLoopResult> {
-    let cookedData = initialInput;
-    const localStatuses: Record<string, CookingStatusType> = {};
-    let lastInputConfig: InputPanelConfig | null = null;
-    let lastOutputConfig: OutputPanelConfig | null = null;
-    let lastInputPanelId: string | null = null;
-    let globalError = false;
-    let hasWarnings = false;
+  private async executeRecipeLoop(recipe: readonly Ingredient[], initialInput: string): Promise<RecipeLoopState> {
+    const state: RecipeLoopState = {
+      cookedData: initialInput,
+      localStatuses: {},
+      lastInputConfig: null,
+      lastOutputConfig: null,
+      lastInputPanelId: null,
+      globalError: false,
+      hasWarnings: false,
+    };
 
     for (let index = 0; index < recipe.length; index++) {
       const ingredient = recipe[index];
       const definition = ingredientRegistry.getIngredient(ingredient.name);
+
       if (!definition) {
         errorHandler.handle(
           new AppError(
@@ -181,41 +184,35 @@ export class Kitchen {
             `Ingredient '${ingredient.name.description}' is misconfigured.`,
           ),
         );
-        cookedData = `Error: Definition for ${ingredient.name.description} not found.`;
-        localStatuses[ingredient.id] = 'error';
-        globalError = true;
+        state.cookedData = `Error: Definition for ${ingredient.name.description} not found.`;
+        state.localStatuses[ingredient.id] = 'error';
+        state.globalError = true;
         break;
       }
 
-      const { hasError, inputPanelIngId, nextData, panelInstruction, status } = await this.runIngredient(
-        ingredient,
-        definition,
-        cookedData,
-        recipe,
-        index,
-        initialInput,
-      );
-      cookedData = nextData;
-      localStatuses[ingredient.id] = status;
+      const result = await this.runIngredient(ingredient, definition, state.cookedData, recipe, index, initialInput);
 
-      if (panelInstruction) {
-        if (panelInstruction.panelType === 'input') {
-          lastInputConfig = panelInstruction.config;
-          lastInputPanelId = inputPanelIngId ?? null;
-        } else if (panelInstruction.panelType === 'output') {
-          lastOutputConfig = panelInstruction.config;
+      state.cookedData = result.nextData;
+      state.localStatuses[ingredient.id] = result.status;
+
+      if (result.panelInstruction) {
+        if (result.panelInstruction.panelType === 'input') {
+          state.lastInputConfig = result.panelInstruction.config;
+          state.lastInputPanelId = result.inputPanelIngId ?? null;
+        } else if (result.panelInstruction.panelType === 'output') {
+          state.lastOutputConfig = result.panelInstruction.config;
         }
       }
 
-      if (hasError) {
-        globalError = true;
+      if (result.hasError) {
+        state.globalError = true;
         break;
       }
-      if (status === 'warning') {
-        hasWarnings = true;
+      if (result.status === 'warning') {
+        state.hasWarnings = true;
       }
     }
-    return { cookedData, localStatuses, lastInputConfig, lastOutputConfig, lastInputPanelId, globalError, hasWarnings };
+    return state;
   }
 
   private async runIngredient(

@@ -56,44 +56,35 @@ export const TextareaInput = memo<TextareaInputProps>(
     );
 
     const { isDragOver, ...dropZoneProps } = useDragDrop({ onDragDrop: handleFileDrop, disabled: readOnly || disabled });
-
     const handleTextChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => onChange?.(event.target.value), [onChange]);
 
     const commonTextStyles = `h-full w-full resize-none p-2.5 text-${theme.contentPrimary} outline-none allow-text-selection placeholder:text-${theme.contentTertiary}`;
 
-    const renderStandard = (): JSX.Element => {
-      const baseTextClasses = `${commonTextStyles} rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50`;
-      return (
-        <div className={`relative ${wrapperClass}`} {...dropZoneProps}>
-          <textarea
-            ref={textareaRef}
-            aria-label={ariaLabel}
-            className={`${baseTextClasses} ${textareaClass}`}
-            disabled={disabled}
-            placeholder={placeholder}
-            readOnly={readOnly}
-            spellCheck={spellCheck}
-            value={value}
-            onChange={handleTextChange}
-            {...rest}
-          />
-          {isDragOver && <DropzoneLayout mode="overlay" text="Drop text file" variant="add" />}
-        </div>
-      );
+    const commonTextAreaProps: TextareaHTMLAttributes<HTMLTextAreaElement> = {
+      'aria-label': ariaLabel,
+      disabled,
+      placeholder,
+      readOnly,
+      spellCheck,
+      value,
+      onChange: handleTextChange,
+      ...rest,
     };
 
-    const renderLined = (): JSX.Element => {
-      const handleScroll = useCallback((event: UIEvent<HTMLTextAreaElement>) => {
+    const dropzoneComponent = isDragOver && <DropzoneLayout mode="overlay" text="Drop text file" variant="add" />;
+
+    if (showLineNumbers) {
+      const handleScroll = (event: UIEvent<HTMLTextAreaElement>) => {
         if (lineNumbersRef.current) lineNumbersRef.current.scrollTop = event.currentTarget.scrollTop;
-      }, []);
+      };
 
       const lineHeight = rest.style?.['lineHeight'] ?? '1.6';
       const boxContainerClasses =
         `relative flex overflow-hidden rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} focus-within:ring-2 focus-within:ring-${theme.ring} ${
           disabled ? 'opacity-50' : ''
-        } ${wrapperClass} ${textareaClass}`.trim();
+        } ${wrapperClass}`.trim();
       const gutterClasses = `shrink-0 select-none overflow-y-hidden border-r border-${theme.borderPrimary} bg-${theme.surfaceSecondary} py-2.5 pl-2.5 pr-2 text-right text-${theme.contentTertiary}`;
-      const linedTextClasses = `${commonTextStyles} bg-transparent`;
+      const linedTextClasses = `${commonTextStyles} bg-transparent ${textareaClass}`;
 
       return (
         <div className={boxContainerClasses} {...dropZoneProps}>
@@ -104,23 +95,23 @@ export const TextareaInput = memo<TextareaInputProps>(
           </div>
           <textarea
             ref={textareaRef}
-            aria-label={ariaLabel}
+            {...commonTextAreaProps}
             className={linedTextClasses}
-            disabled={disabled}
-            placeholder={placeholder}
-            readOnly={readOnly}
-            spellCheck={spellCheck}
             style={{ ...rest.style, lineHeight }}
-            value={value}
-            onChange={handleTextChange}
             onScroll={handleScroll}
-            {...rest}
           />
-          {isDragOver && <DropzoneLayout mode="overlay" text="Drop text file" variant="add" />}
+          {dropzoneComponent}
         </div>
       );
-    };
+    }
 
-    return showLineNumbers ? renderLined() : renderStandard();
+    const baseTextClasses = `${commonTextStyles} rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50 ${textareaClass}`;
+
+    return (
+      <div className={`relative ${wrapperClass}`} {...dropZoneProps}>
+        <textarea ref={textareaRef} {...commonTextAreaProps} className={baseTextClasses} />
+        {dropzoneComponent}
+      </div>
+    );
   },
 );

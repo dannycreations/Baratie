@@ -27,9 +27,7 @@ export function useOverflowScroll<T extends HTMLElement>({ xClassName, yClassNam
       classString
         .split(' ')
         .filter(Boolean)
-        .forEach((className) => {
-          element.classList.toggle(className, condition);
-        });
+        .forEach((className) => element.classList.toggle(className, condition));
     };
 
     toggleClasses(yClassName, hasVerticalScroll);

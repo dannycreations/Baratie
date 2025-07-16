@@ -61,7 +61,7 @@ export const useIngredientStore = create<IngredientState>()(
 useIngredientStore.subscribe(
   (state) => state.disabledCategories,
   (categories) => {
-    const categoryStrings = categories.map((cat) => cat.description).filter((desc) => desc != null);
+    const categoryStrings = categories.map((cat) => cat.description).filter((desc) => !!desc);
     storage.set(STORAGE_CATEGORIES, categoryStrings, 'Disabled Categories');
   },
 );
@@ -69,7 +69,7 @@ useIngredientStore.subscribe(
 useIngredientStore.subscribe(
   (state) => state.disabledIngredients,
   (ingredients) => {
-    const ingredientStrings = ingredients.map((ing) => ingredientRegistry.getStringFromSymbol(ing)).filter((str) => str != null);
+    const ingredientStrings = ingredients.map((ing) => ingredientRegistry.getStringFromSymbol(ing)).filter((str) => !!str);
     storage.set(STORAGE_INGREDIENTS, ingredientStrings, 'Disabled Ingredients');
   },
 );
