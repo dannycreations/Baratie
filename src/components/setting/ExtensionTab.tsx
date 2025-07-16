@@ -43,7 +43,7 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
   if (hasErrors) {
     const errorList = errors.join('\n');
     return (
-      <Tooltip content={`Errors:\n${errorList}`} position="top" tooltipClassName="max-w-sm whitespace-pre-line">
+      <Tooltip content={`Errors:\n${errorList}`} position="top" tooltipClasses="max-w-sm whitespace-pre-line">
         {content}
       </Tooltip>
     );
@@ -67,7 +67,7 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
 
   const deleteButtonTip = isDeleting ? 'Confirm Deletion' : 'Remove Extension';
   const deleteButtonLabel = isDeleting ? `Confirm removal of extension ${extension.name}` : `Remove extension ${extension.name}`;
-  const deleteButtonClasses = isDeleting ? getConfirmClasses(theme) : undefined;
+  const deleteButtonClass = isDeleting ? getConfirmClasses(theme) : undefined;
 
   const leftContent = (
     <div className="flex flex-col">
@@ -81,7 +81,7 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
       <ExtensionItemStatus status={extension.status} errors={extension.errors} />
       <TooltipButton
         aria-label={deleteButtonLabel}
-        className={deleteButtonClasses}
+        className={deleteButtonClass}
         icon={isDeleting ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
         size="sm"
         tooltipContent={deleteButtonTip}
@@ -96,9 +96,9 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
       <ItemListLayout
         className={`h-16 rounded-md bg-${theme.surfaceTertiary} p-3 text-sm transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
         leftContent={leftContent}
-        leftClass="grow min-w-0 mr-2"
+        leftClasses="grow min-w-0 mr-2"
         rightContent={rightContent}
-        rightClass="flex shrink-0 items-center"
+        rightClasses="flex shrink-0 items-center"
       />
     </li>
   );

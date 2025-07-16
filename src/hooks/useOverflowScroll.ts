@@ -3,14 +3,14 @@ import { useCallback, useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 
 interface ScrollConfig {
-  readonly xClassName?: string;
-  readonly yClassName?: string;
+  readonly xClasses?: string;
+  readonly yClasses?: string;
 }
 
 const OVERFLOW_X_CLASSNAME = 'overflow-x-hidden';
 const OVERFLOW_Y_CLASSNAME = 'overflow-y-hidden';
 
-export function useOverflowScroll<T extends HTMLElement>({ xClassName, yClassName }: ScrollConfig): RefObject<T | null> {
+export function useOverflowScroll<T extends HTMLElement>({ xClasses, yClasses }: ScrollConfig): RefObject<T | null> {
   const ref = useRef<T>(null);
 
   const manageClasses = useCallback((): void => {
@@ -30,15 +30,15 @@ export function useOverflowScroll<T extends HTMLElement>({ xClassName, yClassNam
         .forEach((className) => element.classList.toggle(className, condition));
     };
 
-    toggleClasses(yClassName, hasVerticalScroll);
-    toggleClasses(xClassName, hasHorizontalScroll);
+    toggleClasses(yClasses, hasVerticalScroll);
+    toggleClasses(xClasses, hasHorizontalScroll);
 
-    const manageVertical = !!yClassName;
-    const manageHorizontal = !!xClassName;
+    const manageVertical = !!yClasses;
+    const manageHorizontal = !!xClasses;
 
     element.classList.toggle(OVERFLOW_X_CLASSNAME, manageVertical && !manageHorizontal);
     element.classList.toggle(OVERFLOW_Y_CLASSNAME, manageHorizontal && !manageVertical);
-  }, [xClassName, yClassName]);
+  }, [xClasses, yClasses]);
 
   useEffect(() => {
     const element = ref.current;
@@ -72,12 +72,12 @@ export function useOverflowScroll<T extends HTMLElement>({ xClassName, yClassNam
       };
 
       if (element) {
-        removeClasses(yClassName);
-        removeClasses(xClassName);
+        removeClasses(yClasses);
+        removeClasses(xClasses);
         element.classList.remove(OVERFLOW_X_CLASSNAME, OVERFLOW_Y_CLASSNAME);
       }
     };
-  }, [manageClasses, xClassName, yClassName]);
+  }, [manageClasses, xClasses, yClasses]);
 
   return ref;
 }

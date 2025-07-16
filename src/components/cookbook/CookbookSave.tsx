@@ -35,7 +35,7 @@ export const CookbookSave = memo<CookbookSaveProps>(({ nameInput, onNameChange, 
 
   return (
     <>
-      <FormLayout label="Recipe Name" inputId="recipeName" inputWrapperClass="w-full sm:flex-1">
+      <FormLayout label="Recipe Name" inputId="recipeName" inputWrapperClasses="w-full sm:flex-1">
         {(id) => (
           <StringInput
             id={id}

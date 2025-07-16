@@ -43,7 +43,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
 
   const deleteTip = isDeleting ? 'Confirm Deletion' : 'Delete Recipe';
   const deleteLabel = isDeleting ? `Confirm deletion of ${recipe.name}` : `Delete the recipe: ${recipe.name}`;
-  const deleteClasses = isDeleting ? getConfirmClasses(theme) : undefined;
+  const deleteClass = isDeleting ? getConfirmClasses(theme) : undefined;
 
   return (
     <li className="list-none">
@@ -59,7 +59,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
             </p>
           </>
         }
-        leftClass="grow min-w-0 mr-2"
+        leftClasses="grow min-w-0 mr-2"
         rightContent={
           <>
             <TooltipButton
@@ -75,7 +75,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
             </TooltipButton>
             <TooltipButton
               aria-label={deleteLabel}
-              className={deleteClasses}
+              className={deleteClass}
               icon={isDeleting ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
               onClick={handleDelete}
               size="sm"
@@ -85,7 +85,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
             />
           </>
         }
-        rightClass="flex shrink-0 items-center space-x-2"
+        rightClasses="flex shrink-0 items-center space-x-2"
       />
     </li>
   );

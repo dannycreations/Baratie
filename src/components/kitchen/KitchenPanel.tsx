@@ -93,7 +93,7 @@ const InputSpiceEditorContent = memo<{
   return (
     <div className="overflow-y-auto p-3" aria-label={`Parameters for ${targetIngredient.name.description}`}>
       <SpiceLayout
-        containerClassName="space-y-3"
+        containerClasses="space-y-3"
         currentSpices={targetIngredient.spices}
         ingredientDefinition={definition}
         onSpiceChange={handleSpiceChange}
@@ -128,9 +128,9 @@ const InputDefaultContent = memo<{
         placeholder={placeholder}
         showLineNumbers={true}
         spellCheck="false"
-        textareaClass="font-mono"
+        textareaClasses="font-mono"
         value={data}
-        wrapperClass="flex-1 min-h-0"
+        wrapperClasses="flex-1 min-h-0"
       />
     </>
   );
@@ -146,9 +146,9 @@ const OutputPanelContent = memo<{
     readOnly
     showLineNumbers={true}
     spellCheck="false"
-    textareaClass="font-mono"
+    textareaClasses="font-mono"
     value={data}
-    wrapperClass="flex-1 min-h-0"
+    wrapperClasses="flex-1 min-h-0"
   />
 ));
 
@@ -221,10 +221,10 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   return (
     <SectionLayout
       ariaLive={config ? 'polite' : undefined}
-      className="h-[50vh] min-h-0 md:h-1/2"
-      contentClassName="flex flex-col"
-      headerActions={headerActions}
-      title={title}
+      panelClasses="h-[50vh] min-h-0 md:h-1/2"
+      contentClasses="flex flex-col"
+      headerRight={headerActions}
+      headerLeft={title}
     >
       {renderContent()}
     </SectionLayout>

@@ -13,9 +13,9 @@ import type { JSX, MouseEvent, ReactNode } from 'react';
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'full';
 
 interface ModalProps {
-  readonly bodyClassName?: string;
+  readonly bodyClasses?: string;
   readonly children: ReactNode;
-  readonly contentClassName?: string;
+  readonly contentClasses?: string;
   readonly footerContent?: ReactNode;
   readonly headerActions?: ReactNode;
   readonly hideFooter?: boolean;
@@ -52,8 +52,8 @@ export const Modal = memo<ModalProps>(
     size = 'lg',
     hideHeader = false,
     hideFooter = false,
-    contentClassName = '',
-    bodyClassName = '',
+    contentClasses = '',
+    bodyClasses = '',
   }): JSX.Element | null => {
     const [isRendered, setIsRendered] = useState(false);
     const theme = useThemeStore((state) => state.theme);
@@ -111,8 +111,8 @@ export const Modal = memo<ModalProps>(
     const backdropAnimation = isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active';
     const contentAnimation = isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active';
 
-    const modalClasses =
-      `flex w-full flex-col rounded-lg border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} ${modalSizeClass} ${contentClassName} ${contentAnimation}`.trim();
+    const modalClass =
+      `flex w-full flex-col rounded-lg border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} ${modalSizeClass} ${contentClasses} ${contentAnimation}`.trim();
 
     errorHandler.assert(document.body, 'document.body is not available for Modal portal.', 'Modal Creation');
 
@@ -129,7 +129,7 @@ export const Modal = memo<ModalProps>(
           aria-busy={!isOpen}
           aria-labelledby={!hideHeader && title ? titleId : undefined}
           aria-modal="true"
-          className={modalClasses}
+          className={modalClass}
           tabIndex={-1}
         >
           {!hideHeader && (
@@ -150,7 +150,7 @@ export const Modal = memo<ModalProps>(
               </div>
             </header>
           )}
-          <main className={`grow overflow-y-auto p-3 ${bodyClassName}`}>{children}</main>
+          <main className={`grow overflow-y-auto p-3 ${bodyClasses}`}>{children}</main>
           {!hideFooter && footerContent && (
             <footer className={`flex shrink-0 justify-end space-x-3 border-t border-${theme.borderPrimary} p-3`}>{footerContent}</footer>
           )}

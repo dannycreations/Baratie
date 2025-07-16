@@ -85,18 +85,18 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
   const duration = notification.duration ?? NOTIFY_DURATION_MS;
 
-  const containerClasses =
+  const containerClass =
     `relative my-2 w-full overflow-hidden rounded-lg border-l-4 border-${borderColor} bg-${theme.surfaceSecondary} ${animationClass} ${
       isPaused ? 'notification-paused' : ''
     }`.trim();
-  const messageClasses = `text-sm text-${theme.contentSecondary} allow-text-selection ${notification.title ? 'mt-1' : ''}`.trim();
+  const messageClass = `text-sm text-${theme.contentSecondary} allow-text-selection ${notification.title ? 'mt-1' : ''}`.trim();
 
   return (
     <div
       role="alert"
       aria-live="assertive"
       aria-atomic="true"
-      className={containerClasses}
+      className={containerClass}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -104,7 +104,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
         <div className="flex-shrink-0 pt-0.5">{renderIcon()}</div>
         <div className="ml-3 flex-1">
           {notification.title && <h3 className={`text-sm font-semibold text-${theme.contentPrimary}`}>{notification.title}</h3>}
-          <p className={messageClasses}>{notification.message}</p>
+          <p className={messageClass}>{notification.message}</p>
         </div>
         <div className="ml-4 flex-shrink-0">
           <Button

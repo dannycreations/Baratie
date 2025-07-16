@@ -107,7 +107,7 @@ export const RecipePanel = memo((): JSX.Element => {
 
   const autoCookTooltip = isAutoCookEnabled ? 'Pause Auto-Cooking' : 'Resume Auto-Cooking';
   const autoCookLabel = isAutoCookEnabled ? 'Pause Automatic Cooking' : 'Resume Automatic Cooking and Run';
-  const autoCookClasses = isAutoCookEnabled
+  const autoCookClass = isAutoCookEnabled
     ? `text-${theme.warningFg} hover:!bg-${theme.warningBg}`
     : `text-${theme.successFg} hover:!bg-${theme.successBg}`;
 
@@ -137,7 +137,7 @@ export const RecipePanel = memo((): JSX.Element => {
         />
         <TooltipButton
           aria-label={autoCookLabel}
-          className={autoCookClasses}
+          className={autoCookClass}
           icon={isAutoCookEnabled ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
           onClick={kitchen.toggleAutoCook}
           size="sm"
@@ -157,7 +157,7 @@ export const RecipePanel = memo((): JSX.Element => {
         />
       </>
     ),
-    [ingredients.length, isCookbookOpen, isAutoCookEnabled, autoCookLabel, autoCookClasses, autoCookTooltip, handleSave, handleLoad],
+    [ingredients.length, isCookbookOpen, isAutoCookEnabled, autoCookLabel, autoCookClass, autoCookTooltip, handleSave, handleLoad],
   );
 
   let content: JSX.Element;
@@ -199,14 +199,14 @@ export const RecipePanel = memo((): JSX.Element => {
     );
   }
 
-  const listClasses = `grow overflow-y-auto transition-colors duration-200 ${isDraggingIngredient ? `bg-${theme.surfaceMuted}` : ''}`.trim();
+  const listClass = `grow overflow-y-auto transition-colors duration-200 ${isDraggingIngredient ? `bg-${theme.surfaceMuted}` : ''}`.trim();
 
   return (
     <SectionLayout
-      className="h-[50vh] min-h-0 md:h-auto md:flex-1"
-      contentClassName={`relative flex h-full flex-col p-2 text-${theme.contentTertiary}`}
-      headerActions={headerActions}
-      title="Recipe"
+      panelClasses="h-[50vh] min-h-0 md:h-auto md:flex-1"
+      contentClasses={`relative flex h-full flex-col p-2 text-${theme.contentTertiary}`}
+      headerRight={headerActions}
+      headerLeft="Recipe"
     >
       <div
         className="flex h-full flex-col"
@@ -215,7 +215,7 @@ export const RecipePanel = memo((): JSX.Element => {
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
-        <SearchListLayout listContent={content} listId={listId} listWrapperClassName={listClasses} showSearch={false} />
+        <SearchListLayout listContent={content} listId={listId} listWrapperClasses={listClass} showSearch={false} />
       </div>
     </SectionLayout>
   );

@@ -17,9 +17,9 @@ interface TextareaInputProps
   readonly readOnly?: boolean;
   readonly showLineNumbers?: boolean;
   readonly spellCheck?: 'true' | 'false';
-  readonly textareaClass?: string;
+  readonly textareaClasses?: string;
   readonly value: string;
-  readonly wrapperClass?: string;
+  readonly wrapperClasses?: string;
   readonly onChange?: (value: string) => void;
 }
 
@@ -28,8 +28,8 @@ export const TextareaInput = memo<TextareaInputProps>(
     value,
     onChange,
     readOnly = false,
-    wrapperClass = '',
-    textareaClass = '',
+    wrapperClasses = '',
+    textareaClasses = '',
     placeholder = '',
     ariaLabel,
     spellCheck = 'false',
@@ -79,16 +79,16 @@ export const TextareaInput = memo<TextareaInputProps>(
       };
 
       const lineHeight = rest.style?.['lineHeight'] ?? '1.6';
-      const boxContainerClasses =
+      const boxContainerClass =
         `relative flex overflow-hidden rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} focus-within:ring-2 focus-within:ring-${theme.ring} ${
           disabled ? 'opacity-50' : ''
-        } ${wrapperClass}`.trim();
-      const gutterClasses = `shrink-0 select-none overflow-y-hidden border-r border-${theme.borderPrimary} bg-${theme.surfaceSecondary} py-2.5 pl-2.5 pr-2 text-right text-${theme.contentTertiary}`;
-      const linedTextClasses = `${commonTextStyles} bg-transparent ${textareaClass}`;
+        } ${wrapperClasses}`.trim();
+      const gutterClass = `shrink-0 select-none overflow-y-hidden border-r border-${theme.borderPrimary} bg-${theme.surfaceSecondary} py-2.5 pl-2.5 pr-2 text-right text-${theme.contentTertiary}`;
+      const linedTextClass = `${commonTextStyles} bg-transparent ${textareaClasses}`;
 
       return (
-        <div className={boxContainerClasses} {...dropZoneProps}>
-          <div ref={lineNumbersRef} aria-hidden="true" className={gutterClasses} style={{ lineHeight }}>
+        <div className={boxContainerClass} {...dropZoneProps}>
+          <div ref={lineNumbersRef} aria-hidden="true" className={gutterClass} style={{ lineHeight }}>
             {wrappedLineNumbers.map((lineNumber, index) => (
               <div key={index}>{lineNumber ?? <>&nbsp;</>}</div>
             ))}
@@ -96,7 +96,7 @@ export const TextareaInput = memo<TextareaInputProps>(
           <textarea
             ref={textareaRef}
             {...commonTextAreaProps}
-            className={linedTextClasses}
+            className={linedTextClass}
             style={{ ...rest.style, lineHeight }}
             onScroll={handleScroll}
           />
@@ -105,11 +105,11 @@ export const TextareaInput = memo<TextareaInputProps>(
       );
     }
 
-    const baseTextClasses = `${commonTextStyles} rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50 ${textareaClass}`;
+    const baseTextClass = `${commonTextStyles} rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50 ${textareaClasses}`;
 
     return (
-      <div className={`relative ${wrapperClass}`} {...dropZoneProps}>
-        <textarea ref={textareaRef} {...commonTextAreaProps} className={baseTextClasses} />
+      <div className={`relative ${wrapperClasses}`} {...dropZoneProps}>
+        <textarea ref={textareaRef} {...commonTextAreaProps} className={baseTextClass} />
         {dropzoneComponent}
       </div>
     );

@@ -27,7 +27,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(
     return (
       <>
         <SearchListLayout
-          containerClassName="flex h-full flex-col"
+          containerClasses="flex h-full flex-col"
           listContent={
             recipes.length > 0 ? (
               <ul className="space-y-1.5" aria-label="List of saved recipes">
@@ -42,13 +42,13 @@ export const CookbookLoad = memo<CookbookLoadProps>(
             )
           }
           listId={listId}
-          listWrapperClassName="grow overflow-y-auto pt-3"
+          listWrapperClasses="grow overflow-y-auto pt-3"
           query={query}
           onQueryChange={onQueryChange}
           searchAriaLabel="Search saved recipes"
           searchId="recipe-search"
           searchPlaceholder="Search Saved Recipes..."
-          searchWrapperClassName={`border-b border-${theme.borderPrimary} pb-3`}
+          searchWrapperClasses={`border-b border-${theme.borderPrimary} pb-3`}
         />
         <input ref={importRef} type="file" accept=".json" onChange={onImport} className="hidden" aria-hidden="true" />
       </>

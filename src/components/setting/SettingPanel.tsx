@@ -17,11 +17,11 @@ interface TabButtonProps {
 
 const TabButton = memo<TabButtonProps>(({ children, isActive, onClick }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
-  const classes = `px-4 py-2 text-sm font-medium rounded-t-md transition-colors duration-150 outline-none border-b-2 ${
+  const tabClass = `px-4 py-2 text-sm font-medium rounded-t-md transition-colors duration-150 outline-none border-b-2 ${
     isActive ? `border-${theme.infoBorder} text-${theme.infoFg}` : `border-transparent text-${theme.contentTertiary}`
   }`;
   return (
-    <button role="tab" aria-selected={isActive} className={classes} onClick={onClick}>
+    <button role="tab" aria-selected={isActive} className={tabClass} onClick={onClick}>
       {children}
     </button>
   );
@@ -53,7 +53,7 @@ export const SettingPanel = memo((): JSX.Element => {
   }, [activeTab]);
 
   return (
-    <Modal isOpen={isModalOpen} onClose={closeModal} size="xl" title="Settings" contentClassName="flex max-h-[80vh] flex-col" bodyClassName="p-0">
+    <Modal isOpen={isModalOpen} onClose={closeModal} size="xl" title="Settings" contentClasses="flex max-h-[80vh] flex-col" bodyClasses="p-0">
       <div role="tablist" aria-label="Settings categories" className={`flex border-b border-${theme.borderPrimary} px-3`}>
         <TabButton isActive={activeTab === 'appearance'} onClick={() => handleTabSelect('appearance')}>
           Appearance

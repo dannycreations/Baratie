@@ -11,11 +11,11 @@ export const LoadingScreen = memo((): JSX.Element => {
   const isError = useAppStore((state) => state.loadingHasError);
   const theme = useThemeStore((state) => state.theme);
 
-  const containerClasses = `fixed inset-0 z-[900] flex flex-col items-center justify-center bg-${theme.surfacePrimary} transition-opacity duration-300`;
-  const titleClasses = `mt-6 text-2xl font-semibold tracking-wider ${isError ? `text-${theme.dangerFg}` : `text-${theme.contentSecondary}`}`;
+  const containerClass = `fixed inset-0 z-[900] flex flex-col items-center justify-center bg-${theme.surfacePrimary} transition-opacity duration-300`;
+  const titleClass = `mt-6 text-2xl font-semibold tracking-wider ${isError ? `text-${theme.dangerFg}` : `text-${theme.contentSecondary}`}`;
 
   return (
-    <div role="status" aria-live="polite" aria-label={isError ? 'Application Failed to Load' : 'Loading Application'} className={containerClasses}>
+    <div role="status" aria-live="polite" aria-label={isError ? 'Application Failed to Load' : 'Loading Application'} className={containerClass}>
       <div className="flex flex-col items-center p-4 text-center">
         {isError ? (
           <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={48} />
@@ -35,7 +35,7 @@ export const LoadingScreen = memo((): JSX.Element => {
             />
           </svg>
         )}
-        <h1 className={titleClasses}>{isError ? 'Kitchen on Fire!' : 'Opening the Baratie'}</h1>
+        <h1 className={titleClass}>{isError ? 'Kitchen on Fire!' : 'Opening the Baratie'}</h1>
         <p key={message} className={`mt-2 text-${theme.contentTertiary} fade-in-text`}>
           {isError ? `Galley Disaster: ${message}` : message}
         </p>

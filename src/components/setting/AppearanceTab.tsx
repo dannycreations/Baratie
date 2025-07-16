@@ -73,13 +73,13 @@ export const AppearanceTab = memo((): JSX.Element => {
             </div>
           ) : null;
 
-          const itemLayoutClasses = `h-16 rounded-md p-3 border-2 transition-all duration-150 ${
+          const itemLayoutClass = `h-16 rounded-md p-3 border-2 transition-all duration-150 ${
             isChecked
               ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
               : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:bg-${theme.surfaceMuted} hover:border-${theme.borderSecondary}`
           }`;
 
-          const liClasses = `list-none cursor-pointer rounded-md outline-none focus:ring-2 focus:ring-${theme.ring}`;
+          const liClass = `list-none cursor-pointer rounded-md outline-none focus:ring-2 focus:ring-${theme.ring}`;
 
           return (
             <li
@@ -87,7 +87,7 @@ export const AppearanceTab = memo((): JSX.Element => {
               role="radio"
               aria-checked={isChecked}
               tabIndex={0}
-              className={liClasses}
+              className={liClass}
               onClick={() => handleSelectTheme(item.id)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -97,11 +97,11 @@ export const AppearanceTab = memo((): JSX.Element => {
               }}
             >
               <ItemListLayout
-                className={itemLayoutClasses}
+                className={itemLayoutClass}
                 leftContent={leftContent}
-                leftClass="grow min-w-0"
+                leftClasses="grow min-w-0"
                 rightContent={rightContent}
-                rightClass="flex shrink-0 items-center"
+                rightClasses="flex shrink-0 items-center"
               />
             </li>
           );

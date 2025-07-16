@@ -15,7 +15,7 @@ export interface TooltipProps {
   readonly delay?: number;
   readonly disabled?: boolean;
   readonly position?: TooltipPosition;
-  readonly tooltipClassName?: string;
+  readonly tooltipClasses?: string;
 }
 
 interface TooltipPositionStyle {
@@ -35,7 +35,7 @@ const INITIAL_TOOLTIP_STYLE: TooltipPositionStyle = {
 };
 
 export const Tooltip = memo<TooltipProps>(
-  ({ content, children, position = 'top', delay = 200, className = '', tooltipClassName = '', disabled = false }): JSX.Element => {
+  ({ content, children, position = 'top', delay = 200, className = '', tooltipClasses = '', disabled = false }): JSX.Element => {
     const { activeId, setActiveId } = useTooltipStore();
     const theme = useThemeStore((state) => state.theme);
     const [style, setStyle] = useState<TooltipPositionStyle>(INITIAL_TOOLTIP_STYLE);
@@ -175,17 +175,17 @@ export const Tooltip = memo<TooltipProps>(
       }),
       [theme.backdrop],
     );
-    const arrowClasses = tooltipArrows[position] || tooltipArrows.top;
+    const arrowClass = tooltipArrows[position] || tooltipArrows.top;
     const visibilityClass = isVisible && style.isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
-    const tooltipClasses =
-      `z-[1000] max-w-xs rounded-md bg-${theme.backdrop} px-3 py-1.5 text-sm text-${theme.accentFg} font-medium shadow-lg transition-opacity duration-150 whitespace-pre-line ${visibilityClass} ${tooltipClassName}`.trim();
-    const triggerClasses = `relative inline-flex ${className}`.trim();
+    const tooltipClass =
+      `z-[1000] max-w-xs rounded-md bg-${theme.backdrop} px-3 py-1.5 text-sm text-${theme.accentFg} font-medium shadow-lg transition-opacity duration-150 whitespace-pre-line ${visibilityClass} ${tooltipClasses}`.trim();
+    const triggerClass = `relative inline-flex ${className}`.trim();
 
     const triggerElement = (
       <div
         ref={triggerRef}
         aria-describedby={isVisible && !disabled && content ? tooltipId : undefined}
-        className={triggerClasses}
+        className={triggerClass}
         onDragStart={handleMouseLeave}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -204,7 +204,7 @@ export const Tooltip = memo<TooltipProps>(
             ref={tooltipRef}
             id={tooltipId}
             role="tooltip"
-            className={tooltipClasses}
+            className={tooltipClass}
             style={{
               left: `${style.left}px`,
               position: 'fixed',
@@ -213,7 +213,7 @@ export const Tooltip = memo<TooltipProps>(
           >
             {content}
             <div
-              className={arrowClasses}
+              className={arrowClass}
               style={{
                 borderWidth: `${ARROW_SIZE_PX}px`,
                 left: style.arrowLeft !== undefined ? `${style.arrowLeft}px` : undefined,

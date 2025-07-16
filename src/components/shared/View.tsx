@@ -10,7 +10,7 @@ interface EmptyViewProps {
   readonly children: ReactNode;
   readonly className?: string;
   readonly icon?: ReactNode;
-  readonly textClassName?: string;
+  readonly textClasses?: string;
   readonly title?: string;
 }
 
@@ -28,10 +28,10 @@ function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
 }
 
 export const EmptyView = memo<EmptyViewProps>(
-  ({ children, className = 'flex grow flex-col items-center justify-center p-4', textClassName, icon, title }): JSX.Element => {
+  ({ children, className = 'flex grow flex-col items-center justify-center p-4', textClasses, icon, title }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
-    const titleClasses = `mb-1 text-lg font-semibold text-center text-${theme.contentSecondary}`;
-    const textClasses = textClassName ?? `break-all text-center text-sm text-${theme.contentTertiary}`;
+    const titleClass = `mb-1 text-lg font-semibold text-center text-${theme.contentSecondary}`;
+    const textClass = textClasses ?? `break-all text-center text-sm text-${theme.contentTertiary}`;
 
     return (
       <div role="status" aria-live="polite" className={className}>
@@ -40,29 +40,29 @@ export const EmptyView = memo<EmptyViewProps>(
             {icon}
           </div>
         )}
-        {title && <h3 className={titleClasses}>{title}</h3>}
-        <div className={textClasses}>{children}</div>
+        {title && <h3 className={titleClass}>{title}</h3>}
+        <div className={textClass}>{children}</div>
       </div>
     );
   },
 );
 
 export const ErrorView = memo<ErrorViewProps>(({ error, errorInfo }): JSX.Element | null => {
-  const detailsElementRef = useOverflowScroll<HTMLDetailsElement>({ xClassName: 'pr-2', yClassName: 'pb-2' });
+  const detailsElementRef = useOverflowScroll<HTMLDetailsElement>({ xClasses: 'pr-2', yClasses: 'pb-2' });
   const theme = useThemeStore((state) => state.theme);
 
   if (!error) {
     return null;
   }
 
-  const detailsClasses = `mt-6 max-h-48 overflow-y-auto rounded-md bg-${theme.surfaceTertiary} p-3 text-left text-xs`;
-  const summaryClasses = `cursor-pointer font-medium text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`;
-  const preClasses = `mt-2 whitespace-pre-wrap text-${theme.contentSecondary} allow-text-selection`;
+  const detailsClass = `mt-6 max-h-48 overflow-y-auto rounded-md bg-${theme.surfaceTertiary} p-3 text-left text-xs`;
+  const summaryClass = `cursor-pointer font-medium text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`;
+  const preClass = `mt-2 whitespace-pre-wrap text-${theme.contentSecondary} allow-text-selection`;
 
   return (
-    <details ref={detailsElementRef} className={detailsClasses}>
-      <summary className={summaryClasses}>Error Details (Development)</summary>
-      <pre className={preClasses}>{errorStringify(error, errorInfo)}</pre>
+    <details ref={detailsElementRef} className={detailsClass}>
+      <summary className={summaryClass}>Error Details (Development)</summary>
+      <pre className={preClass}>{errorStringify(error, errorInfo)}</pre>
     </details>
   );
 });

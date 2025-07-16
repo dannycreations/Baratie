@@ -25,7 +25,7 @@ export type ButtonProps = {
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
 export interface TooltipButtonProps extends ButtonProps {
-  readonly tooltipClassName?: string;
+  readonly tooltipClasses?: string;
   readonly tooltipContent: ReactNode;
   readonly tooltipDisabled?: boolean;
   readonly tooltipPosition?: TooltipProps['position'];
@@ -78,12 +78,12 @@ export const Button = memo<ButtonProps>(
   }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
-    const baseClasses = `inline-flex items-center justify-center border font-medium transition-all duration-150 ease-in-out outline-none focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
+    const baseClass = `inline-flex items-center justify-center border font-medium transition-all duration-150 ease-in-out outline-none focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
     const variantClass = getVariantClasses(variant, theme);
     const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
 
-    const finalClassName = `${baseClasses} ${shapeClass} ${variantClass} ${sizeClass}${loading ? ' opacity-60' : ''}${
+    const finalClassName = `${baseClass} ${shapeClass} ${variantClass} ${sizeClass}${loading ? ' opacity-60' : ''}${
       fullWidth ? ' w-full' : ''
     } ${className}`.trim();
 
@@ -148,14 +148,9 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
 });
 
 export const TooltipButton = memo<TooltipButtonProps>(
-  ({ tooltipContent, tooltipPosition, tooltipClassName, tooltipDisabled, ...buttonProps }): JSX.Element => {
+  ({ tooltipContent, tooltipPosition, tooltipClasses, tooltipDisabled, ...buttonProps }): JSX.Element => {
     return (
-      <Tooltip
-        content={tooltipContent}
-        disabled={tooltipDisabled || buttonProps.disabled}
-        position={tooltipPosition}
-        tooltipClassName={tooltipClassName}
-      >
+      <Tooltip content={tooltipContent} disabled={tooltipDisabled || buttonProps.disabled} position={tooltipPosition} tooltipClasses={tooltipClasses}>
         <Button {...buttonProps} />
       </Tooltip>
     );

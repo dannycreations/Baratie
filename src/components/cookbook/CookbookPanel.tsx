@@ -149,7 +149,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
 
   return (
     <Modal
-      contentClassName="max-h-[80vh]"
+      contentClasses="max-h-[80vh]"
       headerActions={headerActions}
       isOpen={isModalOpen}
       onClose={closeModal}

@@ -40,11 +40,11 @@ export const SelectInput = memo(
     );
 
     const selectInputStyle = `w-full appearance-none rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} py-2 pl-2 pr-8 text-${theme.contentPrimary} transition-colors duration-150 placeholder:text-${theme.contentTertiary} hover:bg-${theme.surfaceHover} outline-none focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50`;
-    const finalClasses = `${selectInputStyle} ${className}`.trim();
+    const finalClass = `${selectInputStyle} ${className}`.trim();
 
     return (
       <div className="relative w-full">
-        <select id={id} value={String(value)} className={finalClasses} disabled={disabled} onChange={handleChange} aria-label={ariaLabel} {...rest}>
+        <select id={id} value={String(value)} className={finalClass} disabled={disabled} onChange={handleChange} aria-label={ariaLabel} {...rest}>
           {options.map((option) => (
             <option key={String(option.value)} value={String(option.value)} className={`bg-${theme.surfaceSecondary} text-${theme.contentSecondary}`}>
               {option.label}

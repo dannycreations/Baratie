@@ -132,12 +132,12 @@ export const IngredientManager = memo((): JSX.Element => {
   }
 
   return (
-    <Modal isOpen={isModalOpen} onClose={closeModal} title="Manage Ingredients" size="lg" contentClassName="max-h-[80vh]">
+    <Modal isOpen={isModalOpen} onClose={closeModal} title="Manage Ingredients" size="lg" contentClasses="max-h-[80vh]">
       <SearchListLayout
-        containerClassName="flex h-full flex-col"
+        containerClasses="flex h-full flex-col"
         listContent={content}
         listId={listId}
-        listWrapperClassName="grow mt-2 overflow-y-auto"
+        listWrapperClasses="grow mt-2 overflow-y-auto"
         onQueryChange={setQuery}
         query={query}
         searchAriaLabel="Search ingredients or categories"

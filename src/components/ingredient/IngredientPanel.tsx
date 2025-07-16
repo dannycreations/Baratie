@@ -118,7 +118,7 @@ export const IngredientPanel = memo((): JSX.Element => {
       const ingredientName = item.name.description ?? 'Unnamed Ingredient';
       const isFavorite = favorites.includes(item.name);
 
-      const favoriteButtonClasses = `opacity-70 group-hover:opacity-100 ${
+      const favoriteButtonClass = `opacity-70 group-hover:opacity-100 ${
         isFavorite ? `text-${theme.favoriteFg} hover:text-${theme.favoriteFgHover}` : `text-${theme.contentTertiary} hover:text-${theme.favoriteFg}`
       }`;
 
@@ -127,7 +127,7 @@ export const IngredientPanel = memo((): JSX.Element => {
           <TooltipButton
             aria-label={isFavorite ? `Remove '${ingredientName}' from favorites` : `Add '${ingredientName}' to favorites`}
             aria-pressed={isFavorite}
-            className={favoriteButtonClasses}
+            className={favoriteButtonClass}
             icon={<StarIcon isFilled={isFavorite} size={18} />}
             onClick={() => toggleFavorite(item.name)}
             size="sm"
@@ -153,10 +153,10 @@ export const IngredientPanel = memo((): JSX.Element => {
 
   return (
     <SectionLayout
-      className="h-[50vh] min-h-0 md:h-auto md:flex-1"
-      contentClassName={`relative flex h-full flex-col p-2 text-${theme.contentTertiary}`}
-      headerActions={headerActions}
-      title="Ingredients"
+      panelClasses="h-[50vh] min-h-0 md:h-auto md:flex-1"
+      contentClasses={`relative flex h-full flex-col p-2 text-${theme.contentTertiary}`}
+      headerRight={headerActions}
+      headerLeft="Ingredients"
     >
       <div
         className="flex h-full flex-col"
@@ -179,7 +179,7 @@ export const IngredientPanel = memo((): JSX.Element => {
           onQueryChange={setQuery}
           query={query}
           searchAriaLabel="Search for ingredients"
-          searchClassName="mb-3"
+          searchClasses="mb-3"
           searchId="ingredient-search"
           searchPlaceholder="Search Ingredients..."
         />

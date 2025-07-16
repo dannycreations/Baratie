@@ -98,9 +98,9 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
   return (
     <FormLayout
       description={spice.description}
-      fieldSetClass={fieldSetClass}
+      fieldSetClasses={fieldSetClass}
       inputId={`spice-${spice.id}`}
-      inputWrapperClass={inputWrapperClass}
+      inputWrapperClasses={inputWrapperClass}
       label={spice.label}
     >
       {(id) => renderInput(id)}
@@ -109,15 +109,15 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
 });
 
 interface SpiceLayoutProps {
-  readonly containerClassName?: string;
+  readonly containerClasses?: string;
   readonly currentSpices: Readonly<Record<string, SpiceValue>>;
   readonly ingredientDefinition: IngredientDefinition;
   readonly onSpiceChange: (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => void;
 }
 
-export const SpiceLayout = memo<SpiceLayoutProps>(({ ingredientDefinition, currentSpices, onSpiceChange, containerClassName }): JSX.Element => {
+export const SpiceLayout = memo<SpiceLayoutProps>(({ ingredientDefinition, currentSpices, onSpiceChange, containerClasses }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
-  const finalContainerClass = containerClassName || 'space-y-3';
+  const finalContainerClass = containerClasses || 'space-y-3';
 
   const handleSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

@@ -55,15 +55,15 @@ export const IngredientList = memo(
       errorHandler.assert(ingredientIdString, `Could not get string from symbol for ingredient: ${ingredientName}`, 'Render Ingredient');
 
       const isDisabled = isItemDisabled?.(item) ?? false;
-      const nameClasses = `cursor-default truncate pr-2 text-sm transition-colors duration-150 ${
+      const nameClass = `cursor-default truncate pr-2 text-sm transition-colors duration-150 ${
         isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`
       } group-hover:text-${theme.infoFg}`;
 
       const leftColumn = (
         <div className="flex min-w-0 items-center gap-3">
           {renderItemPrefix?.(item)}
-          <Tooltip content={item.description} position="top" tooltipClassName="max-w-xs">
-            <span className={nameClasses}>{ingredientName}</span>
+          <Tooltip content={item.description} position="top" tooltipClasses="max-w-xs">
+            <span className={nameClass}>{ingredientName}</span>
           </Tooltip>
         </div>
       );
@@ -79,7 +79,7 @@ export const IngredientList = memo(
           <ItemListLayout
             className={`group h-11 rounded-md bg-${theme.surfaceTertiary} px-2 py-1.5 transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
             leftContent={leftColumn}
-            leftClass="grow min-w-0"
+            leftClasses="grow min-w-0"
             rightContent={rightColumn}
           />
         </li>
@@ -111,10 +111,10 @@ export const IngredientList = memo(
             </button>
           );
 
-          const containerClasses = `overflow-hidden rounded-md ${!isExpanded && index < categoryEntries.length - 1 ? 'mb-2' : ''}`.trim();
+          const containerClass = `overflow-hidden rounded-md ${!isExpanded && index < categoryEntries.length - 1 ? 'mb-2' : ''}`.trim();
 
           return (
-            <div key={category.toString()} className={containerClasses}>
+            <div key={category.toString()} className={containerClass}>
               {header}
               {isExpanded && (
                 <div

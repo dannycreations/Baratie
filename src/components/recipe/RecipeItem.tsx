@@ -113,16 +113,16 @@ export const RecipeItem = memo<RecipeItemProps>(
 
     const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
     const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
-    const classes = `group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm transition-all duration-200 ease-in-out outline-none ${
+    const itemClass = `group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm transition-all duration-200 ease-in-out outline-none ${
       isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'
     } ${statusBorderClass} ${hasSpices && isEditorVisible ? 'pb-1' : ''}`.trim();
 
-    const grabHandleClasses = `mr-2 cursor-grab text-${theme.contentTertiary} transition-colors group-hover:text-${theme.contentSecondary}`;
+    const grabHandleClass = `mr-2 cursor-grab text-${theme.contentTertiary} transition-colors group-hover:text-${theme.contentSecondary}`;
 
     const leftColumn = (
       <>
         <Tooltip content="Drag to reorder" position="top">
-          <span aria-label="Drag handle" className={grabHandleClasses} draggable={true} onDragEnd={onDragEnd} onDragStart={handleDragStart}>
+          <span aria-label="Drag handle" className={grabHandleClass} draggable={true} onDragEnd={onDragEnd} onDragStart={handleDragStart}>
             <GrabIcon size={20} />
           </span>
         </Tooltip>
@@ -165,7 +165,7 @@ export const RecipeItem = memo<RecipeItemProps>(
       <div
         role="listitem"
         aria-label={ariaLabel}
-        className={classes}
+        className={itemClass}
         onDoubleClick={handleDoubleClick}
         onDragEnter={handleDragEnter}
         onDragOver={onDragOver}
@@ -175,7 +175,7 @@ export const RecipeItem = memo<RecipeItemProps>(
         <ItemListLayout
           className="h-12 cursor-default p-3"
           leftContent={leftColumn}
-          leftClass="flex grow items-center min-w-0"
+          leftClasses="flex grow items-center min-w-0"
           rightContent={rightColumn}
         />
         {hasSpices && (

@@ -6,20 +6,20 @@ import { SearchInput } from '../input/SearchInput';
 import type { JSX, ReactNode } from 'react';
 
 interface BaseSearchListProps {
-  readonly containerClassName?: string;
+  readonly containerClasses?: string;
   readonly listContent: ReactNode;
   readonly listId: string;
-  readonly listWrapperClassName?: string;
+  readonly listWrapperClasses?: string;
 }
 
 type SearchEnabledProps = {
   readonly onQueryChange: (query: string) => void;
   readonly query: string;
   readonly searchAriaLabel: string;
-  readonly searchClassName?: string;
+  readonly searchClasses?: string;
   readonly searchId: string;
   readonly searchPlaceholder?: string;
-  readonly searchWrapperClassName?: string;
+  readonly searchWrapperClasses?: string;
   readonly showSearch?: true;
 };
 
@@ -27,28 +27,28 @@ type SearchDisabledProps = {
   readonly onQueryChange?: never;
   readonly query?: never;
   readonly searchAriaLabel?: never;
-  readonly searchClassName?: never;
+  readonly searchClasses?: never;
   readonly searchId?: never;
   readonly searchPlaceholder?: never;
-  readonly searchWrapperClassName?: never;
+  readonly searchWrapperClasses?: never;
   readonly showSearch: false;
 };
 
 type SearchListLayoutProps = BaseSearchListProps & (SearchEnabledProps | SearchDisabledProps);
 
 export const SearchListLayout = memo<SearchListLayoutProps>((props): JSX.Element => {
-  const { containerClassName = 'flex h-full flex-col', listContent, listId, listWrapperClassName = 'grow overflow-y-auto' } = props;
-  const listScrollRef = useOverflowScroll<HTMLDivElement>({ yClassName: 'pr-1' });
+  const { containerClasses = 'flex h-full flex-col', listContent, listId, listWrapperClasses = 'grow overflow-y-auto' } = props;
+  const listScrollRef = useOverflowScroll<HTMLDivElement>({ yClasses: 'pr-1' });
 
   return (
-    <div className={containerClassName}>
+    <div className={containerClasses}>
       {props.showSearch !== false && (
-        <div className={props.searchWrapperClassName}>
+        <div className={props.searchWrapperClasses}>
           <SearchInput
             id={props.searchId}
             ariaControls={listId}
             ariaLabel={props.searchAriaLabel}
-            className={props.searchClassName}
+            className={props.searchClasses}
             placeholder={props.searchPlaceholder}
             query={props.query}
             onQueryChange={props.onQueryChange}
@@ -58,7 +58,7 @@ export const SearchListLayout = memo<SearchListLayoutProps>((props): JSX.Element
       <div
         ref={listScrollRef}
         id={listId}
-        className={listWrapperClassName}
+        className={listWrapperClasses}
         role="region"
         aria-live={props.showSearch !== false ? 'polite' : undefined}
         aria-relevant={props.showSearch !== false ? 'all' : undefined}
