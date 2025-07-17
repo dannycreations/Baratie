@@ -16,7 +16,6 @@ export function useSearchIngredients(
     const visibleIngredients = allIngredients.filter(
       (ingredient) => !disabledCategories.includes(ingredient.category) && !disabledIngredients.includes(ingredient.name),
     );
-
     if (visibleIngredients.length === 0) {
       return new Map();
     }
@@ -32,11 +31,9 @@ export function useSearchIngredients(
       const descriptionMatches = ingredient.description.toLowerCase().includes(lowerQuery);
       const categoryMatches = categoryDescription.includes(lowerQuery);
       const searchMatches = !lowerQuery || nameMatches || descriptionMatches || categoryMatches;
-
       if (isFavorite && (!lowerQuery || nameMatches || descriptionMatches)) {
         favoritesList.push(ingredient);
       }
-
       if (searchMatches) {
         if (!ingredientsByCat.has(ingredient.category)) {
           ingredientsByCat.set(ingredient.category, []);
@@ -46,14 +43,12 @@ export function useSearchIngredients(
     }
 
     const result = new Map<symbol, readonly IngredientDefinition[]>();
-
     if (favoritesList.length > 0) {
       favoritesList.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
       result.set(CATEGORY_FAVORITES, favoritesList);
     }
 
     const sortedCategories = Array.from(ingredientsByCat.keys()).sort((a, b) => (a.description ?? '').localeCompare(b.description ?? ''));
-
     for (const category of sortedCategories) {
       const items = ingredientsByCat.get(category)!;
       items.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));

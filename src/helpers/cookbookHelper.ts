@@ -32,15 +32,33 @@ type OpenCookbookArgs =
   | { readonly mode: 'load' }
   | { readonly mode: 'save'; readonly ingredients: readonly Ingredient[]; readonly activeRecipeId: string | null; readonly name?: string };
 
-function isRawIngredient(data: unknown): data is RawIngredient {
-  if (!isObjectLike(data)) return false;
-  const { id, name, spices } = data as Record<string, unknown>;
-  return typeof id === 'string' && !!id.trim() && typeof name === 'string' && !!name.trim() && isObjectLike(spices) && !Array.isArray(spices);
+function createIngredientHash(ingredients: readonly Ingredient[]): string {
+  return JSON.stringify(
+    ingredients.map((ing) => ({
+      name: ingredientRegistry.getStringFromSymbol(ing.name) ?? ing.name.toString(),
+      spices: ing.spices,
+    })),
+  );
 }
 
-function getString(obj: Record<string, unknown>, key: string, fallback: string): string {
-  const value = obj[key];
-  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+function createInitialName(allRecipes: readonly RecipeBookItem[], ingredients: readonly Ingredient[], activeRecipeId: string | null): string {
+  if (ingredients.length === 0) {
+    return '';
+  }
+  if (activeRecipeId) {
+    const activeRecipe = allRecipes.find((recipe) => recipe.id === activeRecipeId);
+    if (activeRecipe) {
+      return activeRecipe.name;
+    }
+  }
+  const currentHash = createIngredientHash(ingredients);
+  const existingRecipe = allRecipes.find((recipe) => createIngredientHash(recipe.ingredients) === currentHash);
+  if (existingRecipe) {
+    return existingRecipe.name;
+  }
+  const date = new Date();
+  const dateString = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return `My Recipe ${dateString}`;
 }
 
 function getNumber(obj: Record<string, unknown>, key: string, fallback: number): number {
@@ -48,24 +66,70 @@ function getNumber(obj: Record<string, unknown>, key: string, fallback: number):
   return typeof value === 'number' ? value : fallback;
 }
 
+function getString(obj: Record<string, unknown>, key: string, fallback: string): string {
+  const value = obj[key];
+  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+}
+
+function isRawIngredient(data: unknown): data is RawIngredient {
+  if (!isObjectLike(data)) return false;
+  const { id, name, spices } = data as Record<string, unknown>;
+  return typeof id === 'string' && !!id.trim() && typeof name === 'string' && !!name.trim() && isObjectLike(spices) && !Array.isArray(spices);
+}
+
+function mergeRecipeLists(
+  existingRecipes: readonly RecipeBookItem[],
+  recipesToImport: readonly RecipeBookItem[],
+): { readonly mergedList: readonly RecipeBookItem[]; readonly added: number; readonly updated: number; readonly skipped: number } {
+  const mergedById = new Map<string, RecipeBookItem>(existingRecipes.map((recipe) => [recipe.id, recipe]));
+  const finalNames = new Set<string>(existingRecipes.map((r) => r.name.toLowerCase()));
+  let added = 0;
+  let updated = 0;
+  let skipped = 0;
+
+  for (const item of recipesToImport) {
+    const existingItem = mergedById.get(item.id);
+    if (existingItem) {
+      if (item.updatedAt > existingItem.updatedAt) {
+        mergedById.set(item.id, item);
+        updated++;
+      } else {
+        skipped++;
+      }
+    } else {
+      let uniqueName = item.name;
+      let counter = 1;
+      while (finalNames.has(uniqueName.toLowerCase()) && counter < 100) {
+        uniqueName = `${item.name} (Imported ${counter})`;
+        counter++;
+      }
+      const newItem = { ...item, name: uniqueName };
+      mergedById.set(newItem.id, newItem);
+      finalNames.add(uniqueName.toLowerCase());
+      added++;
+    }
+  }
+
+  const mergedList = Array.from(mergedById.values());
+  mergedList.sort((a, b) => b.updatedAt - a.updatedAt);
+  return { mergedList, added, updated, skipped };
+}
+
 function sanitizeIngredient(rawIngredient: unknown, source: 'fileImport' | 'storage', recipeName: string): Ingredient | null {
   if (!isRawIngredient(rawIngredient)) {
     logger.warn(`Skipping ingredient with invalid structure from ${source} for recipe '${recipeName}':`, rawIngredient);
     return null;
   }
-
   const ingredientNameSymbol = ingredientRegistry.getSymbolFromString(rawIngredient.name);
   if (!ingredientNameSymbol) {
     logger.warn(`Skipping unknown ingredient name '${rawIngredient.name}' from ${source} for recipe '${recipeName}'.`);
     return null;
   }
-
   const definition = ingredientRegistry.getIngredient(ingredientNameSymbol);
   if (!definition) {
     logger.warn(`Definition not found for known name symbol: '${rawIngredient.name}'.`);
     return null;
   }
-
   const validatedSpices = validateSpices(definition, rawIngredient.spices);
   return { id: rawIngredient.id, name: ingredientNameSymbol, spices: validatedSpices };
 }
@@ -76,7 +140,6 @@ function sanitizeRecipe(recipeData: unknown, source: 'fileImport' | 'storage'): 
     return { recipe: null, warning: null };
   }
   const rawRecipe = recipeData as Record<string, unknown>;
-
   const id = getString(rawRecipe, 'id', crypto.randomUUID());
   const name = getString(rawRecipe, 'name', `Untitled from ${source}`);
   const createdAt = getNumber(rawRecipe, 'createdAt', Date.now());
@@ -98,53 +161,8 @@ function sanitizeRecipe(recipeData: unknown, source: 'fileImport' | 'storage'): 
           ingredientDifference === 1 ? 'was' : 'were'
         } removed.`
       : null;
-
   const recipe: RecipeBookItem = { id, name, ingredients: validIngredients, createdAt, updatedAt };
   return { recipe, warning };
-}
-
-function createIngredientHash(ingredients: readonly Ingredient[]): string {
-  return JSON.stringify(
-    ingredients.map((ing) => ({
-      name: ingredientRegistry.getStringFromSymbol(ing.name) ?? ing.name.toString(),
-      spices: ing.spices,
-    })),
-  );
-}
-
-function createInitialName(allRecipes: readonly RecipeBookItem[], ingredients: readonly Ingredient[], activeRecipeId: string | null): string {
-  if (ingredients.length === 0) {
-    return '';
-  }
-
-  if (activeRecipeId) {
-    const activeRecipe = allRecipes.find((recipe) => recipe.id === activeRecipeId);
-    if (activeRecipe) {
-      return activeRecipe.name;
-    }
-  }
-
-  const currentHash = createIngredientHash(ingredients);
-  const existingRecipe = allRecipes.find((recipe) => createIngredientHash(recipe.ingredients) === currentHash);
-
-  if (existingRecipe) {
-    return existingRecipe.name;
-  }
-
-  const date = new Date();
-  const dateString = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  return `My Recipe ${dateString}`;
-}
-
-export function serializeRecipe(recipe: Readonly<RecipeBookItem>): SerializedRecipeItem {
-  return {
-    ...recipe,
-    ingredients: recipe.ingredients.map((ingredient) => ({
-      id: ingredient.id,
-      name: ingredientRegistry.getStringFromSymbol(ingredient.name),
-      spices: ingredient.spices,
-    })),
-  };
 }
 
 export function closeCookbook(): void {
@@ -185,7 +203,6 @@ export function exportSingle(name: string, ingredients: readonly Ingredient[]): 
     showNotification('Cannot export an empty recipe. Please add ingredients first.', 'warning', 'Export Error');
     return;
   }
-
   const recipeToExport: RecipeBookItem = {
     id: crypto.randomUUID(),
     name: trimmedName,
@@ -213,15 +230,12 @@ export async function importFromFile(file: File): Promise<RecipeBookItem[] | nul
   if (!jsonData) return null;
 
   const results = (Array.isArray(jsonData) ? jsonData : [jsonData]).map((rawRecipe) => sanitizeRecipe(rawRecipe, 'fileImport'));
-
-  const recipes = results.map((res) => res.recipe).filter((recipe) => !!recipe);
-
+  const recipes = results.map((res) => res.recipe).filter((recipe): recipe is RecipeBookItem => !!recipe);
   for (const { warning } of results) {
     if (warning) {
       showNotification(warning, 'warning', 'Recipe Load Notice', 7000);
     }
   }
-
   if (recipes.length === 0) {
     showNotification('No valid recipes were found in the selected file.', 'warning', 'Import Notice');
     return null;
@@ -233,7 +247,7 @@ export function initRecipes(): void {
   const storedRecipes = storage.get(STORAGE_COOKBOOK, 'Saved Recipes');
   const sanitized = (Array.isArray(storedRecipes) ? storedRecipes : [])
     .map((rawRecipe) => sanitizeRecipe(rawRecipe, 'storage').recipe)
-    .filter((recipe) => !!recipe);
+    .filter((recipe): recipe is RecipeBookItem => !!recipe);
   useCookbookStore.getState().setRecipes(sanitized);
 }
 
@@ -247,51 +261,10 @@ export function loadRecipe(id: string): RecipeBookItem | null {
   return null;
 }
 
-function mergeRecipeLists(
-  existingRecipes: readonly RecipeBookItem[],
-  recipesToImport: readonly RecipeBookItem[],
-): { readonly mergedList: readonly RecipeBookItem[]; readonly added: number; readonly updated: number; readonly skipped: number } {
-  const mergedById = new Map<string, RecipeBookItem>(existingRecipes.map((recipe) => [recipe.id, recipe]));
-  const finalNames = new Set<string>(existingRecipes.map((r) => r.name.toLowerCase()));
-  let added = 0;
-  let updated = 0;
-  let skipped = 0;
-
-  for (const item of recipesToImport) {
-    const existingItem = mergedById.get(item.id);
-
-    if (existingItem) {
-      if (item.updatedAt > existingItem.updatedAt) {
-        mergedById.set(item.id, item);
-        updated++;
-      } else {
-        skipped++;
-      }
-    } else {
-      let uniqueName = item.name;
-      let counter = 1;
-      while (finalNames.has(uniqueName.toLowerCase()) && counter < 100) {
-        uniqueName = `${item.name} (Imported ${counter})`;
-        counter++;
-      }
-      const newItem = { ...item, name: uniqueName };
-      mergedById.set(newItem.id, newItem);
-      finalNames.add(uniqueName.toLowerCase());
-      added++;
-    }
-  }
-
-  const mergedList = Array.from(mergedById.values());
-  mergedList.sort((a, b) => b.updatedAt - a.updatedAt);
-  return { mergedList, added, updated, skipped };
-}
-
 export function mergeRecipes(recipesToImport: readonly RecipeBookItem[]): void {
   const { recipes, setRecipes } = useCookbookStore.getState();
   logger.info('Merging imported recipes...', { importedCount: recipesToImport.length, existingCount: recipes.length });
-
   const { mergedList, added, updated, skipped } = mergeRecipeLists(recipes, recipesToImport);
-
   if (saveAllRecipes(mergedList)) {
     const summary = [
       added > 0 ? `${added} new recipe${added > 1 ? 's' : ''} added.` : '',
@@ -300,7 +273,6 @@ export function mergeRecipes(recipesToImport: readonly RecipeBookItem[]): void {
     ]
       .filter(Boolean)
       .join(' ');
-
     if (summary) {
       showNotification(summary, 'success', 'Import Complete');
     } else {
@@ -310,15 +282,13 @@ export function mergeRecipes(recipesToImport: readonly RecipeBookItem[]): void {
   }
 }
 
-export function openCookbook(args: OpenCookbookArgs): void {
+export function openCookbook(args: Readonly<OpenCookbookArgs>): void {
   if (args.mode === 'load') {
     useCookbookStore.getState().openModal({ name: '', mode: 'load' });
     return;
   }
-
   const { ingredients, activeRecipeId } = args;
   const allRecipes = getAllRecipes();
-
   const initialName = args.name ?? createInitialName(allRecipes, ingredients, activeRecipeId);
   useCookbookStore.getState().openModal({ name: initialName, mode: 'save' });
 }
@@ -329,12 +299,23 @@ export function saveAllRecipes(recipes: readonly RecipeBookItem[]): boolean {
   return storage.set(STORAGE_COOKBOOK, serialized, 'Saved Recipes');
 }
 
-export function setRecipeName(name: string): void {
-  useCookbookStore.getState().setName(name);
+export function serializeRecipe(recipe: Readonly<RecipeBookItem>): SerializedRecipeItem {
+  return {
+    ...recipe,
+    ingredients: recipe.ingredients.map((ingredient) => ({
+      id: ingredient.id,
+      name: ingredientRegistry.getStringFromSymbol(ingredient.name),
+      spices: ingredient.spices,
+    })),
+  };
 }
 
 export function setQuery(term: string): void {
   useCookbookStore.getState().setQuery(term);
+}
+
+export function setRecipeName(name: string): void {
+  useCookbookStore.getState().setName(name);
 }
 
 export function upsertRecipe(name: string, ingredients: readonly Ingredient[], activeRecipeId: string | null): void {
@@ -352,7 +333,6 @@ export function upsertRecipe(name: string, ingredients: readonly Ingredient[], a
   const now = Date.now();
   const recipeToUpdate = activeRecipeId ? recipes.find((r) => r.id === activeRecipeId) : null;
   const isUpdate = recipeToUpdate && recipeToUpdate.name.toLowerCase() === trimmedName.toLowerCase();
-
   let newRecipes: RecipeBookItem[];
   let recipeToSave: RecipeBookItem;
   let userMessage: string;
@@ -366,9 +346,7 @@ export function upsertRecipe(name: string, ingredients: readonly Ingredient[], a
     newRecipes = [...recipes, recipeToSave];
     userMessage = recipeToUpdate ? `Recipe '${trimmedName}' saved as a new copy.` : `Recipe '${trimmedName}' was saved.`;
   }
-
   newRecipes.sort((a, b) => b.updatedAt - a.updatedAt);
-
   if (saveAllRecipes(newRecipes)) {
     setRecipes(newRecipes);
     useRecipeStore.getState().setActiveRecipeId(recipeToSave.id);

@@ -16,7 +16,7 @@ export const LoadingScreen = memo((): JSX.Element => {
 
   return (
     <div role="status" aria-live="polite" aria-label={isError ? 'Application Failed to Load' : 'Loading Application'} className={containerClass}>
-      <div className="flex flex-col items-center p-4 text-center">
+      <div className="p-4 text-center flex flex-col items-center">
         {isError ? (
           <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={48} />
         ) : (
@@ -36,7 +36,7 @@ export const LoadingScreen = memo((): JSX.Element => {
           </svg>
         )}
         <h1 className={titleClass}>{isError ? 'Kitchen on Fire!' : 'Opening the Baratie'}</h1>
-        <p key={message} className={`mt-2 text-${theme.contentTertiary} fade-in-text`}>
+        <p key={message} className={`fade-in-text mt-2 text-${theme.contentTertiary}`}>
           {isError ? `Galley Disaster: ${message}` : message}
         </p>
       </div>

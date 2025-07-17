@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from 'react';
 
-import { COPY_SUCCESS_MS } from '../../app/constants';
+import { COPY_SHOW_MS } from '../../app/constants';
 import { errorHandler } from '../../app/container';
 import { useControlTimer } from '../../hooks/useControlTimer';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -14,7 +14,7 @@ import type { TooltipProps } from './Tooltip';
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'stealth' | 'outline';
 type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
 
-export type ButtonProps = {
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   readonly children?: ReactNode;
   readonly fullWidth?: boolean;
   readonly icon?: ReactNode;
@@ -22,7 +22,7 @@ export type ButtonProps = {
   readonly loading?: boolean;
   readonly size?: ButtonSize;
   readonly variant?: ButtonVariant;
-} & ButtonHTMLAttributes<HTMLButtonElement>;
+}
 
 export interface TooltipButtonProps extends ButtonProps {
   readonly tooltipClasses?: string;
@@ -36,13 +36,6 @@ interface CopyButtonProps {
   readonly tooltipPosition?: TooltipProps['position'];
 }
 
-const TEXT_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
-  xs: 'px-2 py-1 text-xs',
-  sm: 'px-2.5 py-1.5 text-sm',
-  md: 'px-3.5 py-2 text-sm',
-  lg: 'px-4 py-2.5 text-base',
-};
-
 const ICON_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
   xs: 'p-1',
   sm: 'p-1.5',
@@ -50,13 +43,20 @@ const ICON_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
   lg: 'p-2.5',
 };
 
+const TEXT_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
+  xs: 'px-2 py-1 text-xs',
+  sm: 'px-2.5 py-1.5 text-sm',
+  md: 'px-3.5 py-2 text-sm',
+  lg: 'px-4 py-2.5 text-base',
+};
+
 const getVariantClasses = (variant: ButtonVariant, theme: AppTheme): string => {
   const variantMap: Record<ButtonVariant, string> = {
+    danger: `border-${theme.dangerBorder} bg-transparent text-${theme.dangerFg} hover:bg-${theme.dangerBgHover}`,
+    outline: `border-${theme.borderPrimary} bg-transparent text-${theme.contentSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
     primary: `border-transparent bg-${theme.accentBg} text-${theme.accentFg} hover:bg-${theme.accentBgHover}`,
     secondary: `border-transparent bg-${theme.surfaceTertiary} text-${theme.contentSecondary} hover:bg-${theme.surfaceHover} hover:text-${theme.contentPrimary}`,
-    danger: `border-${theme.dangerBorder} text-${theme.dangerFg} bg-transparent hover:bg-${theme.dangerBgHover}`,
     stealth: `border-transparent bg-transparent text-${theme.contentTertiary} hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}`,
-    outline: `border-${theme.borderPrimary} bg-transparent text-${theme.contentSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
   };
   return variantMap[variant];
 };
@@ -64,21 +64,21 @@ const getVariantClasses = (variant: ButtonVariant, theme: AppTheme): string => {
 export const Button = memo<ButtonProps>(
   ({
     children,
-    variant = 'primary',
-    size = 'md',
-    icon,
-    iconPosition = 'left',
-    fullWidth = false,
-    loading = false,
     className = '',
     disabled = false,
-    type = 'button',
+    fullWidth = false,
+    icon,
+    iconPosition = 'left',
+    loading = false,
     onClick,
+    size = 'md',
+    type = 'button',
+    variant = 'primary',
     ...props
   }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
-    const baseClass = `inline-flex items-center justify-center border font-medium transition-all duration-150 ease-in-out outline-none focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
+    const baseClass = `inline-flex items-center justify-center border font-medium outline-none transition-all duration-150 ease-in-out focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
     const variantClass = getVariantClasses(variant, theme);
     const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
@@ -121,10 +121,10 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
   const theme = useThemeStore((state) => state.theme);
 
   useControlTimer({
-    state: isCopied,
     callback: () => setIsCopied(false),
-    duration: COPY_SUCCESS_MS,
+    duration: COPY_SHOW_MS,
     reset: isCopied,
+    state: isCopied,
   });
 
   const handleCopy = useCallback(async (): Promise<void> => {
@@ -139,11 +139,11 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
       className={isCopied ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : ''}
       disabled={!textToCopy || isCopied}
       icon={isCopied ? <CheckIcon size={18} /> : <CopyIcon size={18} />}
-      onClick={handleCopy}
       size="sm"
       tooltipContent={isCopied ? 'Copied!' : 'Copy Result'}
       tooltipPosition={tooltipPosition}
       variant="stealth"
+      onClick={handleCopy}
     />
   );
 });

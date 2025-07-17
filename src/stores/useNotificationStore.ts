@@ -10,7 +10,7 @@ interface NotificationState {
 export const useNotificationStore = create<NotificationState>()((set) => ({
   notifications: [],
 
-  setNotifications(notifications: readonly NotificationMessage[]): void {
+  setNotifications(notifications) {
     set({ notifications });
   },
 }));

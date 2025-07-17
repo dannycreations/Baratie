@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useState } from 'react';
 
-import { ANIMATION_EXIT_MS, NOTIFY_DURATION_MS } from '../../app/constants';
+import { NOTIFICATION_EXIT_MS, NOTIFICATION_SHOW_MS } from '../../app/constants';
 import { removeNotification } from '../../helpers/notificationHelper';
 import { useControlTimer } from '../../hooks/useControlTimer';
 import { useNotificationStore } from '../../stores/useNotificationStore';
@@ -55,20 +55,19 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const handleMouseLeave = useCallback((): void => setPaused(false), []);
 
   useControlTimer({
-    state: !isExiting && !isPaused,
     callback: handleExit,
-    duration: notification.duration ?? NOTIFY_DURATION_MS,
+    duration: notification.duration ?? NOTIFICATION_SHOW_MS,
     reset: notification.resetAt,
+    state: !isExiting && !isPaused,
   });
 
   useEffect(() => {
     if (!isExiting) {
       return;
     }
-
     const timerId = window.setTimeout(() => {
       removeNotification(notification.id);
-    }, ANIMATION_EXIT_MS);
+    }, NOTIFICATION_EXIT_MS);
 
     return () => {
       clearTimeout(timerId);
@@ -91,13 +90,13 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   };
 
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
-  const duration = notification.duration ?? NOTIFY_DURATION_MS;
+  const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
 
   const containerClass =
-    `relative my-2 w-full overflow-hidden rounded-lg border-l-4 border-${borderColor} bg-${theme.surfaceSecondary} ${animationClass} ${
+    `relative my-2 w-full overflow-hidden rounded-lg border-l-4 bg-${theme.surfaceSecondary} border-${borderColor} ${animationClass} ${
       isPaused ? 'notification-paused' : ''
     }`.trim();
-  const messageClass = `text-sm text-${theme.contentSecondary} allow-text-selection ${notification.title ? 'mt-1' : ''}`.trim();
+  const messageClass = `allow-text-selection text-sm text-${theme.contentSecondary} ${notification.title ? 'mt-1' : ''}`.trim();
 
   return (
     <div
@@ -117,12 +116,12 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
         <div className="ml-4 flex-shrink-0">
           <Button
             aria-label="Close notification"
-            className={`-mr-1 -mt-1 text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`}
+            className={`-mt-1 -mr-1 text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`}
             icon={<XIcon size={20} />}
-            onClick={handleExit}
             size="sm"
             title="Close"
             variant="stealth"
+            onClick={handleExit}
           />
         </div>
       </div>

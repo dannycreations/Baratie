@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { ANIMATION_MODAL_MS } from '../../app/constants';
+import { MODAL_SHOW_MS } from '../../app/constants';
 import { errorHandler } from '../../app/container';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -60,6 +60,8 @@ export const Modal = memo<ModalProps>(
     const backdropRef = useRef<HTMLDivElement>(null);
     const modalContentRef = useRef<HTMLDivElement>(null);
 
+    useFocusTrap({ elementRef: modalContentRef, isActive: isOpen });
+
     const handleBackdropClick = useCallback(
       (event: MouseEvent<HTMLDivElement>) => {
         if (event.target === backdropRef.current) {
@@ -87,7 +89,7 @@ export const Modal = memo<ModalProps>(
         const timerId = window.setTimeout(() => {
           setIsRendered(false);
           onExited?.();
-        }, ANIMATION_MODAL_MS);
+        }, MODAL_SHOW_MS);
         return () => clearTimeout(timerId);
       }
     }, [isOpen, isRendered, onExited]);
@@ -101,8 +103,6 @@ export const Modal = memo<ModalProps>(
       }
     }, [isOpen, handleEscapeKey]);
 
-    useFocusTrap({ elementRef: modalContentRef, isActive: isOpen });
-
     if (!isRendered) {
       return null;
     }
@@ -110,7 +110,6 @@ export const Modal = memo<ModalProps>(
     const modalSizeClass = MODAL_SIZE_MAP[size] || MODAL_SIZE_MAP.lg;
     const backdropAnimation = isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active';
     const contentAnimation = isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active';
-
     const modalClass =
       `flex w-full flex-col rounded-lg border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} ${modalSizeClass} ${contentClasses} ${contentAnimation}`.trim();
 
@@ -143,9 +142,9 @@ export const Modal = memo<ModalProps>(
                   aria-label={`Close ${title || 'modal'}`}
                   className={headerActions ? 'ml-2' : ''}
                   icon={<XIcon size={20} />}
-                  onClick={onClose}
                   size="sm"
                   variant="stealth"
+                  onClick={onClose}
                 />
               </div>
             </header>

@@ -4,19 +4,15 @@ export type SettingTab = 'appearance' | 'extensions';
 
 interface SettingState {
   readonly activeTab: SettingTab;
-  readonly isModalOpen: boolean;
-  readonly setActiveTab: (tab: SettingTab) => void;
   readonly closeModal: () => void;
+  readonly isModalOpen: boolean;
   readonly openModal: () => void;
+  readonly setActiveTab: (tab: SettingTab) => void;
 }
 
 export const useSettingStore = create<SettingState>()((set) => ({
   activeTab: 'appearance',
   isModalOpen: false,
-
-  setActiveTab(tab) {
-    set({ activeTab: tab });
-  },
 
   closeModal() {
     set({ isModalOpen: false });
@@ -24,5 +20,9 @@ export const useSettingStore = create<SettingState>()((set) => ({
 
   openModal() {
     set({ isModalOpen: true });
+  },
+
+  setActiveTab(tab) {
+    set({ activeTab: tab });
   },
 }));

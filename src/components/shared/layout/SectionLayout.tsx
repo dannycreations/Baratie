@@ -3,19 +3,18 @@ import { memo, useId } from 'react';
 import { useOverflowScroll } from '../../../hooks/useOverflowScroll';
 import { useThemeStore } from '../../../stores/useThemeStore';
 
-import type { JSX, ReactNode } from 'react';
+import type { HTMLAttributes, JSX, ReactNode } from 'react';
 
-interface SectionLayoutProps {
-  readonly ariaLive?: 'assertive' | 'off' | 'polite';
+interface SectionLayoutProps extends HTMLAttributes<HTMLElement> {
   readonly children: ReactNode;
+  readonly contentClasses?: string;
   readonly headerLeft: ReactNode;
   readonly headerRight?: ReactNode;
   readonly panelClasses?: string;
-  readonly contentClasses?: string;
 }
 
 export const SectionLayout = memo<SectionLayoutProps>(
-  ({ headerLeft, headerRight, children, panelClasses = '', contentClasses = '', ariaLive }): JSX.Element => {
+  ({ headerLeft, headerRight, children, panelClasses = '', contentClasses = '', ...rest }): JSX.Element => {
     const contentRef = useOverflowScroll<HTMLDivElement>({ xClasses: 'pr-2', yClasses: 'pb-2' });
     const titleId = useId();
     const theme = useThemeStore((state) => state.theme);
@@ -25,7 +24,7 @@ export const SectionLayout = memo<SectionLayoutProps>(
     const contentClass = `grow overflow-auto p-3 ${contentClasses}`.trim();
 
     return (
-      <section role="region" aria-live={ariaLive} aria-labelledby={titleId} className={panelClass}>
+      <section role="region" aria-labelledby={titleId} className={panelClass} {...rest}>
         <div className={headerClass}>
           <h2 id={titleId} className="truncate pr-2 text-lg font-semibold">
             {headerLeft}

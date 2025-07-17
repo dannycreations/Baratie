@@ -25,7 +25,6 @@ export function useDragDrop({ onDragDrop, disabled = false }: DragDropProps): Dr
       if (disabled) {
         return;
       }
-
       if (event.dataTransfer.items && event.dataTransfer.items.length > 0) {
         if (Array.from(event.dataTransfer.items).some((item: DataTransferItem) => item.kind === 'file')) {
           event.dataTransfer.dropEffect = 'copy';
@@ -66,7 +65,6 @@ export function useDragDrop({ onDragDrop, disabled = false }: DragDropProps): Dr
       if (disabled) {
         return;
       }
-
       const file = event.dataTransfer.files?.[0];
       if (file) {
         onDragDrop(file);

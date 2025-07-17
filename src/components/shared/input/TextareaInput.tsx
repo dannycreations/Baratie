@@ -11,7 +11,6 @@ import type { ChangeEvent, JSX, TextareaHTMLAttributes, UIEvent } from 'react';
 
 interface TextareaInputProps
   extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'value' | 'onChange' | 'readOnly' | 'placeholder' | 'disabled' | 'spellCheck'> {
-  readonly ariaLabel?: string;
   readonly disabled?: boolean;
   readonly placeholder?: string;
   readonly readOnly?: boolean;
@@ -31,7 +30,6 @@ export const TextareaInput = memo<TextareaInputProps>(
     wrapperClasses = '',
     textareaClasses = '',
     placeholder = '',
-    ariaLabel,
     spellCheck = 'false',
     disabled = false,
     showLineNumbers = false,
@@ -56,12 +54,11 @@ export const TextareaInput = memo<TextareaInputProps>(
     );
 
     const { isDragOver, ...dropZoneProps } = useDragDrop({ onDragDrop: handleFileDrop, disabled: readOnly || disabled });
+
     const handleTextChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => onChange?.(event.target.value), [onChange]);
 
     const commonTextStyles = `h-full w-full resize-none p-2.5 text-${theme.contentPrimary} outline-none allow-text-selection placeholder:text-${theme.contentTertiary}`;
-
     const commonTextAreaProps: TextareaHTMLAttributes<HTMLTextAreaElement> = {
-      'aria-label': ariaLabel,
       disabled,
       placeholder,
       readOnly,
@@ -70,7 +67,6 @@ export const TextareaInput = memo<TextareaInputProps>(
       onChange: handleTextChange,
       ...rest,
     };
-
     const dropzoneComponent = isDragOver && <DropzoneLayout mode="overlay" text="Drop text file" variant="add" />;
 
     if (showLineNumbers) {

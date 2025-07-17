@@ -40,11 +40,11 @@ export const CookbookSave = memo<CookbookSaveProps>(({ nameInput, onNameChange, 
           <StringInput
             id={id}
             inputRef={nameRef}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
             placeholder="Enter Recipe Name..."
             type="text"
             value={nameInput}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
           />
         )}
       </FormLayout>

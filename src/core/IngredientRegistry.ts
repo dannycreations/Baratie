@@ -10,14 +10,6 @@ export interface Ingredient {
   readonly spices: Readonly<Record<string, SpiceValue>>;
 }
 
-export interface RecipeBookItem {
-  readonly id: string;
-  readonly name: string;
-  readonly ingredients: readonly Ingredient[];
-  readonly createdAt: number;
-  readonly updatedAt: number;
-}
-
 export interface IngredientContext {
   readonly currentIndex: number;
   readonly ingredient: Ingredient;
@@ -40,13 +32,6 @@ export interface IngredientDefinition<T = unknown, InType = unknown, OutType = u
   readonly extensionId?: string;
 }
 
-export interface SpiceDependency {
-  readonly spiceId: string;
-  readonly value: SpiceValue | readonly SpiceValue[];
-}
-
-export type SpiceDefinition = StringSpice | TextareaSpice | NumberSpice | BooleanSpice | SelectSpice;
-
 export type InputPanelConfig =
   | { readonly mode: 'textarea'; readonly placeholder: string; readonly title: string; readonly disabled?: boolean; readonly showClear: boolean }
   | { readonly mode: 'spiceEditor'; readonly targetIngredientId: string; readonly title: string };
@@ -68,6 +53,14 @@ export type PanelControlConfig =
 export interface PanelControlSignal<OutType = unknown> {
   readonly output: InputType<OutType>;
   readonly panelControl?: PanelControlConfig;
+}
+
+export interface RecipeBookItem {
+  readonly id: string;
+  readonly name: string;
+  readonly ingredients: readonly Ingredient[];
+  readonly createdAt: number;
+  readonly updatedAt: number;
 }
 
 export type ResultType<OutType = unknown> = InputType<OutType> | PanelControlSignal<OutType> | null;
@@ -104,6 +97,13 @@ type SelectSpice = BaseSpice<'select', SpiceValue> & {
   readonly placeholder?: never;
   readonly step?: never;
 };
+
+export interface SpiceDependency {
+  readonly spiceId: string;
+  readonly value: SpiceValue | readonly SpiceValue[];
+}
+
+export type SpiceDefinition = StringSpice | TextareaSpice | NumberSpice | BooleanSpice | SelectSpice;
 
 type StringSpice = BaseSpice<'string', string> & {
   readonly max?: never;

@@ -8,8 +8,9 @@ function isSpiceVisible(
   allSpices: readonly SpiceDefinition[],
   currentSpices: Readonly<Record<string, SpiceValue>>,
 ): boolean {
-  if (!spice.dependsOn || spice.dependsOn.length === 0) return true;
-
+  if (!spice.dependsOn || spice.dependsOn.length === 0) {
+    return true;
+  }
   return spice.dependsOn.every((rule) => {
     const targetSpice = allSpices.find((s) => s.id === rule.spiceId);
     errorHandler.assert(targetSpice, `Dependency target spice ID was not found: ${rule.spiceId}`);
@@ -35,7 +36,9 @@ export function getVisibleSpices(
   currentSpices: Readonly<Record<string, SpiceValue>>,
 ): SpiceDefinition[] {
   const allSpices = ingredientDefinition.spices || [];
-  if (!allSpices.length) return [];
+  if (!allSpices.length) {
+    return [];
+  }
   return allSpices.filter((spice) => isSpiceVisible(spice, allSpices, currentSpices));
 }
 
@@ -56,15 +59,15 @@ export function validateSpices(
   rawSpices: Readonly<Record<string, unknown>>,
 ): Record<string, SpiceValue> {
   const validatedSpices: Record<string, SpiceValue> = {};
-  if (!ingredientDefinition.spices) return {};
-
+  if (!ingredientDefinition.spices) {
+    return {};
+  }
   for (const spice of ingredientDefinition.spices) {
     const rawValue = rawSpices[spice.id];
     if (rawValue === undefined || rawValue === null) {
       validatedSpices[spice.id] = spice.value;
       continue;
     }
-
     const input = new InputType(rawValue);
     switch (spice.type) {
       case 'number':

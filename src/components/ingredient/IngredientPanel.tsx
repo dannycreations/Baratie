@@ -34,7 +34,6 @@ export const IngredientPanel = memo((): JSX.Element => {
 
   const [query, setQuery] = useState<string>('');
   const [isDragOverRecipe, setDragOverRecipe] = useState(false);
-
   const listId = useId();
 
   const allIngredients = useMemo<readonly IngredientDefinition[]>(() => ingredientRegistry.getAllIngredients(), [registryVersion]);
@@ -91,22 +90,22 @@ export const IngredientPanel = memo((): JSX.Element => {
         <TooltipButton
           aria-label={`Manage ingredients. ${visibleIngredients} of ${totalIngredients} visible.`}
           icon={<PreferencesIcon size={18} />}
-          onClick={openIngredientModal}
           size="sm"
           tooltipContent={`Manage Ingredients\n${visibleIngredients} of ${totalIngredients} visible`}
+          tooltipDisabled={isIngredientOpen}
           tooltipPosition="bottom"
           variant="stealth"
-          tooltipDisabled={isIngredientOpen}
+          onClick={openIngredientModal}
         />
         <TooltipButton
           aria-label="Open application settings"
           icon={<SettingsIcon size={18} />}
-          onClick={openSettingModal}
           size="sm"
           tooltipContent="Settings, Appearance & Extensions"
+          tooltipDisabled={isSettingOpen}
           tooltipPosition="bottom"
           variant="stealth"
-          tooltipDisabled={isSettingOpen}
+          onClick={openSettingModal}
         />
       </>
     ),
@@ -129,21 +128,21 @@ export const IngredientPanel = memo((): JSX.Element => {
             aria-pressed={isFavorite}
             className={favoriteButtonClass}
             icon={<StarIcon isFilled={isFavorite} size={18} />}
-            onClick={() => toggleFavorite(item.name)}
             size="sm"
             tooltipContent={isFavorite ? `Remove '${ingredientName}' from favorites` : `Add '${ingredientName}' to favorites`}
             tooltipPosition="top"
             variant="stealth"
+            onClick={() => toggleFavorite(item.name)}
           />
           <TooltipButton
             aria-label={`Add '${ingredientName}' to the recipe`}
             className="opacity-70 group-hover:opacity-100"
             icon={<PlusIcon size={18} />}
-            onClick={() => addIngredient(item.name)}
             size="sm"
             tooltipContent={`Add '${ingredientName}' to Recipe`}
             tooltipPosition="top"
             variant="primary"
+            onClick={() => addIngredient(item.name)}
           />
         </>
       );
@@ -153,10 +152,10 @@ export const IngredientPanel = memo((): JSX.Element => {
 
   return (
     <SectionLayout
-      panelClasses="h-[50vh] min-h-0 md:h-auto md:flex-1"
       contentClasses={`relative flex h-full flex-col p-2 text-${theme.contentTertiary}`}
-      headerRight={headerActions}
       headerLeft="Ingredients"
+      headerRight={headerActions}
+      panelClasses="h-[50vh] min-h-0 md:h-auto md:flex-1"
     >
       <div
         className="flex h-full flex-col"
@@ -170,18 +169,18 @@ export const IngredientPanel = memo((): JSX.Element => {
           listContent={
             <IngredientList
               itemsByCategory={ingredientsByCat}
+              query={query}
               renderItemActions={renderItemActions}
               onItemDragStart={handleItemDragStart}
-              query={query}
             />
           }
           listId={listId}
-          onQueryChange={setQuery}
           query={query}
           searchAriaLabel="Search for ingredients"
           searchClasses="mb-3"
           searchId="ingredient-search"
           searchPlaceholder="Search Ingredients..."
+          onQueryChange={setQuery}
         />
       </div>
       <IngredientManager />

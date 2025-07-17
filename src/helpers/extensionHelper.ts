@@ -9,24 +9,22 @@ import { showNotification } from './notificationHelper';
 import type { IngredientDefinition } from '../core/IngredientRegistry';
 import type { Extension, ExtensionManifest, StorableExtension } from '../stores/useExtensionStore';
 
-function parseGitHubUrl(url: string): { owner: string; repo: string } | null {
-  const trimmedUrl = url.trim();
-  const githubUrlMatch = trimmedUrl.match(/^(?:https?:\/\/)?github\.com\/([^/]+)\/([^/.]+)/);
-  if (githubUrlMatch) {
-    return { owner: githubUrlMatch[1], repo: githubUrlMatch[2].replace('.git', '') };
+async function fetchAndExecuteScript(scriptUrl: string): Promise<void> {
+  const response = await fetch(scriptUrl);
+  if (!response.ok) throw new Error(`Fetch failed: ${response.statusText}`);
+  const scriptContent = await response.text();
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    new Function('Baratie', scriptContent)(window.Baratie);
+  } catch (error) {
+    throw new Error(`Execution failed: ${error instanceof Error ? error.message : String(error)}`);
   }
-  const simplePathMatch = trimmedUrl.match(/^([^/.]+)\/([^/.]+)/);
-  if (simplePathMatch) {
-    return { owner: simplePathMatch[1], repo: simplePathMatch[2].replace('.git', '') };
-  }
-  return null;
 }
 
-function isValidEntry(entry: unknown): entry is string | readonly string[] {
-  return (
-    (typeof entry === 'string' && !!entry.trim()) ||
-    (Array.isArray(entry) && entry.length > 0 && entry.every((item) => typeof item === 'string' && !!item.trim()))
-  );
+function isExtensionManifest(obj: unknown): obj is ExtensionManifest {
+  if (!isObjectLike(obj)) return false;
+  const { name, entry } = obj as Record<string, unknown>;
+  return typeof name === 'string' && !!name.trim() && isValidEntry(entry);
 }
 
 function isStorableExtension(obj: unknown): obj is StorableExtension {
@@ -43,24 +41,14 @@ function isStorableExtension(obj: unknown): obj is StorableExtension {
   );
 }
 
-function isExtensionManifest(obj: unknown): obj is ExtensionManifest {
-  if (!isObjectLike(obj)) return false;
-  const { name, entry } = obj as Record<string, unknown>;
-  return typeof name === 'string' && !!name.trim() && isValidEntry(entry);
+function isValidEntry(entry: unknown): entry is string | readonly string[] {
+  return (
+    (typeof entry === 'string' && !!entry.trim()) ||
+    (Array.isArray(entry) && entry.length > 0 && entry.every((item) => typeof item === 'string' && !!item.trim()))
+  );
 }
 
-async function fetchAndExecuteScript(scriptUrl: string): Promise<void> {
-  const response = await fetch(scriptUrl);
-  if (!response.ok) throw new Error(`Fetch failed: ${response.statusText}`);
-  const scriptContent = await response.text();
-  try {
-    new Function('Baratie', scriptContent)(window.Baratie);
-  } catch (error) {
-    throw new Error(`Execution failed: ${error instanceof Error ? error.message : String(error)}`);
-  }
-}
-
-async function loadAndExecuteExtension(extension: Extension): Promise<void> {
+async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<void> {
   const { id, url, name, entry } = extension;
   const { setExtensionStatus, setIngredients } = useExtensionStore.getState();
   const repoInfo = parseGitHubUrl(url);
@@ -94,20 +82,26 @@ async function loadAndExecuteExtension(extension: Extension): Promise<void> {
   if (newlyRegisteredSymbols.length > 0) setIngredients(id, newlyRegisteredSymbols);
   const finalStatus: Extension['status'] = successCount > 0 ? (errorLogs.length > 0 ? 'partial' : 'loaded') : 'error';
   setExtensionStatus(id, finalStatus, errorLogs);
-  if (finalStatus === 'loaded') logger.info(`Extension '${name}' loaded successfully with ${newlyRegisteredSymbols.length} ingredient(s).`);
-  else if (finalStatus === 'partial') logger.warn(`Extension '${name}' partially loaded with ${errorLogs.length} error(s).`, errorLogs);
-  else logger.error(`Extension '${name}' failed to load with ${errorLogs.length} error(s).`, errorLogs);
+  if (finalStatus === 'loaded') {
+    logger.info(`Extension '${name}' loaded successfully with ${newlyRegisteredSymbols.length} ingredient(s).`);
+  } else if (finalStatus === 'partial') {
+    logger.warn(`Extension '${name}' partially loaded with ${errorLogs.length} error(s).`, errorLogs);
+  } else {
+    logger.error(`Extension '${name}' failed to load with ${errorLogs.length} error(s).`, errorLogs);
+  }
 }
 
-export async function initExtensions(): Promise<void> {
-  const rawExtensions = storage.get<StorableExtension[]>(STORAGE_EXTENSIONS, 'Extensions');
-  const extensions: Extension[] = Array.isArray(rawExtensions)
-    ? rawExtensions.filter(isStorableExtension).map((e) => ({ ...e, status: 'loading' }))
-    : [];
-  useExtensionStore.getState().setExtensions(extensions);
-  await Promise.all(
-    extensions.map((ext) => loadAndExecuteExtension(ext).catch((err) => logger.error(`Error loading extension on init: ${ext.name}`, err))),
-  );
+function parseGitHubUrl(url: string): { readonly owner: string; readonly repo: string } | null {
+  const trimmedUrl = url.trim();
+  const githubUrlMatch = trimmedUrl.match(/^(?:https?:\/\/)?github\.com\/([^/]+)\/([^/.]+)/);
+  if (githubUrlMatch) {
+    return { owner: githubUrlMatch[1], repo: githubUrlMatch[2].replace('.git', '') };
+  }
+  const simplePathMatch = trimmedUrl.match(/^([^/.]+)\/([^/.]+)/);
+  if (simplePathMatch) {
+    return { owner: simplePathMatch[1], repo: simplePathMatch[2].replace('.git', '') };
+  }
+  return null;
 }
 
 export async function addExtension(url: string): Promise<void> {
@@ -141,6 +135,17 @@ export async function addExtension(url: string): Promise<void> {
   }
 }
 
+export async function initExtensions(): Promise<void> {
+  const rawExtensions = storage.get<StorableExtension[]>(STORAGE_EXTENSIONS, 'Extensions');
+  const extensions: Extension[] = Array.isArray(rawExtensions)
+    ? rawExtensions.filter(isStorableExtension).map((e) => ({ ...e, status: 'loading' }))
+    : [];
+  useExtensionStore.getState().setExtensions(extensions);
+  await Promise.all(
+    extensions.map((ext) => loadAndExecuteExtension(ext).catch((err) => logger.error(`Error loading extension on init: ${ext.name}`, err))),
+  );
+}
+
 export function removeExtension(id: string): void {
   const { extensions, remove: storeRemove } = useExtensionStore.getState();
   const extension = extensions.find((ext) => ext.id === id);
@@ -159,7 +164,9 @@ export function removeExtension(id: string): void {
     }
     const { favorites, setFavorites } = useFavoriteStore.getState();
     const updatedFavorites = favorites.filter((fav) => !ingredientsToRemove.includes(fav));
-    if (updatedFavorites.length < favorites.length) setFavorites(updatedFavorites);
+    if (updatedFavorites.length < favorites.length) {
+      setFavorites(updatedFavorites);
+    }
   }
   storeRemove(id);
   showNotification(`Extension '${extension.name}' has been successfully uninstalled.`, 'success', 'Extension Manager');

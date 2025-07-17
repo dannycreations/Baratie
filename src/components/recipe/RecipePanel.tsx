@@ -27,7 +27,6 @@ export const RecipePanel = memo((): JSX.Element => {
   const inputPanelIngId = useKitchenStore((state) => state.inputPanelIngId);
   const isCookbookOpen = useCookbookStore((state) => state.isModalOpen);
   const theme = useThemeStore((state) => state.theme);
-
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isDraggingIngredient, setIsDraggingIngredient] = useState(false);
   const listId = useId();
@@ -118,42 +117,42 @@ export const RecipePanel = memo((): JSX.Element => {
           aria-label="Save current recipe to cookbook"
           disabled={ingredients.length === 0}
           icon={<SaveIcon size={18} />}
-          onClick={handleSave}
           size="sm"
           tooltipContent="Save to Cookbook"
+          tooltipDisabled={isCookbookOpen}
           tooltipPosition="bottom"
           variant="stealth"
-          tooltipDisabled={isCookbookOpen}
+          onClick={handleSave}
         />
         <TooltipButton
           aria-label="Load a saved recipe from the cookbook"
           icon={<FolderOpenIcon size={18} />}
-          onClick={handleLoad}
           size="sm"
           tooltipContent="Open Cookbook"
+          tooltipDisabled={isCookbookOpen}
           tooltipPosition="bottom"
           variant="stealth"
-          tooltipDisabled={isCookbookOpen}
+          onClick={handleLoad}
         />
         <TooltipButton
           aria-label={autoCookLabel}
           className={autoCookClass}
           icon={isAutoCookEnabled ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
-          onClick={kitchen.toggleAutoCook}
           size="sm"
           tooltipContent={autoCookTooltip}
           tooltipPosition="bottom"
           variant="stealth"
+          onClick={kitchen.toggleAutoCook}
         />
         <TooltipButton
           aria-label="Clear all ingredients from the recipe"
           disabled={ingredients.length === 0}
           icon={<Trash2Icon size={18} />}
-          onClick={clearRecipe}
           size="sm"
           tooltipContent="Clear Recipe"
           tooltipPosition="bottom"
           variant="danger"
+          onClick={clearRecipe}
         />
       </>
     ),
@@ -179,19 +178,19 @@ export const RecipePanel = memo((): JSX.Element => {
         {ingredients.map((ingredient: Ingredient) => (
           <RecipeItem
             key={ingredient.id}
-            status={ingredientStatuses[ingredient.id] || 'idle'}
             ingredient={ingredient}
             isAutoCook={isAutoCookEnabled}
             isDragged={dragId === ingredient.id}
             isEditing={editingId === ingredient.id && ingredient.id !== inputPanelIngId}
             isSpiceInInput={ingredient.id === inputPanelIngId}
+            status={ingredientStatuses[ingredient.id] || 'idle'}
             onDragEnd={onMoveEnd}
             onDragEnter={onMoveEnter}
             onDragOver={onMoveOver}
             onDragStart={handleDragStart}
+            onEditToggle={handleEditToggle}
             onRemove={removeIngredient}
             onSpiceChange={updateSpice}
-            onEditToggle={handleEditToggle}
           />
         ))}
         {isDraggingIngredient && <DropzoneLayout mode="placeholder" text="Drop to add ingredient" variant="add" />}
@@ -203,10 +202,10 @@ export const RecipePanel = memo((): JSX.Element => {
 
   return (
     <SectionLayout
-      panelClasses="h-[50vh] min-h-0 md:h-auto md:flex-1"
       contentClasses={`relative flex h-full flex-col p-2 text-${theme.contentTertiary}`}
-      headerRight={headerActions}
       headerLeft="Recipe"
+      headerRight={headerActions}
+      panelClasses="h-[50vh] min-h-0 md:h-auto md:flex-1"
     >
       <div
         className="flex h-full flex-col"

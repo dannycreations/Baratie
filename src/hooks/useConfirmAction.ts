@@ -15,10 +15,10 @@ export function useConfirmAction(callback: () => void, timeout: number): Confirm
   }, []);
 
   useControlTimer({
-    state: isConfirm,
     callback: handleConfirm,
     duration: timeout,
     reset: isConfirm,
+    state: isConfirm,
   });
 
   const trigger = useCallback(() => {

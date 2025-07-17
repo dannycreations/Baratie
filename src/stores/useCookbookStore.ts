@@ -2,19 +2,19 @@ import { create } from 'zustand';
 
 import type { RecipeBookItem } from '../core/IngredientRegistry';
 
-type OpenModalArgs = {
+interface OpenModalArgs {
   readonly mode: 'load' | 'save';
   readonly name: string;
-};
+}
 
 interface CookbookState {
+  readonly closeModal: () => void;
   readonly isModalOpen: boolean;
-  readonly nameInput: string;
   readonly modalMode: 'load' | 'save' | null;
+  readonly nameInput: string;
+  readonly openModal: (args: Readonly<OpenModalArgs>) => void;
   readonly query: string;
   readonly recipes: readonly RecipeBookItem[];
-  readonly closeModal: () => void;
-  readonly openModal: (args: OpenModalArgs) => void;
   readonly resetModal: () => void;
   readonly setName: (name: string) => void;
   readonly setQuery: (term: string) => void;
@@ -23,8 +23,8 @@ interface CookbookState {
 
 export const useCookbookStore = create<CookbookState>()((set) => ({
   isModalOpen: false,
-  nameInput: '',
   modalMode: null,
+  nameInput: '',
   query: '',
   recipes: [],
 
@@ -35,8 +35,8 @@ export const useCookbookStore = create<CookbookState>()((set) => ({
   openModal(args) {
     set({
       isModalOpen: true,
-      nameInput: args.name,
       modalMode: args.mode,
+      nameInput: args.name,
       query: '',
     });
   },

@@ -3,8 +3,8 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 interface AppState {
   readonly isInitialized: boolean;
-  readonly loadingMessage: string;
   readonly loadingHasError: boolean;
+  readonly loadingMessage: string;
   readonly setInitialized: (isReady: boolean) => void;
   readonly setLoadingMessage: (message: string, hasError?: boolean) => void;
 }
@@ -12,14 +12,14 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   subscribeWithSelector((set) => ({
     isInitialized: false,
-    loadingMessage: 'Firing up the galley...',
     loadingHasError: false,
+    loadingMessage: 'Firing up the galley...',
 
-    setInitialized(isReady: boolean): void {
+    setInitialized(isReady) {
       set({ isInitialized: isReady });
     },
 
-    setLoadingMessage(message: string, hasError = false): void {
+    setLoadingMessage(message, hasError = false) {
       set({ loadingMessage: message, loadingHasError: hasError });
     },
   })),

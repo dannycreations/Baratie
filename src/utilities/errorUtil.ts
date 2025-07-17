@@ -7,8 +7,12 @@ export function createErrorObject(error: Error): Record<string, unknown> {
     name: error.name,
   };
   if (error instanceof AppError) {
-    if (error.context) errorObject.context = error.context;
-    if (error.userMessage) errorObject.userMessage = error.userMessage;
+    if (error.context) {
+      errorObject.context = error.context;
+    }
+    if (error.userMessage) {
+      errorObject.userMessage = error.userMessage;
+    }
   }
   if ('cause' in error && error.cause) {
     const cause = error.cause;

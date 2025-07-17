@@ -8,7 +8,7 @@ function loadFilters(key: string, forCategories: boolean): symbol[] {
     return [];
   }
 
-  const validatedItems = storedItems.filter((item) => typeof item === 'string');
+  const validatedItems = storedItems.filter((item): item is string => typeof item === 'string');
 
   if (forCategories) {
     const allCategorySymbols = new Map<string, symbol>();
@@ -18,10 +18,9 @@ function loadFilters(key: string, forCategories: boolean): symbol[] {
         allCategorySymbols.set(description, ingredient.category);
       }
     }
-    return validatedItems.map((item) => allCategorySymbols.get(item)).filter((s) => !!s);
+    return validatedItems.map((item) => allCategorySymbols.get(item)).filter((s): s is symbol => !!s);
   }
-
-  return validatedItems.map((item) => ingredientRegistry.getSymbolFromString(item)).filter((s) => !!s);
+  return validatedItems.map((item) => ingredientRegistry.getSymbolFromString(item)).filter((s): s is symbol => !!s);
 }
 
 export function initFilters(): void {

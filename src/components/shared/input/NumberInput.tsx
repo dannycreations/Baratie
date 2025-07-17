@@ -5,7 +5,6 @@ import { StringInput } from './StringInput';
 import type { ChangeEventHandler, InputHTMLAttributes, JSX } from 'react';
 
 interface NumberInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'type'> {
-  readonly ariaLabel?: string;
   readonly className?: string;
   readonly id: string;
   readonly max?: number;

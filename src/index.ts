@@ -59,7 +59,6 @@ const BARATIE_API = {
   ingredient: ingredientRegistry,
   helpers: {
     cookbook: {
-      upsert: upsertRecipe,
       close: closeCookbook,
       delete: deleteRecipe,
       exportAll,
@@ -72,6 +71,7 @@ const BARATIE_API = {
       saveAll: saveAllRecipes,
       setName: setRecipeName,
       setQuery,
+      upsert: upsertRecipe,
     },
     extension: {
       add: addExtension,
@@ -86,9 +86,9 @@ const BARATIE_API = {
       readAsText,
     },
     notification: {
-      show: showNotification,
-      remove: removeNotification,
       clear: clearNotifications,
+      remove: removeNotification,
+      show: showNotification,
     },
     recipe: {
       add: addIngredient,
@@ -124,6 +124,7 @@ export type {
 export { create, React, ReactDOM, subscribeWithSelector };
 
 declare global {
+  // eslint-disable-next-line no-var
   var Baratie: BaratieApi;
 }
 

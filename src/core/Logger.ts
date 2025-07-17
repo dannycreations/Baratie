@@ -17,20 +17,8 @@ export class Logger {
     this.level = level;
   }
 
-  public trace(message?: unknown, ...args: unknown[]): void {
-    this.log(LogLevel.TRACE, message, ...args);
-  }
-
   public debug(message?: unknown, ...args: unknown[]): void {
     this.log(LogLevel.DEBUG, message, ...args);
-  }
-
-  public info(message?: unknown, ...args: unknown[]): void {
-    this.log(LogLevel.INFO, message, ...args);
-  }
-
-  public warn(message?: unknown, ...args: unknown[]): void {
-    this.log(LogLevel.WARN, message, ...args);
   }
 
   public error(message?: unknown, ...args: unknown[]): void {
@@ -39,6 +27,18 @@ export class Logger {
 
   public fatal(message?: unknown, ...args: unknown[]): void {
     this.log(LogLevel.FATAL, message, ...args);
+  }
+
+  public info(message?: unknown, ...args: unknown[]): void {
+    this.log(LogLevel.INFO, message, ...args);
+  }
+
+  public trace(message?: unknown, ...args: unknown[]): void {
+    this.log(LogLevel.TRACE, message, ...args);
+  }
+
+  public warn(message?: unknown, ...args: unknown[]): void {
+    this.log(LogLevel.WARN, message, ...args);
   }
 
   private log(level: LogLevel, message?: unknown, ...args: unknown[]): void {

@@ -26,12 +26,10 @@ export function useFocusTrap({ elementRef, isActive }: FocusTrapProps): void {
     if (activeElement instanceof HTMLElement) {
       lastFocusedRef.current = activeElement;
     }
-
     element.focus();
 
     const focusableSel = element.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS);
     const focusableElements = Array.from(focusableSel).filter((el) => !!el.offsetParent);
-
     if (focusableElements.length === 0) {
       return;
     }
@@ -43,7 +41,6 @@ export function useFocusTrap({ elementRef, isActive }: FocusTrapProps): void {
       if (event.key !== 'Tab') {
         return;
       }
-
       if (event.shiftKey) {
         if (document.activeElement === firstElement && lastElement instanceof HTMLElement) {
           lastElement.focus();
@@ -58,7 +55,6 @@ export function useFocusTrap({ elementRef, isActive }: FocusTrapProps): void {
     };
 
     element.addEventListener('keydown', trapFocus);
-
     return () => {
       element.removeEventListener('keydown', trapFocus);
       if (lastFocusedRef.current && document.body.contains(lastFocusedRef.current)) {

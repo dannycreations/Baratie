@@ -8,22 +8,22 @@ import { ErrorView } from '../shared/View';
 
 import type { ErrorInfo, JSX, ReactNode } from 'react';
 
+const ERROR_DESCRIPTION_ID = 'error-dialog-description';
+
 interface ErrorBoundaryProps {
   readonly children: ReactNode;
 }
 
 interface ErrorBoundaryState {
-  hasError: boolean;
-  error: Error | null;
-  errorInfo: ErrorInfo | null;
+  readonly hasError: boolean;
+  readonly error: Error | null;
+  readonly errorInfo: ErrorInfo | null;
 }
 
 interface ErrorDisplayProps {
   readonly error: Error | null;
   readonly errorInfo: ErrorInfo | null;
 }
-
-const ERROR_DESCRIPTION_ID = 'error-dialog-description';
 
 function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);
@@ -46,10 +46,10 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
         <Button
           aria-label="Reload the application to try again"
           icon={<RefreshCwIcon size={20} />}
-          onClick={() => window.location.reload()}
           size="md"
           title="Batten Down the Hatches!"
           variant="primary"
+          onClick={() => window.location.reload()}
         >
           Batten Down the Hatches!
         </Button>

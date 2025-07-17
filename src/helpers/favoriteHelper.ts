@@ -10,14 +10,10 @@ export function initFavorites(): void {
     if (Array.isArray(parsedFavorites)) {
       favorites = parsedFavorites
         .map((item) => (typeof item === 'string' ? ingredientRegistry.getSymbolFromString(item) : undefined))
-        .filter((s) => !!s);
+        .filter((s): s is symbol => !!s);
     } else {
       errorHandler.handle(
-        new AppError(
-          'Corrupted favorites data (not an array) found in localStorage.',
-          'Favorites Storage',
-          'Your favorites data were corrupted and have been reset.',
-        ),
+        new AppError('Corrupted favorites data in storage.', 'Favorites Storage', 'Your favorites data were corrupted and have been reset.'),
       );
     }
   }

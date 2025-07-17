@@ -24,13 +24,13 @@ const PalettePreview = memo<PalettePreviewProps>(({ theme }): JSX.Element => {
   ];
 
   return (
-    <div className="flex items-center space-x-1.5" aria-label="Theme color palette preview">
+    <div aria-label="Theme color palette preview" className="flex items-center space-x-1.5">
       {swatchColors.map(({ color, title }, index) => (
         <div
           key={`${title}-${index}`}
+          aria-label={title}
           className={`h-4 w-4 rounded-full border border-${theme.borderPrimary} bg-${color}`}
           title={title}
-          aria-label={title}
         />
       ))}
     </div>
@@ -62,7 +62,7 @@ export const AppearanceTab = memo((): JSX.Element => {
           const isChecked = id === item.id;
           const leftContent = (
             <div className="flex flex-col justify-center gap-1">
-              <span className={`font-medium text-sm ${isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`}`}>{item.name}</span>
+              <span className={`text-sm font-medium ${isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`}`}>{item.name}</span>
               <PalettePreview theme={item.theme} />
             </div>
           );
@@ -73,10 +73,10 @@ export const AppearanceTab = memo((): JSX.Element => {
             </div>
           ) : null;
 
-          const itemLayoutClass = `h-16 rounded-md p-3 border-2 transition-all duration-150 ${
+          const itemLayoutClass = `h-16 rounded-md border-2 p-3 transition-all duration-150 ${
             isChecked
               ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
-              : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:bg-${theme.surfaceMuted} hover:border-${theme.borderSecondary}`
+              : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`
           }`;
 
           const liClass = `list-none cursor-pointer rounded-md outline-none focus:ring-2 focus:ring-${theme.ring}`;
@@ -86,8 +86,8 @@ export const AppearanceTab = memo((): JSX.Element => {
               key={item.id}
               role="radio"
               aria-checked={isChecked}
-              tabIndex={0}
               className={liClass}
+              tabIndex={0}
               onClick={() => handleSelectTheme(item.id)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {

@@ -137,13 +137,13 @@ export const CookbookPanel = memo((): JSX.Element | null => {
     ) : (
       <CookbookLoad
         importRef={importRef}
+        query={query}
         recipes={filtered}
+        totalRecipes={recipes.length}
         onDelete={deleteRecipe}
         onImport={handleFileImport}
         onLoad={handleLoad}
         onQueryChange={setQuery}
-        totalRecipes={recipes.length}
-        query={query}
       />
     );
 
@@ -152,11 +152,11 @@ export const CookbookPanel = memo((): JSX.Element | null => {
       contentClasses="max-h-[80vh]"
       headerActions={headerActions}
       isOpen={isModalOpen}
-      onClose={closeModal}
-      onExited={resetModal}
       size="lg"
       title={title}
       titleId="cookbook-modal-title"
+      onClose={closeModal}
+      onExited={resetModal}
     >
       {bodyContent}
     </Modal>

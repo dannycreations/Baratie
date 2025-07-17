@@ -55,7 +55,7 @@ export const IngredientList = memo(
       errorHandler.assert(ingredientIdString, `Could not get string from symbol for ingredient: ${ingredientName}`, 'Render Ingredient');
 
       const isDisabled = isItemDisabled?.(item) ?? false;
-      const nameClass = `cursor-default truncate pr-2 text-sm transition-colors duration-150 ${
+      const nameClass = `truncate pr-2 text-sm transition-colors duration-150 cursor-default ${
         isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`
       } group-hover:text-${theme.infoFg}`;
 
@@ -120,11 +120,11 @@ export const IngredientList = memo(
                 <div
                   id={panelId}
                   role="region"
+                  aria-hidden={!isExpanded}
                   aria-labelledby={buttonId}
                   className={`max-h-64 overflow-y-auto bg-${theme.surfaceMuted} p-3`}
-                  aria-hidden={!isExpanded}
                 >
-                  <ul className="space-y-1.5" aria-labelledby={buttonId}>
+                  <ul aria-labelledby={buttonId} className="space-y-1.5">
                     {items.map((item) => renderListItem(item))}
                   </ul>
                 </div>

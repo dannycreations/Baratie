@@ -39,7 +39,6 @@ export const Tooltip = memo<TooltipProps>(
     const { activeId, setActiveId } = useTooltipStore();
     const theme = useThemeStore((state) => state.theme);
     const [style, setStyle] = useState<TooltipPositionStyle>(INITIAL_TOOLTIP_STYLE);
-
     const timeoutRef = useRef<number | null>(null);
     const triggerRef = useRef<HTMLDivElement>(null);
     const tooltipRef = useRef<HTMLDivElement>(null);
@@ -59,7 +58,6 @@ export const Tooltip = memo<TooltipProps>(
         return;
       }
       clearTimer();
-
       timeoutRef.current = window.setTimeout(() => {
         setActiveId(tooltipId);
       }, delay);
@@ -71,6 +69,16 @@ export const Tooltip = memo<TooltipProps>(
         setActiveId(null);
       }
     }, [clearTimer, activeId, tooltipId, setActiveId]);
+
+    const tooltipArrows: Readonly<Record<TooltipPosition, string>> = useMemo(
+      () => ({
+        bottom: `absolute bottom-full h-0 w-0 border-x-transparent border-t-transparent border-b-${theme.backdrop}`,
+        left: `absolute left-full h-0 w-0 border-y-transparent border-r-transparent border-l-${theme.backdrop}`,
+        right: `absolute right-full h-0 w-0 border-y-transparent border-l-transparent border-r-${theme.backdrop}`,
+        top: `absolute top-full h-0 w-0 border-x-transparent border-b-transparent border-t-${theme.backdrop}`,
+      }),
+      [theme.backdrop],
+    );
 
     useEffect(() => {
       return clearTimer;
@@ -93,7 +101,6 @@ export const Tooltip = memo<TooltipProps>(
     useLayoutEffect(() => {
       const calculatePosition = () => {
         if (!isVisible || !triggerRef.current || !tooltipRef.current) return;
-
         const triggerRect = triggerRef.current.getBoundingClientRect();
         const tooltipRect = tooltipRef.current.getBoundingClientRect();
         const viewportWidth = window.innerWidth;
@@ -152,12 +159,10 @@ export const Tooltip = memo<TooltipProps>(
           isPositioned: true,
         });
       };
-
       if (isVisible) {
         const animationFrameId = requestAnimationFrame(calculatePosition);
         window.addEventListener('resize', calculatePosition);
         window.addEventListener('scroll', calculatePosition, true);
-
         return () => {
           cancelAnimationFrame(animationFrameId);
           window.removeEventListener('resize', calculatePosition);
@@ -166,21 +171,11 @@ export const Tooltip = memo<TooltipProps>(
       }
     }, [isVisible, position, content]);
 
-    const tooltipArrows: Readonly<Record<TooltipPosition, string>> = useMemo(
-      () => ({
-        bottom: `absolute bottom-full h-0 w-0 border-x-transparent border-t-transparent border-b-${theme.backdrop}`,
-        left: `absolute left-full h-0 w-0 border-y-transparent border-r-transparent border-l-${theme.backdrop}`,
-        right: `absolute right-full h-0 w-0 border-y-transparent border-l-transparent border-r-${theme.backdrop}`,
-        top: `absolute top-full h-0 w-0 border-x-transparent border-b-transparent border-t-${theme.backdrop}`,
-      }),
-      [theme.backdrop],
-    );
     const arrowClass = tooltipArrows[position] || tooltipArrows.top;
     const visibilityClass = isVisible && style.isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
     const tooltipClass =
-      `z-[1000] max-w-xs rounded-md bg-${theme.backdrop} px-3 py-1.5 text-sm text-${theme.accentFg} font-medium shadow-lg transition-opacity duration-150 whitespace-pre-line ${visibilityClass} ${tooltipClasses}`.trim();
+      `z-[1000] max-w-xs rounded-md bg-${theme.backdrop} px-3 py-1.5 text-sm font-medium text-${theme.accentFg} whitespace-pre-line shadow-lg transition-opacity duration-150 ${visibilityClass} ${tooltipClasses}`.trim();
     const triggerClass = `relative inline-flex ${className}`.trim();
-
     const triggerElement = (
       <div
         ref={triggerRef}

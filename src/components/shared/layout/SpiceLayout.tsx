@@ -134,7 +134,7 @@ export const SpiceLayout = memo<SpiceLayoutProps>(({ ingredientDefinition, curre
   }
 
   return (
-    <form aria-label={`Options for ${ingredientDefinition.name.description}`} className={finalContainerClass} onSubmit={handleSubmit} role="form">
+    <form role="form" aria-label={`Options for ${ingredientDefinition.name.description}`} className={finalContainerClass} onSubmit={handleSubmit}>
       {visibleSpices.map((spice) => {
         const rawValue = currentSpices[spice.id];
         return <SpiceRenderer key={spice.id} spice={spice} value={rawValue} onSpiceChange={onSpiceChange} />;

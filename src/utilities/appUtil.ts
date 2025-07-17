@@ -8,6 +8,10 @@ export function base64ToUint8Array(base64: string): Uint8Array {
   return bytes;
 }
 
+export function isObjectLike(value?: unknown): value is object {
+  return typeof value === 'object' && value !== null;
+}
+
 export function uint8ArrayToBase64(bytes: Uint8Array): string {
   let binary = '';
   const len = bytes.byteLength;
@@ -15,8 +19,4 @@ export function uint8ArrayToBase64(bytes: Uint8Array): string {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
-}
-
-export function isObjectLike(value?: unknown): value is object {
-  return typeof value === 'object' && value !== null;
 }

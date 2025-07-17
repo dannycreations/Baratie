@@ -24,7 +24,7 @@ export const useThemeStore = create<ThemeState>()(
 
     try {
       const themeName = storage.get(STORAGE_THEME, 'Theme');
-      const themeConfig = APP_THEMES.find((theme) => theme.id === themeName);
+      const themeConfig = APP_THEMES.find((t) => t.id === themeName);
       if (themeConfig) {
         id = themeConfig.id;
         theme = themeConfig.theme;
@@ -36,12 +36,19 @@ export const useThemeStore = create<ThemeState>()(
     return {
       id,
       theme,
-      setTheme(id: ThemeId) {
-        const newTheme = APP_THEMES.find((theme) => theme.id === id)?.theme;
-        set({ theme: newTheme || DEFAULT_THEME.theme, id });
+      setTheme(newId) {
+        const newTheme = APP_THEMES.find((t) => t.id === newId)?.theme;
+        set({ theme: newTheme || DEFAULT_THEME.theme, id: newId });
       },
     };
   }),
+);
+
+useThemeStore.subscribe(
+  (state) => state.id,
+  (themeName) => {
+    storage.set(STORAGE_THEME, themeName, 'Theme Preference');
+  },
 );
 
 useThemeStore.subscribe(
@@ -63,11 +70,4 @@ useThemeStore.subscribe(
     body.classList.add(`bg-${theme.surfacePrimary}`, `text-${theme.contentPrimary}`);
   },
   { fireImmediately: true },
-);
-
-useThemeStore.subscribe(
-  (state) => state.id,
-  (themeName) => {
-    storage.set(STORAGE_THEME, themeName, 'Theme Preference');
-  },
 );

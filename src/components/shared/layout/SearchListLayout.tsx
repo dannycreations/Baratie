@@ -46,8 +46,8 @@ export const SearchListLayout = memo<SearchListLayoutProps>((props): JSX.Element
         <div className={props.searchWrapperClasses}>
           <SearchInput
             id={props.searchId}
-            ariaControls={listId}
-            ariaLabel={props.searchAriaLabel}
+            aria-controls={listId}
+            aria-label={props.searchAriaLabel}
             className={props.searchClasses}
             placeholder={props.searchPlaceholder}
             query={props.query}
@@ -58,10 +58,10 @@ export const SearchListLayout = memo<SearchListLayoutProps>((props): JSX.Element
       <div
         ref={listScrollRef}
         id={listId}
-        className={listWrapperClasses}
         role="region"
         aria-live={props.showSearch !== false ? 'polite' : undefined}
         aria-relevant={props.showSearch !== false ? 'all' : undefined}
+        className={listWrapperClasses}
       >
         {listContent}
       </div>

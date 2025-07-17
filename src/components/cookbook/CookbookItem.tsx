@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react';
 
-import { CONFIRM_TIMEOUT_MS } from '../../app/constants';
+import { CONFIRM_SHOW_MS } from '../../app/constants';
 import { getConfirmClasses } from '../../helpers/styleHelper';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -35,7 +35,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
     onDelete(recipe.id);
   }, [onDelete, recipe.id]);
 
-  const { isConfirm: isDeleting, trigger: handleDeleting } = useConfirmAction(handleConfirmDelete, CONFIRM_TIMEOUT_MS);
+  const { isConfirm: isDeleting, trigger: triggerDelete } = useConfirmAction(handleConfirmDelete, CONFIRM_SHOW_MS);
 
   const handleLoad = useCallback(() => {
     onLoad(recipe.id);
@@ -52,7 +52,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
         leftContent={
           <>
             <Tooltip content={recipe.name} position="top">
-              <p className={`cursor-default truncate text-sm font-medium text-${theme.contentPrimary}`}>{recipe.name}</p>
+              <p className={`truncate text-sm font-medium text-${theme.contentPrimary} cursor-default`}>{recipe.name}</p>
             </Tooltip>
             <p className={`text-xs text-${theme.contentTertiary}`}>
               Last Updated: {formatTimestamp(recipe.updatedAt)} ({recipe.ingredients.length} steps)
@@ -77,7 +77,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
               aria-label={deleteLabel}
               className={deleteClass}
               icon={isDeleting ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
-              onClick={handleDeleting}
+              onClick={triggerDelete}
               size="sm"
               tooltipContent={deleteTip}
               tooltipPosition="left"

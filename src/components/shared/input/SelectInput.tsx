@@ -7,7 +7,6 @@ import type { ChangeEventHandler, JSX, SelectHTMLAttributes } from 'react';
 import type { SpiceValue } from '../../../core/IngredientRegistry';
 
 interface SelectInputProps<T extends SpiceValue> extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'value'> {
-  readonly ariaLabel?: string;
   readonly className?: string;
   readonly id: string;
   readonly options: readonly { readonly label: string; readonly value: T }[];
@@ -16,16 +15,7 @@ interface SelectInputProps<T extends SpiceValue> extends Omit<SelectHTMLAttribut
 }
 
 export const SelectInput = memo(
-  <T extends SpiceValue>({
-    id,
-    value,
-    onChange,
-    options,
-    className = '',
-    disabled = false,
-    ariaLabel,
-    ...rest
-  }: SelectInputProps<T>): JSX.Element => {
+  <T extends SpiceValue>({ id, value, onChange, options, className = '', disabled = false, ...rest }: SelectInputProps<T>): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
     const handleChange = useCallback<ChangeEventHandler<HTMLSelectElement>>(
@@ -39,12 +29,12 @@ export const SelectInput = memo(
       [options, onChange],
     );
 
-    const selectInputStyle = `w-full appearance-none rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} py-2 pl-2 pr-8 text-${theme.contentPrimary} transition-colors duration-150 placeholder:text-${theme.contentTertiary} hover:bg-${theme.surfaceHover} outline-none focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50`;
+    const selectInputStyle = `w-full appearance-none rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} py-2 pl-2 pr-8 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} outline-none transition-colors duration-150 hover:bg-${theme.surfaceHover} focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50`;
     const finalClass = `${selectInputStyle} ${className}`.trim();
 
     return (
       <div className="relative w-full">
-        <select id={id} value={String(value)} className={finalClass} disabled={disabled} onChange={handleChange} aria-label={ariaLabel} {...rest}>
+        <select id={id} value={String(value)} className={finalClass} disabled={disabled} onChange={handleChange} {...rest}>
           {options.map((option) => (
             <option key={String(option.value)} value={String(option.value)} className={`bg-${theme.surfaceSecondary} text-${theme.contentSecondary}`}>
               {option.label}

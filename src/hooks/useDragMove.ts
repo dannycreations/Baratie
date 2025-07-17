@@ -27,7 +27,6 @@ export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
     } else {
       document.body.classList.remove('grabbing');
     }
-
     return () => {
       document.body.classList.remove('grabbing');
     };
@@ -37,7 +36,6 @@ export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
     (event: DragEvent<HTMLElement>, itemId: string) => {
       setDraggedItemId(itemId);
       event.dataTransfer.effectAllowed = 'move';
-
       errorHandler.attempt(
         () => {
           event.dataTransfer.setData('text/plain', itemId);
@@ -49,7 +47,6 @@ export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
           shouldNotify: false,
         },
       );
-
       if (event.currentTarget) {
         event.currentTarget.setAttribute('aria-grabbed', 'true');
       }

@@ -17,7 +17,7 @@ export interface CreateIconOptions<P extends IconProps = IconProps> {
   readonly defaultProps?: Partial<SVGProps<SVGSVGElement>> | ((props: P) => Partial<SVGProps<SVGSVGElement>>);
 }
 
-export function createIcon<P extends IconProps = IconProps>({ iconName, defaultProps = {}, path }: CreateIconOptions<P>) {
+export function createIcon<P extends IconProps = IconProps>({ iconName, defaultProps = {}, path }: Readonly<CreateIconOptions<P>>) {
   const componentName = iconName
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
@@ -246,7 +246,7 @@ export const SettingsIcon = createIcon({
 export const StarIcon = createIcon<StarIconProps>({
   iconName: 'star',
   path: <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />,
-  defaultProps: ({ isFilled = false }: StarIconProps) => ({
+  defaultProps: ({ isFilled = false }: Readonly<StarIconProps>) => ({
     fill: isFilled ? 'currentColor' : 'none',
     strokeWidth: isFilled ? 0 : 2,
   }),

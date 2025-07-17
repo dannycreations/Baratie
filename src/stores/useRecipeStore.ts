@@ -9,14 +9,18 @@ import type { Ingredient } from '../core/IngredientRegistry';
 interface RecipeState {
   readonly activeRecipeId: string | null;
   readonly ingredients: readonly Ingredient[];
-  readonly setRecipe: (ingredients: readonly Ingredient[], activeRecipeId: string | null) => void;
   readonly setActiveRecipeId: (id: string | null) => void;
+  readonly setRecipe: (ingredients: readonly Ingredient[], activeRecipeId: string | null) => void;
 }
 
 export const useRecipeStore = create<RecipeState>()(
   subscribeWithSelector((set) => ({
     activeRecipeId: null,
     ingredients: [],
+
+    setActiveRecipeId(id) {
+      set({ activeRecipeId: id });
+    },
 
     setRecipe(ingredients, activeRecipeId = null) {
       const validIngredients = ingredients.map((ingredient) => {
@@ -33,10 +37,6 @@ export const useRecipeStore = create<RecipeState>()(
 
       const newActiveRecipeId = validIngredients.length > 0 ? activeRecipeId : null;
       set({ activeRecipeId: newActiveRecipeId, ingredients: validIngredients });
-    },
-
-    setActiveRecipeId(id) {
-      set({ activeRecipeId: id });
     },
   })),
 );

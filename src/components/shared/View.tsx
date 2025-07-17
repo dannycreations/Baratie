@@ -30,7 +30,7 @@ function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
 export const EmptyView = memo<EmptyViewProps>(
   ({ children, className = 'flex grow flex-col items-center justify-center p-4', textClasses, icon, title }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
-    const titleClass = `mb-1 text-lg font-semibold text-center text-${theme.contentSecondary}`;
+    const titleClass = `mb-1 text-center text-lg font-semibold text-${theme.contentSecondary}`;
     const textClass = textClasses ?? `break-all text-center text-sm text-${theme.contentTertiary}`;
 
     return (
@@ -57,7 +57,7 @@ export const ErrorView = memo<ErrorViewProps>(({ error, errorInfo }): JSX.Elemen
 
   const detailsClass = `mt-6 max-h-48 overflow-y-auto rounded-md bg-${theme.surfaceTertiary} p-3 text-left text-xs`;
   const summaryClass = `cursor-pointer font-medium text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`;
-  const preClass = `mt-2 whitespace-pre-wrap text-${theme.contentSecondary} allow-text-selection`;
+  const preClass = `mt-2 whitespace-pre-wrap allow-text-selection text-${theme.contentSecondary}`;
 
   return (
     <details ref={detailsElementRef} className={detailsClass}>

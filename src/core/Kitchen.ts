@@ -49,21 +49,19 @@ export class Kitchen {
   private timeoutId: number | null = null;
   private intervalMs = 0;
 
-  public toggleAutoCook = (): void => {
-    const wasEnabled = useKitchenStore.getState().isAutoCookEnabled;
-    useKitchenStore.getState().toggleAutoCookState();
-
-    if (!wasEnabled) {
-      this.triggerCook();
-    } else {
-      if (this.timeoutId) {
-        clearTimeout(this.timeoutId);
-        this.timeoutId = null;
-        logger.info('Auto-cook disabled, pending scheduled cook cancelled.');
+  public initAutoCook(): () => void {
+    const handleStateChange = () => {
+      if (useKitchenStore.getState().isAutoCookEnabled) {
+        this.triggerCook();
       }
-      this.hasPendingCook = false;
-    }
-  };
+    };
+    const unsubscribeKitchen = useKitchenStore.subscribe((state) => state.inputData, handleStateChange);
+    const unsubscribeRecipe = useRecipeStore.subscribe((state) => state.ingredients, handleStateChange);
+    return () => {
+      unsubscribeKitchen();
+      unsubscribeRecipe();
+    };
+  }
 
   public async cook(): Promise<void> {
     if (this.isCooking) {
@@ -84,14 +82,13 @@ export class Kitchen {
 
       const { inputData } = useKitchenStore.getState();
       const recipe = useRecipeStore.getState().ingredients;
-
       const hasIntervalSetter = recipe.some((ing) => ing.name === KEY_REPEAT_STEP);
+
       if (!hasIntervalSetter && this.intervalMs > 0) {
         this.setCookingInterval(0);
       }
 
       const result = await this.cookRecipe(recipe, inputData);
-
       useKitchenStore.getState().setCookingResult(result);
       this.scheduleNextCook();
     } catch (error) {
@@ -110,7 +107,6 @@ export class Kitchen {
     if (newMs !== this.intervalMs) {
       this.intervalMs = newMs;
       logger.info(`Cooking interval set to ${this.intervalMs}ms.`);
-
       if (!this.isCooking) {
         this.scheduleNextCook();
       }
@@ -121,19 +117,20 @@ export class Kitchen {
     useKitchenStore.getState().setInputData(data);
   }
 
-  public initAutoCook(): () => void {
-    const handleStateChange = () => {
-      if (useKitchenStore.getState().isAutoCookEnabled) {
-        this.triggerCook();
+  public toggleAutoCook = (): void => {
+    const wasEnabled = useKitchenStore.getState().isAutoCookEnabled;
+    useKitchenStore.getState().toggleAutoCookState();
+    if (!wasEnabled) {
+      this.triggerCook();
+    } else {
+      if (this.timeoutId) {
+        clearTimeout(this.timeoutId);
+        this.timeoutId = null;
+        logger.info('Auto-cook disabled, pending scheduled cook cancelled.');
       }
-    };
-    const unsubscribeKitchen = useKitchenStore.subscribe((state) => state.inputData, handleStateChange);
-    const unsubscribeRecipe = useRecipeStore.subscribe((state) => state.ingredients, handleStateChange);
-    return () => {
-      unsubscribeKitchen();
-      unsubscribeRecipe();
-    };
-  }
+      this.hasPendingCook = false;
+    }
+  };
 
   private async cookRecipe(recipe: readonly Ingredient[], initialInput: string): Promise<RecipeCookResult> {
     if (recipe.length === 0) {
@@ -191,7 +188,6 @@ export class Kitchen {
       }
 
       const result = await this.runIngredient(ingredient, definition, state.cookedData, recipe, index, initialInput);
-
       state.cookedData = result.nextData;
       state.localStatuses[ingredient.id] = result.status;
 
@@ -232,7 +228,6 @@ export class Kitchen {
     if (error) {
       return { hasError: true, nextData: `Error: ${error.message}`, status: 'error' };
     }
-
     if (result === null) {
       logger.info(`Ingredient '${ingredient.name.description}' was skipped (returned null).`);
       return { hasError: false, nextData: currentData, status: 'warning' };
@@ -241,13 +236,9 @@ export class Kitchen {
     const isPanelControlSignal = 'output' in result;
     const output = isPanelControlSignal ? result.output : result;
     const panelInstruction = isPanelControlSignal ? result.panelControl : undefined;
-
-    if (!(output instanceof InputType)) {
-      errorHandler.assert(false, `Ingredient '${ingredient.name.description}' returned an invalid result type.`);
-    }
+    errorHandler.assert(output instanceof InputType, `Ingredient '${ingredient.name.description}' returned an invalid result type.`);
 
     const nextData = output.cast('string').getValue();
-
     let inputPanelIngId: string | null = null;
     if (panelInstruction?.panelType === 'input' && panelInstruction.config.mode === 'spiceEditor') {
       inputPanelIngId = panelInstruction.config.targetIngredientId;
@@ -261,7 +252,6 @@ export class Kitchen {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
     }
-
     if (this.intervalMs > 0 && useKitchenStore.getState().isAutoCookEnabled) {
       this.timeoutId = window.setTimeout(() => {
         this.triggerCook();

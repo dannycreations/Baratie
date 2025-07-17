@@ -113,7 +113,7 @@ export const RecipeItem = memo<RecipeItemProps>(
 
     const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
     const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
-    const itemClass = `group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm transition-all duration-200 ease-in-out outline-none ${
+    const itemClass = `group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm outline-none transition-all duration-200 ease-in-out ${
       isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'
     } ${statusBorderClass} ${hasSpices && isEditorVisible ? 'pb-1' : ''}`.trim();
 
@@ -127,7 +127,7 @@ export const RecipeItem = memo<RecipeItemProps>(
           </span>
         </Tooltip>
         <Tooltip content={definition.name.description} position="top">
-          <span className={`cursor-default truncate pr-2 font-medium text-${theme.contentPrimary}`}>{ingredient.name.description}</span>
+          <span className={`truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default`}>{ingredient.name.description}</span>
         </Tooltip>
       </>
     );
@@ -141,22 +141,22 @@ export const RecipeItem = memo<RecipeItemProps>(
             aria-label={settingsTooltip}
             className={isEditorVisible ? '' : `text-${theme.contentTertiary} hover:text-${theme.infoFg}`}
             icon={<PreferencesIcon size={18} />}
-            onClick={handleEditToggle}
             size="sm"
             tooltipContent={settingsTooltip}
             tooltipPosition="top"
             variant={isEditorVisible ? 'primary' : 'stealth'}
+            onClick={handleEditToggle}
           />
         )}
         <TooltipButton
           aria-label={`Remove ingredient "${ingredient.name.description}" from recipe`}
-          className="opacity-50 hover:!opacity-100 group-hover:opacity-100"
+          className="opacity-50 group-hover:opacity-100 hover:!opacity-100"
           icon={<XIcon size={18} />}
-          onClick={handleRemove}
           size="sm"
           tooltipContent="Remove Ingredient"
           tooltipPosition="top"
           variant="danger"
+          onClick={handleRemove}
         />
       </>
     );
@@ -166,11 +166,11 @@ export const RecipeItem = memo<RecipeItemProps>(
         role="listitem"
         aria-label={ariaLabel}
         className={itemClass}
+        tabIndex={canToggleEditor ? 0 : -1}
         onDoubleClick={handleDoubleClick}
         onDragEnter={handleDragEnter}
         onDragOver={onDragOver}
         onKeyDown={handleKeyDown}
-        tabIndex={canToggleEditor ? 0 : -1}
       >
         <ItemListLayout
           className="h-12 cursor-default p-3"

@@ -6,7 +6,6 @@ import type { Ingredient, SpiceDefinition, SpiceValue } from '../core/Ingredient
 
 export function addIngredient(type: symbol, initialSpices?: Readonly<Record<string, unknown>>): void {
   const { ingredients, activeRecipeId, setRecipe } = useRecipeStore.getState();
-
   const ingredientDefinition = ingredientRegistry.getIngredient(type);
   errorHandler.assert(ingredientDefinition, `Ingredient definition not found for type: ${String(type)}`, 'Recipe Add Ingredient', {
     genericMessage: `Ingredient "${String(type)}" could not be added because its definition is missing.`,
@@ -45,11 +44,9 @@ export function reorderIngredients(draggedId: string, targetId: string): void {
   const currentRecipe = [...ingredients];
   const draggedIndex = currentRecipe.findIndex((ingredient) => ingredient.id === draggedId);
   const targetIndex = currentRecipe.findIndex((ingredient) => ingredient.id === targetId);
-
   if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) {
     return;
   }
-
   const [draggedItem] = currentRecipe.splice(draggedIndex, 1);
   currentRecipe.splice(targetIndex, 0, draggedItem);
   setRecipe(currentRecipe, activeRecipeId);
@@ -57,7 +54,6 @@ export function reorderIngredients(draggedId: string, targetId: string): void {
 
 export function setIngredientSpices(id: string, newSpices: Readonly<Record<string, unknown>>): void {
   const { ingredients, activeRecipeId, setRecipe } = useRecipeStore.getState();
-
   const ingredientToUpdate = ingredients.find((ingredient) => ingredient.id === id);
   errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${id}" not found for spice update.`, 'Recipe Update Spices');
 
@@ -68,7 +64,6 @@ export function setIngredientSpices(id: string, newSpices: Readonly<Record<strin
     );
     return;
   }
-
   const validatedSpices = validateSpices(ingredientDefinition, newSpices);
   const newIngredients = ingredients.map((ingredient) => (ingredient.id === id ? { ...ingredient, spices: validatedSpices } : ingredient));
   setRecipe(newIngredients, activeRecipeId);
@@ -80,7 +75,6 @@ export function setRecipe(ingredients: readonly Ingredient[], activeRecipeId: st
 
 export function updateSpice(id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>): void {
   const { ingredients, activeRecipeId, setRecipe } = useRecipeStore.getState();
-
   const ingredientToUpdate = ingredients.find((ingredient) => ingredient.id === id);
   errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${id}" not found for spice change.`, 'Recipe Change Spice');
 

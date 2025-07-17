@@ -117,10 +117,13 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
                   continue;
                 }
 
-                const output = 'output' in runResult ? runResult.output : runResult;
-                errorHandler.assert(output instanceof InputType, `Ingredient '${ingredient.name.description}' returned an invalid result type.`);
+                const outputResult = 'output' in runResult ? runResult.output : runResult;
+                errorHandler.assert(
+                  outputResult instanceof InputType,
+                  `Ingredient '${ingredient.name.description}' returned an invalid result type.`,
+                );
 
-                currentData = output.cast('string').getValue();
+                currentData = outputResult.cast('string').getValue();
               }
               return currentData;
             },

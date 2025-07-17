@@ -12,6 +12,7 @@ interface FavoriteState {
 export const useFavoriteStore = create<FavoriteState>()(
   subscribeWithSelector((set) => ({
     favorites: [],
+
     setFavorites(favorites) {
       set({ favorites });
     },
@@ -21,7 +22,7 @@ export const useFavoriteStore = create<FavoriteState>()(
 useFavoriteStore.subscribe(
   (state) => state.favorites,
   (favorites) => {
-    const favStrings = favorites.map((favorite) => ingredientRegistry.getStringFromSymbol(favorite)).filter((str) => !!str);
+    const favStrings = favorites.map((favorite) => ingredientRegistry.getStringFromSymbol(favorite)).filter((str): str is string => !!str);
     storage.set(STORAGE_FAVORITES, favStrings, 'Favorite Ingredients');
   },
 );

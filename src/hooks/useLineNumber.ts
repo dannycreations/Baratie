@@ -19,11 +19,9 @@ export function useLineNumber({ textAreaRef, logicalLines, showLineNumbers }: Li
       setLineNumbers([]);
       return;
     }
-
     const currentLines = linesRef.current;
     const styles = window.getComputedStyle(textarea);
     const font = styles.font;
-
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
     let charWidth = 8;
@@ -35,20 +33,17 @@ export function useLineNumber({ textAreaRef, logicalLines, showLineNumbers }: Li
       setLineNumbers(currentLines.map((_, i) => i + 1));
       return;
     }
-
     const xPadding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
     const contentWidth = textarea.clientWidth - xPadding;
     if (contentWidth <= 0) {
       setLineNumbers(currentLines.map((_, i) => i + 1));
       return;
     }
-
     const maxLineChars = Math.floor(contentWidth / charWidth);
     if (maxLineChars <= 0) {
       setLineNumbers(currentLines.map((_, i) => i + 1));
       return;
     }
-
     const visualLines = currentLines.map((line) => Math.max(1, Math.ceil(line.length / maxLineChars)));
     const lineSums: number[] = [];
     visualLines.reduce((accumulator, value) => {
@@ -56,13 +51,11 @@ export function useLineNumber({ textAreaRef, logicalLines, showLineNumbers }: Li
       lineSums.push(newTotal);
       return newTotal;
     }, 0);
-
     const totalLines = lineSums.length > 0 ? lineSums[lineSums.length - 1] : 0;
     if (totalLines === 0 && currentLines.length > 0) {
       setLineNumbers([1]);
       return;
     }
-
     const finalNumbers: (number | null)[] = [];
     let lastLineIndex = -1;
     for (let visualLineIndex = 1; visualLineIndex <= totalLines; visualLineIndex++) {
@@ -75,7 +68,7 @@ export function useLineNumber({ textAreaRef, logicalLines, showLineNumbers }: Li
       lastLineIndex = logicalLineIndex;
     }
     setLineNumbers(finalNumbers);
-  }, [showLineNumbers]);
+  }, [showLineNumbers, textAreaRef]);
 
   useLayoutEffect(() => {
     calculate();
@@ -86,12 +79,9 @@ export function useLineNumber({ textAreaRef, logicalLines, showLineNumbers }: Li
     if (!showLineNumbers || !textarea) {
       return;
     }
-
     document.fonts.ready.then(calculate).catch(() => calculate());
-
     const resizeObserver = new ResizeObserver(calculate);
     resizeObserver.observe(textarea);
-
     return () => {
       resizeObserver.disconnect();
     };

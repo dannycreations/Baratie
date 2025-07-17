@@ -16,6 +16,8 @@ import { APP_STYLES } from './styles';
 
 import type { JSX } from 'react';
 
+const APP_STYLES_ID = 'baratie-global-styles';
+
 export interface BaratieOptions {
   readonly disableIngredients?: boolean;
 }
@@ -44,13 +46,11 @@ function BaratieView(): JSX.Element {
           <IngredientPanel />
           <RecipePanel />
         </section>
-
         <section aria-label="Input and Output Panels" className="flex w-full flex-col gap-4 md:flex-1 md:overflow-hidden">
           <KitchenPanel type="input" />
           <KitchenPanel type="output" />
         </section>
       </main>
-
       <NotificationPanel />
       <CookbookPanel />
       <SettingPanel />
@@ -58,9 +58,7 @@ function BaratieView(): JSX.Element {
   );
 }
 
-const APP_STYLES_ID = 'baratie-global-styles';
-
-export function createRoot(element: HTMLElement | null, options?: BaratieOptions): void {
+export function createRoot(element: HTMLElement | null, options?: Readonly<BaratieOptions>): void {
   errorHandler.assert(element, 'Could not find the root element to mount the application.', 'Baratie Mount');
 
   if (!document.getElementById(APP_STYLES_ID)) {

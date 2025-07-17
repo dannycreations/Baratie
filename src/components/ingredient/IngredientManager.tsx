@@ -6,7 +6,6 @@ import { useThemeStore } from '../../stores/useThemeStore';
 import { BooleanInput } from '../shared/input/BooleanInput';
 import { SearchListLayout } from '../shared/layout/SearchListLayout';
 import { Modal } from '../shared/Modal';
-import { EmptyView } from '../shared/View';
 import { IngredientList } from './IngredientList';
 
 import type { JSX } from 'react';
@@ -29,7 +28,6 @@ export const IngredientManager = memo((): JSX.Element => {
 
   const ingredientsByCategory = useMemo<Map<symbol, IngredientDefinition[]>>(() => {
     const grouped = new Map<symbol, IngredientDefinition[]>();
-
     for (const ingredient of allIngredients) {
       const category = ingredient.category;
       if (!grouped.has(category)) {
@@ -53,7 +51,6 @@ export const IngredientManager = memo((): JSX.Element => {
     for (const [category, ingredients] of ingredientsByCategory.entries()) {
       const categoryName = category.description ?? '';
       const categoryMatches = categoryName.toLowerCase().includes(lowerQuery);
-
       const matchingIngredients = ingredients.filter(
         (ingredient) =>
           (ingredient.name.description ?? '').toLowerCase().includes(lowerQuery) || ingredient.description.toLowerCase().includes(lowerQuery),
@@ -73,16 +70,14 @@ export const IngredientManager = memo((): JSX.Element => {
       const isCategoryDisabled = disabledCategories.includes(category);
 
       return (
-        <>
-          <div className="flex items-center gap-3">
-            <BooleanInput id={`${categoryId}-toggle`} checked={!isCategoryDisabled} onChange={() => toggleCategory(category)} />
-            <label
-              className={`cursor-pointer font-medium ${isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}`}
-            >
-              {category.description}
-            </label>
-          </div>
-        </>
+        <div className="flex items-center gap-3">
+          <BooleanInput id={`${categoryId}-toggle`} checked={!isCategoryDisabled} onChange={() => toggleCategory(category)} />
+          <label
+            className={`font-medium cursor-pointer ${isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}`}
+          >
+            {category.description}
+          </label>
+        </div>
       );
     },
     [disabledCategories, toggleCategory, theme],
@@ -114,35 +109,28 @@ export const IngredientManager = memo((): JSX.Element => {
     [disabledCategories, disabledIngredients],
   );
 
-  let content: JSX.Element;
-  if (filtered.size === 0 && query.trim()) {
-    content = (
-      <EmptyView className="flex h-full w-full grow flex-col items-center justify-center p-4">{`No Ingredients Found for "${query}".`}</EmptyView>
-    );
-  } else {
-    content = (
-      <IngredientList
-        itemsByCategory={filtered}
-        renderHeader={renderHeader}
-        renderItemPrefix={renderItemPrefix}
-        isItemDisabled={isItemDisabled}
-        query={query}
-      />
-    );
-  }
+  const content = (
+    <IngredientList
+      isItemDisabled={isItemDisabled}
+      itemsByCategory={filtered}
+      query={query}
+      renderHeader={renderHeader}
+      renderItemPrefix={renderItemPrefix}
+    />
+  );
 
   return (
-    <Modal isOpen={isModalOpen} onClose={closeModal} title="Manage Ingredients" size="lg" contentClasses="max-h-[80vh]">
+    <Modal contentClasses="max-h-[80vh]" isOpen={isModalOpen} size="lg" title="Manage Ingredients" onClose={closeModal}>
       <SearchListLayout
         containerClasses="flex h-full flex-col"
         listContent={content}
         listId={listId}
         listWrapperClasses="grow mt-2 overflow-y-auto"
-        onQueryChange={setQuery}
         query={query}
         searchAriaLabel="Search ingredients or categories"
         searchId="ingredient-manager-search"
         searchPlaceholder="Search Ingredients..."
+        onQueryChange={setQuery}
       />
     </Modal>
   );

@@ -30,7 +30,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(
           containerClasses="flex h-full flex-col"
           listContent={
             recipes.length > 0 ? (
-              <ul className="space-y-1.5" aria-label="List of saved recipes">
+              <ul aria-label="List of saved recipes" className="space-y-1.5">
                 {recipes.map((recipe) => (
                   <CookbookItem key={recipe.id} recipe={recipe} onLoad={onLoad} onDelete={onDelete} />
                 ))}
@@ -50,7 +50,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(
           searchPlaceholder="Search Saved Recipes..."
           searchWrapperClasses={`border-b border-${theme.borderPrimary} pb-3`}
         />
-        <input ref={importRef} type="file" accept=".json" onChange={onImport} className="hidden" aria-hidden="true" />
+        <input ref={importRef} accept=".json" type="file" aria-hidden="true" className="hidden" onChange={onImport} />
       </>
     );
   },

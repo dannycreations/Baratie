@@ -5,46 +5,46 @@ import type { InputPanelConfig, OutputPanelConfig } from '../core/IngredientRegi
 import type { CookingStatusType, RecipeCookResult } from '../core/Kitchen';
 
 interface KitchenState {
-  readonly inputPanelConfig: InputPanelConfig | null;
-  readonly outputPanelConfig: OutputPanelConfig | null;
   readonly cookingStatus: CookingStatusType;
   readonly ingredientStatuses: Readonly<Record<string, CookingStatusType>>;
   readonly inputData: string;
+  readonly inputPanelConfig: InputPanelConfig | null;
   readonly inputPanelIngId: string | null;
   readonly isAutoCookEnabled: boolean;
   readonly outputData: string;
-  readonly setCookingResult: (result: RecipeCookResult) => void;
+  readonly outputPanelConfig: OutputPanelConfig | null;
+  readonly setCookingResult: (result: Readonly<RecipeCookResult>) => void;
   readonly setInputData: (data: string) => void;
   readonly toggleAutoCookState: () => void;
 }
 
 export const useKitchenStore = create<KitchenState>()(
   subscribeWithSelector((set) => ({
-    inputPanelConfig: null,
-    outputPanelConfig: null,
     cookingStatus: 'idle',
     ingredientStatuses: {},
     inputData: '',
+    inputPanelConfig: null,
     inputPanelIngId: null,
     isAutoCookEnabled: true,
     outputData: '',
+    outputPanelConfig: null,
 
-    setCookingResult(result: RecipeCookResult): void {
+    setCookingResult(result) {
       set({
-        inputPanelConfig: result.inputPanelConfig,
-        outputPanelConfig: result.outputPanelConfig,
         cookingStatus: result.cookingStatus,
         ingredientStatuses: result.ingredientStatuses,
+        inputPanelConfig: result.inputPanelConfig,
         inputPanelIngId: result.inputPanelIngId,
         outputData: result.outputData,
+        outputPanelConfig: result.outputPanelConfig,
       });
     },
 
-    setInputData(data: string): void {
+    setInputData(data) {
       set({ inputData: data });
     },
 
-    toggleAutoCookState(): void {
+    toggleAutoCookState() {
       set((state) => ({ isAutoCookEnabled: !state.isAutoCookEnabled }));
     },
   })),

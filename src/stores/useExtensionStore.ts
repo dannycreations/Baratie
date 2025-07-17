@@ -5,26 +5,26 @@ import { STORAGE_EXTENSIONS } from '../app/constants';
 import { storage } from '../app/container';
 
 export interface ExtensionManifest {
-  readonly name: string;
   readonly entry: string | readonly string[];
+  readonly name: string;
 }
 
 export interface Extension extends ExtensionManifest {
-  readonly id: string;
-  readonly url: string;
-  readonly status: 'loading' | 'loaded' | 'error' | 'partial';
   readonly errors?: readonly string[];
+  readonly id: string;
   readonly ingredients?: readonly symbol[];
+  readonly status: 'loading' | 'loaded' | 'error' | 'partial';
+  readonly url: string;
 }
 
 export type StorableExtension = Omit<Extension, 'status' | 'errors' | 'ingredients'>;
 
 interface ExtensionState {
+  readonly add: (extension: Readonly<Extension>) => void;
   readonly extensions: readonly Extension[];
-  readonly add: (extension: Extension) => void;
   readonly remove: (id: string) => void;
-  readonly setExtensions: (extensions: readonly Extension[]) => void;
   readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: readonly string[]) => void;
+  readonly setExtensions: (extensions: readonly Extension[]) => void;
   readonly setIngredients: (id: string, ingredients: readonly symbol[]) => void;
 }
 

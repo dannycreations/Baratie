@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from 'react';
 
-import { CONFIRM_TIMEOUT_MS } from '../../app/constants';
+import { CONFIRM_SHOW_MS } from '../../app/constants';
 import { addExtension, removeExtension } from '../../helpers/extensionHelper';
 import { getConfirmClasses } from '../../helpers/styleHelper';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
@@ -63,7 +63,7 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
     removeExtension(extension.id);
   }, [extension.id]);
 
-  const { isConfirm: isDeleting, trigger: handleDeleting } = useConfirmAction(handleConfirmDelete, CONFIRM_TIMEOUT_MS);
+  const { isConfirm: isDeleting, trigger: triggerDelete } = useConfirmAction(handleConfirmDelete, CONFIRM_SHOW_MS);
 
   const deleteButtonTip = isDeleting ? 'Confirm Deletion' : 'Remove Extension';
   const deleteButtonLabel = isDeleting ? `Confirm removal of extension ${extension.name}` : `Remove extension ${extension.name}`;
@@ -86,7 +86,7 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
         size="sm"
         tooltipContent={deleteButtonTip}
         variant="danger"
-        onClick={handleDeleting}
+        onClick={triggerDelete}
       />
     </div>
   );
@@ -107,7 +107,6 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
 export const ExtensionTab = memo((): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const extensions = useExtensionStore((state) => state.extensions);
-
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -147,7 +146,7 @@ export const ExtensionTab = memo((): JSX.Element => {
       <div className="flex items-center gap-2">
         <StringInput
           id="extension-url-input"
-          ariaLabel="GitHub Repository URL"
+          aria-label="GitHub Repository URL"
           className="grow"
           disabled={isLoading}
           placeholder="https://github.com/user/repository"
