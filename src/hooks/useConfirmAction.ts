@@ -1,33 +1,34 @@
 import { useCallback, useState } from 'react';
 
-import { useConditionalTimer } from './useConditionalTimer';
+import { useControlTimer } from './useControlTimer';
 
-interface UseConfirmActionOutput {
-  readonly isConfirming: boolean;
+interface ConfirmActionReturn {
+  readonly isConfirm: boolean;
   readonly trigger: () => void;
 }
 
-export function useConfirmAction(onConfirm: () => void, timeout: number): UseConfirmActionOutput {
-  const [isConfirming, setIsConfirming] = useState(false);
+export function useConfirmAction(callback: () => void, timeout: number): ConfirmActionReturn {
+  const [isConfirm, setIsConfirm] = useState(false);
 
-  const reset = useCallback(() => {
-    setIsConfirming(false);
+  const handleConfirm = useCallback(() => {
+    setIsConfirm(false);
   }, []);
 
-  useConditionalTimer({
-    state: isConfirming ? 'running' : 'stopped',
-    callback: reset,
+  useControlTimer({
+    state: isConfirm,
+    callback: handleConfirm,
     duration: timeout,
+    reset: isConfirm,
   });
 
   const trigger = useCallback(() => {
-    if (isConfirming) {
-      onConfirm();
-      setIsConfirming(false);
+    if (isConfirm) {
+      callback();
+      setIsConfirm(false);
     } else {
-      setIsConfirming(true);
+      setIsConfirm(true);
     }
-  }, [isConfirming, onConfirm]);
+  }, [isConfirm, callback]);
 
-  return { isConfirming, trigger };
+  return { isConfirm, trigger };
 }

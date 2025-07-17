@@ -2,25 +2,35 @@ import { memo, useCallback, useEffect, useState } from 'react';
 
 import { ANIMATION_EXIT_MS, NOTIFY_DURATION_MS } from '../../app/constants';
 import { removeNotification } from '../../helpers/notificationHelper';
-import { useConditionalTimer } from '../../hooks/useConditionalTimer';
+import { useControlTimer } from '../../hooks/useControlTimer';
 import { useNotificationStore } from '../../stores/useNotificationStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { Button } from '../shared/Button';
 import { AlertTriangleIcon, CheckIcon, InfoIcon, XIcon } from '../shared/Icon';
 
 import type { JSX } from 'react';
-import type { NotificationMessage, NotificationType } from '../../app/constants';
 import type { AppTheme } from '../../app/themes';
+
+export type NotificationType = 'success' | 'error' | 'info' | 'warning';
+
+export interface NotificationMessage {
+  readonly id: string;
+  readonly type: NotificationType;
+  readonly message: string;
+  readonly title?: string;
+  readonly duration?: number;
+  readonly resetAt?: number;
+}
 
 interface NotificationItemProps {
   readonly notification: NotificationMessage;
 }
 
-type NotificationTheme = {
+interface NotificationTheme {
   readonly barColor: string;
   readonly borderColor: string;
   readonly iconColor: string;
-};
+}
 
 function getNotificationTheme(theme: AppTheme, type: NotificationType): NotificationTheme {
   const map: Record<NotificationType, NotificationTheme> = {
@@ -29,7 +39,7 @@ function getNotificationTheme(theme: AppTheme, type: NotificationType): Notifica
     success: { barColor: theme.successBg, borderColor: theme.successBorder, iconColor: theme.successFg },
     warning: { barColor: theme.warningBg, borderColor: theme.warningBorder, iconColor: theme.warningFg },
   };
-  return map[type] || map.info;
+  return map[type] ?? map.info;
 }
 
 const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Element => {
@@ -37,20 +47,18 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const [isPaused, setPaused] = useState(false);
   const theme = useThemeStore((state) => state.theme);
 
-  const startExit = useCallback(() => {
+  const handleExit = useCallback(() => {
     setExiting(true);
   }, []);
 
   const handleMouseEnter = useCallback((): void => setPaused(true), []);
   const handleMouseLeave = useCallback((): void => setPaused(false), []);
 
-  const timerState = isExiting ? 'stopped' : isPaused ? 'paused' : 'running';
-
-  useConditionalTimer({
-    state: timerState,
-    callback: startExit,
+  useControlTimer({
+    state: !isExiting && !isPaused,
+    callback: handleExit,
     duration: notification.duration ?? NOTIFY_DURATION_MS,
-    resetTrigger: notification.resetAt,
+    reset: notification.resetAt,
   });
 
   useEffect(() => {
@@ -111,7 +119,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
             aria-label="Close notification"
             className={`-mr-1 -mt-1 text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`}
             icon={<XIcon size={20} />}
-            onClick={startExit}
+            onClick={handleExit}
             size="sm"
             title="Close"
             variant="stealth"

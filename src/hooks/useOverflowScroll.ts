@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import type { RefObject } from 'react';
 
-interface ScrollConfig {
+interface OverflowScrollProps {
   readonly xClasses?: string;
   readonly yClasses?: string;
 }
@@ -10,11 +10,11 @@ interface ScrollConfig {
 const OVERFLOW_X_CLASSNAME = 'overflow-x-hidden';
 const OVERFLOW_Y_CLASSNAME = 'overflow-y-hidden';
 
-export function useOverflowScroll<T extends HTMLElement>({ xClasses, yClasses }: ScrollConfig): RefObject<T | null> {
-  const ref = useRef<T>(null);
+export function useOverflowScroll<T extends HTMLElement>({ xClasses, yClasses }: OverflowScrollProps): RefObject<T | null> {
+  const scrollRef = useRef<T>(null);
 
   const manageClasses = useCallback((): void => {
-    const element = ref.current;
+    const element = scrollRef.current;
     if (!element) {
       return;
     }
@@ -41,7 +41,7 @@ export function useOverflowScroll<T extends HTMLElement>({ xClasses, yClasses }:
   }, [xClasses, yClasses]);
 
   useEffect(() => {
-    const element = ref.current;
+    const element = scrollRef.current;
     if (!element) {
       return;
     }
@@ -79,5 +79,5 @@ export function useOverflowScroll<T extends HTMLElement>({ xClasses, yClasses }:
     };
   }, [manageClasses, xClasses, yClasses]);
 
-  return ref;
+  return scrollRef;
 }

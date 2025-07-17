@@ -4,12 +4,12 @@ import type { RefObject } from 'react';
 
 const FOCUSABLE_SELECTORS = 'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
 
-interface FocusTrapOptions {
+interface FocusTrapProps {
   readonly elementRef: RefObject<HTMLElement | null>;
   readonly isActive: boolean;
 }
 
-export function useFocusTrap({ elementRef, isActive }: FocusTrapOptions): void {
+export function useFocusTrap({ elementRef, isActive }: FocusTrapProps): void {
   const lastFocusedRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {

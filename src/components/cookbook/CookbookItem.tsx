@@ -35,7 +35,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
     onDelete(recipe.id);
   }, [onDelete, recipe.id]);
 
-  const { isConfirming: isDeleting, trigger: handleDelete } = useConfirmAction(handleConfirmDelete, CONFIRM_TIMEOUT_MS);
+  const { isConfirm: isDeleting, trigger: handleDeleting } = useConfirmAction(handleConfirmDelete, CONFIRM_TIMEOUT_MS);
 
   const handleLoad = useCallback(() => {
     onLoad(recipe.id);
@@ -77,7 +77,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
               aria-label={deleteLabel}
               className={deleteClass}
               icon={isDeleting ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
-              onClick={handleDelete}
+              onClick={handleDeleting}
               size="sm"
               tooltipContent={deleteTip}
               tooltipPosition="left"

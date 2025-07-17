@@ -2,7 +2,7 @@ import { memo, useCallback, useState } from 'react';
 
 import { COPY_SUCCESS_MS } from '../../app/constants';
 import { errorHandler } from '../../app/container';
-import { useConditionalTimer } from '../../hooks/useConditionalTimer';
+import { useControlTimer } from '../../hooks/useControlTimer';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { CheckIcon, CopyIcon } from './Icon';
 import { Tooltip } from './Tooltip';
@@ -120,10 +120,11 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
   const [isCopied, setIsCopied] = useState(false);
   const theme = useThemeStore((state) => state.theme);
 
-  useConditionalTimer({
-    state: isCopied ? 'running' : 'stopped',
+  useControlTimer({
+    state: isCopied,
     callback: () => setIsCopied(false),
     duration: COPY_SUCCESS_MS,
+    reset: isCopied,
   });
 
   const handleCopy = useCallback(async (): Promise<void> => {

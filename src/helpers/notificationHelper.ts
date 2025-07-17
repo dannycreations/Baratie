@@ -1,7 +1,7 @@
 import { NOTIFY_DURATION_MS } from '../app/constants';
 import { useNotificationStore } from '../stores/useNotificationStore';
 
-import type { NotificationMessage, NotificationType } from '../app/constants';
+import type { NotificationMessage, NotificationType } from '../components/main/NotificationPanel';
 
 export function clearNotifications(): void {
   useNotificationStore.getState().setNotifications([]);

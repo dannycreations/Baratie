@@ -63,7 +63,7 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
     removeExtension(extension.id);
   }, [extension.id]);
 
-  const { isConfirming: isDeleting, trigger: handleDeleteClick } = useConfirmAction(handleConfirmDelete, CONFIRM_TIMEOUT_MS);
+  const { isConfirm: isDeleting, trigger: handleDeleting } = useConfirmAction(handleConfirmDelete, CONFIRM_TIMEOUT_MS);
 
   const deleteButtonTip = isDeleting ? 'Confirm Deletion' : 'Remove Extension';
   const deleteButtonLabel = isDeleting ? `Confirm removal of extension ${extension.name}` : `Remove extension ${extension.name}`;
@@ -86,7 +86,7 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
         size="sm"
         tooltipContent={deleteButtonTip}
         variant="danger"
-        onClick={handleDeleteClick}
+        onClick={handleDeleting}
       />
     </div>
   );

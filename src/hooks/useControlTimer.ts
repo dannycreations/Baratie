@@ -1,27 +1,25 @@
 import { useEffect, useRef } from 'react';
 
-type TimerState = 'running' | 'paused' | 'stopped';
-
-interface TimerConfig {
+interface ControlTimerProps {
   readonly callback: () => void;
   readonly duration: number;
-  readonly resetTrigger?: unknown;
-  readonly state?: TimerState;
+  readonly reset?: unknown;
+  readonly state?: boolean;
 }
 
-export function useConditionalTimer({ callback, duration, state = 'running', resetTrigger }: TimerConfig): void {
+export function useControlTimer({ callback, duration, state = true, reset }: ControlTimerProps): void {
   const timerIdRef = useRef<number | null>(null);
-  const remainingTimeRef = useRef(duration);
   const startTimeRef = useRef<number | null>(null);
-  const savedCallback = useRef<() => void>(callback);
+  const remainingTimeRef = useRef(duration);
+  const savedCallbackRef = useRef<() => void>(callback);
 
   useEffect(() => {
-    savedCallback.current = callback;
+    savedCallbackRef.current = callback;
   }, [callback]);
 
   useEffect(() => {
     remainingTimeRef.current = duration;
-  }, [duration, resetTrigger]);
+  }, [duration, reset]);
 
   useEffect(() => {
     const clearTimer = () => {
@@ -31,24 +29,21 @@ export function useConditionalTimer({ callback, duration, state = 'running', res
       }
     };
 
-    if (state === 'running') {
-      startTimeRef.current = Date.now();
+    if (state) {
       clearTimer();
+      startTimeRef.current = Date.now();
       timerIdRef.current = window.setTimeout(() => {
-        savedCallback.current();
+        savedCallbackRef.current();
       }, remainingTimeRef.current);
-    } else if (state === 'paused') {
+    } else {
       clearTimer();
       if (startTimeRef.current !== null) {
         const elapsedTime = Date.now() - startTimeRef.current;
         remainingTimeRef.current = Math.max(0, remainingTimeRef.current - elapsedTime);
         startTimeRef.current = null;
       }
-    } else {
-      clearTimer();
-      remainingTimeRef.current = duration;
     }
 
     return clearTimer;
-  }, [state, duration, resetTrigger]);
+  }, [state, duration, reset]);
 }

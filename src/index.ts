@@ -38,8 +38,8 @@ import {
 } from './helpers/recipeHelper';
 import { readAsBase64, readAsText, triggerDownload } from './utilities/fileUtil';
 
+import type { NotificationMessage, NotificationType } from '../src/components/main/NotificationPanel';
 import type { BaratieOptions } from './app/Baratie';
-import type { NotificationMessage, NotificationType } from './app/constants';
 import type {
   Ingredient,
   IngredientContext,

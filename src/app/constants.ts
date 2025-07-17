@@ -16,14 +16,3 @@ export const ANIMATION_MODAL_MS = 200;
 export const NOTIFY_DURATION_MS = 5000;
 export const CONFIRM_TIMEOUT_MS = 3000;
 export const COPY_SUCCESS_MS = 1500;
-
-export type NotificationType = 'success' | 'error' | 'info' | 'warning';
-
-export interface NotificationMessage {
-  readonly id: string;
-  readonly type: NotificationType;
-  readonly message: string;
-  readonly title?: string;
-  readonly duration?: number;
-  readonly resetAt?: number;
-}

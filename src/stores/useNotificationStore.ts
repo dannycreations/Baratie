@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import type { NotificationMessage } from '../app/constants';
+import type { NotificationMessage } from '../components/main/NotificationPanel';
 
 interface NotificationState {
   readonly notifications: readonly NotificationMessage[];
