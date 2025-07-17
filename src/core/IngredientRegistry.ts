@@ -66,12 +66,12 @@ export interface RecipeBookItem {
 export type ResultType<OutType = unknown> = InputType<OutType> | PanelControlSignal<OutType> | null;
 
 interface BaseSpice<SpiceType extends 'boolean' | 'number' | 'select' | 'string' | 'textarea', ValueType> {
+  readonly dependsOn?: readonly SpiceDependency[];
+  readonly description?: string;
   readonly id: string;
   readonly label: string;
   readonly type: SpiceType;
   readonly value: ValueType;
-  readonly dependsOn?: readonly SpiceDependency[];
-  readonly description?: string;
 }
 
 type BooleanSpice = BaseSpice<'boolean', boolean> & {
@@ -91,19 +91,12 @@ type NumberSpice = BaseSpice<'number', number> & {
 };
 
 type SelectSpice = BaseSpice<'select', SpiceValue> & {
-  readonly options: readonly { readonly label: string; readonly value: SpiceValue }[];
   readonly max?: never;
   readonly min?: never;
+  readonly options: readonly { readonly label: string; readonly value: SpiceValue }[];
   readonly placeholder?: never;
   readonly step?: never;
 };
-
-export interface SpiceDependency {
-  readonly spiceId: string;
-  readonly value: SpiceValue | readonly SpiceValue[];
-}
-
-export type SpiceDefinition = StringSpice | TextareaSpice | NumberSpice | BooleanSpice | SelectSpice;
 
 type StringSpice = BaseSpice<'string', string> & {
   readonly max?: never;
@@ -120,6 +113,13 @@ type TextareaSpice = BaseSpice<'textarea', string> & {
   readonly placeholder?: string;
   readonly step?: never;
 };
+
+export interface SpiceDependency {
+  readonly spiceId: string;
+  readonly value: SpiceValue | readonly SpiceValue[];
+}
+
+export type SpiceDefinition = StringSpice | TextareaSpice | NumberSpice | BooleanSpice | SelectSpice;
 
 export class IngredientRegistry {
   private readonly ingredients: Map<symbol, IngredientDefinition> = new Map();

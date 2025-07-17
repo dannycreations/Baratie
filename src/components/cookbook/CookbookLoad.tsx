@@ -32,7 +32,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(
             recipes.length > 0 ? (
               <ul aria-label="List of saved recipes" className="space-y-1.5">
                 {recipes.map((recipe) => (
-                  <CookbookItem key={recipe.id} recipe={recipe} onLoad={onLoad} onDelete={onDelete} />
+                  <CookbookItem key={recipe.id} recipe={recipe} onDelete={onDelete} onLoad={onLoad} />
                 ))}
               </ul>
             ) : (
@@ -44,11 +44,11 @@ export const CookbookLoad = memo<CookbookLoadProps>(
           listId={listId}
           listWrapperClasses="grow overflow-y-auto pt-3"
           query={query}
-          onQueryChange={onQueryChange}
           searchAriaLabel="Search saved recipes"
           searchId="recipe-search"
           searchPlaceholder="Search Saved Recipes..."
           searchWrapperClasses={`border-b border-${theme.borderPrimary} pb-3`}
+          onQueryChange={onQueryChange}
         />
         <input ref={importRef} accept=".json" type="file" aria-hidden="true" className="hidden" onChange={onImport} />
       </>

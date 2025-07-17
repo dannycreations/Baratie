@@ -18,6 +18,13 @@ interface SpiceRendererProps {
   readonly value: SpiceValue | undefined | null;
 }
 
+interface SpiceLayoutProps {
+  readonly containerClasses?: string;
+  readonly currentSpices: Readonly<Record<string, SpiceValue>>;
+  readonly ingredientDefinition: IngredientDefinition;
+  readonly onSpiceChange: (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => void;
+}
+
 const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpiceChange }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
@@ -107,13 +114,6 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
     </FormLayout>
   );
 });
-
-interface SpiceLayoutProps {
-  readonly containerClasses?: string;
-  readonly currentSpices: Readonly<Record<string, SpiceValue>>;
-  readonly ingredientDefinition: IngredientDefinition;
-  readonly onSpiceChange: (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => void;
-}
 
 export const SpiceLayout = memo<SpiceLayoutProps>(({ ingredientDefinition, currentSpices, onSpiceChange, containerClasses }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);

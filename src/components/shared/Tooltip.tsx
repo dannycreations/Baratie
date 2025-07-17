@@ -38,6 +38,7 @@ export const Tooltip = memo<TooltipProps>(
   ({ content, children, position = 'top', delay = 200, className = '', tooltipClasses = '', disabled = false }): JSX.Element => {
     const { activeId, setActiveId } = useTooltipStore();
     const theme = useThemeStore((state) => state.theme);
+
     const [style, setStyle] = useState<TooltipPositionStyle>(INITIAL_TOOLTIP_STYLE);
     const timeoutRef = useRef<number | null>(null);
     const triggerRef = useRef<HTMLDivElement>(null);

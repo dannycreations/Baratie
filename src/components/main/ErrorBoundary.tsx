@@ -47,7 +47,6 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
           aria-label="Reload the application to try again"
           icon={<RefreshCwIcon size={20} />}
           size="md"
-          title="Batten Down the Hatches!"
           variant="primary"
           onClick={() => window.location.reload()}
         >

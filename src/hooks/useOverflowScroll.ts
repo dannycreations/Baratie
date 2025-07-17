@@ -2,13 +2,13 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import type { RefObject } from 'react';
 
+const OVERFLOW_X_CLASSNAME = 'overflow-x-hidden';
+const OVERFLOW_Y_CLASSNAME = 'overflow-y-hidden';
+
 interface OverflowScrollProps {
   readonly xClasses?: string;
   readonly yClasses?: string;
 }
-
-const OVERFLOW_X_CLASSNAME = 'overflow-x-hidden';
-const OVERFLOW_Y_CLASSNAME = 'overflow-y-hidden';
 
 export function useOverflowScroll<T extends HTMLElement>({ xClasses, yClasses }: OverflowScrollProps): RefObject<T | null> {
   const scrollRef = useRef<T>(null);

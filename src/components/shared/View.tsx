@@ -48,7 +48,7 @@ export const EmptyView = memo<EmptyViewProps>(
 );
 
 export const ErrorView = memo<ErrorViewProps>(({ error, errorInfo }): JSX.Element | null => {
-  const detailsElementRef = useOverflowScroll<HTMLDetailsElement>({ xClasses: 'pr-2', yClasses: 'pb-2' });
+  const detailsElementRef = useOverflowScroll<HTMLDetailsElement>({ xClasses: 'pb-2', yClasses: 'pr-2' });
   const theme = useThemeStore((state) => state.theme);
 
   if (!error) {

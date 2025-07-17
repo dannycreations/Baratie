@@ -65,11 +65,11 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
             <TooltipButton
               aria-label={`Load the recipe: ${recipe.name}`}
               icon={<UploadCloudIcon size={18} />}
-              onClick={handleLoad}
               size="sm"
               tooltipContent="Load Recipe"
               tooltipPosition="left"
               variant="primary"
+              onClick={handleLoad}
             >
               Load
             </TooltipButton>
@@ -77,11 +77,11 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
               aria-label={deleteLabel}
               className={deleteClass}
               icon={isDeleting ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
-              onClick={triggerDelete}
               size="sm"
               tooltipContent={deleteTip}
               tooltipPosition="left"
               variant="danger"
+              onClick={triggerDelete}
             />
           </>
         }

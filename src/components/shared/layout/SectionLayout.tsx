@@ -15,7 +15,7 @@ interface SectionLayoutProps extends HTMLAttributes<HTMLElement> {
 
 export const SectionLayout = memo<SectionLayoutProps>(
   ({ headerLeft, headerRight, children, panelClasses = '', contentClasses = '', ...rest }): JSX.Element => {
-    const contentRef = useOverflowScroll<HTMLDivElement>({ xClasses: 'pr-2', yClasses: 'pb-2' });
+    const contentRef = useOverflowScroll<HTMLDivElement>({ xClasses: 'pb-2', yClasses: 'pr-2' });
     const titleId = useId();
     const theme = useThemeStore((state) => state.theme);
 

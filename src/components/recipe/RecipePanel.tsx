@@ -27,6 +27,7 @@ export const RecipePanel = memo((): JSX.Element => {
   const inputPanelIngId = useKitchenStore((state) => state.inputPanelIngId);
   const isCookbookOpen = useCookbookStore((state) => state.isModalOpen);
   const theme = useThemeStore((state) => state.theme);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isDraggingIngredient, setIsDraggingIngredient] = useState(false);
   const listId = useId();

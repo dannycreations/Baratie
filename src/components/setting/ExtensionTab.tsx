@@ -21,6 +21,10 @@ interface ExtensionItemStatusProps {
   readonly errors?: readonly string[];
 }
 
+interface ExtensionItemProps {
+  readonly extension: Extension;
+}
+
 const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
@@ -52,10 +56,6 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
   return content;
 });
 
-interface ExtensionItemProps {
-  readonly extension: Extension;
-}
-
 const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
@@ -78,7 +78,7 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
 
   const rightContent = (
     <div className="flex items-center gap-4">
-      <ExtensionItemStatus status={extension.status} errors={extension.errors} />
+      <ExtensionItemStatus errors={extension.errors} status={extension.status} />
       <TooltipButton
         aria-label={deleteButtonLabel}
         className={deleteButtonClass}

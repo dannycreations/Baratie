@@ -17,37 +17,52 @@ import type {
 export type CookingStatusType = 'idle' | 'error' | 'success' | 'warning';
 
 export interface RecipeCookResult {
-  readonly inputPanelConfig: InputPanelConfig | null;
-  readonly outputPanelConfig: OutputPanelConfig | null;
   readonly cookingStatus: CookingStatusType;
   readonly ingredientStatuses: Readonly<Record<string, CookingStatusType>>;
+  readonly inputPanelConfig: InputPanelConfig | null;
   readonly inputPanelIngId: string | null;
   readonly outputData: string;
+  readonly outputPanelConfig: OutputPanelConfig | null;
 }
 
 interface RecipeLoopState {
   cookedData: string;
-  localStatuses: Record<string, CookingStatusType>;
-  lastInputConfig: InputPanelConfig | null;
-  lastOutputConfig: OutputPanelConfig | null;
-  lastInputPanelId: string | null;
   globalError: boolean;
   hasWarnings: boolean;
+  lastInputConfig: InputPanelConfig | null;
+  lastInputPanelId: string | null;
+  lastOutputConfig: OutputPanelConfig | null;
+  localStatuses: Record<string, CookingStatusType>;
 }
 
 interface IngredientRunResult {
   readonly hasError: boolean;
+  readonly inputPanelIngId?: string | null;
   readonly nextData: string;
   readonly panelInstruction?: PanelControlConfig;
   readonly status: CookingStatusType;
-  readonly inputPanelIngId?: string | null;
 }
 
 export class Kitchen {
-  private isCooking = false;
   private hasPendingCook = false;
-  private timeoutId: number | null = null;
   private intervalMs = 0;
+  private isCooking = false;
+  private timeoutId: number | null = null;
+
+  public toggleAutoCook = (): void => {
+    const wasEnabled = useKitchenStore.getState().isAutoCookEnabled;
+    useKitchenStore.getState().toggleAutoCookState();
+    if (!wasEnabled) {
+      this.triggerCook();
+    } else {
+      if (this.timeoutId) {
+        clearTimeout(this.timeoutId);
+        this.timeoutId = null;
+        logger.info('Auto-cook disabled, pending scheduled cook cancelled.');
+      }
+      this.hasPendingCook = false;
+    }
+  };
 
   public initAutoCook(): () => void {
     const handleStateChange = () => {
@@ -117,30 +132,15 @@ export class Kitchen {
     useKitchenStore.getState().setInputData(data);
   }
 
-  public toggleAutoCook = (): void => {
-    const wasEnabled = useKitchenStore.getState().isAutoCookEnabled;
-    useKitchenStore.getState().toggleAutoCookState();
-    if (!wasEnabled) {
-      this.triggerCook();
-    } else {
-      if (this.timeoutId) {
-        clearTimeout(this.timeoutId);
-        this.timeoutId = null;
-        logger.info('Auto-cook disabled, pending scheduled cook cancelled.');
-      }
-      this.hasPendingCook = false;
-    }
-  };
-
   private async cookRecipe(recipe: readonly Ingredient[], initialInput: string): Promise<RecipeCookResult> {
     if (recipe.length === 0) {
       return {
-        inputPanelConfig: null,
-        outputPanelConfig: null,
         cookingStatus: initialInput ? 'success' : 'idle',
         ingredientStatuses: {},
+        inputPanelConfig: null,
         inputPanelIngId: null,
         outputData: initialInput,
+        outputPanelConfig: null,
       };
     }
 
@@ -149,24 +149,24 @@ export class Kitchen {
     logger.info(`Cook finished with status: ${finalStatus}.`);
 
     return {
-      inputPanelConfig: loopResult.lastInputConfig,
-      outputPanelConfig: loopResult.lastOutputConfig,
       cookingStatus: finalStatus,
       ingredientStatuses: loopResult.localStatuses,
+      inputPanelConfig: loopResult.lastInputConfig,
       inputPanelIngId: loopResult.lastInputPanelId,
       outputData: loopResult.cookedData,
+      outputPanelConfig: loopResult.lastOutputConfig,
     };
   }
 
   private async executeRecipeLoop(recipe: readonly Ingredient[], initialInput: string): Promise<RecipeLoopState> {
     const state: RecipeLoopState = {
       cookedData: initialInput,
-      localStatuses: {},
-      lastInputConfig: null,
-      lastOutputConfig: null,
-      lastInputPanelId: null,
       globalError: false,
       hasWarnings: false,
+      lastInputConfig: null,
+      lastInputPanelId: null,
+      lastOutputConfig: null,
+      localStatuses: {},
     };
 
     for (let index = 0; index < recipe.length; index++) {

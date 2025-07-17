@@ -25,6 +25,28 @@ interface InputActionsProps {
   readonly onFileSelect: () => void;
 }
 
+interface OutputActionsProps {
+  readonly data: string;
+  readonly onDownload: () => void;
+}
+
+interface SpiceContentProps {
+  readonly config: Extract<InputPanelConfig, { mode: 'spiceEditor' }>;
+  readonly onSpiceChange: (ingredientId: string, spiceId: string, rawValue: SpiceValue, spice: SpiceDefinition) => void;
+}
+
+interface DefaultContentProps {
+  readonly config: InputPanelConfig | null;
+  readonly data: string;
+  readonly fileInputRef: RefObject<HTMLInputElement | null>;
+  readonly onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void;
+}
+
+interface OutputContentProps {
+  readonly config: OutputPanelConfig | null;
+  readonly data: string;
+}
+
 const InputActions = memo<InputActionsProps>(({ data, config, onClear, onFileSelect }) => {
   const showClearButton = config?.mode !== 'textarea' || config.showClear;
 
@@ -55,11 +77,6 @@ const InputActions = memo<InputActionsProps>(({ data, config, onClear, onFileSel
   );
 });
 
-interface OutputActionsProps {
-  readonly data: string;
-  readonly onDownload: () => void;
-}
-
 const OutputActions = memo<OutputActionsProps>(({ data, onDownload }) => (
   <>
     <TooltipButton
@@ -75,11 +92,6 @@ const OutputActions = memo<OutputActionsProps>(({ data, onDownload }) => (
     <CopyButton textToCopy={data} tooltipPosition="left" />
   </>
 ));
-
-interface SpiceContentProps {
-  readonly config: Extract<InputPanelConfig, { mode: 'spiceEditor' }>;
-  readonly onSpiceChange: (ingredientId: string, spiceId: string, rawValue: SpiceValue, spice: SpiceDefinition) => void;
-}
 
 const SpiceContent = memo<SpiceContentProps>(({ config, onSpiceChange }) => {
   const ingredients = useRecipeStore((state) => state.ingredients);
@@ -111,13 +123,6 @@ const SpiceContent = memo<SpiceContentProps>(({ config, onSpiceChange }) => {
   );
 });
 
-interface DefaultContentProps {
-  readonly config: InputPanelConfig | null;
-  readonly data: string;
-  readonly fileInputRef: RefObject<HTMLInputElement | null>;
-  readonly onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void;
-}
-
 const DefaultContent = memo<DefaultContentProps>(({ config, data, fileInputRef, onFileSelect }) => {
   const isTextareaDisabled = config?.mode === 'textarea' ? !!config.disabled : false;
   const placeholder = (config?.mode === 'textarea' && config.placeholder) || 'Place Raw Ingredients Here.';
@@ -139,11 +144,6 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, fileInputRef, 
     </>
   );
 });
-
-interface OutputContentProps {
-  readonly config: OutputPanelConfig | null;
-  readonly data: string;
-}
 
 const OutputContent = memo<OutputContentProps>(({ config, data }) => (
   <TextareaInput

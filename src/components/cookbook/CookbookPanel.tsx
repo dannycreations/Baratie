@@ -22,17 +22,17 @@ const SaveHeaderActions = memo<{
       aria-label="Export the current recipe to a file"
       disabled={isSaveDisabled}
       icon={<DownloadCloudIcon size={20} />}
-      onClick={onExportCurrent}
       tooltipContent="Export Recipe to JSON"
       variant="stealth"
+      onClick={onExportCurrent}
     />
     <TooltipButton
       aria-label="Save the current recipe to the cookbook"
       disabled={isSaveDisabled}
       icon={<SaveIcon size={20} />}
-      onClick={onSave}
       tooltipContent="Save to Browser Storage"
       variant="primary"
+      onClick={onSave}
     >
       Save
     </TooltipButton>
@@ -48,17 +48,17 @@ const LoadHeaderActions = memo<{
     <TooltipButton
       aria-label="Import recipes from a JSON file"
       icon={<UploadCloudIcon size={20} />}
-      onClick={onTriggerImport}
       tooltipContent="Import from JSON File"
       variant="stealth"
+      onClick={onTriggerImport}
     />
     <TooltipButton
       aria-label="Export all saved recipes to a file"
       disabled={isExportDisabled}
       icon={<DownloadCloudIcon size={20} />}
-      onClick={onExportAll}
       tooltipContent="Export All Saved Recipes"
       variant="stealth"
+      onClick={onExportAll}
     />
   </>
 ));
@@ -133,7 +133,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
 
   const bodyContent =
     modalMode === 'save' ? (
-      <CookbookSave isRecipeEmpty={isRecipeEmpty} nameRef={nameRef} onNameChange={setName} onSave={handleSave} nameInput={nameInput} />
+      <CookbookSave isRecipeEmpty={isRecipeEmpty} nameRef={nameRef} nameInput={nameInput} onNameChange={setName} onSave={handleSave} />
     ) : (
       <CookbookLoad
         importRef={importRef}
