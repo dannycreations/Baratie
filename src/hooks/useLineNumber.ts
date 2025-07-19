@@ -5,16 +5,16 @@ import type { RefObject } from 'react';
 interface LineNumberProps {
   readonly logicalLines: readonly string[];
   readonly showLineNumbers: boolean;
-  readonly textAreaRef: RefObject<HTMLTextAreaElement | null>;
+  readonly textareaRef: RefObject<HTMLTextAreaElement | null>;
 }
 
-export function useLineNumber({ textAreaRef, logicalLines, showLineNumbers }: LineNumberProps): readonly (number | null)[] {
+export function useLineNumber({ textareaRef, logicalLines, showLineNumbers }: LineNumberProps): readonly (number | null)[] {
   const [lineNumbers, setLineNumbers] = useState<readonly (number | null)[]>([]);
   const linesRef = useRef(logicalLines);
   linesRef.current = logicalLines;
 
   const calculate = useCallback(() => {
-    const textarea = textAreaRef.current;
+    const textarea = textareaRef.current;
     if (!showLineNumbers || !textarea) {
       setLineNumbers([]);
       return;
@@ -68,14 +68,14 @@ export function useLineNumber({ textAreaRef, logicalLines, showLineNumbers }: Li
       lastLineIndex = logicalLineIndex;
     }
     setLineNumbers(finalNumbers);
-  }, [showLineNumbers, textAreaRef]);
+  }, [showLineNumbers, textareaRef]);
 
   useLayoutEffect(() => {
     calculate();
   }, [logicalLines, calculate]);
 
   useLayoutEffect(() => {
-    const textarea = textAreaRef.current;
+    const textarea = textareaRef.current;
     if (!showLineNumbers || !textarea) {
       return;
     }
@@ -85,7 +85,7 @@ export function useLineNumber({ textAreaRef, logicalLines, showLineNumbers }: Li
     return () => {
       resizeObserver.disconnect();
     };
-  }, [showLineNumbers, textAreaRef, calculate]);
+  }, [showLineNumbers, textareaRef, calculate]);
 
   return lineNumbers;
 }

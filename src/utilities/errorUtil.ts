@@ -44,7 +44,8 @@ export function objectStringify(data: unknown, space?: string | number): string 
   };
 
   try {
-    return JSON.stringify(data, replacer, space);
+    const jsonString = JSON.stringify(data, replacer, space);
+    return jsonString.replace(/[a-zA-Z0-9+/=]{30,}/g, '');
   } catch (e) {
     const error = e instanceof Error ? e : new Error(String(e));
     const fallback: Record<string, unknown> = {
