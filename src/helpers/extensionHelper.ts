@@ -1,13 +1,34 @@
+import * as v from 'valibot';
+
 import { STORAGE_EXTENSIONS } from '../app/constants';
 import { ingredientRegistry, logger, storage } from '../app/container';
 import { useExtensionStore } from '../stores/useExtensionStore';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
 import { useRecipeStore } from '../stores/useRecipeStore';
-import { isObjectLike } from '../utilities/appUtil';
 import { showNotification } from './notificationHelper';
 
 import type { IngredientDefinition } from '../core/IngredientRegistry';
-import type { Extension, ExtensionManifest, StorableExtension } from '../stores/useExtensionStore';
+import type { Extension } from '../stores/useExtensionStore';
+
+const NonEmptyString = v.pipe(v.string(), v.nonEmpty());
+
+const ExtensionManifestSchema = v.object({
+  name: NonEmptyString,
+  entry: v.union([NonEmptyString, v.pipe(v.array(NonEmptyString), v.nonEmpty())]),
+});
+
+export type ExtensionManifest = v.InferInput<typeof ExtensionManifestSchema>;
+
+const StorableExtensionSchema = v.intersect([
+  ExtensionManifestSchema,
+  v.object({
+    id: NonEmptyString,
+    fetchedAt: v.number(),
+    scripts: v.record(v.string(), v.string()),
+  }),
+]);
+
+export type StorableExtension = v.InferInput<typeof StorableExtensionSchema>;
 
 const EXTENSION_CACHE_MS = 86_400_000;
 
@@ -25,35 +46,6 @@ function isCacheValid(fetchedAt?: number): boolean {
     return false;
   }
   return Date.now() - fetchedAt < EXTENSION_CACHE_MS;
-}
-
-function isExtensionManifest(obj: unknown): obj is ExtensionManifest {
-  if (!isObjectLike(obj)) return false;
-  const { name, entry } = obj as Record<string, unknown>;
-  return typeof name === 'string' && !!name.trim() && isValidEntry(entry);
-}
-
-function isStorableExtension(obj: unknown): obj is StorableExtension {
-  if (!isObjectLike(obj)) return false;
-  const { id, name, entry, fetchedAt, scripts } = obj as Record<string, unknown>;
-  return (
-    typeof id === 'string' &&
-    !!id.trim() &&
-    typeof name === 'string' &&
-    !!name.trim() &&
-    isValidEntry(entry) &&
-    typeof fetchedAt === 'number' &&
-    isObjectLike(scripts) &&
-    !Array.isArray(scripts) &&
-    Object.values(scripts).every((s) => typeof s === 'string')
-  );
-}
-
-function isValidEntry(entry: unknown): entry is string | readonly string[] {
-  return (
-    (typeof entry === 'string' && !!entry.trim()) ||
-    (Array.isArray(entry) && entry.length > 0 && entry.every((item) => typeof item === 'string' && !!item.trim()))
-  );
 }
 
 async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<void> {
@@ -156,8 +148,13 @@ async function refreshExtension(id: string): Promise<void> {
   try {
     const response = await fetch(manifestUrl);
     if (!response.ok) throw new Error(`Could not fetch manifest: ${response.statusText}`);
-    const manifest: unknown = await response.json();
-    if (!isExtensionManifest(manifest)) throw new Error('Manifest must contain a "name" and a non-empty "entry".');
+    const manifestJson: unknown = await response.json();
+
+    const validationResult = v.safeParse(ExtensionManifestSchema, manifestJson);
+    if (!validationResult.success) {
+      throw new Error(`Invalid manifest file: ${validationResult.issues[0].message}`);
+    }
+    const manifest = validationResult.output;
 
     if (storeExtension?.ingredients) {
       ingredientRegistry.unregisterIngredients(storeExtension.ingredients);
@@ -193,10 +190,19 @@ export async function addExtension(url: string): Promise<void> {
 }
 
 export async function initExtensions(): Promise<void> {
-  const rawExtensions = storage.get<StorableExtension[]>(STORAGE_EXTENSIONS, 'Extensions');
-  const extensions: Extension[] = Array.isArray(rawExtensions)
-    ? rawExtensions.filter(isStorableExtension).map((e) => ({ ...e, status: 'loading' }))
-    : [];
+  const rawExtensions = storage.get<unknown[]>(STORAGE_EXTENSIONS, 'Extensions');
+
+  const validationResult = v.safeParse(v.array(StorableExtensionSchema), rawExtensions);
+  let validStoredExtensions: StorableExtension[];
+
+  if (!validationResult.success) {
+    logger.warn('Corrupted extension data in storage, attempting partial recovery.', { issues: validationResult.issues });
+    validStoredExtensions = (rawExtensions || []).filter((e) => v.safeParse(StorableExtensionSchema, e).success) as StorableExtension[];
+  } else {
+    validStoredExtensions = validationResult.output;
+  }
+
+  const extensions: Extension[] = validStoredExtensions.map((e) => ({ ...e, status: 'loading' }));
 
   useExtensionStore.getState().setExtensions(extensions);
 

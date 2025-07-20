@@ -4,10 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { STORAGE_EXTENSIONS } from '../app/constants';
 import { storage } from '../app/container';
 
-export interface ExtensionManifest {
-  readonly entry: string | readonly string[];
-  readonly name: string;
-}
+import type { ExtensionManifest, StorableExtension } from '../helpers/extensionHelper';
 
 export interface Extension extends ExtensionManifest {
   readonly errors?: readonly string[];
@@ -18,13 +15,7 @@ export interface Extension extends ExtensionManifest {
   readonly status: 'loading' | 'loaded' | 'error' | 'partial';
 }
 
-export type StorableExtension = Omit<Extension, 'status' | 'errors' | 'ingredients' | 'scripts'> & {
-  readonly fetchedAt: number;
-  readonly scripts: Readonly<Record<string, string>>;
-};
-
 interface ExtensionState {
-  readonly add: (extension: Readonly<Extension>) => void;
   readonly extensions: readonly Extension[];
   readonly remove: (id: string) => void;
   readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: readonly string[]) => void;
@@ -36,10 +27,6 @@ interface ExtensionState {
 export const useExtensionStore = create<ExtensionState>()(
   subscribeWithSelector((set) => ({
     extensions: [],
-
-    add(extension) {
-      set((state) => ({ extensions: [...state.extensions, extension] }));
-    },
 
     remove(id) {
       set((state) => ({ extensions: state.extensions.filter((ext) => ext.id !== id) }));

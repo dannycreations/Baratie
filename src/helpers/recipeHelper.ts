@@ -1,4 +1,4 @@
-import { errorHandler, ingredientRegistry, logger } from '../app/container';
+import { errorHandler, ingredientRegistry } from '../app/container';
 import { useRecipeStore } from '../stores/useRecipeStore';
 import { updateAndValidate, validateSpices } from './spiceHelper';
 
@@ -63,33 +63,8 @@ export function updateSpice(id: string, spiceId: string, rawValue: SpiceValue, s
   setRecipe(newIngredients, activeRecipeId);
 }
 
-export function setIngredientSpices(id: string, newSpices: Readonly<Record<string, unknown>>): void {
-  const { ingredients, activeRecipeId, setRecipe } = useRecipeStore.getState();
-  const ingredientToUpdate = ingredients.find((ingredient) => ingredient.id === id);
-  errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${id}" not found for spice update.`, 'Recipe Update Spices');
-
-  const ingredientDefinition = ingredientRegistry.getIngredient(ingredientToUpdate.name);
-  if (!ingredientDefinition) {
-    logger.warn(
-      `Cannot update spices for ingredient "${ingredientToUpdate.name.description}" because its definition is missing. Spices will not be updated.`,
-    );
-    return;
-  }
-  const validatedSpices = validateSpices(ingredientDefinition, newSpices);
-  const newIngredients = ingredients.map((ingredient) => (ingredient.id === id ? { ...ingredient, spices: validatedSpices } : ingredient));
-  setRecipe(newIngredients, activeRecipeId);
-}
-
-export function setRecipe(ingredients: readonly Ingredient[], activeRecipeId: string | null = null): void {
-  useRecipeStore.getState().setRecipe(ingredients, activeRecipeId);
-}
-
 export function clearRecipe(): void {
   useRecipeStore.getState().setRecipe([], null);
-}
-
-export function getAllIngredients(): readonly Ingredient[] {
-  return useRecipeStore.getState().ingredients;
 }
 
 export function getActiveRecipeId(): string | null {

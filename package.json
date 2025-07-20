@@ -12,7 +12,7 @@
     "format": "prettier --write .",
     "update": "npm-check-updates -u -x @types/node",
     "prepare": "husky && pnpm run build",
-    "release": "pnpm run prepare && changeset publish --no-git-tag"
+    "release": "pnpm run build && changeset publish --no-git-tag"
   },
   "files": [
     "dist"
@@ -22,6 +22,12 @@
     "url": "https://github.com/dannycreations/baratie.git"
   },
   "homepage": "https://github.com/dannycreations/baratie",
+  "dependencies": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "valibot": "1.1.0",
+    "zustand": "5.0.6"
+  },
   "devDependencies": {
     "@changesets/cli": "^2.29.5",
     "@ianvs/prettier-plugin-sort-imports": "^4.5.1",
@@ -39,10 +45,9 @@
     "vite": "^7.0.5",
     "vite-plugin-checker": "^0.10.0"
   },
-  "peerDependencies": {
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "zustand": "5.0.6"
-  },
+  "bundleDependencies": [
+    "@types/react",
+    "@types/react-dom"
+  ],
   "packageManager": "pnpm@10.13.1"
 }

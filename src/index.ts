@@ -1,41 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import * as v from 'valibot';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import { createRoot } from './app/Baratie';
 import { appRegistry, errorHandler, ingredientRegistry, logger } from './app/container';
-import { InputType } from './core/InputType';
 import { LogLevel } from './core/Logger';
-import {
-  closeCookbook,
-  deleteRecipe,
-  exportAll,
-  exportSingle,
-  getAllRecipes,
-  importFromFile,
-  loadRecipe,
-  mergeRecipes,
-  openCookbook,
-  saveAllRecipes,
-  setQuery,
-  setRecipeName,
-  upsertRecipe,
-} from './helpers/cookbookHelper';
-import { addExtension, removeExtension } from './helpers/extensionHelper';
-import { toggleFavorite } from './helpers/favoriteHelper';
 import { clearNotifications, removeNotification, showNotification } from './helpers/notificationHelper';
-import {
-  addIngredient,
-  clearRecipe,
-  getActiveRecipeId,
-  getAllIngredients,
-  removeIngredient,
-  reorderIngredients,
-  setIngredientSpices,
-  setRecipe,
-  updateSpice,
-} from './helpers/recipeHelper';
+import { addIngredient, clearRecipe, getActiveRecipeId, removeIngredient, updateSpice } from './helpers/recipeHelper';
 import { readAsBase64, readAsText, triggerDownload } from './utilities/fileUtil';
 
 import type { NotificationMessage, NotificationType } from '../src/components/main/NotificationPanel';
@@ -49,6 +22,7 @@ import type {
   SpiceDefinition,
   SpiceValue,
 } from './core/IngredientRegistry';
+import type { InputType } from './core/InputType';
 
 const BARATIE_API = {
   logger,
@@ -58,32 +32,10 @@ const BARATIE_API = {
   error: errorHandler,
   ingredient: ingredientRegistry,
   helpers: {
-    cookbook: {
-      close: closeCookbook,
-      delete: deleteRecipe,
-      exportAll,
-      exportSingle,
-      getAll: getAllRecipes,
-      importFromFile,
-      load: loadRecipe,
-      merge: mergeRecipes,
-      open: openCookbook,
-      saveAll: saveAllRecipes,
-      setName: setRecipeName,
-      setQuery,
-      upsert: upsertRecipe,
-    },
-    extension: {
-      add: addExtension,
-      remove: removeExtension,
-    },
-    favorite: {
-      toggle: toggleFavorite,
-    },
     file: {
       download: triggerDownload,
-      readAsBase64,
-      readAsText,
+      readAsBase64: readAsBase64,
+      readAsText: readAsText,
     },
     notification: {
       clear: clearNotifications,
@@ -94,12 +46,8 @@ const BARATIE_API = {
       add: addIngredient,
       clear: clearRecipe,
       getActiveId: getActiveRecipeId,
-      getAll: getAllIngredients,
       remove: removeIngredient,
-      reorder: reorderIngredients,
-      set: setRecipe,
-      setSpices: setIngredientSpices,
-      updateSpice,
+      update: updateSpice,
     },
   },
 } as const;
@@ -121,7 +69,7 @@ export type {
   SpiceValue,
 };
 
-export { create, React, ReactDOM, subscribeWithSelector };
+export { create, React, ReactDOM, subscribeWithSelector, v };
 
 declare global {
   // eslint-disable-next-line no-var
