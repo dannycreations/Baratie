@@ -29,7 +29,7 @@ export const SelectInput = memo(
       [options, onChange],
     );
 
-    const selectInputStyle = `w-full appearance-none rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} py-2 pl-2 pr-8 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} outline-none transition-colors duration-150 hover:bg-${theme.surfaceHover} focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50`;
+    const selectInputStyle = `w-full appearance-none rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} py-2 pl-2 pr-8 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} outline-none transition-colors duration-150 focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed`;
     const finalClass = `${selectInputStyle} ${className}`.trim();
 
     return (
