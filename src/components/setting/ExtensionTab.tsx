@@ -149,7 +149,7 @@ export const ExtensionTab = memo((): JSX.Element => {
           aria-label="GitHub Repository URL"
           className="grow"
           disabled={isLoading}
-          placeholder="https://github.com/user/repository"
+          placeholder="user/repo@branch or full GitHub URL"
           value={url}
           onChange={handleUrlChange}
           onKeyDown={handleKeyDown}

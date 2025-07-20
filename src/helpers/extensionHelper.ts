@@ -68,7 +68,7 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
     };
     for (const entryPoint of entryPoints) {
       if (!entryPoint.trim()) continue;
-      const scriptUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}@latest/${entryPoint}`;
+      const scriptUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}/${entryPoint}`;
       try {
         await fetchAndExecuteScript(scriptUrl);
         successCount++;
@@ -91,32 +91,38 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
   }
 }
 
-function parseGitHubUrl(url: string): { readonly owner: string; readonly repo: string } | null {
+function parseGitHubUrl(url: string): { readonly owner: string; readonly repo: string; readonly ref: string } | null {
   const trimmedUrl = url.trim();
-  const githubUrlMatch = trimmedUrl.match(/^(?:https?:\/\/)?github\.com\/([^/]+)\/([^/.]+)/);
-  if (githubUrlMatch) {
-    return { owner: githubUrlMatch[1], repo: githubUrlMatch[2].replace('.git', '') };
+
+  const fullUrlMatch = trimmedUrl.match(/^(?:https?:\/\/)?(?:www\.)?github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?(?:\/tree\/([\w.-]+))?\/?$/);
+  if (fullUrlMatch) {
+    return { owner: fullUrlMatch[1], repo: fullUrlMatch[2], ref: fullUrlMatch[3] || 'latest' };
   }
-  const simplePathMatch = trimmedUrl.match(/^([^/.]+)\/([^/.]+)/);
-  if (simplePathMatch) {
-    return { owner: simplePathMatch[1], repo: simplePathMatch[2].replace('.git', '') };
+
+  const shorthandMatch = trimmedUrl.match(/^([\w.-]+)\/([\w.-]+)(?:[@#]([\w.-]+))?$/);
+  if (shorthandMatch) {
+    if (shorthandMatch[1].includes('.') || shorthandMatch[0].startsWith('http')) {
+      return null;
+    }
+    return { owner: shorthandMatch[1], repo: shorthandMatch[2], ref: shorthandMatch[3] || 'latest' };
   }
+
   return null;
 }
 
 export async function addExtension(url: string): Promise<void> {
   const repoInfo = parseGitHubUrl(url);
   if (!repoInfo) {
-    showNotification('Invalid GitHub repository URL.', 'error', 'Add Extension Error');
+    showNotification('Invalid GitHub URL. Use `owner/repo`, `owner/repo@branch`, or a full GitHub URL.', 'error', 'Add Extension Error');
     return;
   }
   const { extensions, add: storeAdd, setExtensionStatus } = useExtensionStore.getState();
-  const id = `${repoInfo.owner}/${repoInfo.repo}`;
+  const id = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
   if (extensions.some((ext) => ext.id === id)) {
     showNotification('This extension is already installed.', 'warning', 'Add Extension');
     return;
   }
-  const manifestUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}@latest/manifest.json`;
+  const manifestUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}/manifest.json`;
   try {
     const response = await fetch(manifestUrl);
     if (!response.ok) throw new Error(`Could not fetch manifest: ${response.statusText}`);
