@@ -11,13 +11,17 @@ export interface ExtensionManifest {
 
 export interface Extension extends ExtensionManifest {
   readonly errors?: readonly string[];
+  readonly fetchedAt?: number;
   readonly id: string;
   readonly ingredients?: readonly symbol[];
+  readonly scripts?: Readonly<Record<string, string>>;
   readonly status: 'loading' | 'loaded' | 'error' | 'partial';
-  readonly url: string;
 }
 
-export type StorableExtension = Omit<Extension, 'status' | 'errors' | 'ingredients'>;
+export type StorableExtension = Omit<Extension, 'status' | 'errors' | 'ingredients' | 'scripts'> & {
+  readonly fetchedAt: number;
+  readonly scripts: Readonly<Record<string, string>>;
+};
 
 interface ExtensionState {
   readonly add: (extension: Readonly<Extension>) => void;
@@ -26,6 +30,7 @@ interface ExtensionState {
   readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: readonly string[]) => void;
   readonly setExtensions: (extensions: readonly Extension[]) => void;
   readonly setIngredients: (id: string, ingredients: readonly symbol[]) => void;
+  readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
 }
 
 export const useExtensionStore = create<ExtensionState>()(
@@ -46,7 +51,17 @@ export const useExtensionStore = create<ExtensionState>()(
 
     setExtensionStatus(id, status, errors) {
       set((state) => ({
-        extensions: state.extensions.map((ext) => (ext.id === id ? { ...ext, status, errors } : ext)),
+        extensions: state.extensions.map((ext) => {
+          if (ext.id === id) {
+            const updates: Partial<Extension> = {
+              status,
+              errors,
+              ...((status === 'loaded' || status === 'partial') && { fetchedAt: Date.now() }),
+            };
+            return { ...ext, ...updates };
+          }
+          return ext;
+        }),
       }));
     },
 
@@ -55,13 +70,30 @@ export const useExtensionStore = create<ExtensionState>()(
         extensions: state.extensions.map((ext) => (ext.id === id ? { ...ext, ingredients } : ext)),
       }));
     },
+
+    upsert(extension) {
+      set((state) => {
+        const index = state.extensions.findIndex((e) => e.id === extension.id);
+        if (index > -1) {
+          const newExtensions = [...state.extensions];
+          newExtensions[index] = { ...newExtensions[index], ...extension };
+          return { extensions: newExtensions };
+        }
+        return { extensions: [...state.extensions, extension as Extension] };
+      });
+    },
   })),
 );
 
 useExtensionStore.subscribe(
   (state) => state.extensions,
   (extensions) => {
-    const storable: StorableExtension[] = extensions.map(({ id, url, name, entry }) => ({ id, url, name, entry }));
+    const storable: StorableExtension[] = extensions
+      .filter(
+        (ext): ext is Extension & { fetchedAt: number; scripts: Readonly<Record<string, string>> } =>
+          (ext.status === 'loaded' || ext.status === 'partial') && typeof ext.fetchedAt === 'number' && !!ext.scripts,
+      )
+      .map(({ id, name, entry, fetchedAt, scripts }) => ({ id, name, entry, fetchedAt, scripts: scripts! }));
     storage.set(STORAGE_EXTENSIONS, storable, 'Extensions');
   },
 );
