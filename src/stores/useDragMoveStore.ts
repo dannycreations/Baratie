@@ -8,7 +8,7 @@ interface DragMoveState {
 export const useDragMoveStore = create<DragMoveState>()((set) => ({
   draggedItemId: null,
 
-  setDraggedItemId(id) {
+  setDraggedItemId: (id) => {
     set({ draggedItemId: id });
   },
 }));

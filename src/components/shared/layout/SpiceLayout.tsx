@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { logger } from '../../../app/container';
 import { getVisibleSpices } from '../../../helpers/spiceHelper';
@@ -123,11 +123,11 @@ export const SpiceLayout = memo<SpiceLayoutProps>(({ ingredientDefinition, curre
     event.preventDefault();
   }, []);
 
+  const visibleSpices = useMemo(() => getVisibleSpices(ingredientDefinition, currentSpices), [ingredientDefinition, currentSpices]);
+
   if (!ingredientDefinition.spices || ingredientDefinition.spices.length === 0) {
     return <p className={`text-sm italic text-${theme.contentTertiary}`}>This ingredient has no configurable options.</p>;
   }
-
-  const visibleSpices = getVisibleSpices(ingredientDefinition, currentSpices);
 
   if (visibleSpices.length === 0) {
     return <p className={`text-sm italic text-${theme.contentTertiary}`}>No options are available. Adjust other values to see more.</p>;

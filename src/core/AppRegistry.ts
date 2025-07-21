@@ -1,9 +1,9 @@
 import { errorHandler, logger } from '../app/container';
-import { initFilters } from '../helpers/ingredientHelper';
 import { useAppStore } from '../stores/useAppStore';
 import { useCookbookStore } from '../stores/useCookbookStore';
 import { useExtensionStore } from '../stores/useExtensionStore';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
+import { useIngredientStore } from '../stores/useIngredientStore';
 
 type InitializationTask = {
   readonly type?: 'preInit' | 'postInit';
@@ -25,7 +25,7 @@ export class AppRegistry {
       },
       {
         message: 'Polishing the favorite knives...',
-        handler: () => useFavoriteStore.getState().setFavorites(new Set(useFavoriteStore.getState().favorites)),
+        handler: () => useFavoriteStore.getState().init(),
       },
       {
         message: 'Unfurling the recipe scrolls...',
@@ -33,7 +33,7 @@ export class AppRegistry {
       },
       {
         message: "Consulting the ship's log...",
-        handler: () => initFilters(),
+        handler: () => useIngredientStore.getState().init(),
       },
       { message: 'Prepping the Mise en Place...' },
     ];

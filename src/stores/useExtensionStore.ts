@@ -115,13 +115,13 @@ export interface Extension {
 interface ExtensionState {
   readonly extensions: readonly Extension[];
   readonly extensionMap: ReadonlyMap<string, Extension>;
+  readonly init: () => Promise<void>;
   readonly remove: (id: string) => void;
   readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: readonly string[]) => void;
   readonly setExtensions: (extensions: readonly Extension[]) => void;
   readonly setIngredients: (id: string, ingredients: readonly symbol[]) => void;
   readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
   readonly add: (url: string) => Promise<void>;
-  readonly init: () => Promise<void>;
   readonly refresh: (id: string) => Promise<void>;
 }
 
@@ -206,7 +206,33 @@ export const useExtensionStore = create<ExtensionState>()(
     extensions: [],
     extensionMap: new Map(),
 
-    remove(id) {
+    init: async () => {
+      const rawExtensions = storage.get<unknown[]>(STORAGE_EXTENSIONS, 'Extensions');
+
+      const validationResult = v.safeParse(v.array(StorableExtensionSchema), rawExtensions);
+      let validStoredExtensions: StorableExtension[];
+
+      if (!validationResult.success) {
+        logger.warn('Corrupted extension data in storage, attempting partial recovery.', { issues: validationResult.issues });
+        validStoredExtensions = (rawExtensions || []).filter((e) => v.safeParse(StorableExtensionSchema, e).success) as StorableExtension[];
+      } else {
+        validStoredExtensions = validationResult.output;
+      }
+
+      const extensions: Extension[] = validStoredExtensions.map((e) => ({ ...e, status: 'loading' }));
+      get().setExtensions(extensions);
+
+      const loadPromises = extensions.map((ext) => {
+        if (isCacheValid(ext.fetchedAt)) {
+          return loadAndExecuteExtension(ext);
+        }
+        return get().refresh(ext.id);
+      });
+
+      await Promise.all(loadPromises.map((p) => p.catch((err) => logger.error('Error during extension init:', err))));
+    },
+
+    remove: (id) => {
       const { show } = useNotificationStore.getState();
       const extension = get().extensionMap.get(id);
       if (!extension) {
@@ -236,11 +262,11 @@ export const useExtensionStore = create<ExtensionState>()(
       show(`Extension '${displayName}' has been successfully uninstalled.`, 'success', 'Extension Manager');
     },
 
-    setExtensions(extensions) {
+    setExtensions: (extensions) => {
       set(updateStateWithExtensions(extensions));
     },
 
-    setExtensionStatus(id, status, errors) {
+    setExtensionStatus: (id, status, errors) => {
       set((state) => {
         const index = state.extensions.findIndex((ext) => ext.id === id);
         if (index === -1) return {};
@@ -255,7 +281,7 @@ export const useExtensionStore = create<ExtensionState>()(
       });
     },
 
-    setIngredients(id, ingredients) {
+    setIngredients: (id, ingredients) => {
       set((state) => {
         const index = state.extensions.findIndex((ext) => ext.id === id);
         if (index === -1) return {};
@@ -265,7 +291,7 @@ export const useExtensionStore = create<ExtensionState>()(
       });
     },
 
-    upsert(extension) {
+    upsert: (extension) => {
       set((state) => {
         const index = state.extensions.findIndex((e) => e.id === extension.id);
         const newExtensions = [...state.extensions];
@@ -334,32 +360,6 @@ export const useExtensionStore = create<ExtensionState>()(
         setExtensionStatus(id, 'error', [errorMessage]);
         logger.error(`Error refreshing extension ${id}:`, error);
       }
-    },
-
-    init: async () => {
-      const rawExtensions = storage.get<unknown[]>(STORAGE_EXTENSIONS, 'Extensions');
-
-      const validationResult = v.safeParse(v.array(StorableExtensionSchema), rawExtensions);
-      let validStoredExtensions: StorableExtension[];
-
-      if (!validationResult.success) {
-        logger.warn('Corrupted extension data in storage, attempting partial recovery.', { issues: validationResult.issues });
-        validStoredExtensions = (rawExtensions || []).filter((e) => v.safeParse(StorableExtensionSchema, e).success) as StorableExtension[];
-      } else {
-        validStoredExtensions = validationResult.output;
-      }
-
-      const extensions: Extension[] = validStoredExtensions.map((e) => ({ ...e, status: 'loading' }));
-      get().setExtensions(extensions);
-
-      const loadPromises = extensions.map((ext) => {
-        if (isCacheValid(ext.fetchedAt)) {
-          return loadAndExecuteExtension(ext);
-        }
-        return get().refresh(ext.id);
-      });
-
-      await Promise.all(loadPromises.map((p) => p.catch((err) => logger.error('Error during extension init:', err))));
     },
   })),
 );

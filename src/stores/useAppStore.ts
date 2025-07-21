@@ -15,11 +15,11 @@ export const useAppStore = create<AppState>()(
     loadingHasError: false,
     loadingMessage: 'Firing up the galley...',
 
-    setInitialized(isReady) {
+    setInitialized: (isReady) => {
       set({ isInitialized: isReady });
     },
 
-    setLoadingMessage(message, hasError = false) {
+    setLoadingMessage: (message, hasError = false) => {
       set({ loadingMessage: message, loadingHasError: hasError });
     },
   })),

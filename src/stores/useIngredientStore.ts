@@ -5,6 +5,7 @@ import { STORAGE_CATEGORIES, STORAGE_INGREDIENTS } from '../app/constants';
 import { ingredientRegistry, storage } from '../app/container';
 
 interface IngredientState {
+  readonly init: () => void;
   readonly closeModal: () => void;
   readonly disabledCategories: ReadonlySet<symbol>;
   readonly disabledIngredients: ReadonlySet<symbol>;
@@ -17,6 +18,34 @@ interface IngredientState {
   readonly toggleIngredient: (id: symbol) => void;
 }
 
+function loadFilters(key: string, forCategories: boolean): symbol[] {
+  const storedItems = storage.get(key, 'Ingredient Filters');
+  if (!Array.isArray(storedItems)) {
+    return [];
+  }
+
+  const validatedItems = storedItems.filter((item): item is string => typeof item === 'string');
+
+  if (forCategories) {
+    const allCategorySymbols = ingredientRegistry.getAllCategories();
+    return validatedItems.reduce<symbol[]>((acc, item) => {
+      const symbol = allCategorySymbols.get(item);
+      if (symbol) {
+        acc.push(symbol);
+      }
+      return acc;
+    }, []);
+  }
+
+  return validatedItems.reduce<symbol[]>((acc, item) => {
+    const symbol = ingredientRegistry.getSymbolFromString(item);
+    if (symbol) {
+      acc.push(symbol);
+    }
+    return acc;
+  }, []);
+}
+
 export const useIngredientStore = create<IngredientState>()(
   subscribeWithSelector((set) => ({
     disabledCategories: new Set(),
@@ -24,23 +53,29 @@ export const useIngredientStore = create<IngredientState>()(
     isModalOpen: false,
     registryVersion: 0,
 
-    closeModal() {
+    init: () => {
+      const disabledCategories = loadFilters(STORAGE_CATEGORIES, true);
+      const disabledIngredients = loadFilters(STORAGE_INGREDIENTS, false);
+      set({ disabledCategories: new Set(disabledCategories), disabledIngredients: new Set(disabledIngredients) });
+    },
+
+    closeModal: () => {
       set({ isModalOpen: false });
     },
 
-    openModal() {
+    openModal: () => {
       set({ isModalOpen: true });
     },
 
-    refreshRegistry() {
+    refreshRegistry: () => {
       set((state) => ({ registryVersion: state.registryVersion + 1 }));
     },
 
-    setFilters({ categories, ingredients }) {
+    setFilters: ({ categories, ingredients }) => {
       set({ disabledCategories: new Set(categories), disabledIngredients: new Set(ingredients) });
     },
 
-    toggleCategory(category) {
+    toggleCategory: (category) => {
       set((state) => {
         const newDisabledCategories = new Set(state.disabledCategories);
         if (newDisabledCategories.has(category)) {
@@ -52,7 +87,7 @@ export const useIngredientStore = create<IngredientState>()(
       });
     },
 
-    toggleIngredient(id) {
+    toggleIngredient: (id) => {
       set((state) => {
         const newDisabledIngredients = new Set(state.disabledIngredients);
         if (newDisabledIngredients.has(id)) {

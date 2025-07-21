@@ -59,10 +59,9 @@ function createIngredientHash(ingredients: readonly Ingredient[]): string {
       return name;
     }
 
-    const spicesString = definition.spices
-      .map((spiceDef) => ({ id: spiceDef.id, value: ing.spices[spiceDef.id] }))
+    const spicesString = [...definition.spices]
       .sort((a, b) => a.id.localeCompare(b.id))
-      .map((s) => `${s.id}:${String(s.value)}`)
+      .map((spiceDef) => `${spiceDef.id}:${String(ing.spices[spiceDef.id])}`)
       .join(';');
 
     return `${name}|${spicesString}`;
@@ -137,12 +136,12 @@ interface CookbookState {
   readonly recipes: readonly RecipeBookItem[];
   readonly recipeIdMap: ReadonlyMap<string, RecipeBookItem>;
   readonly recipeContentHashMap: ReadonlyMap<string, string>;
+  readonly init: () => void;
   readonly resetModal: () => void;
   readonly setName: (name: string) => void;
   readonly setQuery: (term: string) => void;
   readonly setRecipes: (recipes: readonly RecipeBookItem[]) => void;
   readonly computeInitialName: (ingredients: readonly Ingredient[], activeRecipeId: string | null) => string;
-  readonly init: () => void;
   readonly upsert: () => void;
   readonly delete: (id: string) => void;
   readonly load: (id: string) => void;

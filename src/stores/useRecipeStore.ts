@@ -28,11 +28,11 @@ export const useRecipeStore = create<RecipeState>()(
     ingredientMap: new Map(),
     ingredientIndexMap: new Map(),
 
-    setActiveRecipeId(id) {
+    setActiveRecipeId: (id) => {
       set({ activeRecipeId: id });
     },
 
-    setRecipe(ingredients, activeRecipeId = null) {
+    setRecipe: (ingredients, activeRecipeId = null) => {
       const validIngredients = ingredients.map((ingredient) => {
         const ingredientDefinition = ingredientRegistry.getIngredient(ingredient.name);
         if (ingredientDefinition) {

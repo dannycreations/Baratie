@@ -14,15 +14,15 @@ export const useSettingStore = create<SettingState>()((set) => ({
   activeTab: 'appearance',
   isModalOpen: false,
 
-  closeModal() {
+  closeModal: () => {
     set({ isModalOpen: false });
   },
 
-  openModal() {
+  openModal: () => {
     set({ isModalOpen: true });
   },
 
-  setActiveTab(tab) {
+  setActiveTab: (tab) => {
     set({ activeTab: tab });
   },
 }));

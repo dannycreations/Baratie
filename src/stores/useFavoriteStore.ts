@@ -2,10 +2,12 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_FAVORITES } from '../app/constants';
-import { ingredientRegistry, storage } from '../app/container';
+import { errorHandler, ingredientRegistry, storage } from '../app/container';
+import { AppError } from '../core/ErrorHandler';
 
 interface FavoriteState {
   readonly favorites: ReadonlySet<symbol>;
+  readonly init: () => void;
   readonly setFavorites: (favorites: ReadonlySet<symbol>) => void;
   readonly toggle: (type: symbol) => void;
 }
@@ -14,11 +16,35 @@ export const useFavoriteStore = create<FavoriteState>()(
   subscribeWithSelector((set, get) => ({
     favorites: new Set(),
 
-    setFavorites(favorites) {
+    init: () => {
+      const parsedFavorites = storage.get(STORAGE_FAVORITES, 'Favorite Ingredients');
+      let favorites: symbol[] = [];
+      if (parsedFavorites) {
+        if (Array.isArray(parsedFavorites)) {
+          favorites = parsedFavorites.reduce<symbol[]>((acc, item) => {
+            if (typeof item === 'string') {
+              const symbol = ingredientRegistry.getSymbolFromString(item);
+              if (symbol) {
+                acc.push(symbol);
+              }
+            }
+            return acc;
+          }, []);
+        } else {
+          errorHandler.handle(
+            new AppError('Corrupted favorites data in storage.', 'Favorites Storage', 'Your favorites data were corrupted and have been reset.'),
+          );
+        }
+      }
+
+      set({ favorites: new Set(favorites) });
+    },
+
+    setFavorites: (favorites) => {
       set({ favorites });
     },
 
-    toggle(type) {
+    toggle: (type) => {
       const { favorites } = get();
       const newFavorites = new Set(favorites);
       if (newFavorites.has(type)) {

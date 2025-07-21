@@ -29,7 +29,7 @@ export const useKitchenStore = create<KitchenState>()(
     outputData: '',
     outputPanelConfig: null,
 
-    setCookingResult(result) {
+    setCookingResult: (result) => {
       set({
         cookingStatus: result.cookingStatus,
         ingredientStatuses: result.ingredientStatuses,
@@ -40,11 +40,11 @@ export const useKitchenStore = create<KitchenState>()(
       });
     },
 
-    setInputData(data) {
+    setInputData: (data) => {
       set({ inputData: data });
     },
 
-    toggleAutoCookState() {
+    toggleAutoCookState: () => {
       set((state) => ({ isAutoCookEnabled: !state.isAutoCookEnabled }));
     },
   })),
