@@ -3,7 +3,7 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 
 interface LineNumberProps {
-  readonly logicalLines: readonly string[];
+  readonly value: string;
   readonly scrollTop: number;
   readonly showLineNumbers: boolean;
   readonly textareaRef: RefObject<HTMLTextAreaElement | null>;
@@ -20,6 +20,7 @@ interface VirtualItem {
 }
 
 interface VirtualResult {
+  readonly lineHeight: number;
   readonly paddingTop: number;
   readonly paddingBottom: number;
   readonly visibleItems: readonly VirtualItem[];
@@ -42,7 +43,7 @@ function findStartLogicalLineIndex(prefixSum: readonly number[], targetVisualLin
   return resultIndex;
 }
 
-export function useLineNumber({ textareaRef, logicalLines, showLineNumbers, scrollTop }: LineNumberProps): VirtualResult {
+export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }: LineNumberProps): VirtualResult {
   const [lineMetrics, setLineMetrics] = useState<readonly LineMetric[]>([]);
   const [visualLinePrefixSum, setVisualLinePrefixSum] = useState<readonly number[]>([]);
   const lineHeightRef = useRef(0);
@@ -75,30 +76,42 @@ export function useLineNumber({ textareaRef, logicalLines, showLineNumbers, scro
     const contentWidth = textarea.clientWidth - xPadding;
     const maxLineChars = charWidth > 0 ? Math.floor(contentWidth / charWidth) : 0;
 
-    if (maxLineChars <= 0) {
-      const newMetrics = logicalLines.map((_, i) => ({ number: i + 1, count: 1 }));
-      setLineMetrics(newMetrics);
-      setVisualLinePrefixSum(newMetrics.map((_, i) => i + 1));
-      return;
-    }
-
     const newMetrics: LineMetric[] = [];
     const newPrefixSum: number[] = [];
     let visualLineCount = 0;
-    for (let i = 0; i < logicalLines.length; i++) {
-      const line = logicalLines[i];
-      const count = Math.max(1, Math.ceil(line.length / maxLineChars));
-      newMetrics.push({ number: i + 1, count });
+
+    if (value.length === 0) {
+      newMetrics.push({ number: 1, count: 1 });
+      newPrefixSum.push(1);
+    } else {
+      let logicalLineCount = 0;
+      let lineStartIndex = 0;
+      for (let i = 0; i < value.length; i++) {
+        if (value[i] === '\n') {
+          logicalLineCount++;
+          const line = value.substring(lineStartIndex, i);
+          const count = maxLineChars > 0 ? Math.max(1, Math.ceil(line.length / maxLineChars)) : 1;
+          newMetrics.push({ number: logicalLineCount, count });
+          visualLineCount += count;
+          newPrefixSum.push(visualLineCount);
+          lineStartIndex = i + 1;
+        }
+      }
+      logicalLineCount++;
+      const line = value.substring(lineStartIndex);
+      const count = maxLineChars > 0 ? Math.max(1, Math.ceil(line.length / maxLineChars)) : 1;
+      newMetrics.push({ number: logicalLineCount, count });
       visualLineCount += count;
       newPrefixSum.push(visualLineCount);
     }
+
     setLineMetrics(newMetrics);
     setVisualLinePrefixSum(newPrefixSum);
-  }, [getCanvasContext, logicalLines, showLineNumbers, textareaRef]);
+  }, [getCanvasContext, value, showLineNumbers, textareaRef]);
 
   useLayoutEffect(() => {
     calculate();
-  }, [logicalLines, calculate]);
+  }, [value, calculate]);
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current;
@@ -120,14 +133,14 @@ export function useLineNumber({ textareaRef, logicalLines, showLineNumbers, scro
 
   return useMemo((): VirtualResult => {
     if (!showLineNumbers || !textareaRef.current || lineHeightRef.current === 0) {
-      return { paddingTop: 0, paddingBottom: 0, visibleItems: [] };
+      return { lineHeight: 0, paddingTop: 0, paddingBottom: 0, visibleItems: [] };
     }
     const lineHeight = lineHeightRef.current;
     const { clientHeight } = textareaRef.current;
     const totalVisualLines = visualLinePrefixSum.length > 0 ? visualLinePrefixSum[visualLinePrefixSum.length - 1] : 0;
 
     if (totalVisualLines === 0) {
-      return { paddingTop: 0, paddingBottom: 0, visibleItems: [] };
+      return { lineHeight, paddingTop: 0, paddingBottom: 0, visibleItems: [] };
     }
 
     const buffer = 10;
@@ -162,6 +175,6 @@ export function useLineNumber({ textareaRef, logicalLines, showLineNumbers, scro
 
     const paddingTop = startIndex * lineHeight;
     const paddingBottom = Math.max(0, (totalVisualLines - endIndex) * lineHeight);
-    return { paddingTop, paddingBottom, visibleItems };
+    return { lineHeight, paddingTop, paddingBottom, visibleItems };
   }, [showLineNumbers, textareaRef, lineMetrics, scrollTop, visualLinePrefixSum]);
 }

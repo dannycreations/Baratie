@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 
 import { errorHandler } from '../../../app/container';
 import { useDragDrop } from '../../../hooks/useDragDrop';
@@ -27,8 +27,7 @@ export const TextareaInput = memo<TextareaInputProps>(
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [scrollTop, setScrollTop] = useState(0);
 
-    const logicalLines = useMemo(() => value.split('\n'), [value]);
-    const virtualizedLines = useLineNumber({ logicalLines, showLineNumbers, textareaRef, scrollTop });
+    const virtualizedLines = useLineNumber({ value, showLineNumbers, textareaRef, scrollTop });
 
     const handleFileDrop = useCallback(
       async (file: File) => {
@@ -73,7 +72,9 @@ export const TextareaInput = memo<TextareaInputProps>(
           <div ref={lineNumbersRef} aria-hidden="true" className={gutterClass}>
             <div style={{ paddingTop: `${virtualizedLines.paddingTop}px`, paddingBottom: `${virtualizedLines.paddingBottom}px` }}>
               {virtualizedLines.visibleItems.map(({ key, number }) => (
-                <div key={key}>{number ?? <>&nbsp;</>}</div>
+                <div key={key} style={{ height: virtualizedLines.lineHeight }}>
+                  {number ?? ''}
+                </div>
               ))}
             </div>
           </div>
