@@ -28,13 +28,15 @@ export function removeIngredient(id: string): void {
 }
 
 export function reorderIngredients(draggedId: string, targetId: string): void {
-  const { ingredients, activeRecipeId, setRecipe } = useRecipeStore.getState();
-  const currentRecipe = [...ingredients];
-  const draggedIndex = currentRecipe.findIndex((ingredient) => ingredient.id === draggedId);
-  const targetIndex = currentRecipe.findIndex((ingredient) => ingredient.id === targetId);
-  if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) {
+  const { ingredients, activeRecipeId, setRecipe, ingredientIndexMap } = useRecipeStore.getState();
+  const draggedIndex = ingredientIndexMap.get(draggedId);
+  const targetIndex = ingredientIndexMap.get(targetId);
+
+  if (draggedIndex === undefined || targetIndex === undefined || draggedIndex === targetIndex) {
     return;
   }
+
+  const currentRecipe = [...ingredients];
   const [draggedItem] = currentRecipe.splice(draggedIndex, 1);
   currentRecipe.splice(targetIndex, 0, draggedItem);
   setRecipe(currentRecipe, activeRecipeId);

@@ -76,10 +76,11 @@ function mergeRecipeLists(
     }
   }
 
-  const finalRecipes: RecipeBookItem[] = [];
+  const sortedForNaming = [...mergedById.values()].sort((a, b) => a.createdAt - b.createdAt);
+
+  const recipesWithUniqueNames: RecipeBookItem[] = [];
   const finalNames = new Set<string>();
   const nameCounters = new Map<string, number>();
-  const sortedForNaming = [...mergedById.values()].sort((a, b) => a.createdAt - b.createdAt);
 
   for (const recipe of sortedForNaming) {
     let uniqueName = recipe.name;
@@ -94,11 +95,13 @@ function mergeRecipeLists(
       nameCounters.set(lowerName, counter);
     }
 
-    finalRecipes.push({ ...recipe, name: uniqueName });
+    recipesWithUniqueNames.push({ ...recipe, name: uniqueName });
     finalNames.add(uniqueName.toLowerCase());
   }
 
-  return { mergedList: finalRecipes, added, updated, skipped };
+  recipesWithUniqueNames.sort((a, b) => b.updatedAt - a.updatedAt);
+
+  return { mergedList: recipesWithUniqueNames, added, updated, skipped };
 }
 
 function sanitizeIngredient(rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): Ingredient | null {

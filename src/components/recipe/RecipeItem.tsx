@@ -1,6 +1,7 @@
 import { memo, useCallback } from 'react';
 
 import { errorHandler, ingredientRegistry } from '../../app/container';
+import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
 import { GrabIcon, PreferencesIcon, XIcon } from '../shared/Icon';
@@ -14,7 +15,6 @@ import type { Ingredient, SpiceDefinition, SpiceValue } from '../../core/Ingredi
 import type { CookingStatusType } from '../../core/Kitchen';
 
 interface RecipeItemProps {
-  readonly status: CookingStatusType;
   readonly ingredient: Ingredient;
   readonly isAutoCook: boolean;
   readonly isDragged: boolean;
@@ -44,7 +44,6 @@ export const RecipeItem = memo<RecipeItemProps>(
     ingredient,
     isEditing,
     isDragged,
-    status,
     isAutoCook,
     isSpiceInInput,
     onEditToggle,
@@ -56,6 +55,7 @@ export const RecipeItem = memo<RecipeItemProps>(
     onDragOver,
   }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
+    const status = useKitchenStore((state) => state.ingredientStatuses[ingredient.id] || 'idle');
 
     const definition = ingredientRegistry.getIngredient(ingredient.name);
     errorHandler.assert(

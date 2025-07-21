@@ -25,12 +25,12 @@ interface ExtensionState {
   readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
 }
 
-function updateStateWithExtensions(extensions: readonly Extension[]) {
+const updateStateWithExtensions = (extensions: readonly Extension[]) => {
   return {
     extensions,
     extensionMap: new Map(extensions.map((ext) => [ext.id, ext])),
   };
-}
+};
 
 export const useExtensionStore = create<ExtensionState>()(
   subscribeWithSelector((set) => ({

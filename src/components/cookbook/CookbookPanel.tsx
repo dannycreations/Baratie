@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useRef } from 'react';
+import { memo, useCallback, useDeferredValue, useMemo, useRef } from 'react';
 
 import { deleteRecipe, exportAll, exportSingle, importFromFile, loadRecipe, mergeRecipes, upsertRecipe } from '../../helpers/cookbookHelper';
 import { useCookbookStore } from '../../stores/useCookbookStore';
@@ -83,6 +83,8 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const isRecipeEmpty = ingredients.length === 0;
   const isSaveDisabled = !nameInput.trim() || isRecipeEmpty;
 
+  const deferredQuery = useDeferredValue(query);
+
   const handleSave = useCallback(() => {
     upsertRecipe(nameInput, ingredients, activeRecipeId);
     closeModal();
@@ -118,12 +120,12 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   }, []);
 
   const filtered = useMemo<readonly RecipeBookItem[]>(() => {
-    const lowerQuery = query.toLowerCase().trim();
+    const lowerQuery = deferredQuery.toLowerCase().trim();
     if (!lowerQuery) {
       return recipes;
     }
     return recipes.filter((recipe) => recipe.name.toLowerCase().includes(lowerQuery));
-  }, [recipes, query]);
+  }, [recipes, deferredQuery]);
 
   const title = modalMode === 'save' ? 'Add to Cookbook' : 'Open from Cookbook';
 

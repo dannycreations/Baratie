@@ -161,11 +161,10 @@ export const Tooltip = memo<TooltipProps>(
         });
       };
       if (isVisible) {
-        const animationFrameId = requestAnimationFrame(calculatePosition);
+        calculatePosition();
         window.addEventListener('resize', calculatePosition);
         window.addEventListener('scroll', calculatePosition, true);
         return () => {
-          cancelAnimationFrame(animationFrameId);
           window.removeEventListener('resize', calculatePosition);
           window.removeEventListener('scroll', calculatePosition, true);
         };

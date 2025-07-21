@@ -7,10 +7,9 @@ import type { Ingredient, RecipeBookItem } from '../core/IngredientRegistry';
 function createIngredientHash(ingredients: readonly Ingredient[]): string {
   const canonicalParts = ingredients.map((ing) => {
     const name = ingredientRegistry.getStringFromSymbol(ing.name) ?? ing.name.toString();
-    const spices = Object.keys(ing.spices)
-      .sort()
-      .map((key) => `${key}:${String(ing.spices[key])}`)
-      .join(';');
+    const definition = ingredientRegistry.getIngredient(ing.name);
+
+    const spices = (definition?.spices ?? []).map((spiceDef) => `${spiceDef.id}:${String(ing.spices[spiceDef.id])}`).join(';');
     return `${name}|${spices}`;
   });
   return canonicalParts.join('||');
@@ -73,10 +72,11 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
   },
 
   setRecipes(newRecipes) {
-    const sortedRecipes = [...newRecipes].sort((a, b) => b.updatedAt - a.updatedAt);
+    const recipes = [...newRecipes].sort((a, b) => b.updatedAt - a.updatedAt);
+
     const idMap = new Map<string, RecipeBookItem>();
     const hashMap = new Map<string, RecipeBookItem>();
-    for (const recipe of sortedRecipes) {
+    for (const recipe of recipes) {
       idMap.set(recipe.id, recipe);
       const hash = createIngredientHash(recipe.ingredients);
       if (!hashMap.has(hash)) {
@@ -84,7 +84,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       }
     }
     set({
-      recipes: sortedRecipes,
+      recipes,
       recipeIdMap: idMap,
       recipeHashMap: hashMap,
     });

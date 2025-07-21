@@ -22,7 +22,6 @@ import type { Ingredient } from '../../core/IngredientRegistry';
 export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
   const activeRecipeId = useRecipeStore((state) => state.activeRecipeId);
-  const ingredientStatuses = useKitchenStore((state) => state.ingredientStatuses);
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
   const inputPanelIngId = useKitchenStore((state) => state.inputPanelIngId);
   const isCookbookOpen = useCookbookStore((state) => state.isModalOpen);
@@ -184,7 +183,6 @@ export const RecipePanel = memo((): JSX.Element => {
             isDragged={dragId === ingredient.id}
             isEditing={editingId === ingredient.id && ingredient.id !== inputPanelIngId}
             isSpiceInInput={ingredient.id === inputPanelIngId}
-            status={ingredientStatuses[ingredient.id] || 'idle'}
             onDragEnd={onMoveEnd}
             onDragEnter={onMoveEnter}
             onDragOver={onMoveOver}
