@@ -77,13 +77,16 @@ useExtensionStore.subscribe(
   (extensions) => {
     const storable = extensions
       .filter(
-        (ext): ext is Extension & { name: string; entry: string | readonly string[]; fetchedAt: number; scripts: Readonly<Record<string, string>> } =>
-          (ext.status === 'loaded' || ext.status === 'partial') && !!ext.name && !!ext.entry && typeof ext.fetchedAt === 'number' && !!ext.scripts,
+        (ext): ext is Extension & { name: string; fetchedAt: number; scripts: Readonly<Record<string, string>> } =>
+          (ext.status === 'loaded' || ext.status === 'partial') &&
+          !!ext.name &&
+          typeof ext.fetchedAt === 'number' &&
+          !!ext.scripts &&
+          Object.keys(ext.scripts).length > 0,
       )
-      .map(({ id, name, entry, fetchedAt, scripts }) => ({
+      .map(({ id, name, fetchedAt, scripts }) => ({
         id,
         name,
-        entry: Array.isArray(entry) ? [...entry] : entry,
         fetchedAt,
         scripts: { ...scripts },
       }));

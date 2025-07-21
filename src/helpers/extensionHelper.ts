@@ -19,18 +19,35 @@ const ExtensionManifestSchema = v.object({
 
 export type ExtensionManifest = v.InferInput<typeof ExtensionManifestSchema>;
 
-const StorableExtensionSchema = v.intersect([
-  ExtensionManifestSchema,
-  v.object({
-    id: NonEmptyString,
-    fetchedAt: v.number(),
-    scripts: v.record(v.string(), v.string()),
-  }),
-]);
+const StorableExtensionSchema = v.object({
+  id: NonEmptyString,
+  name: NonEmptyString,
+  fetchedAt: v.number(),
+  scripts: v.record(v.string(), v.pipe(v.string(), v.nonEmpty())),
+});
 
 export type StorableExtension = v.InferInput<typeof StorableExtensionSchema>;
 
 const EXTENSION_CACHE_MS = 86_400_000;
+
+async function fetchProvider(repoInfo: { readonly owner: string; readonly repo: string; readonly ref: string }, path: string): Promise<Response> {
+  const primaryUrl = `https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.ref}/${path}`;
+  const fallbackUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}/${path}`;
+
+  try {
+    logger.debug(`Fetching from primary provider: ${primaryUrl}`);
+    const response = await fetch(primaryUrl);
+    if (response.ok) {
+      return response;
+    }
+    logger.warn(`Primary provider fetch failed with status ${response.status}. Trying mirror.`);
+  } catch (error) {
+    logger.warn('Primary provider fetch failed with an error. Trying mirror.', error);
+  }
+
+  logger.debug(`Fetching from mirror provider: ${fallbackUrl}`);
+  return fetch(fallbackUrl);
+}
 
 function executeScript(scriptContent: string): void {
   try {
@@ -57,14 +74,15 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
     setExtensionStatus(id, 'error', ['Invalid GitHub URL format.']);
     return;
   }
-  if (!entry) {
-    setExtensionStatus(id, 'error', ["Extension is missing entry point(s) in it's manifest."]);
+  const entryPoints = Array.isArray(entry) ? entry : entry ? [entry] : Object.keys(cachedScripts || {});
+
+  if (entryPoints.length === 0) {
+    setExtensionStatus(id, 'error', ['Extension is missing entry point(s) in its manifest or cache.']);
     return;
   }
 
   const originalRegister = ingredientRegistry.registerIngredient.bind(ingredientRegistry);
   const newlyRegisteredSymbols: symbol[] = [];
-  const entryPoints = Array.isArray(entry) ? entry : [entry];
   const errorLogs: string[] = [];
   const fetchedScripts: Record<string, string> = {};
   let successCount = 0;
@@ -77,17 +95,16 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
 
     for (const entryPoint of entryPoints) {
       if (!entryPoint.trim()) continue;
-      const scriptUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}/${entryPoint}`;
       try {
-        let scriptContent = cachedScripts?.[scriptUrl];
+        let scriptContent = cachedScripts?.[entryPoint];
         if (!scriptContent) {
-          logger.debug(`Cache miss for script: ${scriptUrl}`);
-          const response = await fetch(scriptUrl);
+          logger.debug(`Cache miss for script: ${entryPoint}`);
+          const response = await fetchProvider(repoInfo, entryPoint);
           if (!response.ok) throw new Error(`Fetch failed: ${response.statusText}`);
           scriptContent = await response.text();
-          fetchedScripts[scriptUrl] = scriptContent;
+          fetchedScripts[entryPoint] = scriptContent;
         } else {
-          logger.debug(`Cache hit for script: ${scriptUrl}`);
+          logger.debug(`Cache hit for script: ${entryPoint}`);
         }
         executeScript(scriptContent);
         successCount++;
@@ -148,10 +165,9 @@ async function refreshExtension(id: string): Promise<void> {
     setExtensionStatus(id, 'error', ['Invalid GitHub URL format.']);
     return;
   }
-  const manifestUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}/manifest.json`;
 
   try {
-    const response = await fetch(manifestUrl);
+    const response = await fetchProvider(repoInfo, 'manifest.json');
     if (!response.ok) throw new Error(`Could not fetch manifest: ${response.statusText}`);
     const manifestJson: unknown = await response.json();
 
