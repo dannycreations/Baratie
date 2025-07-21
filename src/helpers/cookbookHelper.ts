@@ -197,42 +197,52 @@ export async function importFromFile(file: File): Promise<RecipeBookItem[] | nul
   if (!jsonData) return null;
 
   const dataToValidate = Array.isArray(jsonData) ? jsonData : [jsonData];
-  const validationResult = safeParse(CookbookImportSchema, dataToValidate);
+  const fullValidation = safeParse(CookbookImportSchema, dataToValidate);
+  let validRawRecipes: RawRecipeBookItem[];
 
-  if (!validationResult.success) {
-    const issue = validationResult.issues[0];
-    const path = issue.path?.map((p) => p.key).join('.');
-    const errorMessage = `Imported file has invalid structure: ${issue.message} at path '${path || 'root'}'.`;
-    showNotification(errorMessage, 'error', 'Import Error', 7000);
-    logger.warn('Cookbook import validation failed', { issues: validationResult.issues });
+  if (fullValidation.success) {
+    validRawRecipes = fullValidation.output;
+  } else {
+    logger.warn('Cookbook import validation failed, attempting partial recovery.', { issues: fullValidation.issues });
+    validRawRecipes = dataToValidate.reduce<RawRecipeBookItem[]>((acc, item) => {
+      const itemValidation = safeParse(RecipeBookItemSchema, item);
+      if (itemValidation.success) {
+        acc.push(itemValidation.output);
+      }
+      return acc;
+    }, []);
+
+    if (validRawRecipes.length < dataToValidate.length) {
+      showNotification('Some recipe entries in the file were malformed and have been skipped.', 'warning', 'Import Notice', 7000);
+    }
+  }
+
+  if (validRawRecipes.length === 0) {
+    showNotification('No valid recipes were found in the selected file.', 'warning', 'Import Notice');
     return null;
   }
 
-  const { recipes, warnings } = validationResult.output.reduce<{
-    recipes: RecipeBookItem[];
-    warnings: string[];
-  }>(
-    (acc, rawRecipe) => {
-      const { recipe, warning } = sanitizeRecipe(rawRecipe, 'fileImport');
-      if (recipe) {
-        acc.recipes.push(recipe);
-      }
-      if (warning) {
-        acc.warnings.push(warning);
-      }
-      return acc;
-    },
-    { recipes: [], warnings: [] },
-  );
+  const allWarnings = new Set<string>();
+  const recipes = validRawRecipes.reduce<RecipeBookItem[]>((acc, rawRecipe) => {
+    const { recipe, warning } = sanitizeRecipe(rawRecipe, 'fileImport');
+    if (recipe) {
+      acc.push(recipe);
+    }
+    if (warning) {
+      allWarnings.add(warning);
+    }
+    return acc;
+  }, []);
 
-  for (const warning of warnings) {
+  for (const warning of allWarnings) {
     showNotification(warning, 'warning', 'Recipe Load Notice', 7000);
   }
 
   if (recipes.length === 0) {
-    showNotification('No valid recipes were found in the selected file.', 'warning', 'Import Notice');
+    showNotification('No valid recipes were found after sanitization.', 'warning', 'Import Notice');
     return null;
   }
+
   return recipes;
 }
 

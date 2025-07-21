@@ -47,13 +47,18 @@ export function groupAndSortIngredients(ingredients: readonly IngredientDefiniti
     grouped.get(ingredient.category)!.push(ingredient);
   }
 
-  for (const items of grouped.values()) {
-    items.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
+  for (const categoryIngredients of grouped.values()) {
+    categoryIngredients.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
   }
 
-  const sortedEntries = Array.from(grouped.entries()).sort(([catA], [catB]) => (catA.description ?? '').localeCompare(catB.description ?? ''));
+  const sortedCategories = [...grouped.keys()].sort((a, b) => (a.description ?? '').localeCompare(b.description ?? ''));
 
-  return new Map(sortedEntries);
+  const result = new Map<symbol, readonly IngredientDefinition[]>();
+  for (const category of sortedCategories) {
+    result.set(category, grouped.get(category)!);
+  }
+
+  return result;
 }
 
 export function searchGroupedIngredients(

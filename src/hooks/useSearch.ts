@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { CATEGORY_FAVORITES } from '../app/constants';
-import { searchGroupedIngredients } from '../helpers/ingredientHelper';
+import { groupAndSortIngredients, searchGroupedIngredients } from '../helpers/ingredientHelper';
 
 import type { IngredientDefinition } from '../core/IngredientRegistry';
 
@@ -17,46 +17,27 @@ export function useSearchIngredients(
   disabledCategories: ReadonlySet<symbol>,
   disabledIngredients: ReadonlySet<symbol>,
 ): SearchedIngredientsResult {
-  const { categorizedIngredients, favoritesIngredients, visibleIngredients } = useMemo(() => {
-    const grouped = new Map<symbol, IngredientDefinition[]>();
-    const favoritesIngredients: IngredientDefinition[] = [];
-    let visibleIngredients = 0;
+  const visibleIngredients = useMemo(
+    () => allIngredients.filter((ingredient) => !disabledCategories.has(ingredient.category) && !disabledIngredients.has(ingredient.name)),
+    [allIngredients, disabledCategories, disabledIngredients],
+  );
 
-    for (const ingredient of allIngredients) {
-      if (!disabledCategories.has(ingredient.category) && !disabledIngredients.has(ingredient.name)) {
-        visibleIngredients++;
+  const favoritesList = useMemo(
+    () =>
+      visibleIngredients
+        .filter((ing) => favoriteIngredients.has(ing.name))
+        .sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? '')),
+    [visibleIngredients, favoriteIngredients],
+  );
 
-        if (!grouped.has(ingredient.category)) {
-          grouped.set(ingredient.category, []);
-        }
-        grouped.get(ingredient.category)!.push(ingredient);
-
-        if (favoriteIngredients.has(ingredient.name)) {
-          favoritesIngredients.push(ingredient);
-        }
-      }
-    }
-
-    for (const items of grouped.values()) {
-      items.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
-    }
-
-    const sortedEntries = Array.from(grouped.entries()).sort(([catA], [catB]) => {
-      return (catA.description ?? '').localeCompare(catB.description ?? '');
-    });
-    const categorizedIngredients = new Map(sortedEntries);
-
-    favoritesIngredients.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
-
-    return { categorizedIngredients, favoritesIngredients, visibleIngredients };
-  }, [allIngredients, disabledCategories, disabledIngredients, favoriteIngredients]);
+  const categorizedIngredients = useMemo(() => groupAndSortIngredients(visibleIngredients), [visibleIngredients]);
 
   const filteredIngredients = useMemo(() => {
     const lowerQuery = query.toLowerCase().trim();
     if (!lowerQuery) {
       const result: [symbol, readonly IngredientDefinition[]][] = [];
-      if (favoritesIngredients.length > 0) {
-        result.push([CATEGORY_FAVORITES, favoritesIngredients]);
+      if (favoritesList.length > 0) {
+        result.push([CATEGORY_FAVORITES, favoritesList]);
       }
       result.push(...categorizedIngredients.entries());
       return result;
@@ -66,7 +47,7 @@ export function useSearchIngredients(
     const searchPredicate = (ing: IngredientDefinition): boolean =>
       (ing.name.description ?? '').toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
 
-    const favoriteMatches = favoritesIngredients.filter(searchPredicate);
+    const favoriteMatches = favoritesList.filter(searchPredicate);
     if (favoriteMatches.length > 0) {
       result.push([CATEGORY_FAVORITES, favoriteMatches]);
     }
@@ -75,10 +56,10 @@ export function useSearchIngredients(
     result.push(...categorizedMatches);
 
     return result;
-  }, [query, categorizedIngredients, favoritesIngredients]);
+  }, [query, categorizedIngredients, favoritesList]);
 
   return {
     filteredIngredients,
-    visibleIngredients,
+    visibleIngredients: visibleIngredients.length,
   };
 }

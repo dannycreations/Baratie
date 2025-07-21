@@ -89,8 +89,8 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
       for (let i = 0; i < value.length; i++) {
         if (value[i] === '\n') {
           logicalLineCount++;
-          const line = value.substring(lineStartIndex, i);
-          const count = maxLineChars > 0 ? Math.max(1, Math.ceil(line.length / maxLineChars)) : 1;
+          const lineLength = i - lineStartIndex;
+          const count = maxLineChars > 0 ? Math.max(1, Math.ceil(lineLength / maxLineChars)) : 1;
           newMetrics.push({ number: logicalLineCount, count });
           visualLineCount += count;
           newPrefixSum.push(visualLineCount);
@@ -98,8 +98,8 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
         }
       }
       logicalLineCount++;
-      const line = value.substring(lineStartIndex);
-      const count = maxLineChars > 0 ? Math.max(1, Math.ceil(line.length / maxLineChars)) : 1;
+      const lineLength = value.length - lineStartIndex;
+      const count = maxLineChars > 0 ? Math.max(1, Math.ceil(lineLength / maxLineChars)) : 1;
       newMetrics.push({ number: logicalLineCount, count });
       visualLineCount += count;
       newPrefixSum.push(visualLineCount);

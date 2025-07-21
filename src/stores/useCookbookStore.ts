@@ -9,8 +9,17 @@ function createIngredientHash(ingredients: readonly Ingredient[]): string {
     const name = ingredientRegistry.getStringFromSymbol(ing.name) ?? ing.name.toString();
     const definition = ingredientRegistry.getIngredient(ing.name);
 
-    const spices = (definition?.spices ?? []).map((spiceDef) => `${spiceDef.id}:${String(ing.spices[spiceDef.id])}`).join(';');
-    return `${name}|${spices}`;
+    if (!definition?.spices || definition.spices.length === 0) {
+      return name;
+    }
+
+    const spicesString = definition.spices
+      .map((spiceDef) => ({ id: spiceDef.id, value: ing.spices[spiceDef.id] }))
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .map((s) => `${s.id}:${String(s.value)}`)
+      .join(';');
+
+    return `${name}|${spicesString}`;
   });
   return canonicalParts.join('||');
 }
@@ -29,7 +38,7 @@ interface CookbookState {
   readonly query: string;
   readonly recipes: readonly RecipeBookItem[];
   readonly recipeIdMap: ReadonlyMap<string, RecipeBookItem>;
-  readonly recipeHashMap: ReadonlyMap<string, RecipeBookItem>;
+  readonly recipeContentHashMap: ReadonlyMap<string, string>;
   readonly resetModal: () => void;
   readonly setName: (name: string) => void;
   readonly setQuery: (term: string) => void;
@@ -44,7 +53,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
   query: '',
   recipes: [],
   recipeIdMap: new Map(),
-  recipeHashMap: new Map(),
+  recipeContentHashMap: new Map(),
 
   closeModal() {
     set({ isModalOpen: false });
@@ -73,20 +82,16 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
 
   setRecipes(newRecipes) {
     const recipes = [...newRecipes].sort((a, b) => b.updatedAt - a.updatedAt);
-
-    const idMap = new Map<string, RecipeBookItem>();
-    const hashMap = new Map<string, RecipeBookItem>();
+    const idMap = new Map(recipes.map((recipe) => [recipe.id, recipe]));
+    const contentHashMap = new Map<string, string>();
     for (const recipe of recipes) {
-      idMap.set(recipe.id, recipe);
       const hash = createIngredientHash(recipe.ingredients);
-      if (!hashMap.has(hash)) {
-        hashMap.set(hash, recipe);
-      }
+      contentHashMap.set(hash, recipe.id);
     }
     set({
       recipes,
       recipeIdMap: idMap,
-      recipeHashMap: hashMap,
+      recipeContentHashMap: contentHashMap,
     });
   },
 
@@ -95,7 +100,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       return '';
     }
 
-    const { recipeIdMap, recipeHashMap } = get();
+    const { recipeIdMap, recipeContentHashMap } = get();
 
     if (activeRecipeId) {
       const activeRecipe = recipeIdMap.get(activeRecipeId);
@@ -105,9 +110,12 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     }
 
     const currentHash = createIngredientHash(ingredients);
-    const existingRecipe = recipeHashMap.get(currentHash);
-    if (existingRecipe) {
-      return existingRecipe.name;
+    const existingRecipeId = recipeContentHashMap.get(currentHash);
+    if (existingRecipeId) {
+      const existingRecipe = recipeIdMap.get(existingRecipeId);
+      if (existingRecipe) {
+        return existingRecipe.name;
+      }
     }
 
     const date = new Date();
