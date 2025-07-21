@@ -1,6 +1,5 @@
 import { memo, useCallback, useDeferredValue, useMemo, useRef } from 'react';
 
-import { deleteRecipe, exportAll, exportSingle, importFromFile, loadRecipe, mergeRecipes, upsertRecipe } from '../../helpers/cookbookHelper';
 import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { TooltipButton } from '../shared/Button';
@@ -73,12 +72,12 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const resetModal = useCookbookStore((state) => state.resetModal);
   const setName = useCookbookStore((state) => state.setName);
   const setQuery = useCookbookStore((state) => state.setQuery);
+  const { upsert, delete: deleteRecipe, load, exportAll, exportCurrent, importFromFile } = useCookbookStore.getState();
+
   const ingredients = useRecipeStore((state) => state.ingredients);
-  const activeRecipeId = useRecipeStore((state) => state.activeRecipeId);
 
   const nameRef = useRef<HTMLInputElement>(null);
   const importRef = useRef<HTMLInputElement>(null);
-  const importOperationRef = useRef<number>(0);
 
   const isRecipeEmpty = ingredients.length === 0;
   const isSaveDisabled = !nameInput.trim() || isRecipeEmpty;
@@ -86,38 +85,28 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const deferredQuery = useDeferredValue(query);
 
   const handleSave = useCallback(() => {
-    upsertRecipe(nameInput, ingredients, activeRecipeId);
+    upsert();
     closeModal();
-  }, [closeModal, nameInput, ingredients, activeRecipeId]);
+  }, [upsert, closeModal]);
 
   const handleLoad = useCallback(
     (id: string) => {
-      const loadedRecipe = loadRecipe(id);
-      if (loadedRecipe) {
-        closeModal();
-      }
+      load(id);
     },
-    [closeModal],
+    [load],
   );
 
-  const handleExportCurrent = useCallback(() => {
-    exportSingle(nameInput, ingredients);
-  }, [nameInput, ingredients]);
-
-  const handleExportAll = useCallback(() => exportAll(recipes), [recipes]);
   const handleTriggerImport = useCallback(() => importRef.current?.click(), []);
 
-  const handleFileImport = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
-    const operationId = ++importOperationRef.current;
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    if (!file) return;
-
-    const newRecipes = await importFromFile(file);
-    if (operationId === importOperationRef.current && newRecipes) {
-      mergeRecipes(newRecipes);
-    }
-  }, []);
+  const handleFileImport = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      event.target.value = '';
+      if (!file) return;
+      await importFromFile(file);
+    },
+    [importFromFile],
+  );
 
   const filtered = useMemo<readonly RecipeBookItem[]>(() => {
     const lowerQuery = deferredQuery.toLowerCase().trim();
@@ -131,9 +120,9 @@ export const CookbookPanel = memo((): JSX.Element | null => {
 
   const headerActions =
     modalMode === 'save' ? (
-      <SaveHeaderActions isSaveDisabled={isSaveDisabled} onExportCurrent={handleExportCurrent} onSave={handleSave} />
+      <SaveHeaderActions isSaveDisabled={isSaveDisabled} onExportCurrent={exportCurrent} onSave={handleSave} />
     ) : (
-      <LoadHeaderActions isExportDisabled={recipes.length === 0} onExportAll={handleExportAll} onTriggerImport={handleTriggerImport} />
+      <LoadHeaderActions isExportDisabled={recipes.length === 0} onExportAll={exportAll} onTriggerImport={handleTriggerImport} />
     );
 
   const bodyContent =

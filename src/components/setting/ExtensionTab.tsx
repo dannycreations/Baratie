@@ -1,7 +1,6 @@
 import { memo, useCallback, useState } from 'react';
 
 import { CONFIRM_SHOW_MS } from '../../app/constants';
-import { addExtension, removeExtension } from '../../helpers/extensionHelper';
 import { getConfirmClasses } from '../../helpers/styleHelper';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { useExtensionStore } from '../../stores/useExtensionStore';
@@ -58,11 +57,12 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
 
 const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
+  const removeExtension = useExtensionStore((state) => state.remove);
   const displayName = extension.name || extension.id;
 
   const handleConfirmDelete = useCallback(() => {
     removeExtension(extension.id);
-  }, [extension.id]);
+  }, [removeExtension, extension.id]);
 
   const { isConfirm: isDeleting, trigger: triggerDelete } = useConfirmAction(handleConfirmDelete, CONFIRM_SHOW_MS);
 
@@ -108,6 +108,7 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
 export const ExtensionTab = memo((): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const extensions = useExtensionStore((state) => state.extensions);
+  const addExtension = useExtensionStore((state) => state.add);
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -120,7 +121,7 @@ export const ExtensionTab = memo((): JSX.Element => {
     } finally {
       setIsLoading(false);
     }
-  }, [url, isLoading]);
+  }, [url, isLoading, addExtension]);
 
   const handleUrlChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setUrl(event.target.value);

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 
-import type { NotificationMessage } from '../components/main/NotificationPanel';
+import { NOTIFICATION_SHOW_MS } from '../app/constants';
+
+import type { NotificationMessage, NotificationType } from '../components/main/NotificationPanel';
 
 function getDedupeKey(n: Pick<NotificationMessage, 'type' | 'title' | 'message'>): string {
   return [n.type, n.title || '', n.message].join('|');
@@ -15,9 +17,10 @@ interface NotificationState {
   readonly clear: () => void;
   readonly remove: (id: string) => void;
   readonly update: (id: string, duration: number, resetAt: number) => void;
+  readonly show: (message: string, type?: NotificationType, title?: string, duration?: number) => void;
 }
 
-export const useNotificationStore = create<NotificationState>()((set) => ({
+export const useNotificationStore = create<NotificationState>()((set, get) => ({
   order: [],
   map: new Map(),
   dedupeMap: new Map(),
@@ -26,12 +29,9 @@ export const useNotificationStore = create<NotificationState>()((set) => ({
     set((state) => {
       const newMap = new Map(state.map);
       newMap.set(notification.id, notification);
-
       const newOrder = [...state.order, notification.id];
-
       const newDedupeMap = new Map(state.dedupeMap);
       newDedupeMap.set(getDedupeKey(notification), notification.id);
-
       return { map: newMap, order: newOrder, dedupeMap: newDedupeMap };
     }),
 
@@ -43,18 +43,14 @@ export const useNotificationStore = create<NotificationState>()((set) => ({
       if (!notification) {
         return {};
       }
-
       const newMap = new Map(state.map);
       newMap.delete(id);
-
       const newOrder = state.order.filter((i) => i !== id);
-
       const newDedupeMap = new Map(state.dedupeMap);
       const currentId = newDedupeMap.get(getDedupeKey(notification));
       if (currentId === id) {
         newDedupeMap.delete(getDedupeKey(notification));
       }
-
       return { map: newMap, order: newOrder, dedupeMap: newDedupeMap };
     }),
 
@@ -68,4 +64,22 @@ export const useNotificationStore = create<NotificationState>()((set) => ({
       newMap.set(id, { ...notification, duration, resetAt });
       return { map: newMap };
     }),
+
+  show: (message, type = 'info', title, duration) => {
+    const { add, update, dedupeMap } = get();
+    const details = { message, title, type };
+    const key = getDedupeKey(details);
+    const existingId = dedupeMap.get(key);
+
+    if (existingId) {
+      update(existingId, duration ?? NOTIFICATION_SHOW_MS, Date.now());
+    } else {
+      const newNotification: NotificationMessage = {
+        ...details,
+        id: crypto.randomUUID(),
+        duration: duration ?? NOTIFICATION_SHOW_MS,
+      };
+      add(newNotification);
+    }
+  },
 }));

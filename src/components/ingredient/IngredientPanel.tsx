@@ -1,12 +1,11 @@
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 
 import { errorHandler, ingredientRegistry } from '../../app/container';
-import { toggleFavorite } from '../../helpers/favoriteHelper';
-import { addIngredient, removeIngredient } from '../../helpers/recipeHelper';
 import { useSearchIngredients } from '../../hooks/useSearch';
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useFavoriteStore } from '../../stores/useFavoriteStore';
 import { useIngredientStore } from '../../stores/useIngredientStore';
+import { useRecipeStore } from '../../stores/useRecipeStore';
 import { useSettingStore } from '../../stores/useSettingStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
@@ -22,6 +21,8 @@ import type { IngredientDefinition } from '../../core/IngredientRegistry';
 
 export const IngredientPanel = memo((): JSX.Element => {
   const favorites = useFavoriteStore((state) => state.favorites);
+  const toggleFavorite = useFavoriteStore((state) => state.toggle);
+  const { addIngredient, removeIngredient } = useRecipeStore.getState();
   const disabledCategories = useIngredientStore((state) => state.disabledCategories);
   const disabledIngredients = useIngredientStore((state) => state.disabledIngredients);
   const openIngredientModal = useIngredientStore((state) => state.openModal);
@@ -70,7 +71,7 @@ export const IngredientPanel = memo((): JSX.Element => {
       setDragOverRecipe(false);
       setDraggedItemId(null);
     },
-    [setDraggedItemId],
+    [removeIngredient, setDraggedItemId],
   );
 
   const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: IngredientDefinition) => {
@@ -143,7 +144,7 @@ export const IngredientPanel = memo((): JSX.Element => {
         </>
       );
     },
-    [favorites, theme],
+    [favorites, theme, toggleFavorite, addIngredient],
   );
 
   return (

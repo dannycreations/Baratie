@@ -1,8 +1,6 @@
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 
 import { errorHandler, ingredientRegistry, kitchen } from '../../app/container';
-import { openCookbook } from '../../helpers/cookbookHelper';
-import { addIngredient, clearRecipe, removeIngredient, reorderIngredients, updateSpice } from '../../helpers/recipeHelper';
 import { useDragMove } from '../../hooks/useDragMove';
 import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useKitchenStore } from '../../stores/useKitchenStore';
@@ -22,9 +20,11 @@ import type { Ingredient } from '../../core/IngredientRegistry';
 export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
   const activeRecipeId = useRecipeStore((state) => state.activeRecipeId);
+  const { addIngredient, removeIngredient, reorderIngredients, updateSpice, clearRecipe } = useRecipeStore.getState();
+  const openCookbook = useCookbookStore((state) => state.open);
+  const isCookbookOpen = useCookbookStore((state) => state.isModalOpen);
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
   const inputPanelIngId = useKitchenStore((state) => state.inputPanelIngId);
-  const isCookbookOpen = useCookbookStore((state) => state.isModalOpen);
   const theme = useThemeStore((state) => state.theme);
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -85,24 +85,27 @@ export const RecipePanel = memo((): JSX.Element => {
     [onMoveOver],
   );
 
-  const handleDrop = useCallback((event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDraggingIngredient(false);
-    const typeString = event.dataTransfer.getData('application/x-baratie-ingredient-type');
-    if (typeString) {
-      const typeSymbol = ingredientRegistry.getSymbolFromString(typeString);
-      errorHandler.assert(typeSymbol, `Could not find symbol for ingredient type string: "${typeString}".`, 'Recipe Drag&Drop');
-      addIngredient(typeSymbol);
-    }
-  }, []);
+  const handleDrop = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setIsDraggingIngredient(false);
+      const typeString = event.dataTransfer.getData('application/x-baratie-ingredient-type');
+      if (typeString) {
+        const typeSymbol = ingredientRegistry.getSymbolFromString(typeString);
+        errorHandler.assert(typeSymbol, `Could not find symbol for ingredient type string: "${typeString}".`, 'Recipe Drag&Drop');
+        addIngredient(typeSymbol);
+      }
+    },
+    [addIngredient],
+  );
 
   const handleSave = useCallback(() => {
     openCookbook({ mode: 'save', ingredients, activeRecipeId });
-  }, [ingredients, activeRecipeId]);
+  }, [openCookbook, ingredients, activeRecipeId]);
 
   const handleLoad = useCallback(() => {
     openCookbook({ mode: 'load' });
-  }, []);
+  }, [openCookbook]);
 
   const autoCookTooltip = isAutoCookEnabled ? 'Pause Auto-Cooking' : 'Resume Auto-Cooking';
   const autoCookLabel = isAutoCookEnabled ? 'Pause Automatic Cooking' : 'Resume Automatic Cooking and Run';
@@ -156,7 +159,7 @@ export const RecipePanel = memo((): JSX.Element => {
         />
       </>
     ),
-    [ingredients.length, isCookbookOpen, isAutoCookEnabled, autoCookLabel, autoCookClass, autoCookTooltip, handleSave, handleLoad],
+    [ingredients.length, isCookbookOpen, isAutoCookEnabled, autoCookLabel, autoCookClass, autoCookTooltip, handleSave, handleLoad, clearRecipe],
   );
 
   let content: JSX.Element;

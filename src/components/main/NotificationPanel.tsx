@@ -1,7 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { NOTIFICATION_EXIT_MS, NOTIFICATION_SHOW_MS } from '../../app/constants';
-import { removeNotification } from '../../helpers/notificationHelper';
 import { useControlTimer } from '../../hooks/useControlTimer';
 import { useNotificationStore } from '../../stores/useNotificationStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -46,6 +45,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const [isExiting, setExiting] = useState(false);
   const [isPaused, setPaused] = useState(false);
   const theme = useThemeStore((state) => state.theme);
+  const removeNotification = useNotificationStore((state) => state.remove);
 
   const handleExit = useCallback(() => {
     setExiting(true);
@@ -72,7 +72,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
     return () => {
       clearTimeout(timerId);
     };
-  }, [isExiting, notification.id]);
+  }, [isExiting, notification.id, removeNotification]);
 
   const { iconColor, borderColor, barColor } = getNotificationTheme(theme, notification.type);
 

@@ -1,9 +1,9 @@
 import { errorHandler, logger } from '../app/container';
-import { initRecipes } from '../helpers/cookbookHelper';
-import { initExtensions } from '../helpers/extensionHelper';
-import { initFavorites } from '../helpers/favoriteHelper';
 import { initFilters } from '../helpers/ingredientHelper';
 import { useAppStore } from '../stores/useAppStore';
+import { useCookbookStore } from '../stores/useCookbookStore';
+import { useExtensionStore } from '../stores/useExtensionStore';
+import { useFavoriteStore } from '../stores/useFavoriteStore';
 
 type InitializationTask = {
   readonly type?: 'preInit' | 'postInit';
@@ -21,15 +21,15 @@ export class AppRegistry {
       { message: 'Sharpening the cutlasses...' },
       {
         message: 'Loading supplies from other vessels...',
-        handler: () => initExtensions(),
+        handler: () => useExtensionStore.getState().init(),
       },
       {
         message: 'Polishing the favorite knives...',
-        handler: () => initFavorites(),
+        handler: () => useFavoriteStore.getState().setFavorites(new Set(useFavoriteStore.getState().favorites)),
       },
       {
         message: 'Unfurling the recipe scrolls...',
-        handler: () => initRecipes(),
+        handler: () => useCookbookStore.getState().init(),
       },
       {
         message: "Consulting the ship's log...",

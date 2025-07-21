@@ -1,5 +1,5 @@
 import { logger } from '../app/container';
-import { showNotification } from '../helpers/notificationHelper';
+import { useNotificationStore } from '../stores/useNotificationStore';
 
 export class AppError extends Error {
   public readonly context?: string;
@@ -89,7 +89,7 @@ export class ErrorHandler {
     if (handlerOptions.shouldNotify) {
       const messageToShow = displayMessage.trim() || handlerOptions.defaultMessage!;
       try {
-        showNotification(messageToShow, 'error', notificationTitle, 7000);
+        useNotificationStore.getState().show(messageToShow, 'error', notificationTitle, 7000);
       } catch (notificationError) {
         logger.error('ErrorHandler: Failed to show a notification due to an internal notification system error.', {
           notificationSystemError: notificationError,

@@ -52,19 +52,19 @@ export class InputType<T = unknown> {
 
     switch (type) {
       case 'array':
-        return this._castToArray(handleFailure);
+        return this.castToArray(handleFailure);
       case 'arraybuffer':
-        return this._castToArrayBuffer(handleFailure);
+        return this.castToArrayBuffer(handleFailure);
       case 'boolean':
-        return this._castToBoolean(handleFailure);
+        return this.castToBoolean(handleFailure);
       case 'bytearray':
-        return this._castToByteArray(handleFailure);
+        return this.castToByteArray(handleFailure);
       case 'number':
-        return this._castToNumber(options, handleFailure);
+        return this.castToNumber(options, handleFailure);
       case 'object':
-        return this._castToObject(handleFailure);
+        return this.castToObject(handleFailure);
       case 'string':
-        return this._castToString(options);
+        return this.castToString(options);
       default: {
         const unhandled = String(type);
         return handleFailure(new CastError(`Unhandled cast target type: ${unhandled}`));
@@ -106,7 +106,7 @@ export class InputType<T = unknown> {
     return new InputType(newValue);
   }
 
-  private _castToArray(handleFailure: (e?: Error) => InputType<unknown>): InputType<unknown[]> {
+  private castToArray(handleFailure: (e?: Error) => InputType<unknown>): InputType<unknown[]> {
     if (Array.isArray(this.value)) {
       return new InputType(this.value);
     }
@@ -121,7 +121,7 @@ export class InputType<T = unknown> {
     return handleFailure(new CastError(`Cannot cast to array from type ${typeof this.value}`)) as InputType<unknown[]>;
   }
 
-  private _castToArrayBuffer(handleFailure: (e?: Error) => InputType<unknown>): InputType<ArrayBuffer> {
+  private castToArrayBuffer(handleFailure: (e?: Error) => InputType<unknown>): InputType<ArrayBuffer> {
     if (this.value instanceof ArrayBuffer) {
       return new InputType(this.value);
     }
@@ -141,7 +141,7 @@ export class InputType<T = unknown> {
     return handleFailure(new CastError(`Cannot cast to ArrayBuffer from type ${typeof this.value}`)) as InputType<ArrayBuffer>;
   }
 
-  private _castToBoolean(handleFailure: (e?: Error) => InputType<unknown>): InputType<boolean> {
+  private castToBoolean(handleFailure: (e?: Error) => InputType<unknown>): InputType<boolean> {
     if (typeof this.value === 'boolean') {
       return new InputType(this.value);
     }
@@ -161,7 +161,7 @@ export class InputType<T = unknown> {
     }
   }
 
-  private _castToByteArray(handleFailure: (e?: Error) => InputType<unknown>): InputType<Uint8Array> {
+  private castToByteArray(handleFailure: (e?: Error) => InputType<unknown>): InputType<Uint8Array> {
     if (this.value instanceof Uint8Array) {
       return new InputType(this.value);
     }
@@ -181,7 +181,7 @@ export class InputType<T = unknown> {
     return handleFailure(new CastError(`Cannot cast to Uint8Array from type ${typeof this.value}`)) as InputType<Uint8Array>;
   }
 
-  private _castToNumber(
+  private castToNumber(
     options: { readonly max?: number; readonly min?: number; readonly value?: unknown } | undefined,
     handleFailure: (e?: Error) => InputType<unknown>,
   ): InputType<number> {
@@ -202,7 +202,7 @@ export class InputType<T = unknown> {
     return new InputType(numericValue);
   }
 
-  private _castToObject(handleFailure: (e?: Error) => InputType<unknown>): InputType<object> {
+  private castToObject(handleFailure: (e?: Error) => InputType<unknown>): InputType<object> {
     if (isObjectLike(this.value) && !Array.isArray(this.value)) {
       return new InputType(this.value);
     }
@@ -217,7 +217,7 @@ export class InputType<T = unknown> {
     return handleFailure(new CastError(`Cannot cast to object from type ${typeof this.value}`)) as InputType<object>;
   }
 
-  private _castToString(options: { readonly trim?: boolean; readonly value?: unknown } | undefined): InputType<string> {
+  private castToString(options: { readonly trim?: boolean; readonly value?: unknown } | undefined): InputType<string> {
     const { trim = true } = options || {};
     let stringValue: string;
     if (this.value instanceof ArrayBuffer) {

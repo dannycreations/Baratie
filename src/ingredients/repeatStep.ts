@@ -1,7 +1,7 @@
 import { CATEGORY_FLOW, KEY_REPEAT_STEP } from '../app/constants';
 import { errorHandler, ingredientRegistry, kitchen, logger } from '../app/container';
-import { AppError } from '../core/ErrorHandler';
 import { InputType } from '../core/InputType';
+import { useNotificationStore } from '../stores/useNotificationStore';
 
 import type { IngredientContext, IngredientDefinition, SpiceDefinition } from '../core/IngredientRegistry';
 
@@ -81,18 +81,9 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
     const ingredientsToRepeat = recipe.slice(0, currentIndex);
 
     if (ingredientsToRepeat.length === 0) {
-      errorHandler.handle(
-        new AppError(
-          'REPEAT_STEP: No ingredients above to repeat.',
-          `Ingredient: ${ingredientName}`,
-          "'Repeat Step' has no preceding ingredients to execute. Add one or more ingredients before it.",
-        ),
-        undefined,
-        {
-          notificationTitle: 'Configuration Warning',
-          shouldNotify: true,
-        },
-      );
+      useNotificationStore
+        .getState()
+        .show("'Repeat Step' has no preceding ingredients to execute. Add one or more ingredients before it.", 'warning', 'Configuration Warning');
       return new InputType('');
     }
 

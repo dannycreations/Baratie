@@ -1,7 +1,6 @@
 import { memo, useCallback, useRef } from 'react';
 
 import { errorHandler, ingredientRegistry, kitchen } from '../../app/container';
-import { updateSpice } from '../../helpers/recipeHelper';
 import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { readAsText, triggerDownload } from '../../utilities/fileUtil';
@@ -160,6 +159,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const outputPanelConfig = useKitchenStore((state) => state.outputPanelConfig);
   const inputData = useKitchenStore((state) => state.inputData);
   const outputData = useKitchenStore((state) => state.outputData);
+  const { updateSpice } = useRecipeStore.getState();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importOperationRef = useRef<number>(0);

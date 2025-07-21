@@ -7,14 +7,26 @@ import { ingredientRegistry, storage } from '../app/container';
 interface FavoriteState {
   readonly favorites: ReadonlySet<symbol>;
   readonly setFavorites: (favorites: ReadonlySet<symbol>) => void;
+  readonly toggle: (type: symbol) => void;
 }
 
 export const useFavoriteStore = create<FavoriteState>()(
-  subscribeWithSelector((set) => ({
+  subscribeWithSelector((set, get) => ({
     favorites: new Set(),
 
     setFavorites(favorites) {
       set({ favorites });
+    },
+
+    toggle(type) {
+      const { favorites } = get();
+      const newFavorites = new Set(favorites);
+      if (newFavorites.has(type)) {
+        newFavorites.delete(type);
+      } else {
+        newFavorites.add(type);
+      }
+      set({ favorites: newFavorites });
     },
   })),
 );

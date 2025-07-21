@@ -7,8 +7,8 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { createRoot } from './app/Baratie';
 import { appRegistry, errorHandler, ingredientRegistry, logger } from './app/container';
 import { LogLevel } from './core/Logger';
-import { clearNotifications, removeNotification, showNotification } from './helpers/notificationHelper';
-import { addIngredient, clearRecipe, getActiveRecipeId, removeIngredient, updateSpice } from './helpers/recipeHelper';
+import { useNotificationStore } from './stores/useNotificationStore';
+import { useRecipeStore } from './stores/useRecipeStore';
 import { readAsBase64, readAsText, triggerDownload } from './utilities/fileUtil';
 
 import type { NotificationMessage, NotificationType } from '../src/components/main/NotificationPanel';
@@ -24,6 +24,9 @@ import type {
 } from './core/IngredientRegistry';
 import type { InputType } from './core/InputType';
 
+const { getState: getRecipeState } = useRecipeStore;
+const { getState: getNotificationState } = useNotificationStore;
+
 const BARATIE_API = {
   logger,
   LogLevel,
@@ -38,16 +41,22 @@ const BARATIE_API = {
       readAsText: readAsText,
     },
     notification: {
-      clear: clearNotifications,
-      remove: removeNotification,
-      show: showNotification,
+      clear: () => getNotificationState().clear(),
+      remove: (id: string) => getNotificationState().remove(id),
+      show: (message: string, type?: NotificationType, title?: string, duration?: number) => {
+        return getNotificationState().show(message, type, title, duration);
+      },
     },
     recipe: {
-      add: addIngredient,
-      clear: clearRecipe,
-      getActiveId: getActiveRecipeId,
-      remove: removeIngredient,
-      update: updateSpice,
+      add: (type: symbol, initialSpices?: Readonly<Record<string, unknown>>) => {
+        return getRecipeState().addIngredient(type, initialSpices);
+      },
+      clear: () => getRecipeState().clearRecipe(),
+      getActiveId: () => getRecipeState().getActiveRecipeId(),
+      remove: (id: string) => getRecipeState().removeIngredient(id),
+      update: (id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>) => {
+        return getRecipeState().updateSpice(id, spiceId, rawValue, spice);
+      },
     },
   },
 } as const;
