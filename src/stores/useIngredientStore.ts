@@ -5,14 +5,14 @@ import { STORAGE_CATEGORIES, STORAGE_INGREDIENTS } from '../app/constants';
 import { ingredientRegistry, storage } from '../app/container';
 
 interface IngredientState {
-  readonly init: () => void;
-  readonly closeModal: () => void;
   readonly disabledCategories: ReadonlySet<symbol>;
   readonly disabledIngredients: ReadonlySet<symbol>;
   readonly isModalOpen: boolean;
+  readonly registryVersion: number;
+  readonly closeModal: () => void;
+  readonly init: () => void;
   readonly openModal: () => void;
   readonly refreshRegistry: () => void;
-  readonly registryVersion: number;
   readonly setFilters: (filters: { readonly categories: readonly symbol[]; readonly ingredients: readonly symbol[] }) => void;
   readonly toggleCategory: (category: symbol) => void;
   readonly toggleIngredient: (id: symbol) => void;
@@ -52,29 +52,29 @@ export const useIngredientStore = create<IngredientState>()(
     disabledIngredients: new Set(),
     isModalOpen: false,
     registryVersion: 0,
-
-    init: () => {
-      const disabledCategories = loadFilters(STORAGE_CATEGORIES, true);
-      const disabledIngredients = loadFilters(STORAGE_INGREDIENTS, false);
-      set({ disabledCategories: new Set(disabledCategories), disabledIngredients: new Set(disabledIngredients) });
-    },
-
     closeModal: () => {
       set({ isModalOpen: false });
     },
-
+    init: () => {
+      const disabledCategories = loadFilters(STORAGE_CATEGORIES, true);
+      const disabledIngredients = loadFilters(STORAGE_INGREDIENTS, false);
+      set({
+        disabledCategories: new Set(disabledCategories),
+        disabledIngredients: new Set(disabledIngredients),
+      });
+    },
     openModal: () => {
       set({ isModalOpen: true });
     },
-
     refreshRegistry: () => {
       set((state) => ({ registryVersion: state.registryVersion + 1 }));
     },
-
     setFilters: ({ categories, ingredients }) => {
-      set({ disabledCategories: new Set(categories), disabledIngredients: new Set(ingredients) });
+      set({
+        disabledCategories: new Set(categories),
+        disabledIngredients: new Set(ingredients),
+      });
     },
-
     toggleCategory: (category) => {
       set((state) => {
         const newDisabledCategories = new Set(state.disabledCategories);
@@ -86,7 +86,6 @@ export const useIngredientStore = create<IngredientState>()(
         return { disabledCategories: newDisabledCategories };
       });
     },
-
     toggleIngredient: (id) => {
       set((state) => {
         const newDisabledIngredients = new Set(state.disabledIngredients);

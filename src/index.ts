@@ -28,21 +28,25 @@ const { getState: getRecipeState } = useRecipeStore;
 const { getState: getNotificationState } = useNotificationStore;
 
 const BARATIE_API = {
-  logger,
-  LogLevel,
-  createRoot,
   app: appRegistry,
+  createRoot,
   error: errorHandler,
   ingredient: ingredientRegistry,
+  logger,
+  LogLevel,
   helpers: {
     file: {
       download: triggerDownload,
-      readAsBase64: readAsBase64,
-      readAsText: readAsText,
+      readAsBase64,
+      readAsText,
     },
     notification: {
-      clear: () => getNotificationState().clear(),
-      remove: (id: string) => getNotificationState().remove(id),
+      clear: () => {
+        return getNotificationState().clear();
+      },
+      remove: (id: string) => {
+        return getNotificationState().remove(id);
+      },
       show: (message: string, type?: NotificationType, title?: string, duration?: number) => {
         return getNotificationState().show(message, type, title, duration);
       },
@@ -51,9 +55,15 @@ const BARATIE_API = {
       add: (type: symbol, initialSpices?: Readonly<Record<string, unknown>>) => {
         return getRecipeState().addIngredient(type, initialSpices);
       },
-      clear: () => getRecipeState().clearRecipe(),
-      getActiveId: () => getRecipeState().getActiveRecipeId(),
-      remove: (id: string) => getRecipeState().removeIngredient(id),
+      clear: () => {
+        return getRecipeState().clearRecipe();
+      },
+      getActiveId: () => {
+        return getRecipeState().getActiveRecipeId();
+      },
+      remove: (id: string) => {
+        return getRecipeState().removeIngredient(id);
+      },
       update: (id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>) => {
         return getRecipeState().updateSpice(id, spiceId, rawValue, spice);
       },
@@ -62,6 +72,8 @@ const BARATIE_API = {
 } as const;
 
 type BaratieApi = typeof BARATIE_API;
+
+export { create, React, ReactDOM, subscribeWithSelector, v };
 
 export type {
   BaratieApi,
@@ -77,8 +89,6 @@ export type {
   SpiceDefinition,
   SpiceValue,
 };
-
-export { create, React, ReactDOM, subscribeWithSelector, v };
 
 declare global {
   // eslint-disable-next-line no-var

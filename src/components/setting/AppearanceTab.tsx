@@ -88,7 +88,9 @@ export const AppearanceTab = memo((): JSX.Element => {
               aria-checked={isChecked}
               className={liClass}
               tabIndex={0}
-              onClick={() => handleSelectTheme(item.id)}
+              onClick={() => {
+                handleSelectTheme(item.id);
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();

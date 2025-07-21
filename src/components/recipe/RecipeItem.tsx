@@ -65,10 +65,27 @@ export const RecipeItem = memo<RecipeItemProps>(
       { genericMessage: `The definition for ingredient "${ingredient.name.description}" is missing.` },
     );
 
-    const handleDragStart = useCallback((event: DragEvent<HTMLElement>) => onDragStart(event, ingredient), [onDragStart, ingredient]);
-    const handleDragEnter = useCallback((event: DragEvent<HTMLElement>) => onDragEnter(event, ingredient.id), [onDragEnter, ingredient.id]);
-    const handleRemove = useCallback(() => onRemove(ingredient.id), [onRemove, ingredient.id]);
-    const handleEditToggle = useCallback(() => onEditToggle(ingredient), [onEditToggle, ingredient]);
+    const handleDragStart = useCallback(
+      (event: DragEvent<HTMLElement>) => {
+        onDragStart(event, ingredient);
+      },
+      [onDragStart, ingredient],
+    );
+
+    const handleDragEnter = useCallback(
+      (event: DragEvent<HTMLElement>) => {
+        onDragEnter(event, ingredient.id);
+      },
+      [onDragEnter, ingredient.id],
+    );
+
+    const handleRemove = useCallback(() => {
+      onRemove(ingredient.id);
+    }, [onRemove, ingredient.id]);
+
+    const handleEditToggle = useCallback(() => {
+      onEditToggle(ingredient);
+    }, [onEditToggle, ingredient]);
 
     const handleSpiceChange = useCallback(
       (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => {
@@ -189,7 +206,9 @@ export const RecipeItem = memo<RecipeItemProps>(
               <div
                 id={`options-${ingredient.id}`}
                 className="recipe-item-spices-enter-active"
-                onDoubleClick={(event: MouseEvent<HTMLDivElement>): void => event.stopPropagation()}
+                onDoubleClick={(event: MouseEvent<HTMLDivElement>): void => {
+                  event.stopPropagation();
+                }}
               >
                 <div className="max-h-96 overflow-y-auto px-1">
                   <div className={`rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-3`}>

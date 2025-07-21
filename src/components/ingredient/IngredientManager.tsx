@@ -25,11 +25,17 @@ export const IngredientManager = memo((): JSX.Element => {
   const [query, setQuery] = useState('');
   const listId = useId();
 
-  const allIngredients = useMemo<readonly IngredientDefinition[]>(() => ingredientRegistry.getAllIngredients(), [registryVersion]);
+  const allIngredients = useMemo<readonly IngredientDefinition[]>(() => {
+    return ingredientRegistry.getAllIngredients();
+  }, [registryVersion]);
 
-  const ingredientsByCategory = useMemo(() => groupAndSortIngredients(allIngredients), [allIngredients]);
+  const ingredientsByCategory = useMemo(() => {
+    return groupAndSortIngredients(allIngredients);
+  }, [allIngredients]);
 
-  const filteredList = useMemo(() => searchGroupedIngredients(ingredientsByCategory, query), [ingredientsByCategory, query]);
+  const filteredList = useMemo(() => {
+    return searchGroupedIngredients(ingredientsByCategory, query);
+  }, [ingredientsByCategory, query]);
 
   const renderHeader = useCallback(
     (category: symbol): JSX.Element => {

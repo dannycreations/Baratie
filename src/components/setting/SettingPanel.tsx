@@ -57,10 +57,20 @@ export const SettingPanel = memo((): JSX.Element => {
   return (
     <Modal bodyClasses="p-0" contentClasses="flex max-h-[80vh] flex-col" isOpen={isModalOpen} size="xl" title="Settings" onClose={closeModal}>
       <div role="tablist" aria-label="Settings categories" className={`flex border-b border-${theme.borderPrimary} px-3`}>
-        <TabButton isActive={activeTab === 'appearance'} onClick={() => handleTabSelect('appearance')}>
+        <TabButton
+          isActive={activeTab === 'appearance'}
+          onClick={() => {
+            handleTabSelect('appearance');
+          }}
+        >
           Appearance
         </TabButton>
-        <TabButton isActive={activeTab === 'extensions'} onClick={() => handleTabSelect('extensions')}>
+        <TabButton
+          isActive={activeTab === 'extensions'}
+          onClick={() => {
+            handleTabSelect('extensions');
+          }}
+        >
           Extensions
         </TabButton>
       </div>

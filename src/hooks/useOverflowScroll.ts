@@ -21,7 +21,9 @@ export function useOverflowScroll<T extends HTMLElement>({ xClasses, yClasses }:
     const hasVerticalScroll = element.scrollHeight > element.clientHeight;
     const hasHorizontalScroll = element.scrollWidth > element.clientWidth;
     const toggleClasses = (classString: string | undefined, condition: boolean): void => {
-      if (!classString) return;
+      if (!classString) {
+        return;
+      }
       classString
         .split(' ')
         .filter(Boolean)
@@ -59,11 +61,15 @@ export function useOverflowScroll<T extends HTMLElement>({ xClasses, yClasses }:
       resizeObserver.disconnect();
       mutationObserver.disconnect();
       const removeClasses = (classString: string | undefined): void => {
-        if (!classString) return;
+        if (!classString) {
+          return;
+        }
         classString
           .split(' ')
           .filter(Boolean)
-          .forEach((className) => element.classList.remove(className));
+          .forEach((className) => {
+            element.classList.remove(className);
+          });
       };
       if (element) {
         removeClasses(yClasses);

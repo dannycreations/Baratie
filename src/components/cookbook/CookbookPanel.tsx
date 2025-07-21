@@ -96,13 +96,17 @@ export const CookbookPanel = memo((): JSX.Element | null => {
     [load],
   );
 
-  const handleTriggerImport = useCallback(() => importRef.current?.click(), []);
+  const handleTriggerImport = useCallback(() => {
+    importRef.current?.click();
+  }, []);
 
   const handleFileImport = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       event.target.value = '';
-      if (!file) return;
+      if (!file) {
+        return;
+      }
       await importFromFile(file);
     },
     [importFromFile],

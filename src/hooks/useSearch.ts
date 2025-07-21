@@ -33,7 +33,9 @@ export function useSearchIngredients(
       }
     }
 
-    favorites.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
+    favorites.sort((a, b) => {
+      return (a.name.description ?? '').localeCompare(b.name.description ?? '');
+    });
 
     return {
       favoritesList: favorites,

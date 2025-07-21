@@ -113,7 +113,9 @@ export const ExtensionTab = memo((): JSX.Element => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleAdd = useCallback(async () => {
-    if (!url.trim() || isLoading) return;
+    if (!url.trim() || isLoading) {
+      return;
+    }
     setIsLoading(true);
     try {
       await addExtension(url);

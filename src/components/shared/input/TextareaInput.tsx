@@ -31,7 +31,9 @@ export const TextareaInput = memo<TextareaInputProps>(
 
     const handleFileDrop = useCallback(
       async (file: File) => {
-        if (disabled || !onChange) return;
+        if (disabled || !onChange) {
+          return;
+        }
         const { result: text, error } = await errorHandler.attemptAsync(() => readAsText(file));
         if (!error && typeof text === 'string') {
           onChange(text);

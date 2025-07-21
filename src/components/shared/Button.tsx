@@ -121,16 +121,22 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
   const theme = useThemeStore((state) => state.theme);
 
   useControlTimer({
-    callback: () => setIsCopied(false),
+    callback: () => {
+      setIsCopied(false);
+    },
     duration: COPY_SHOW_MS,
     reset: isCopied,
     state: isCopied,
   });
 
   const handleCopy = useCallback(async (): Promise<void> => {
-    if (!textToCopy) return;
+    if (!textToCopy) {
+      return;
+    }
     const { error } = await errorHandler.attemptAsync(() => navigator.clipboard.writeText(textToCopy), 'Clipboard Copy');
-    if (!error) setIsCopied(true);
+    if (!error) {
+      setIsCopied(true);
+    }
   }, [textToCopy]);
 
   return (

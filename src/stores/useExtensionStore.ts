@@ -28,6 +28,30 @@ const StorableExtensionSchema = v.object({
 
 export type StorableExtension = v.InferInput<typeof StorableExtensionSchema>;
 
+export interface Extension {
+  readonly entry?: string | readonly string[];
+  readonly errors?: readonly string[];
+  readonly fetchedAt?: number;
+  readonly id: string;
+  readonly ingredients?: readonly symbol[];
+  readonly name?: string;
+  readonly scripts?: Readonly<Record<string, string>>;
+  readonly status: 'loading' | 'loaded' | 'error' | 'partial';
+}
+
+interface ExtensionState {
+  readonly extensions: readonly Extension[];
+  readonly extensionMap: ReadonlyMap<string, Extension>;
+  readonly add: (url: string) => Promise<void>;
+  readonly init: () => Promise<void>;
+  readonly refresh: (id: string) => Promise<void>;
+  readonly remove: (id: string) => void;
+  readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: readonly string[]) => void;
+  readonly setExtensions: (extensions: readonly Extension[]) => void;
+  readonly setIngredients: (id: string, ingredients: readonly symbol[]) => void;
+  readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
+}
+
 const EXTENSION_CACHE_MS = 86_400_000;
 
 async function fetchProvider(repoInfo: { readonly owner: string; readonly repo: string; readonly ref: string }, path: string): Promise<Response> {
@@ -88,7 +112,9 @@ function parseGitHubUrl(url: string): { readonly owner: string; readonly repo: s
         return { owner, repo: cleanRepo, ref };
       }
     }
-  } catch {}
+  } catch {
+    // URL parsing failed, proceed to shorthand match
+  }
 
   const shorthandMatch = trimmedUrl.match(/^([\w.-]+)\/([\w.-]+)(?:[@#]([\w.-]+))?$/);
   if (shorthandMatch) {
@@ -99,30 +125,6 @@ function parseGitHubUrl(url: string): { readonly owner: string; readonly repo: s
   }
 
   return null;
-}
-
-export interface Extension {
-  readonly entry?: string | readonly string[];
-  readonly errors?: readonly string[];
-  readonly fetchedAt?: number;
-  readonly id: string;
-  readonly ingredients?: readonly symbol[];
-  readonly name?: string;
-  readonly scripts?: Readonly<Record<string, string>>;
-  readonly status: 'loading' | 'loaded' | 'error' | 'partial';
-}
-
-interface ExtensionState {
-  readonly extensions: readonly Extension[];
-  readonly extensionMap: ReadonlyMap<string, Extension>;
-  readonly init: () => Promise<void>;
-  readonly remove: (id: string) => void;
-  readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: readonly string[]) => void;
-  readonly setExtensions: (extensions: readonly Extension[]) => void;
-  readonly setIngredients: (id: string, ingredients: readonly symbol[]) => void;
-  readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
-  readonly add: (url: string) => Promise<void>;
-  readonly refresh: (id: string) => Promise<void>;
 }
 
 const updateStateWithExtensions = (extensions: readonly Extension[]) => {
@@ -161,13 +163,17 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
     };
 
     for (const entryPoint of entryPoints) {
-      if (!entryPoint.trim()) continue;
+      if (!entryPoint.trim()) {
+        continue;
+      }
       try {
         let scriptContent = cachedScripts?.[entryPoint];
         if (!scriptContent) {
           logger.debug(`Cache miss for script: ${entryPoint}`);
           const response = await fetchProvider(repoInfo, entryPoint);
-          if (!response.ok) throw new Error(`Fetch failed: ${response.statusText}`);
+          if (!response.ok) {
+            throw new Error(`Fetch failed: ${response.statusText}`);
+          }
           scriptContent = await response.text();
           fetchedScripts[entryPoint] = scriptContent;
         } else {
@@ -187,7 +193,9 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
     upsert({ id, scripts: { ...cachedScripts, ...fetchedScripts } });
   }
 
-  if (newlyRegisteredSymbols.length > 0) setIngredients(id, newlyRegisteredSymbols);
+  if (newlyRegisteredSymbols.length > 0) {
+    setIngredients(id, newlyRegisteredSymbols);
+  }
   const finalStatus: Extension['status'] = successCount > 0 ? (errorLogs.length > 0 ? 'partial' : 'loaded') : 'error';
   setExtensionStatus(id, finalStatus, errorLogs);
 
@@ -206,6 +214,25 @@ export const useExtensionStore = create<ExtensionState>()(
     extensions: [],
     extensionMap: new Map(),
 
+    add: async (url) => {
+      const { show } = useNotificationStore.getState();
+      const repoInfo = parseGitHubUrl(url);
+      if (!repoInfo) {
+        show('Invalid GitHub URL. Use `owner/repo`, `owner/repo@branch`, or a full GitHub URL.', 'error', 'Add Extension Error');
+        return;
+      }
+      const { extensionMap, refresh } = get();
+      const id = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
+      const existing = extensionMap.get(id);
+
+      if (existing && isCacheValid(existing.fetchedAt)) {
+        show('This extension is already installed and up-to-date.', 'info', 'Add Extension');
+        return;
+      }
+
+      await refresh(id);
+    },
+
     init: async () => {
       const rawExtensions = storage.get<unknown[]>(STORAGE_EXTENSIONS, 'Extensions');
 
@@ -214,7 +241,7 @@ export const useExtensionStore = create<ExtensionState>()(
 
       if (!validationResult.success) {
         logger.warn('Corrupted extension data in storage, attempting partial recovery.', { issues: validationResult.issues });
-        validStoredExtensions = (rawExtensions || []).filter((e) => v.safeParse(StorableExtensionSchema, e).success) as StorableExtension[];
+        validStoredExtensions = (rawExtensions || []).filter((e): e is StorableExtension => v.safeParse(StorableExtensionSchema, e).success);
       } else {
         validStoredExtensions = validationResult.output;
       }
@@ -230,6 +257,47 @@ export const useExtensionStore = create<ExtensionState>()(
       });
 
       await Promise.all(loadPromises.map((p) => p.catch((err) => logger.error('Error during extension init:', err))));
+    },
+
+    refresh: async (id) => {
+      const { upsert, setIngredients, setExtensionStatus, extensionMap } = get();
+      const storeExtension = extensionMap.get(id);
+
+      logger.info(`Refreshing extension: ${storeExtension?.name || id}`);
+      upsert({ id, status: 'loading', name: storeExtension?.name || 'Refreshing...', scripts: {} });
+
+      const repoInfo = parseGitHubUrl(id);
+      if (!repoInfo) {
+        setExtensionStatus(id, 'error', ['Invalid GitHub URL format.']);
+        return;
+      }
+
+      try {
+        const response = await fetchProvider(repoInfo, 'manifest.json');
+        if (!response.ok) {
+          throw new Error(`Could not fetch manifest: ${response.statusText}`);
+        }
+        const manifestJson: unknown = await response.json();
+
+        const validationResult = v.safeParse(ExtensionManifestSchema, manifestJson);
+        if (!validationResult.success) {
+          throw new Error(`Invalid manifest file: ${validationResult.issues[0].message}`);
+        }
+        const manifest = validationResult.output;
+
+        if (storeExtension?.ingredients) {
+          ingredientRegistry.unregisterIngredients(storeExtension.ingredients);
+          setIngredients(id, []);
+        }
+
+        const freshExtension: Extension = { id, ...manifest, status: 'loading', scripts: {} };
+        upsert(freshExtension);
+        await loadAndExecuteExtension(freshExtension);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        setExtensionStatus(id, 'error', [errorMessage]);
+        logger.error(`Error refreshing extension ${id}:`, error);
+      }
     },
 
     remove: (id) => {
@@ -262,10 +330,6 @@ export const useExtensionStore = create<ExtensionState>()(
       show(`Extension '${displayName}' has been successfully uninstalled.`, 'success', 'Extension Manager');
     },
 
-    setExtensions: (extensions) => {
-      set(updateStateWithExtensions(extensions));
-    },
-
     setExtensionStatus: (id, status, errors) => {
       set((state) => {
         if (!state.extensionMap.has(id)) {
@@ -279,6 +343,10 @@ export const useExtensionStore = create<ExtensionState>()(
         const newExtensions = state.extensions.map((ext) => (ext.id === id ? { ...ext, ...updates } : ext));
         return updateStateWithExtensions(newExtensions);
       });
+    },
+
+    setExtensions: (extensions) => {
+      set(updateStateWithExtensions(extensions));
     },
 
     setIngredients: (id, ingredients) => {
@@ -298,64 +366,6 @@ export const useExtensionStore = create<ExtensionState>()(
           : [...state.extensions, extension as Extension];
         return updateStateWithExtensions(newExtensions);
       });
-    },
-
-    add: async (url) => {
-      const { show } = useNotificationStore.getState();
-      const repoInfo = parseGitHubUrl(url);
-      if (!repoInfo) {
-        show('Invalid GitHub URL. Use `owner/repo`, `owner/repo@branch`, or a full GitHub URL.', 'error', 'Add Extension Error');
-        return;
-      }
-      const { extensionMap, refresh } = get();
-      const id = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
-      const existing = extensionMap.get(id);
-
-      if (existing && isCacheValid(existing.fetchedAt)) {
-        show('This extension is already installed and up-to-date.', 'info', 'Add Extension');
-        return;
-      }
-
-      await refresh(id);
-    },
-
-    refresh: async (id) => {
-      const { upsert, setIngredients, setExtensionStatus, extensionMap } = get();
-      const storeExtension = extensionMap.get(id);
-
-      logger.info(`Refreshing extension: ${storeExtension?.name || id}`);
-      upsert({ id, status: 'loading', name: storeExtension?.name || 'Refreshing...', scripts: {} });
-
-      const repoInfo = parseGitHubUrl(id);
-      if (!repoInfo) {
-        setExtensionStatus(id, 'error', ['Invalid GitHub URL format.']);
-        return;
-      }
-
-      try {
-        const response = await fetchProvider(repoInfo, 'manifest.json');
-        if (!response.ok) throw new Error(`Could not fetch manifest: ${response.statusText}`);
-        const manifestJson: unknown = await response.json();
-
-        const validationResult = v.safeParse(ExtensionManifestSchema, manifestJson);
-        if (!validationResult.success) {
-          throw new Error(`Invalid manifest file: ${validationResult.issues[0].message}`);
-        }
-        const manifest = validationResult.output;
-
-        if (storeExtension?.ingredients) {
-          ingredientRegistry.unregisterIngredients(storeExtension.ingredients);
-          setIngredients(id, []);
-        }
-
-        const freshExtension: Extension = { id, ...manifest, status: 'loading', scripts: {} };
-        upsert(freshExtension);
-        await loadAndExecuteExtension(freshExtension);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        setExtensionStatus(id, 'error', [errorMessage]);
-        logger.error(`Error refreshing extension ${id}:`, error);
-      }
     },
   })),
 );

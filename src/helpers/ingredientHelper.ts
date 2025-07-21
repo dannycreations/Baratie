@@ -10,10 +10,14 @@ export function groupAndSortIngredients(ingredients: readonly IngredientDefiniti
   }
 
   for (const categoryIngredients of grouped.values()) {
-    categoryIngredients.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
+    categoryIngredients.sort((a, b) => {
+      return (a.name.description ?? '').localeCompare(b.name.description ?? '');
+    });
   }
 
-  const sortedEntries = [...grouped.entries()].sort(([catA], [catB]) => (catA.description ?? '').localeCompare(catB.description ?? ''));
+  const sortedEntries = [...grouped.entries()].sort(([catA], [catB]) => {
+    return (catA.description ?? '').localeCompare(catB.description ?? '');
+  });
 
   return new Map(sortedEntries);
 }

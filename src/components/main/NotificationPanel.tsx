@@ -51,8 +51,13 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
     setExiting(true);
   }, []);
 
-  const handleMouseEnter = useCallback((): void => setPaused(true), []);
-  const handleMouseLeave = useCallback((): void => setPaused(false), []);
+  const handleMouseEnter = useCallback((): void => {
+    setPaused(true);
+  }, []);
+
+  const handleMouseLeave = useCallback((): void => {
+    setPaused(false);
+  }, []);
 
   useControlTimer({
     callback: handleExit,

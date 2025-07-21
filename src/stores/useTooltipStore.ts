@@ -7,7 +7,6 @@ interface TooltipState {
 
 export const useTooltipStore = create<TooltipState>()((set) => ({
   activeId: null,
-
   setActiveId: (id) => {
     set({ activeId: id });
   },

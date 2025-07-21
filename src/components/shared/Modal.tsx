@@ -90,7 +90,9 @@ export const Modal = memo<ModalProps>(
           setIsRendered(false);
           onExited?.();
         }, MODAL_SHOW_MS);
-        return () => clearTimeout(timerId);
+        return () => {
+          clearTimeout(timerId);
+        };
       }
     }, [isOpen, isRendered, onExited]);
 

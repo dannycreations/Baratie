@@ -18,24 +18,36 @@ export class AppRegistry {
 
   public constructor() {
     this.systemTasks = [
-      { message: 'Sharpening the cutlasses...' },
+      {
+        message: 'Sharpening the cutlasses...',
+      },
       {
         message: 'Loading supplies from other vessels...',
-        handler: () => useExtensionStore.getState().init(),
+        handler: () => {
+          return useExtensionStore.getState().init();
+        },
       },
       {
         message: 'Polishing the favorite knives...',
-        handler: () => useFavoriteStore.getState().init(),
+        handler: () => {
+          return useFavoriteStore.getState().init();
+        },
       },
       {
         message: 'Unfurling the recipe scrolls...',
-        handler: () => useCookbookStore.getState().init(),
+        handler: () => {
+          return useCookbookStore.getState().init();
+        },
       },
       {
         message: "Consulting the ship's log...",
-        handler: () => useIngredientStore.getState().init(),
+        handler: () => {
+          return useIngredientStore.getState().init();
+        },
       },
-      { message: 'Prepping the Mise en Place...' },
+      {
+        message: 'Prepping the Mise en Place...',
+      },
     ];
   }
 
@@ -75,7 +87,9 @@ export class AppRegistry {
             return;
           }
         }
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 200);
+        });
       }
 
       useAppStore.getState().setInitialized(true);

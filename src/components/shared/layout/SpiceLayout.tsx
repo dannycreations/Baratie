@@ -29,13 +29,19 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
   const theme = useThemeStore((state) => state.theme);
 
   const handleBooleanChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => onSpiceChange(spice.id, event.target.checked, spice),
+    (event: ChangeEvent<HTMLInputElement>) => {
+      onSpiceChange(spice.id, event.target.checked, spice);
+    },
     [onSpiceChange, spice],
   );
+
   const handleValueChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onSpiceChange(spice.id, event.target.value, spice),
+    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      onSpiceChange(spice.id, event.target.value, spice);
+    },
     [onSpiceChange, spice],
   );
+
   const handleSelectChange = useCallback(
     (newValue: SpiceValue) => {
       onSpiceChange(spice.id, newValue, spice);
@@ -123,7 +129,9 @@ export const SpiceLayout = memo<SpiceLayoutProps>(({ ingredientDefinition, curre
     event.preventDefault();
   }, []);
 
-  const visibleSpices = useMemo(() => getVisibleSpices(ingredientDefinition, currentSpices), [ingredientDefinition, currentSpices]);
+  const visibleSpices = useMemo(() => {
+    return getVisibleSpices(ingredientDefinition, currentSpices);
+  }, [ingredientDefinition, currentSpices]);
 
   if (!ingredientDefinition.spices || ingredientDefinition.spices.length === 0) {
     return <p className={`text-sm italic text-${theme.contentTertiary}`}>This ingredient has no configurable options.</p>;
