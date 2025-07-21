@@ -37,13 +37,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   const listId = useId();
 
   const allIngredients = useMemo<readonly IngredientDefinition[]>(() => ingredientRegistry.getAllIngredients(), [registryVersion]);
-  const { filteredIngredients: ingredientsByCat, enabledIngredientsCount: visibleIngredients } = useSearchIngredients(
-    allIngredients,
-    query,
-    favorites,
-    disabledCategories,
-    disabledIngredients,
-  );
+  const { filteredIngredients, visibleIngredients } = useSearchIngredients(allIngredients, query, favorites, disabledCategories, disabledIngredients);
   const totalIngredients = allIngredients.length;
 
   const handleDragEnterRecipe = useCallback((event: DragEvent<HTMLDivElement>) => {
@@ -170,7 +164,7 @@ export const IngredientPanel = memo((): JSX.Element => {
         <SearchListLayout
           listContent={
             <IngredientList
-              itemsByCategory={ingredientsByCat}
+              itemsByCategory={filteredIngredients}
               query={query}
               renderItemActions={renderItemActions}
               onItemDragStart={handleItemDragStart}
