@@ -117,10 +117,13 @@ export const CookbookPanel = memo((): JSX.Element | null => {
     }
   }, []);
 
-  const filtered = useMemo<readonly RecipeBookItem[]>(
-    () => recipes.filter((recipe) => recipe.name.toLowerCase().includes(query.toLowerCase())),
-    [recipes, query],
-  );
+  const filtered = useMemo<readonly RecipeBookItem[]>(() => {
+    const lowerQuery = query.toLowerCase().trim();
+    if (!lowerQuery) {
+      return recipes;
+    }
+    return recipes.filter((recipe) => recipe.name.toLowerCase().includes(lowerQuery));
+  }, [recipes, query]);
 
   const title = modalMode === 'save' ? 'Add to Cookbook' : 'Open from Cookbook';
 

@@ -12,7 +12,7 @@ import type { IngredientDefinition } from '../../core/IngredientRegistry';
 
 export interface IngredientListProps<T extends IngredientDefinition> {
   readonly emptyMessage?: string;
-  readonly itemsByCategory: ReadonlyMap<symbol, readonly T[]>;
+  readonly itemsByCategory: readonly (readonly [symbol, readonly T[]])[];
   readonly noResultsMessage?: (query: string) => string;
   readonly query: string;
   readonly renderHeader?: (category: symbol) => JSX.Element;
@@ -41,13 +41,11 @@ export const IngredientList = memo(
       setExpandedCategory((current) => (current === category ? null : category));
     }, []);
 
-    if (itemsByCategory.size === 0) {
+    if (itemsByCategory.length === 0) {
       return (
         <EmptyView className="flex grow flex-col items-center justify-center py-4">{query.trim() ? noResultsMessage(query) : emptyMessage}</EmptyView>
       );
     }
-
-    const categoryEntries = Array.from(itemsByCategory.entries());
 
     const renderListItem = (item: T): JSX.Element => {
       const ingredientName = item.name.description ?? 'Unnamed Ingredient';
@@ -88,7 +86,7 @@ export const IngredientList = memo(
 
     return (
       <>
-        {categoryEntries.map(([category, items], index) => {
+        {itemsByCategory.map(([category, items], index) => {
           const isExpanded = !!query.trim() || expandedCategory === category;
           const categoryId = `category-panel-${(category.description || '').replace(/\s+/g, '-').toLowerCase()}`;
           const buttonId = `${categoryId}-button`;
@@ -111,7 +109,7 @@ export const IngredientList = memo(
             </button>
           );
 
-          const containerClass = `overflow-hidden rounded-md ${!isExpanded && index < categoryEntries.length - 1 ? 'mb-2' : ''}`.trim();
+          const containerClass = `overflow-hidden rounded-md ${!isExpanded && index < itemsByCategory.length - 1 ? 'mb-2' : ''}`.trim();
 
           return (
             <div key={category.toString()} className={containerClass}>

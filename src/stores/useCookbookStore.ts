@@ -54,6 +54,6 @@ export const useCookbookStore = create<CookbookState>()((set) => ({
   },
 
   setRecipes(recipes) {
-    set({ recipes: [...recipes].sort((a, b) => b.updatedAt - a.updatedAt) });
+    set({ recipes: [...recipes] });
   },
 }));

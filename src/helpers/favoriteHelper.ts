@@ -17,11 +17,16 @@ export function initFavorites(): void {
       );
     }
   }
-  useFavoriteStore.getState().setFavorites(favorites);
+  useFavoriteStore.getState().setFavorites(new Set(favorites));
 }
 
 export function toggleFavorite(type: symbol): void {
   const { favorites, setFavorites } = useFavoriteStore.getState();
-  const newFavorites = favorites.includes(type) ? favorites.filter((favorite) => favorite !== type) : [...favorites, type];
+  const newFavorites = new Set(favorites);
+  if (newFavorites.has(type)) {
+    newFavorites.delete(type);
+  } else {
+    newFavorites.add(type);
+  }
   setFavorites(newFavorites);
 }

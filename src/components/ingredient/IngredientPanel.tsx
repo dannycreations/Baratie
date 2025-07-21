@@ -40,7 +40,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   const ingredientsByCat = useSearchIngredients(allIngredients, query, favorites, disabledCategories, disabledIngredients);
   const totalIngredients = allIngredients.length;
   const visibleIngredients = useMemo<number>(
-    () => allIngredients.filter((ing) => !disabledCategories.includes(ing.category) && !disabledIngredients.includes(ing.name)).length,
+    () => allIngredients.filter((ing) => !disabledCategories.has(ing.category) && !disabledIngredients.has(ing.name)).length,
     [allIngredients, disabledCategories, disabledIngredients],
   );
 
@@ -115,7 +115,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   const renderItemActions = useCallback(
     (item: IngredientDefinition): JSX.Element => {
       const ingredientName = item.name.description ?? 'Unnamed Ingredient';
-      const isFavorite = favorites.includes(item.name);
+      const isFavorite = favorites.has(item.name);
 
       const favoriteButtonClass = `opacity-70 group-hover:opacity-100 ${
         isFavorite ? `text-${theme.favoriteFg} hover:text-${theme.favoriteFgHover}` : `text-${theme.contentTertiary} hover:text-${theme.favoriteFg}`

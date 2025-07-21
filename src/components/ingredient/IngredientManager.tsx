@@ -1,6 +1,7 @@
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 
 import { ingredientRegistry } from '../../app/container';
+import { groupAndSortIngredients } from '../../helpers/ingredientHelper';
 import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { BooleanInput } from '../shared/input/BooleanInput';
@@ -26,54 +27,46 @@ export const IngredientManager = memo((): JSX.Element => {
 
   const allIngredients = useMemo<readonly IngredientDefinition[]>(() => ingredientRegistry.getAllIngredients(), [registryVersion]);
 
-  const ingredientsByCategory = useMemo<Map<symbol, IngredientDefinition[]>>(() => {
-    const grouped = new Map<symbol, IngredientDefinition[]>();
-    for (const ingredient of allIngredients) {
-      const category = ingredient.category;
-      if (!grouped.has(category)) {
-        grouped.set(category, []);
-      }
-      grouped.get(category)!.push(ingredient);
-    }
-    for (const ingredients of grouped.values()) {
-      ingredients.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
-    }
-    return new Map([...grouped.entries()].sort((a, b) => (a[0].description ?? '').localeCompare(b[0].description ?? '')));
-  }, [allIngredients]);
+  const ingredientsByCategory = useMemo(() => groupAndSortIngredients(allIngredients), [allIngredients]);
 
-  const filtered = useMemo<Map<symbol, readonly IngredientDefinition[]>>(() => {
-    const lowerQuery = query.toLowerCase();
+  const filteredList = useMemo<[symbol, readonly IngredientDefinition[]][]>(() => {
+    const lowerQuery = query.toLowerCase().trim();
     if (!lowerQuery) {
-      return ingredientsByCategory;
+      return Array.from(ingredientsByCategory.entries());
     }
-    const filteredMap = new Map<symbol, readonly IngredientDefinition[]>();
+    const result: [symbol, readonly IngredientDefinition[]][] = [];
 
     for (const [category, ingredients] of ingredientsByCategory.entries()) {
-      const categoryName = category.description ?? '';
-      const categoryMatches = categoryName.toLowerCase().includes(lowerQuery);
+      const categoryName = (category.description ?? '').toLowerCase();
+      if (categoryName.includes(lowerQuery)) {
+        result.push([category, ingredients]);
+        continue;
+      }
+
       const matchingIngredients = ingredients.filter(
         (ingredient) =>
           (ingredient.name.description ?? '').toLowerCase().includes(lowerQuery) || ingredient.description.toLowerCase().includes(lowerQuery),
       );
-      if (categoryMatches) {
-        filteredMap.set(category, ingredients);
-      } else if (matchingIngredients.length > 0) {
-        filteredMap.set(category, matchingIngredients);
+
+      if (matchingIngredients.length > 0) {
+        result.push([category, matchingIngredients]);
       }
     }
-    return filteredMap;
+    return result;
   }, [ingredientsByCategory, query]);
 
   const renderHeader = useCallback(
     (category: symbol): JSX.Element => {
       const categoryId = `manager-category-${(category.description ?? '').replace(/\s+/g, '-')}`;
-      const isCategoryDisabled = disabledCategories.includes(category);
+      const isCategoryDisabled = disabledCategories.has(category);
 
       return (
         <div className="flex items-center gap-3">
           <BooleanInput id={`${categoryId}-toggle`} checked={!isCategoryDisabled} onChange={() => toggleCategory(category)} />
           <label
-            className={`font-medium cursor-pointer ${isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}`}
+            className={`cursor-pointer font-medium ${
+              isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`
+            }`}
           >
             {category.description}
           </label>
@@ -85,10 +78,10 @@ export const IngredientManager = memo((): JSX.Element => {
 
   const renderItemPrefix = useCallback(
     (ingredient: IngredientDefinition): JSX.Element => {
-      const isCategoryDisabled = disabledCategories.includes(ingredient.category);
+      const isCategoryDisabled = disabledCategories.has(ingredient.category);
       const ingredientName = ingredient.name.description ?? 'Unnamed Ingredient';
       const ingredientId = `manager-ingredient-${ingredientName.replace(/\s+/g, '-')}`;
-      const isIngredientDisabled = disabledIngredients.includes(ingredient.name);
+      const isIngredientDisabled = disabledIngredients.has(ingredient.name);
 
       return (
         <BooleanInput
@@ -104,7 +97,7 @@ export const IngredientManager = memo((): JSX.Element => {
 
   const isItemDisabled = useCallback(
     (ingredient: IngredientDefinition) => {
-      return disabledCategories.includes(ingredient.category) || disabledIngredients.includes(ingredient.name);
+      return disabledCategories.has(ingredient.category) || disabledIngredients.has(ingredient.name);
     },
     [disabledCategories, disabledIngredients],
   );
@@ -112,7 +105,7 @@ export const IngredientManager = memo((): JSX.Element => {
   const content = (
     <IngredientList
       isItemDisabled={isItemDisabled}
-      itemsByCategory={filtered}
+      itemsByCategory={filteredList}
       query={query}
       renderHeader={renderHeader}
       renderItemPrefix={renderItemPrefix}

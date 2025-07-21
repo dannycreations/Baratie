@@ -13,6 +13,16 @@ export function useLineNumber({ textareaRef, logicalLines, showLineNumbers }: Li
   const linesRef = useRef(logicalLines);
   linesRef.current = logicalLines;
 
+  const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
+
+  const getCanvasContext = useCallback((): CanvasRenderingContext2D | null => {
+    if (!canvasContextRef.current) {
+      const canvas = document.createElement('canvas');
+      canvasContextRef.current = canvas.getContext('2d');
+    }
+    return canvasContextRef.current;
+  }, []);
+
   const calculate = useCallback(() => {
     const textarea = textareaRef.current;
     if (!showLineNumbers || !textarea) {
@@ -22,53 +32,30 @@ export function useLineNumber({ textareaRef, logicalLines, showLineNumbers }: Li
     const currentLines = linesRef.current;
     const styles = window.getComputedStyle(textarea);
     const font = styles.font;
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
+    const context = getCanvasContext();
     let charWidth = 8;
     if (context) {
       context.font = font;
       charWidth = context.measureText('M').width;
     }
-    if (charWidth <= 0) {
-      setLineNumbers(currentLines.map((_, i) => i + 1));
-      return;
-    }
     const xPadding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
     const contentWidth = textarea.clientWidth - xPadding;
-    if (contentWidth <= 0) {
-      setLineNumbers(currentLines.map((_, i) => i + 1));
-      return;
-    }
-    const maxLineChars = Math.floor(contentWidth / charWidth);
+    const maxLineChars = charWidth > 0 ? Math.floor(contentWidth / charWidth) : 0;
     if (maxLineChars <= 0) {
       setLineNumbers(currentLines.map((_, i) => i + 1));
       return;
     }
-    const visualLines = currentLines.map((line) => Math.max(1, Math.ceil(line.length / maxLineChars)));
-    const lineSums: number[] = [];
-    visualLines.reduce((accumulator, value) => {
-      const newTotal = accumulator + value;
-      lineSums.push(newTotal);
-      return newTotal;
-    }, 0);
-    const totalLines = lineSums.length > 0 ? lineSums[lineSums.length - 1] : 0;
-    if (totalLines === 0 && currentLines.length > 0) {
-      setLineNumbers([1]);
-      return;
-    }
     const finalNumbers: (number | null)[] = [];
-    let lastLineIndex = -1;
-    for (let visualLineIndex = 1; visualLineIndex <= totalLines; visualLineIndex++) {
-      const logicalLineIndex = lineSums.findIndex((sum) => visualLineIndex <= sum);
-      if (logicalLineIndex !== lastLineIndex) {
-        finalNumbers.push(logicalLineIndex + 1);
-      } else {
+    for (let i = 0; i < currentLines.length; i++) {
+      finalNumbers.push(i + 1);
+      const line = currentLines[i];
+      const visualLineCount = Math.max(1, Math.ceil(line.length / maxLineChars));
+      for (let j = 1; j < visualLineCount; j++) {
         finalNumbers.push(null);
       }
-      lastLineIndex = logicalLineIndex;
     }
     setLineNumbers(finalNumbers);
-  }, [showLineNumbers, textareaRef]);
+  }, [showLineNumbers, textareaRef, getCanvasContext]);
 
   useLayoutEffect(() => {
     calculate();

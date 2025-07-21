@@ -58,6 +58,7 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
 
 const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
+  const displayName = extension.name || extension.id;
 
   const handleConfirmDelete = useCallback(() => {
     removeExtension(extension.id);
@@ -66,12 +67,12 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
   const { isConfirm: isDeleting, trigger: triggerDelete } = useConfirmAction(handleConfirmDelete, CONFIRM_SHOW_MS);
 
   const deleteButtonTip = isDeleting ? 'Confirm Deletion' : 'Remove Extension';
-  const deleteButtonLabel = isDeleting ? `Confirm removal of extension ${extension.name}` : `Remove extension ${extension.name}`;
+  const deleteButtonLabel = isDeleting ? `Confirm removal of extension ${displayName}` : `Remove extension ${displayName}`;
   const deleteButtonClass = isDeleting ? getConfirmClasses(theme) : undefined;
 
   const leftContent = (
     <div className="flex flex-col">
-      <span className={`font-medium text-${theme.contentPrimary}`}>{extension.name}</span>
+      <span className={`font-medium text-${theme.contentPrimary}`}>{displayName}</span>
       <span className={`text-xs text-${theme.contentTertiary}`}>{extension.id}</span>
     </div>
   );

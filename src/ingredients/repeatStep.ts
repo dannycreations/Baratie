@@ -103,12 +103,10 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
           const { result: output, error } = await errorHandler.attemptAsync(
             async () => {
               let currentData = initialInput;
-              for (const ingredient of ingredientsToRepeat) {
+              for (let subIndex = 0; subIndex < ingredientsToRepeat.length; subIndex++) {
+                const ingredient = ingredientsToRepeat[subIndex];
                 const definition = ingredientRegistry.getIngredient(ingredient.name);
                 errorHandler.assert(definition, `Definition for '${ingredient.name.description}' not found during sub-recipe execution.`);
-
-                const subIndex = context.recipe.findIndex((i) => i.id === ingredient.id);
-                errorHandler.assert(subIndex !== -1, `Could not find original index for '${ingredient.name.description}'.`);
 
                 const subContext: IngredientContext = { ...context, currentIndex: subIndex, ingredient };
                 const runResult = await definition.run(new InputType(currentData), ingredient.spices, subContext);

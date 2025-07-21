@@ -5,13 +5,13 @@ import { STORAGE_FAVORITES } from '../app/constants';
 import { ingredientRegistry, storage } from '../app/container';
 
 interface FavoriteState {
-  readonly favorites: readonly symbol[];
-  readonly setFavorites: (favorites: readonly symbol[]) => void;
+  readonly favorites: ReadonlySet<symbol>;
+  readonly setFavorites: (favorites: ReadonlySet<symbol>) => void;
 }
 
 export const useFavoriteStore = create<FavoriteState>()(
   subscribeWithSelector((set) => ({
-    favorites: [],
+    favorites: new Set(),
 
     setFavorites(favorites) {
       set({ favorites });
@@ -22,7 +22,9 @@ export const useFavoriteStore = create<FavoriteState>()(
 useFavoriteStore.subscribe(
   (state) => state.favorites,
   (favorites) => {
-    const favStrings = favorites.map((favorite) => ingredientRegistry.getStringFromSymbol(favorite)).filter((str): str is string => !!str);
+    const favStrings = Array.from(favorites)
+      .map((favorite) => ingredientRegistry.getStringFromSymbol(favorite))
+      .filter((str): str is string => !!str);
     storage.set(STORAGE_FAVORITES, favStrings, 'Favorite Ingredients');
   },
 );

@@ -4,13 +4,13 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { STORAGE_EXTENSIONS } from '../app/constants';
 import { storage } from '../app/container';
 
-import type { ExtensionManifest, StorableExtension } from '../helpers/extensionHelper';
-
-export interface Extension extends ExtensionManifest {
+export interface Extension {
+  readonly entry?: string | readonly string[];
   readonly errors?: readonly string[];
   readonly fetchedAt?: number;
   readonly id: string;
   readonly ingredients?: readonly symbol[];
+  readonly name?: string;
   readonly scripts?: Readonly<Record<string, string>>;
   readonly status: 'loading' | 'loaded' | 'error' | 'partial';
 }
@@ -75,12 +75,18 @@ export const useExtensionStore = create<ExtensionState>()(
 useExtensionStore.subscribe(
   (state) => state.extensions,
   (extensions) => {
-    const storable: StorableExtension[] = extensions
+    const storable = extensions
       .filter(
-        (ext): ext is Extension & { fetchedAt: number; scripts: Readonly<Record<string, string>> } =>
-          (ext.status === 'loaded' || ext.status === 'partial') && typeof ext.fetchedAt === 'number' && !!ext.scripts,
+        (ext): ext is Extension & { name: string; entry: string | readonly string[]; fetchedAt: number; scripts: Readonly<Record<string, string>> } =>
+          (ext.status === 'loaded' || ext.status === 'partial') && !!ext.name && !!ext.entry && typeof ext.fetchedAt === 'number' && !!ext.scripts,
       )
-      .map(({ id, name, entry, fetchedAt, scripts }) => ({ id, name, entry, fetchedAt, scripts: scripts! }));
+      .map(({ id, name, entry, fetchedAt, scripts }) => ({
+        id,
+        name,
+        entry: Array.isArray(entry) ? [...entry] : entry,
+        fetchedAt,
+        scripts: { ...scripts },
+      }));
     storage.set(STORAGE_EXTENSIONS, storable, 'Extensions');
   },
 );

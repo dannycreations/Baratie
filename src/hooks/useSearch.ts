@@ -1,60 +1,64 @@
 import { useMemo } from 'react';
 
 import { CATEGORY_FAVORITES } from '../app/constants';
+import { groupAndSortIngredients } from '../helpers/ingredientHelper';
 
 import type { IngredientDefinition } from '../core/IngredientRegistry';
 
 export function useSearchIngredients(
   allIngredients: readonly IngredientDefinition[],
   query: string,
-  favoriteIngredients: readonly symbol[],
-  disabledCategories: readonly symbol[],
-  disabledIngredients: readonly symbol[],
-): ReadonlyMap<symbol, readonly IngredientDefinition[]> {
+  favoriteIngredients: ReadonlySet<symbol>,
+  disabledCategories: ReadonlySet<symbol>,
+  disabledIngredients: ReadonlySet<symbol>,
+): readonly (readonly [symbol, readonly IngredientDefinition[]])[] {
+  const enabledIngredients = useMemo(
+    () => allIngredients.filter((ing) => !disabledCategories.has(ing.category) && !disabledIngredients.has(ing.name)),
+    [allIngredients, disabledCategories, disabledIngredients],
+  );
+
+  const categorizedAndSortedIngredients = useMemo(() => groupAndSortIngredients(enabledIngredients), [enabledIngredients]);
+
+  const enabledAndSortedFavorites = useMemo(
+    () =>
+      enabledIngredients
+        .filter((ing) => favoriteIngredients.has(ing.name))
+        .sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? '')),
+    [enabledIngredients, favoriteIngredients],
+  );
+
   return useMemo(() => {
     const lowerQuery = query.toLowerCase().trim();
-    const visibleIngredients = allIngredients.filter(
-      (ingredient) => !disabledCategories.includes(ingredient.category) && !disabledIngredients.includes(ingredient.name),
-    );
-    if (visibleIngredients.length === 0) {
-      return new Map();
-    }
-
-    const favoritesList: IngredientDefinition[] = [];
-    const ingredientsByCat = new Map<symbol, IngredientDefinition[]>();
-
-    for (const ingredient of visibleIngredients) {
-      const isFavorite = favoriteIngredients.includes(ingredient.name);
-      const ingredientName = ingredient.name.description ?? '';
-      const categoryDescription = (ingredient.category.description ?? '').toLowerCase();
-      const nameMatches = ingredientName.toLowerCase().includes(lowerQuery);
-      const descriptionMatches = ingredient.description.toLowerCase().includes(lowerQuery);
-      const categoryMatches = categoryDescription.includes(lowerQuery);
-      const searchMatches = !lowerQuery || nameMatches || descriptionMatches || categoryMatches;
-      if (isFavorite && (!lowerQuery || nameMatches || descriptionMatches)) {
-        favoritesList.push(ingredient);
+    if (!lowerQuery) {
+      const result: [symbol, readonly IngredientDefinition[]][] = [];
+      if (enabledAndSortedFavorites.length > 0) {
+        result.push([CATEGORY_FAVORITES, enabledAndSortedFavorites]);
       }
-      if (searchMatches) {
-        if (!ingredientsByCat.has(ingredient.category)) {
-          ingredientsByCat.set(ingredient.category, []);
-        }
-        ingredientsByCat.get(ingredient.category)!.push(ingredient);
+      result.push(...categorizedAndSortedIngredients.entries());
+      return result;
+    }
+
+    const result: [symbol, readonly IngredientDefinition[]][] = [];
+    const searchPredicate = (ing: IngredientDefinition): boolean =>
+      (ing.name.description ?? '').toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
+
+    const favoriteMatches = enabledAndSortedFavorites.filter(searchPredicate);
+    if (favoriteMatches.length > 0) {
+      result.push([CATEGORY_FAVORITES, favoriteMatches]);
+    }
+
+    for (const [category, ingredients] of categorizedAndSortedIngredients.entries()) {
+      if ((category.description ?? '').toLowerCase().includes(lowerQuery)) {
+        result.push([category, ingredients]);
+        continue;
       }
-    }
 
-    const result = new Map<symbol, readonly IngredientDefinition[]>();
-    if (favoritesList.length > 0) {
-      favoritesList.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
-      result.set(CATEGORY_FAVORITES, favoritesList);
-    }
-
-    const sortedCategories = Array.from(ingredientsByCat.keys()).sort((a, b) => (a.description ?? '').localeCompare(b.description ?? ''));
-    for (const category of sortedCategories) {
-      const items = ingredientsByCat.get(category)!;
-      items.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
-      result.set(category, items);
+      const ingredientMatches = ingredients.filter(searchPredicate);
+      if (ingredientMatches.length > 0) {
+        result.push([category, ingredientMatches]);
+      }
     }
 
     return result;
-  }, [allIngredients, query, favoriteIngredients, disabledCategories, disabledIngredients]);
+  }, [query, categorizedAndSortedIngredients, enabledAndSortedFavorites]);
 }

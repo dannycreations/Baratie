@@ -57,6 +57,10 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
     setExtensionStatus(id, 'error', ['Invalid GitHub URL format.']);
     return;
   }
+  if (!entry) {
+    setExtensionStatus(id, 'error', ["Extension is missing entry point(s) in it's manifest."]);
+    return;
+  }
 
   const originalRegister = ingredientRegistry.registerIngredient.bind(ingredientRegistry);
   const newlyRegisteredSymbols: symbol[] = [];
@@ -103,12 +107,13 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
   const finalStatus: Extension['status'] = successCount > 0 ? (errorLogs.length > 0 ? 'partial' : 'loaded') : 'error';
   setExtensionStatus(id, finalStatus, errorLogs);
 
+  const displayName = name || id;
   if (finalStatus === 'loaded') {
-    logger.info(`Extension '${name}' loaded successfully with ${newlyRegisteredSymbols.length} ingredient(s).`);
+    logger.info(`Extension '${displayName}' loaded successfully with ${newlyRegisteredSymbols.length} ingredient(s).`);
   } else if (finalStatus === 'partial') {
-    logger.warn(`Extension '${name}' partially loaded with ${errorLogs.length} error(s).`, errorLogs);
+    logger.warn(`Extension '${displayName}' partially loaded with ${errorLogs.length} error(s).`, errorLogs);
   } else {
-    logger.error(`Extension '${name}' failed to load with ${errorLogs.length} error(s).`, errorLogs);
+    logger.error(`Extension '${displayName}' failed to load with ${errorLogs.length} error(s).`, errorLogs);
   }
 }
 
@@ -223,21 +228,25 @@ export function removeExtension(id: string): void {
     logger.warn(`Attempted to remove non-existent extension with id: ${id}`);
     return;
   }
+  const displayName = extension.name || id;
   const ingredientsToRemove = extension.ingredients || [];
   if (ingredientsToRemove.length > 0) {
+    const ingredientsToRemoveSet = new Set(ingredientsToRemove);
     ingredientRegistry.unregisterIngredients(ingredientsToRemove);
+
     const { ingredients: recipe, setRecipe, activeRecipeId } = useRecipeStore.getState();
-    const updatedRecipe = recipe.filter((ing) => !ingredientsToRemove.includes(ing.name));
+    const updatedRecipe = recipe.filter((ing) => !ingredientsToRemoveSet.has(ing.name));
     if (updatedRecipe.length < recipe.length) {
+      showNotification(`${recipe.length - updatedRecipe.length} ingredient(s) from '${displayName}' removed from your recipe.`, 'info');
       setRecipe(updatedRecipe, activeRecipeId);
-      showNotification(`${recipe.length - updatedRecipe.length} ingredient(s) from '${extension.name}' removed from your recipe.`, 'info');
     }
+
     const { favorites, setFavorites } = useFavoriteStore.getState();
-    const updatedFavorites = favorites.filter((fav) => !ingredientsToRemove.includes(fav));
-    if (updatedFavorites.length < favorites.length) {
+    const updatedFavorites = new Set([...favorites].filter((fav) => !ingredientsToRemoveSet.has(fav)));
+    if (updatedFavorites.size < favorites.size) {
       setFavorites(updatedFavorites);
     }
   }
   storeRemove(id);
-  showNotification(`Extension '${extension.name}' has been successfully uninstalled.`, 'success', 'Extension Manager');
+  showNotification(`Extension '${displayName}' has been successfully uninstalled.`, 'success', 'Extension Manager');
 }

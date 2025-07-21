@@ -3,26 +3,6 @@ import { InputType } from '../core/InputType';
 
 import type { IngredientDefinition, SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
 
-function isSpiceVisible(
-  spice: Readonly<SpiceDefinition>,
-  allSpices: readonly SpiceDefinition[],
-  currentSpices: Readonly<Record<string, SpiceValue>>,
-): boolean {
-  if (!spice.dependsOn || spice.dependsOn.length === 0) {
-    return true;
-  }
-  return spice.dependsOn.every((rule) => {
-    const targetSpice = allSpices.find((s) => s.id === rule.spiceId);
-    errorHandler.assert(targetSpice, `Dependency target spice ID was not found: ${rule.spiceId}`);
-    const targetValue = currentSpices[rule.spiceId];
-    const dependencyMet =
-      targetValue !== undefined &&
-      targetValue !== null &&
-      (Array.isArray(rule.value) ? rule.value.some((v) => v === targetValue) : targetValue === rule.value);
-    return isSpiceVisible(targetSpice, allSpices, currentSpices) && dependencyMet;
-  });
-}
-
 function prepareSelectValue(newValue: SpiceValue, spice: Readonly<SpiceDefinition>): SpiceValue {
   if (spice.type !== 'select') {
     return newValue;
@@ -39,7 +19,43 @@ export function getVisibleSpices(
   if (!allSpices.length) {
     return [];
   }
-  return allSpices.filter((spice) => isSpiceVisible(spice, allSpices, currentSpices));
+
+  const spiceMap = new Map<string, Readonly<SpiceDefinition>>(allSpices.map((s) => [s.id, s]));
+  const visibilityCache = new Map<string, boolean>();
+
+  const checkVisibility = (spiceId: string): boolean => {
+    if (visibilityCache.has(spiceId)) {
+      return visibilityCache.get(spiceId)!;
+    }
+
+    const spice = spiceMap.get(spiceId);
+    if (!spice || !spice.dependsOn || spice.dependsOn.length === 0) {
+      if (spice) {
+        visibilityCache.set(spiceId, true);
+      }
+      return true;
+    }
+
+    const isVisible = spice.dependsOn.every((rule) => {
+      errorHandler.assert(spiceMap.has(rule.spiceId), `Dependency target spice ID was not found: ${rule.spiceId}`);
+
+      if (!checkVisibility(rule.spiceId)) {
+        return false;
+      }
+
+      const targetValue = currentSpices[rule.spiceId];
+      return (
+        targetValue !== undefined &&
+        targetValue !== null &&
+        (Array.isArray(rule.value) ? rule.value.includes(targetValue) : targetValue === rule.value)
+      );
+    });
+
+    visibilityCache.set(spiceId, isVisible);
+    return isVisible;
+  };
+
+  return allSpices.filter((spice) => checkVisibility(spice.id));
 }
 
 export function updateAndValidate(

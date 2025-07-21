@@ -83,8 +83,13 @@ function mergeRecipeLists(
   existingRecipes: readonly RecipeBookItem[],
   recipesToImport: readonly RecipeBookItem[],
 ): { readonly mergedList: readonly RecipeBookItem[]; readonly added: number; readonly updated: number; readonly skipped: number } {
-  const mergedById = new Map<string, RecipeBookItem>(existingRecipes.map((recipe) => [recipe.id, recipe]));
-  const finalNames = new Set<string>(existingRecipes.map((r) => r.name.toLowerCase()));
+  const mergedById = new Map<string, RecipeBookItem>();
+  const finalNames = new Set<string>();
+  for (const recipe of existingRecipes) {
+    mergedById.set(recipe.id, recipe);
+    finalNames.add(recipe.name.toLowerCase());
+  }
+
   let added = 0;
   let updated = 0;
   let skipped = 0;
@@ -264,6 +269,7 @@ export function initRecipes(): void {
   const sanitized = recipesToSanitize
     .map((rawRecipe) => sanitizeRecipe(rawRecipe, 'storage').recipe)
     .filter((recipe): recipe is RecipeBookItem => !!recipe);
+  sanitized.sort((a, b) => b.updatedAt - a.updatedAt);
   useCookbookStore.getState().setRecipes(sanitized);
 }
 
@@ -347,14 +353,14 @@ export function upsertRecipe(name: string, ingredients: readonly Ingredient[], a
 
   if (isUpdate) {
     recipeToSave = { ...recipeToUpdate, name: trimmedName, ingredients, updatedAt: now };
-    newRecipes = recipes.map((r) => (r.id === recipeToSave.id ? recipeToSave : r));
+    newRecipes = [recipeToSave, ...recipes.filter((r) => r.id !== recipeToSave.id)];
     userMessage = `Recipe '${trimmedName}' was updated.`;
   } else {
     recipeToSave = { id: crypto.randomUUID(), name: trimmedName, ingredients, createdAt: now, updatedAt: now };
-    newRecipes = [...recipes, recipeToSave];
+    newRecipes = [recipeToSave, ...recipes];
     userMessage = recipeToUpdate ? `Recipe '${trimmedName}' saved as a new copy.` : `Recipe '${trimmedName}' was saved.`;
   }
-  newRecipes.sort((a, b) => b.updatedAt - a.updatedAt);
+
   if (saveAllRecipes(newRecipes)) {
     setRecipes(newRecipes);
     useRecipeStore.getState().setActiveRecipeId(recipeToSave.id);
