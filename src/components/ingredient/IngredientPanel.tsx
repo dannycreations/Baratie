@@ -37,12 +37,14 @@ export const IngredientPanel = memo((): JSX.Element => {
   const listId = useId();
 
   const allIngredients = useMemo<readonly IngredientDefinition[]>(() => ingredientRegistry.getAllIngredients(), [registryVersion]);
-  const ingredientsByCat = useSearchIngredients(allIngredients, query, favorites, disabledCategories, disabledIngredients);
-  const totalIngredients = allIngredients.length;
-  const visibleIngredients = useMemo<number>(
-    () => allIngredients.filter((ing) => !disabledCategories.has(ing.category) && !disabledIngredients.has(ing.name)).length,
-    [allIngredients, disabledCategories, disabledIngredients],
+  const { filteredIngredients: ingredientsByCat, enabledIngredientsCount: visibleIngredients } = useSearchIngredients(
+    allIngredients,
+    query,
+    favorites,
+    disabledCategories,
+    disabledIngredients,
   );
+  const totalIngredients = allIngredients.length;
 
   const handleDragEnterRecipe = useCallback((event: DragEvent<HTMLDivElement>) => {
     if (event.dataTransfer.types.includes('application/x-baratie-recipe-item-id')) {

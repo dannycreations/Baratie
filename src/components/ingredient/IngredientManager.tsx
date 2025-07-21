@@ -1,7 +1,7 @@
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 
 import { ingredientRegistry } from '../../app/container';
-import { groupAndSortIngredients } from '../../helpers/ingredientHelper';
+import { groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
 import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { BooleanInput } from '../shared/input/BooleanInput';
@@ -29,31 +29,7 @@ export const IngredientManager = memo((): JSX.Element => {
 
   const ingredientsByCategory = useMemo(() => groupAndSortIngredients(allIngredients), [allIngredients]);
 
-  const filteredList = useMemo<[symbol, readonly IngredientDefinition[]][]>(() => {
-    const lowerQuery = query.toLowerCase().trim();
-    if (!lowerQuery) {
-      return Array.from(ingredientsByCategory.entries());
-    }
-    const result: [symbol, readonly IngredientDefinition[]][] = [];
-
-    for (const [category, ingredients] of ingredientsByCategory.entries()) {
-      const categoryName = (category.description ?? '').toLowerCase();
-      if (categoryName.includes(lowerQuery)) {
-        result.push([category, ingredients]);
-        continue;
-      }
-
-      const matchingIngredients = ingredients.filter(
-        (ingredient) =>
-          (ingredient.name.description ?? '').toLowerCase().includes(lowerQuery) || ingredient.description.toLowerCase().includes(lowerQuery),
-      );
-
-      if (matchingIngredients.length > 0) {
-        result.push([category, matchingIngredients]);
-      }
-    }
-    return result;
-  }, [ingredientsByCategory, query]);
+  const filteredList = useMemo(() => searchGroupedIngredients(ingredientsByCategory, query), [ingredientsByCategory, query]);
 
   const renderHeader = useCallback(
     (category: symbol): JSX.Element => {

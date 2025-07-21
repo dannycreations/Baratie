@@ -126,6 +126,22 @@ export class IngredientRegistry {
   private readonly ingredients: Map<symbol, IngredientDefinition> = new Map();
   private readonly stringToSymbol: Map<string, symbol> = new Map();
   private readonly symbolToString: Map<symbol, string> = new Map();
+  private categories: ReadonlyMap<string, symbol> | null = null;
+
+  public getAllCategories(): ReadonlyMap<string, symbol> {
+    if (this.categories) {
+      return this.categories;
+    }
+    const categoryMap = new Map<string, symbol>();
+    for (const ingredient of this.ingredients.values()) {
+      const description = ingredient.category.description;
+      if (description && !categoryMap.has(description)) {
+        categoryMap.set(description, ingredient.category);
+      }
+    }
+    this.categories = categoryMap;
+    return this.categories;
+  }
 
   public getAllIngredients(): readonly IngredientDefinition[] {
     return Array.from(this.ingredients.values());
@@ -165,6 +181,7 @@ export class IngredientRegistry {
       });
     }
 
+    this.categories = null;
     useIngredientStore.getState().refreshRegistry();
   }
 
@@ -183,6 +200,7 @@ export class IngredientRegistry {
       }
     }
     if (changed) {
+      this.categories = null;
       useIngredientStore.getState().refreshRegistry();
     }
   }

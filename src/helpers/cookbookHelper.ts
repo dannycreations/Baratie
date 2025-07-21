@@ -50,44 +50,13 @@ type OpenCookbookArgs =
   | { readonly mode: 'load' }
   | { readonly mode: 'save'; readonly ingredients: readonly Ingredient[]; readonly activeRecipeId: string | null; readonly name?: string };
 
-function createIngredientHash(ingredients: readonly Ingredient[]): string {
-  return JSON.stringify(
-    ingredients.map((ing) => ({
-      name: ingredientRegistry.getStringFromSymbol(ing.name) ?? ing.name.toString(),
-      spices: ing.spices,
-    })),
-  );
-}
-
-function createInitialName(allRecipes: readonly RecipeBookItem[], ingredients: readonly Ingredient[], activeRecipeId: string | null): string {
-  if (ingredients.length === 0) {
-    return '';
-  }
-  if (activeRecipeId) {
-    const activeRecipe = allRecipes.find((recipe) => recipe.id === activeRecipeId);
-    if (activeRecipe) {
-      return activeRecipe.name;
-    }
-  }
-  const currentHash = createIngredientHash(ingredients);
-  const existingRecipe = allRecipes.find((recipe) => createIngredientHash(recipe.ingredients) === currentHash);
-  if (existingRecipe) {
-    return existingRecipe.name;
-  }
-  const date = new Date();
-  const dateString = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  return `My Recipe ${dateString}`;
-}
-
 function mergeRecipeLists(
   existingRecipes: readonly RecipeBookItem[],
   recipesToImport: readonly RecipeBookItem[],
 ): { readonly mergedList: readonly RecipeBookItem[]; readonly added: number; readonly updated: number; readonly skipped: number } {
   const mergedById = new Map<string, RecipeBookItem>();
-  const finalNames = new Set<string>();
   for (const recipe of existingRecipes) {
     mergedById.set(recipe.id, recipe);
-    finalNames.add(recipe.name.toLowerCase());
   }
 
   let added = 0;
@@ -96,30 +65,33 @@ function mergeRecipeLists(
 
   for (const item of recipesToImport) {
     const existingItem = mergedById.get(item.id);
-    if (existingItem) {
-      if (item.updatedAt > existingItem.updatedAt) {
-        mergedById.set(item.id, item);
-        updated++;
-      } else {
-        skipped++;
-      }
-    } else {
-      let uniqueName = item.name;
-      let counter = 1;
-      while (finalNames.has(uniqueName.toLowerCase()) && counter < 100) {
-        uniqueName = `${item.name} (Imported ${counter})`;
-        counter++;
-      }
-      const newItem = { ...item, name: uniqueName };
-      mergedById.set(newItem.id, newItem);
-      finalNames.add(uniqueName.toLowerCase());
+    if (!existingItem) {
+      mergedById.set(item.id, item);
       added++;
+    } else if (item.updatedAt > existingItem.updatedAt) {
+      mergedById.set(item.id, item);
+      updated++;
+    } else {
+      skipped++;
     }
   }
 
-  const mergedList = Array.from(mergedById.values());
-  mergedList.sort((a, b) => b.updatedAt - a.updatedAt);
-  return { mergedList, added, updated, skipped };
+  const finalRecipes: RecipeBookItem[] = [];
+  const finalNames = new Set<string>();
+  const sortedForNaming = [...mergedById.values()].sort((a, b) => a.createdAt - b.createdAt);
+
+  for (const recipe of sortedForNaming) {
+    let uniqueName = recipe.name;
+    let counter = 1;
+    while (finalNames.has(uniqueName.toLowerCase())) {
+      uniqueName = `${recipe.name} (${counter})`;
+      counter++;
+    }
+    finalRecipes.push({ ...recipe, name: uniqueName });
+    finalNames.add(uniqueName.toLowerCase());
+  }
+
+  return { mergedList: finalRecipes, added, updated, skipped };
 }
 
 function sanitizeIngredient(rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): Ingredient | null {
@@ -269,7 +241,6 @@ export function initRecipes(): void {
   const sanitized = recipesToSanitize
     .map((rawRecipe) => sanitizeRecipe(rawRecipe, 'storage').recipe)
     .filter((recipe): recipe is RecipeBookItem => !!recipe);
-  sanitized.sort((a, b) => b.updatedAt - a.updatedAt);
   useCookbookStore.getState().setRecipes(sanitized);
 }
 
@@ -310,8 +281,7 @@ export function openCookbook(args: Readonly<OpenCookbookArgs>): void {
     return;
   }
   const { ingredients, activeRecipeId } = args;
-  const allRecipes = useCookbookStore.getState().recipes;
-  const initialName = args.name ?? createInitialName(allRecipes, ingredients, activeRecipeId);
+  const initialName = args.name ?? useCookbookStore.getState().computeInitialName(ingredients, activeRecipeId);
   useCookbookStore.getState().openModal({ name: initialName, mode: 'save' });
 }
 

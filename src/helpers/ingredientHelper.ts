@@ -13,13 +13,7 @@ function loadFilters(key: string, forCategories: boolean): symbol[] {
   const validatedItems = storedItems.filter((item): item is string => typeof item === 'string');
 
   if (forCategories) {
-    const allCategorySymbols = new Map<string, symbol>();
-    for (const ingredient of ingredientRegistry.getAllIngredients()) {
-      const description = ingredient.category.description;
-      if (description && !allCategorySymbols.has(description)) {
-        allCategorySymbols.set(description, ingredient.category);
-      }
-    }
+    const allCategorySymbols = ingredientRegistry.getAllCategories();
     return validatedItems.map((item) => allCategorySymbols.get(item)).filter((s): s is symbol => !!s);
   }
   return validatedItems.map((item) => ingredientRegistry.getSymbolFromString(item)).filter((s): s is symbol => !!s);
@@ -44,5 +38,33 @@ export function groupAndSortIngredients(ingredients: readonly IngredientDefiniti
     items.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
   }
 
-  return new Map([...grouped.entries()].sort((a, b) => (a[0].description ?? '').localeCompare(b[0].description ?? '')));
+  const sortedEntries = Array.from(grouped.entries()).sort(([catA], [catB]) => (catA.description ?? '').localeCompare(catB.description ?? ''));
+
+  return new Map(sortedEntries);
+}
+
+export function searchGroupedIngredients(
+  groupedIngredients: ReadonlyMap<symbol, readonly IngredientDefinition[]>,
+  query: string,
+): [symbol, readonly IngredientDefinition[]][] {
+  const lowerQuery = query.toLowerCase().trim();
+  if (!lowerQuery) {
+    return Array.from(groupedIngredients.entries());
+  }
+
+  const result: [symbol, readonly IngredientDefinition[]][] = [];
+  const searchPredicate = (ing: IngredientDefinition): boolean =>
+    (ing.name.description ?? '').toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
+
+  for (const [category, ingredients] of groupedIngredients.entries()) {
+    if ((category.description ?? '').toLowerCase().includes(lowerQuery)) {
+      result.push([category, ingredients]);
+      continue;
+    }
+    const matchingIngredients = ingredients.filter(searchPredicate);
+    if (matchingIngredients.length > 0) {
+      result.push([category, matchingIngredients]);
+    }
+  }
+  return result;
 }
