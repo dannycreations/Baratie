@@ -99,8 +99,6 @@ function mergeRecipeLists(
     finalNames.add(uniqueName.toLowerCase());
   }
 
-  recipesWithUniqueNames.sort((a, b) => b.updatedAt - a.updatedAt);
-
   return { mergedList: recipesWithUniqueNames, added, updated, skipped };
 }
 
@@ -344,14 +342,20 @@ export function upsertRecipe(name: string, ingredients: readonly Ingredient[], a
   const { recipes, setRecipes, recipeIdMap } = useCookbookStore.getState();
   const now = Date.now();
   const recipeToUpdate = activeRecipeId ? recipeIdMap.get(activeRecipeId) : null;
-  const isUpdate = recipeToUpdate && recipeToUpdate.name.toLowerCase() === trimmedName.toLowerCase();
+  const isUpdate = !!recipeToUpdate && recipeToUpdate.name.toLowerCase() === trimmedName.toLowerCase();
   let newRecipes: RecipeBookItem[];
   let recipeToSave: RecipeBookItem;
   let userMessage: string;
 
   if (isUpdate) {
     recipeToSave = { ...recipeToUpdate, name: trimmedName, ingredients, updatedAt: now };
-    newRecipes = [recipeToSave, ...recipes.filter((r) => r.id !== recipeToSave.id)];
+    const updateIndex = recipes.findIndex((r) => r.id === recipeToSave.id);
+    if (updateIndex !== -1) {
+      newRecipes = [...recipes];
+      newRecipes[updateIndex] = recipeToSave;
+    } else {
+      newRecipes = [recipeToSave, ...recipes.filter((r) => r.id !== recipeToSave.id)];
+    }
     userMessage = `Recipe '${trimmedName}' was updated.`;
   } else {
     recipeToSave = { id: crypto.randomUUID(), name: trimmedName, ingredients, createdAt: now, updatedAt: now };

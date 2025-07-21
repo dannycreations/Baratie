@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { NOTIFICATION_EXIT_MS, NOTIFICATION_SHOW_MS } from '../../app/constants';
 import { removeNotification } from '../../helpers/notificationHelper';
@@ -141,9 +141,14 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
 });
 
 export const NotificationPanel = memo((): JSX.Element | null => {
-  const messages = useNotificationStore((state) => state.notifications);
+  const order = useNotificationStore((state) => state.order);
+  const map = useNotificationStore((state) => state.map);
 
-  if (!messages.length) {
+  const messages = useMemo(() => {
+    return order.map((id) => map.get(id)).filter((n): n is NotificationMessage => !!n);
+  }, [order, map]);
+
+  if (messages.length === 0) {
     return null;
   }
 

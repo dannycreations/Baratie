@@ -3,32 +3,28 @@ import { useNotificationStore } from '../stores/useNotificationStore';
 
 import type { NotificationMessage, NotificationType } from '../components/main/NotificationPanel';
 
+function getDedupeKey(details: { readonly message: string; readonly type: NotificationType; readonly title?: string }): string {
+  return [details.type, details.title || '', details.message].join('|');
+}
+
 export function showNotification(message: string, type: NotificationType = 'info', title?: string, duration?: number): void {
-  const { notifications, setNotifications } = useNotificationStore.getState();
-  const details: Omit<NotificationMessage, 'id' | 'resetAt'> = {
-    duration,
-    message,
-    title,
-    type,
-  };
-  const existing = notifications.find((n) => n.title === details.title && n.message === details.message && n.type === details.type);
-  if (existing) {
-    const newNotifications = notifications.map((n) =>
-      n.id === existing.id ? { ...n, duration: details.duration ?? NOTIFICATION_SHOW_MS, resetAt: Date.now() } : n,
-    );
-    setNotifications(newNotifications);
+  const { add, update, dedupeMap } = useNotificationStore.getState();
+  const details = { message, title, type };
+  const key = getDedupeKey(details);
+  const existingId = dedupeMap.get(key);
+
+  if (existingId) {
+    update(existingId, duration ?? NOTIFICATION_SHOW_MS, Date.now());
   } else {
-    const id = crypto.randomUUID();
-    const newNotification: NotificationMessage = { ...details, id };
-    setNotifications([...notifications, newNotification]);
+    const newNotification: NotificationMessage = { ...details, id: crypto.randomUUID(), duration: duration ?? NOTIFICATION_SHOW_MS };
+    add(newNotification);
   }
 }
 
 export function removeNotification(id: string): void {
-  const { notifications, setNotifications } = useNotificationStore.getState();
-  setNotifications(notifications.filter((notification) => notification.id !== id));
+  useNotificationStore.getState().remove(id);
 }
 
 export function clearNotifications(): void {
-  useNotificationStore.getState().setNotifications([]);
+  useNotificationStore.getState().clear();
 }

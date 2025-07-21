@@ -157,13 +157,10 @@ function parseGitHubUrl(url: string): { readonly owner: string; readonly repo: s
         return { owner, repo: cleanRepo, ref };
       }
     }
-  } catch {
-    // Fall through to shorthand regex if URL parsing fails
-  }
+  } catch {}
 
   const shorthandMatch = trimmedUrl.match(/^([\w.-]+)\/([\w.-]+)(?:[@#]([\w.-]+))?$/);
   if (shorthandMatch) {
-    // Additional check to avoid misinterpreting a domain as a shorthand repo.
     if (shorthandMatch[1].includes('.')) {
       return null;
     }

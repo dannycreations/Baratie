@@ -41,7 +41,7 @@ export const useExtensionStore = create<ExtensionState>()(
       set((state) => {
         const newExtensions = state.extensions.filter((ext) => ext.id !== id);
         if (newExtensions.length === state.extensions.length) {
-          return {}; // No change
+          return {};
         }
         return updateStateWithExtensions(newExtensions);
       });
@@ -55,7 +55,7 @@ export const useExtensionStore = create<ExtensionState>()(
       set((state) => {
         const index = state.extensions.findIndex((ext) => ext.id === id);
         if (index === -1) {
-          return {}; // Not found
+          return {};
         }
         const newExtensions = [...state.extensions];
         const updates: Partial<Extension> = {
@@ -72,7 +72,7 @@ export const useExtensionStore = create<ExtensionState>()(
       set((state) => {
         const index = state.extensions.findIndex((ext) => ext.id === id);
         if (index === -1) {
-          return {}; // Not found
+          return {};
         }
         const newExtensions = [...state.extensions];
         newExtensions[index] = { ...newExtensions[index], ingredients };
