@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useControlTimer } from './useControlTimer';
 
@@ -9,13 +9,18 @@ interface ConfirmActionReturn {
 
 export function useConfirmAction(callback: () => void, timeout: number): ConfirmActionReturn {
   const [isConfirm, setIsConfirm] = useState(false);
+  const callbackRef = useRef(callback);
 
-  const handleConfirm = useCallback(() => {
+  useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
+
+  const resetConfirm = useCallback(() => {
     setIsConfirm(false);
   }, []);
 
   useControlTimer({
-    callback: handleConfirm,
+    callback: resetConfirm,
     duration: timeout,
     reset: isConfirm,
     state: isConfirm,
@@ -23,12 +28,12 @@ export function useConfirmAction(callback: () => void, timeout: number): Confirm
 
   const trigger = useCallback(() => {
     if (isConfirm) {
-      callback();
+      callbackRef.current();
       setIsConfirm(false);
     } else {
       setIsConfirm(true);
     }
-  }, [isConfirm, callback]);
+  }, [isConfirm]);
 
   return { isConfirm, trigger };
 }

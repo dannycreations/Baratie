@@ -17,20 +17,30 @@ export function useSearchIngredients(
   disabledCategories: ReadonlySet<symbol>,
   disabledIngredients: ReadonlySet<symbol>,
 ): SearchedIngredientsResult {
-  const visibleIngredients = useMemo(
-    () => allIngredients.filter((ingredient) => !disabledCategories.has(ingredient.category) && !disabledIngredients.has(ingredient.name)),
-    [allIngredients, disabledCategories, disabledIngredients],
-  );
+  const { favoritesList, categorizedIngredients, visibleIngredients } = useMemo(() => {
+    const favorites: IngredientDefinition[] = [];
+    const nonFavorites: IngredientDefinition[] = [];
+    let visibleCount = 0;
 
-  const favoritesList = useMemo(
-    () =>
-      visibleIngredients
-        .filter((ing) => favoriteIngredients.has(ing.name))
-        .sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? '')),
-    [visibleIngredients, favoriteIngredients],
-  );
+    for (const ingredient of allIngredients) {
+      if (!disabledCategories.has(ingredient.category) && !disabledIngredients.has(ingredient.name)) {
+        visibleCount++;
+        if (favoriteIngredients.has(ingredient.name)) {
+          favorites.push(ingredient);
+        } else {
+          nonFavorites.push(ingredient);
+        }
+      }
+    }
 
-  const categorizedIngredients = useMemo(() => groupAndSortIngredients(visibleIngredients), [visibleIngredients]);
+    favorites.sort((a, b) => (a.name.description ?? '').localeCompare(b.name.description ?? ''));
+
+    return {
+      favoritesList: favorites,
+      categorizedIngredients: groupAndSortIngredients(nonFavorites),
+      visibleIngredients: visibleCount,
+    };
+  }, [allIngredients, favoriteIngredients, disabledCategories, disabledIngredients]);
 
   const filteredIngredients = useMemo(() => {
     const lowerQuery = query.toLowerCase().trim();
@@ -52,7 +62,7 @@ export function useSearchIngredients(
       result.push([CATEGORY_FAVORITES, favoriteMatches]);
     }
 
-    const categorizedMatches = searchGroupedIngredients(categorizedIngredients, query);
+    const categorizedMatches = searchGroupedIngredients(categorizedIngredients, lowerQuery);
     result.push(...categorizedMatches);
 
     return result;
@@ -60,6 +70,6 @@ export function useSearchIngredients(
 
   return {
     filteredIngredients,
-    visibleIngredients: visibleIngredients.length,
+    visibleIngredients,
   };
 }

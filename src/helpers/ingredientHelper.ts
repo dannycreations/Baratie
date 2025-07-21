@@ -20,9 +20,8 @@ export function groupAndSortIngredients(ingredients: readonly IngredientDefiniti
 
 export function searchGroupedIngredients(
   groupedIngredients: ReadonlyMap<symbol, readonly IngredientDefinition[]>,
-  query: string,
+  lowerQuery: string,
 ): [symbol, readonly IngredientDefinition[]][] {
-  const lowerQuery = query.toLowerCase().trim();
   if (!lowerQuery) {
     return Array.from(groupedIngredients.entries());
   }

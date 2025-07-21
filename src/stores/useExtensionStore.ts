@@ -268,38 +268,34 @@ export const useExtensionStore = create<ExtensionState>()(
 
     setExtensionStatus: (id, status, errors) => {
       set((state) => {
-        const index = state.extensions.findIndex((ext) => ext.id === id);
-        if (index === -1) return {};
-        const newExtensions = [...state.extensions];
+        if (!state.extensionMap.has(id)) {
+          return {};
+        }
         const updates: Partial<Extension> = {
           status,
           errors,
           ...((status === 'loaded' || status === 'partial') && { fetchedAt: Date.now() }),
         };
-        newExtensions[index] = { ...newExtensions[index], ...updates };
+        const newExtensions = state.extensions.map((ext) => (ext.id === id ? { ...ext, ...updates } : ext));
         return updateStateWithExtensions(newExtensions);
       });
     },
 
     setIngredients: (id, ingredients) => {
       set((state) => {
-        const index = state.extensions.findIndex((ext) => ext.id === id);
-        if (index === -1) return {};
-        const newExtensions = [...state.extensions];
-        newExtensions[index] = { ...newExtensions[index], ingredients };
+        if (!state.extensionMap.has(id)) {
+          return {};
+        }
+        const newExtensions = state.extensions.map((ext) => (ext.id === id ? { ...ext, ingredients } : ext));
         return updateStateWithExtensions(newExtensions);
       });
     },
 
     upsert: (extension) => {
       set((state) => {
-        const index = state.extensions.findIndex((e) => e.id === extension.id);
-        const newExtensions = [...state.extensions];
-        if (index !== -1) {
-          newExtensions[index] = { ...newExtensions[index], ...extension } as Extension;
-        } else {
-          newExtensions.push(extension as Extension);
-        }
+        const newExtensions = state.extensionMap.has(extension.id)
+          ? state.extensions.map((e) => (e.id === extension.id ? ({ ...e, ...extension } as Extension) : e))
+          : [...state.extensions, extension as Extension];
         return updateStateWithExtensions(newExtensions);
       });
     },

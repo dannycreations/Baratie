@@ -136,6 +136,7 @@ interface CookbookState {
   readonly recipes: readonly RecipeBookItem[];
   readonly recipeIdMap: ReadonlyMap<string, RecipeBookItem>;
   readonly recipeContentHashMap: ReadonlyMap<string, string>;
+  readonly _internalSetRecipes: (recipes: readonly RecipeBookItem[]) => void;
   readonly init: () => void;
   readonly resetModal: () => void;
   readonly setName: (name: string) => void;
@@ -167,8 +168,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
   setName: (name) => set({ nameInput: name }),
   setQuery: (term) => set({ query: term }),
 
-  setRecipes: (newRecipes) => {
-    const recipes = [...newRecipes].sort((a, b) => b.updatedAt - a.updatedAt);
+  _internalSetRecipes: (recipes) => {
     const idMap = new Map(recipes.map((recipe) => [recipe.id, recipe]));
     const contentHashMap = new Map<string, string>();
     for (const recipe of recipes) {
@@ -176,6 +176,11 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       contentHashMap.set(hash, recipe.id);
     }
     set({ recipes, recipeIdMap: idMap, recipeContentHashMap: contentHashMap });
+  },
+
+  setRecipes: (newRecipes) => {
+    const recipes = [...newRecipes].sort((a, b) => b.updatedAt - a.updatedAt);
+    get()._internalSetRecipes(recipes);
   },
 
   computeInitialName: (ingredients, activeRecipeId) => {
@@ -221,7 +226,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
   },
 
   upsert: () => {
-    const { nameInput } = get();
+    const { nameInput, recipes, _internalSetRecipes, recipeIdMap } = get();
     const { ingredients, activeRecipeId } = useRecipeStore.getState();
     const { show } = useNotificationStore.getState();
     const trimmedName = nameInput.trim();
@@ -233,27 +238,26 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       show('Cannot save an empty recipe. Please add ingredients first.', 'warning', 'Save Error');
       return;
     }
-    const { recipes, setRecipes, recipeIdMap } = get();
+
     const now = Date.now();
     const recipeToUpdate = activeRecipeId ? recipeIdMap.get(activeRecipeId) : null;
     const isUpdate = !!recipeToUpdate && recipeToUpdate.name.toLowerCase() === trimmedName.toLowerCase();
     let newRecipes: RecipeBookItem[];
     let recipeToSave: RecipeBookItem;
     let userMessage: string;
+
     if (isUpdate) {
       recipeToSave = { ...recipeToUpdate, name: trimmedName, ingredients, updatedAt: now };
-      const updateIndex = recipes.findIndex((r) => r.id === recipeToSave.id);
-      newRecipes = [...recipes];
-      if (updateIndex !== -1) newRecipes[updateIndex] = recipeToSave;
-      else newRecipes.unshift(recipeToSave);
+      newRecipes = [recipeToSave, ...recipes.filter((r) => r.id !== recipeToSave.id)];
       userMessage = `Recipe '${trimmedName}' was updated.`;
     } else {
       recipeToSave = { id: crypto.randomUUID(), name: trimmedName, ingredients, createdAt: now, updatedAt: now };
       newRecipes = [recipeToSave, ...recipes];
       userMessage = recipeToUpdate ? `Recipe '${trimmedName}' saved as a new copy.` : `Recipe '${trimmedName}' was saved.`;
     }
+
     if (saveAllRecipes(newRecipes)) {
-      setRecipes(newRecipes);
+      _internalSetRecipes(newRecipes);
       useRecipeStore.getState().setActiveRecipeId(recipeToSave.id);
       show(userMessage, 'success', 'Cookbook Action');
     }
@@ -261,11 +265,11 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
 
   delete: (id) => {
     const { show } = useNotificationStore.getState();
-    const { recipes, recipeIdMap, setRecipes } = get();
+    const { recipes, recipeIdMap, _internalSetRecipes } = get();
     const recipeToDelete = recipeIdMap.get(id);
     const updatedList = recipes.filter((recipe) => recipe.id !== id);
     if (saveAllRecipes(updatedList)) {
-      setRecipes(updatedList);
+      _internalSetRecipes(updatedList);
       if (recipeToDelete) {
         show(`Recipe '${recipeToDelete.name}' was deleted.`, 'info', 'Cookbook Action');
       }
