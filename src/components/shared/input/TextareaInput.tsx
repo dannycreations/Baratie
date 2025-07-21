@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useRef } from 'react';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import { errorHandler } from '../../../app/container';
 import { useDragDrop } from '../../../hooks/useDragDrop';
@@ -25,9 +25,10 @@ export const TextareaInput = memo<TextareaInputProps>(
     const theme = useThemeStore((state) => state.theme);
     const lineNumbersRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [scrollTop, setScrollTop] = useState(0);
 
     const logicalLines = useMemo(() => value.split('\n'), [value]);
-    const wrappedLineNumbers = useLineNumber({ logicalLines, showLineNumbers, textareaRef });
+    const virtualizedLines = useLineNumber({ logicalLines, showLineNumbers, textareaRef, scrollTop });
 
     const handleFileDrop = useCallback(
       async (file: File) => {
@@ -50,11 +51,11 @@ export const TextareaInput = memo<TextareaInputProps>(
     );
 
     const handleScroll = (event: UIEvent<HTMLTextAreaElement>) => {
-      if (!lineNumbersRef.current) {
-        return;
+      const newScrollTop = event.currentTarget.scrollTop;
+      if (lineNumbersRef.current) {
+        lineNumbersRef.current.scrollTop = newScrollTop;
       }
-
-      lineNumbersRef.current.scrollTop = event.currentTarget.scrollTop;
+      setScrollTop(newScrollTop);
     };
 
     const containerClass =
@@ -70,9 +71,11 @@ export const TextareaInput = memo<TextareaInputProps>(
       <div className={containerClass} {...dropZoneProps}>
         {showLineNumbers && (
           <div ref={lineNumbersRef} aria-hidden="true" className={gutterClass}>
-            {wrappedLineNumbers.map((lineNumber, index) => (
-              <div key={index}>{lineNumber ?? <>&nbsp;</>}</div>
-            ))}
+            <div style={{ paddingTop: `${virtualizedLines.paddingTop}px`, paddingBottom: `${virtualizedLines.paddingBottom}px` }}>
+              {virtualizedLines.visibleItems.map(({ key, number }) => (
+                <div key={key}>{number ?? <>&nbsp;</>}</div>
+              ))}
+            </div>
           </div>
         )}
         <textarea
