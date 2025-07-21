@@ -137,14 +137,34 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
 function parseGitHubUrl(url: string): { readonly owner: string; readonly repo: string; readonly ref: string } | null {
   const trimmedUrl = url.trim();
 
-  const fullUrlMatch = trimmedUrl.match(/^(?:https?:\/\/)?(?:www\.)?github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?(?:\/tree\/([\w.-]+))?\/?$/);
-  if (fullUrlMatch) {
-    return { owner: fullUrlMatch[1], repo: fullUrlMatch[2], ref: fullUrlMatch[3] || 'latest' };
+  try {
+    const urlObj = new URL(trimmedUrl.startsWith('http') ? trimmedUrl : `https://github.com/${trimmedUrl}`);
+    if (urlObj.hostname === 'github.com') {
+      const pathParts = urlObj.pathname.split('/').filter(Boolean);
+      if (pathParts.length >= 2) {
+        const [owner, repo] = pathParts;
+        const cleanRepo = repo.endsWith('.git') ? repo.slice(0, -4) : repo;
+        let ref = 'latest';
+
+        if (pathParts[2] === 'tree' && pathParts[3]) {
+          ref = pathParts[3];
+        } else {
+          const atMatch = urlObj.pathname.match(/@([\w.-]+)$/);
+          if (atMatch) {
+            ref = atMatch[1];
+          }
+        }
+        return { owner, repo: cleanRepo, ref };
+      }
+    }
+  } catch {
+    // Fall through to shorthand regex if URL parsing fails
   }
 
   const shorthandMatch = trimmedUrl.match(/^([\w.-]+)\/([\w.-]+)(?:[@#]([\w.-]+))?$/);
   if (shorthandMatch) {
-    if (shorthandMatch[1].includes('.') || shorthandMatch[0].startsWith('http')) {
+    // Additional check to avoid misinterpreting a domain as a shorthand repo.
+    if (shorthandMatch[1].includes('.')) {
       return null;
     }
     return { owner: shorthandMatch[1], repo: shorthandMatch[2], ref: shorthandMatch[3] || 'latest' };
@@ -154,8 +174,8 @@ function parseGitHubUrl(url: string): { readonly owner: string; readonly repo: s
 }
 
 async function refreshExtension(id: string): Promise<void> {
-  const { upsert, setIngredients, setExtensionStatus } = useExtensionStore.getState();
-  const storeExtension = useExtensionStore.getState().extensions.find((e) => e.id === id);
+  const { upsert, setIngredients, setExtensionStatus, extensionMap } = useExtensionStore.getState();
+  const storeExtension = extensionMap.get(id);
 
   logger.info(`Refreshing extension: ${storeExtension?.name || id}`);
   upsert({ id, status: 'loading', name: storeExtension?.name || 'Refreshing...', scripts: {} });
@@ -198,9 +218,9 @@ export async function addExtension(url: string): Promise<void> {
     showNotification('Invalid GitHub URL. Use `owner/repo`, `owner/repo@branch`, or a full GitHub URL.', 'error', 'Add Extension Error');
     return;
   }
-  const { extensions } = useExtensionStore.getState();
+  const { extensionMap } = useExtensionStore.getState();
   const id = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
-  const existing = extensions.find((ext) => ext.id === id);
+  const existing = extensionMap.get(id);
 
   if (existing && isCacheValid(existing.fetchedAt)) {
     showNotification('This extension is already installed and up-to-date.', 'info', 'Add Extension');
@@ -238,8 +258,8 @@ export async function initExtensions(): Promise<void> {
 }
 
 export function removeExtension(id: string): void {
-  const { extensions, remove: storeRemove } = useExtensionStore.getState();
-  const extension = extensions.find((ext) => ext.id === id);
+  const { extensionMap, remove: storeRemove } = useExtensionStore.getState();
+  const extension = extensionMap.get(id);
   if (!extension) {
     logger.warn(`Attempted to remove non-existent extension with id: ${id}`);
     return;

@@ -14,9 +14,22 @@ function loadFilters(key: string, forCategories: boolean): symbol[] {
 
   if (forCategories) {
     const allCategorySymbols = ingredientRegistry.getAllCategories();
-    return validatedItems.map((item) => allCategorySymbols.get(item)).filter((s): s is symbol => !!s);
+    return validatedItems.reduce<symbol[]>((acc, item) => {
+      const symbol = allCategorySymbols.get(item);
+      if (symbol) {
+        acc.push(symbol);
+      }
+      return acc;
+    }, []);
   }
-  return validatedItems.map((item) => ingredientRegistry.getSymbolFromString(item)).filter((s): s is symbol => !!s);
+
+  return validatedItems.reduce<symbol[]>((acc, item) => {
+    const symbol = ingredientRegistry.getSymbolFromString(item);
+    if (symbol) {
+      acc.push(symbol);
+    }
+    return acc;
+  }, []);
 }
 
 export function initFilters(): void {

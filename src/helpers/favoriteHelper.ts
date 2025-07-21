@@ -8,9 +8,15 @@ export function initFavorites(): void {
   let favorites: symbol[] = [];
   if (parsedFavorites) {
     if (Array.isArray(parsedFavorites)) {
-      favorites = parsedFavorites
-        .map((item) => (typeof item === 'string' ? ingredientRegistry.getSymbolFromString(item) : undefined))
-        .filter((s): s is symbol => !!s);
+      favorites = parsedFavorites.reduce<symbol[]>((acc, item) => {
+        if (typeof item === 'string') {
+          const symbol = ingredientRegistry.getSymbolFromString(item);
+          if (symbol) {
+            acc.push(symbol);
+          }
+        }
+        return acc;
+      }, []);
     } else {
       errorHandler.handle(
         new AppError('Corrupted favorites data in storage.', 'Favorites Storage', 'Your favorites data were corrupted and have been reset.'),

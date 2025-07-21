@@ -17,6 +17,7 @@ export interface Extension {
 
 interface ExtensionState {
   readonly extensions: readonly Extension[];
+  readonly extensionMap: ReadonlyMap<string, Extension>;
   readonly remove: (id: string) => void;
   readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: readonly string[]) => void;
   readonly setExtensions: (extensions: readonly Extension[]) => void;
@@ -24,49 +25,71 @@ interface ExtensionState {
   readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
 }
 
+function updateStateWithExtensions(extensions: readonly Extension[]) {
+  return {
+    extensions,
+    extensionMap: new Map(extensions.map((ext) => [ext.id, ext])),
+  };
+}
+
 export const useExtensionStore = create<ExtensionState>()(
   subscribeWithSelector((set) => ({
     extensions: [],
+    extensionMap: new Map(),
 
     remove(id) {
-      set((state) => ({ extensions: state.extensions.filter((ext) => ext.id !== id) }));
+      set((state) => {
+        const newExtensions = state.extensions.filter((ext) => ext.id !== id);
+        if (newExtensions.length === state.extensions.length) {
+          return {}; // No change
+        }
+        return updateStateWithExtensions(newExtensions);
+      });
     },
 
     setExtensions(extensions) {
-      set({ extensions: [...extensions] });
+      set(updateStateWithExtensions(extensions));
     },
 
     setExtensionStatus(id, status, errors) {
-      set((state) => ({
-        extensions: state.extensions.map((ext) => {
-          if (ext.id === id) {
-            const updates: Partial<Extension> = {
-              status,
-              errors,
-              ...((status === 'loaded' || status === 'partial') && { fetchedAt: Date.now() }),
-            };
-            return { ...ext, ...updates };
-          }
-          return ext;
-        }),
-      }));
+      set((state) => {
+        const index = state.extensions.findIndex((ext) => ext.id === id);
+        if (index === -1) {
+          return {}; // Not found
+        }
+        const newExtensions = [...state.extensions];
+        const updates: Partial<Extension> = {
+          status,
+          errors,
+          ...((status === 'loaded' || status === 'partial') && { fetchedAt: Date.now() }),
+        };
+        newExtensions[index] = { ...newExtensions[index], ...updates };
+        return updateStateWithExtensions(newExtensions);
+      });
     },
 
     setIngredients(id, ingredients) {
-      set((state) => ({
-        extensions: state.extensions.map((ext) => (ext.id === id ? { ...ext, ingredients } : ext)),
-      }));
+      set((state) => {
+        const index = state.extensions.findIndex((ext) => ext.id === id);
+        if (index === -1) {
+          return {}; // Not found
+        }
+        const newExtensions = [...state.extensions];
+        newExtensions[index] = { ...newExtensions[index], ingredients };
+        return updateStateWithExtensions(newExtensions);
+      });
     },
 
     upsert(extension) {
       set((state) => {
         const index = state.extensions.findIndex((e) => e.id === extension.id);
-        if (index > -1) {
-          const newExtensions = [...state.extensions];
-          newExtensions[index] = { ...newExtensions[index], ...extension };
-          return { extensions: newExtensions };
+        const newExtensions = [...state.extensions];
+        if (index !== -1) {
+          newExtensions[index] = { ...newExtensions[index], ...extension } as Extension;
+        } else {
+          newExtensions.push(extension as Extension);
         }
-        return { extensions: [...state.extensions, extension as Extension] };
+        return updateStateWithExtensions(newExtensions);
       });
     },
   })),

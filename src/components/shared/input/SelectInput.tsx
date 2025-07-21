@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { ChevronDownIcon } from '../Icon';
@@ -18,15 +18,19 @@ export const SelectInput = memo(
   <T extends SpiceValue>({ id, value, onChange, options, className = '', disabled = false, ...rest }: SelectInputProps<T>): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
+    const valueToOptionMap = useMemo(() => {
+      return new Map(options.map((opt) => [String(opt.value), opt]));
+    }, [options]);
+
     const handleChange = useCallback<ChangeEventHandler<HTMLSelectElement>>(
       (event) => {
         const stringValue = event.target.value;
-        const selectedOption = options.find((opt) => String(opt.value) === stringValue);
+        const selectedOption = valueToOptionMap.get(stringValue);
         if (selectedOption) {
           onChange(selectedOption.value);
         }
       },
-      [options, onChange],
+      [valueToOptionMap, onChange],
     );
 
     const selectInputStyle = `w-full appearance-none rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} py-2 pl-2 pr-8 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} outline-none transition-colors duration-150 focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed`;

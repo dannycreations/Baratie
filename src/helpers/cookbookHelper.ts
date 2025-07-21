@@ -78,15 +78,22 @@ function mergeRecipeLists(
 
   const finalRecipes: RecipeBookItem[] = [];
   const finalNames = new Set<string>();
+  const nameCounters = new Map<string, number>();
   const sortedForNaming = [...mergedById.values()].sort((a, b) => a.createdAt - b.createdAt);
 
   for (const recipe of sortedForNaming) {
     let uniqueName = recipe.name;
-    let counter = 1;
-    while (finalNames.has(uniqueName.toLowerCase())) {
-      uniqueName = `${recipe.name} (${counter})`;
-      counter++;
+    const lowerName = uniqueName.toLowerCase();
+
+    if (finalNames.has(lowerName)) {
+      let counter = nameCounters.get(lowerName) || 1;
+      do {
+        uniqueName = `${recipe.name} (${counter})`;
+        counter++;
+      } while (finalNames.has(uniqueName.toLowerCase()));
+      nameCounters.set(lowerName, counter);
     }
+
     finalRecipes.push({ ...recipe, name: uniqueName });
     finalNames.add(uniqueName.toLowerCase());
   }
@@ -133,8 +140,8 @@ function sanitizeRecipe(rawRecipe: RawRecipeBookItem, source: 'fileImport' | 'st
 }
 
 export function deleteRecipe(id: string): void {
-  const { recipes, setRecipes } = useCookbookStore.getState();
-  const recipeToDelete = recipes.find((recipe) => recipe.id === id);
+  const { recipes, recipeIdMap, setRecipes } = useCookbookStore.getState();
+  const recipeToDelete = recipeIdMap.get(id);
   const updatedList = recipes.filter((recipe) => recipe.id !== id);
 
   if (saveAllRecipes(updatedList)) {
@@ -200,13 +207,27 @@ export async function importFromFile(file: File): Promise<RecipeBookItem[] | nul
     return null;
   }
 
-  const results = validationResult.output.map((rawRecipe) => sanitizeRecipe(rawRecipe, 'fileImport'));
-  const recipes = results.map((res) => res.recipe).filter((recipe): recipe is RecipeBookItem => !!recipe);
-  for (const { warning } of results) {
-    if (warning) {
-      showNotification(warning, 'warning', 'Recipe Load Notice', 7000);
-    }
+  const { recipes, warnings } = validationResult.output.reduce<{
+    recipes: RecipeBookItem[];
+    warnings: string[];
+  }>(
+    (acc, rawRecipe) => {
+      const { recipe, warning } = sanitizeRecipe(rawRecipe, 'fileImport');
+      if (recipe) {
+        acc.recipes.push(recipe);
+      }
+      if (warning) {
+        acc.warnings.push(warning);
+      }
+      return acc;
+    },
+    { recipes: [], warnings: [] },
+  );
+
+  for (const warning of warnings) {
+    showNotification(warning, 'warning', 'Recipe Load Notice', 7000);
   }
+
   if (recipes.length === 0) {
     showNotification('No valid recipes were found in the selected file.', 'warning', 'Import Notice');
     return null;
@@ -221,10 +242,8 @@ export function initRecipes(): void {
     return;
   }
 
-  const validationResult = safeParse(CookbookImportSchema, storedRecipes);
-
-  let recipesToSanitize: RawRecipeBookItem[];
-
+  const rawItems: unknown[] = storedRecipes;
+  const validationResult = safeParse(CookbookImportSchema, rawItems);
   if (!validationResult.success) {
     logger.warn('Corrupted cookbook data in storage, attempting partial recovery.', { issues: validationResult.issues });
     showNotification(
@@ -233,19 +252,25 @@ export function initRecipes(): void {
       'Cookbook Warning',
       7000,
     );
-    recipesToSanitize = storedRecipes.filter((r) => safeParse(RecipeBookItemSchema, r).success) as RawRecipeBookItem[];
-  } else {
-    recipesToSanitize = validationResult.output;
   }
 
-  const sanitized = recipesToSanitize
-    .map((rawRecipe) => sanitizeRecipe(rawRecipe, 'storage').recipe)
-    .filter((recipe): recipe is RecipeBookItem => !!recipe);
-  useCookbookStore.getState().setRecipes(sanitized);
+  const sanitizedRecipes = rawItems.reduce<RecipeBookItem[]>((acc, item) => {
+    const itemValidation = safeParse(RecipeBookItemSchema, item);
+    if (itemValidation.success) {
+      const { recipe } = sanitizeRecipe(itemValidation.output, 'storage');
+      if (recipe) {
+        acc.push(recipe);
+      }
+    }
+    return acc;
+  }, []);
+
+  useCookbookStore.getState().setRecipes(sanitizedRecipes);
 }
 
 export function loadRecipe(id: string): RecipeBookItem | null {
-  const recipeToLoad = useCookbookStore.getState().recipes.find((recipe) => recipe.id === id);
+  const { recipeIdMap } = useCookbookStore.getState();
+  const recipeToLoad = recipeIdMap.get(id);
   if (recipeToLoad) {
     useRecipeStore.getState().setRecipe(recipeToLoad.ingredients, recipeToLoad.id);
     showNotification(`Recipe '${recipeToLoad.name}' loaded.`, 'success', 'Cookbook Action');
@@ -313,9 +338,9 @@ export function upsertRecipe(name: string, ingredients: readonly Ingredient[], a
     return;
   }
 
-  const { recipes, setRecipes } = useCookbookStore.getState();
+  const { recipes, setRecipes, recipeIdMap } = useCookbookStore.getState();
   const now = Date.now();
-  const recipeToUpdate = activeRecipeId ? recipes.find((r) => r.id === activeRecipeId) : null;
+  const recipeToUpdate = activeRecipeId ? recipeIdMap.get(activeRecipeId) : null;
   const isUpdate = recipeToUpdate && recipeToUpdate.name.toLowerCase() === trimmedName.toLowerCase();
   let newRecipes: RecipeBookItem[];
   let recipeToSave: RecipeBookItem;

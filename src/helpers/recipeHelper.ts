@@ -41,8 +41,8 @@ export function reorderIngredients(draggedId: string, targetId: string): void {
 }
 
 export function updateSpice(id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>): void {
-  const { ingredients, activeRecipeId, setRecipe } = useRecipeStore.getState();
-  const ingredientToUpdate = ingredients.find((ingredient) => ingredient.id === id);
+  const { ingredients, ingredientMap, activeRecipeId, setRecipe } = useRecipeStore.getState();
+  const ingredientToUpdate = ingredientMap.get(id);
   errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${id}" not found for spice change.`, 'Recipe Change Spice');
 
   const ingredientDefinition = ingredientRegistry.getIngredient(ingredientToUpdate.name);
