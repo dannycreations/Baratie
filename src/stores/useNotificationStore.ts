@@ -57,7 +57,7 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
       return { map: newMap, order: newOrder, dedupeMap: newDedupeMap };
     });
   },
-  show: (message, type = 'info', title, duration) => {
+  show: (message, type: NotificationType = 'info', title, duration) => {
     const { add, update, dedupeMap } = get();
     const details = { message, title, type };
     const key = getDedupeKey(details);

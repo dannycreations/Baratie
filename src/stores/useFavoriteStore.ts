@@ -6,10 +6,10 @@ import { errorHandler, ingredientRegistry, storage } from '../app/container';
 import { AppError } from '../core/ErrorHandler';
 
 interface FavoriteState {
-  readonly favorites: ReadonlySet<symbol>;
+  readonly favorites: ReadonlySet<string>;
   readonly init: () => void;
-  readonly setFavorites: (favorites: ReadonlySet<symbol>) => void;
-  readonly toggle: (type: symbol) => void;
+  readonly setFavorites: (favorites: ReadonlySet<string>) => void;
+  readonly toggle: (type: string) => void;
 }
 
 export const useFavoriteStore = create<FavoriteState>()(
@@ -17,16 +17,13 @@ export const useFavoriteStore = create<FavoriteState>()(
     favorites: new Set(),
 
     init: () => {
-      const parsedFavorites = storage.get(STORAGE_FAVORITES, 'Favorite Ingredients');
-      let favorites: Array<symbol> = [];
+      const parsedFavorites = storage.get<Array<unknown>>(STORAGE_FAVORITES, 'Favorite Ingredients');
+      let favorites: Array<string> = [];
       if (parsedFavorites) {
         if (Array.isArray(parsedFavorites)) {
-          favorites = parsedFavorites.reduce<Array<symbol>>((acc, item) => {
-            if (typeof item === 'string') {
-              const symbol = ingredientRegistry.getSymbolFromString(item);
-              if (symbol) {
-                acc.push(symbol);
-              }
+          favorites = parsedFavorites.reduce<Array<string>>((acc, item) => {
+            if (typeof item === 'string' && ingredientRegistry.getIngredient(item)) {
+              acc.push(item);
             }
             return acc;
           }, []);
@@ -60,9 +57,6 @@ export const useFavoriteStore = create<FavoriteState>()(
 useFavoriteStore.subscribe(
   (state) => state.favorites,
   (favorites) => {
-    const favStrings = Array.from(favorites)
-      .map((favorite) => ingredientRegistry.getStringFromSymbol(favorite))
-      .filter((str): str is string => !!str);
-    storage.set(STORAGE_FAVORITES, favStrings, 'Favorite Ingredients');
+    storage.set(STORAGE_FAVORITES, Array.from(favorites), 'Favorite Ingredients');
   },
 );

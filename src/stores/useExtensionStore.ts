@@ -33,8 +33,8 @@ export interface Extension {
   readonly errors?: ReadonlyArray<string>;
   readonly fetchedAt?: number;
   readonly id: string;
-  readonly ingredients?: ReadonlyArray<symbol>;
-  readonly name?: string;
+  readonly ingredients?: ReadonlyArray<string>;
+  readonly name: string;
   readonly scripts?: Readonly<Record<string, string>>;
   readonly status: 'loading' | 'loaded' | 'error' | 'partial';
 }
@@ -48,7 +48,7 @@ interface ExtensionState {
   readonly remove: (id: string) => void;
   readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: ReadonlyArray<string>) => void;
   readonly setExtensions: (extensions: ReadonlyArray<Extension>) => void;
-  readonly setIngredients: (id: string, ingredients: ReadonlyArray<symbol>) => void;
+  readonly setIngredients: (id: string, ingredients: ReadonlyArray<string>) => void;
   readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
 }
 
@@ -151,15 +151,16 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
   }
 
   const originalRegister = ingredientRegistry.registerIngredient.bind(ingredientRegistry);
-  const newlyRegisteredSymbols: Array<symbol> = [];
+  const newlyRegisteredNames: Array<string> = [];
   const errorLogs: Array<string> = [];
   const fetchedScripts: Record<string, string> = {};
   let successCount = 0;
 
   try {
     ingredientRegistry.registerIngredient = (definition: IngredientDefinition) => {
-      originalRegister({ ...definition, extensionId: id });
-      newlyRegisteredSymbols.push(definition.name);
+      const prefixedName = `${id}:${definition.name}`;
+      originalRegister({ ...definition, name: prefixedName, extensionId: id });
+      newlyRegisteredNames.push(prefixedName);
     };
 
     for (const entryPoint of entryPoints) {
@@ -193,19 +194,19 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
     upsert({ id, scripts: { ...cachedScripts, ...fetchedScripts } });
   }
 
-  if (newlyRegisteredSymbols.length > 0) {
-    setIngredients(id, newlyRegisteredSymbols);
+  if (newlyRegisteredNames.length > 0) {
+    setIngredients(id, newlyRegisteredNames);
   }
   const finalStatus: Extension['status'] = successCount > 0 ? (errorLogs.length > 0 ? 'partial' : 'loaded') : 'error';
   setExtensionStatus(id, finalStatus, errorLogs);
 
-  const displayName = name || id;
+  const nameForLog = name || id;
   if (finalStatus === 'loaded') {
-    logger.info(`Extension '${displayName}' loaded successfully with ${newlyRegisteredSymbols.length} ingredient(s).`);
+    logger.info(`Extension '${nameForLog}' loaded successfully with ${newlyRegisteredNames.length} ingredient(s).`);
   } else if (finalStatus === 'partial') {
-    logger.warn(`Extension '${displayName}' partially loaded with ${errorLogs.length} error(s).`, errorLogs);
+    logger.warn(`Extension '${nameForLog}' partially loaded with ${errorLogs.length} error(s).`, errorLogs);
   } else {
-    logger.error(`Extension '${displayName}' failed to load with ${errorLogs.length} error(s).`, errorLogs);
+    logger.error(`Extension '${nameForLog}' failed to load with ${errorLogs.length} error(s).`, errorLogs);
   }
 }
 
@@ -264,7 +265,12 @@ export const useExtensionStore = create<ExtensionState>()(
       const storeExtension = extensionMap.get(id);
 
       logger.info(`Refreshing extension: ${storeExtension?.name || id}`);
-      upsert({ id, status: 'loading', name: storeExtension?.name || 'Refreshing...', scripts: {} });
+      upsert({
+        id,
+        status: 'loading',
+        name: storeExtension?.name || 'Refreshing...',
+        scripts: {},
+      });
 
       const repoInfo = parseGitHubUrl(id);
       if (!repoInfo) {

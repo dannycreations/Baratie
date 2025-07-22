@@ -9,7 +9,7 @@ import { readAsText, sanitizeFileName, triggerDownload } from '../utilities/file
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
 
-import type { Ingredient, RecipeBookItem } from '../core/IngredientRegistry';
+import type { Ingredient, IngredientDefinition, RecipeBookItem, SpiceDefinition } from '../core/IngredientRegistry';
 
 const SpiceValueSchema = v.union([v.string(), v.number(), v.boolean()]);
 
@@ -41,7 +41,7 @@ interface SanitizationResult {
 interface SerializedRecipeItem extends Omit<RecipeBookItem, 'ingredients'> {
   readonly ingredients: ReadonlyArray<{
     readonly id: string;
-    readonly name: string | undefined;
+    readonly name: string;
     readonly spices: Readonly<Record<string, unknown>>;
   }>;
 }
@@ -82,19 +82,32 @@ interface CookbookState {
   readonly upsert: () => void;
 }
 
+const sortedSpicesCache = new Map<string, ReadonlyArray<SpiceDefinition>>();
+
+function getSortedSpices(definition: IngredientDefinition): ReadonlyArray<SpiceDefinition> {
+  const definitionName = definition.name;
+  if (sortedSpicesCache.has(definitionName)) {
+    return sortedSpicesCache.get(definitionName)!;
+  }
+  if (!definition.spices || definition.spices.length === 0) {
+    return [];
+  }
+  const sorted = [...definition.spices].sort((a, b) => a.id.localeCompare(b.id));
+  sortedSpicesCache.set(definitionName, sorted);
+  return sorted;
+}
+
 function createIngredientHash(ingredients: ReadonlyArray<Ingredient>): string {
   const canonicalParts = ingredients.map((ing) => {
-    const name = ingredientRegistry.getStringFromSymbol(ing.name) ?? ing.name.toString();
+    const name = ing.name;
     const definition = ingredientRegistry.getIngredient(ing.name);
 
     if (!definition?.spices || definition.spices.length === 0) {
       return name;
     }
 
-    const spicesString = [...definition.spices]
-      .sort((a, b) => a.id.localeCompare(b.id))
-      .map((spiceDef) => `${spiceDef.id}:${String(ing.spices[spiceDef.id])}`)
-      .join(';');
+    const sortedSpices = getSortedSpices(definition);
+    const spicesString = sortedSpices.map((spiceDef) => `${spiceDef.id}:${String(ing.spices[spiceDef.id])}`).join(';');
 
     return `${name}|${spicesString}`;
   });
@@ -106,7 +119,7 @@ function serializeRecipe(recipe: Readonly<RecipeBookItem>): SerializedRecipeItem
     ...recipe,
     ingredients: recipe.ingredients.map((ingredient) => ({
       id: ingredient.id,
-      name: ingredientRegistry.getStringFromSymbol(ingredient.name),
+      name: ingredient.name,
       spices: ingredient.spices,
     })),
   };
@@ -119,18 +132,14 @@ function saveAllRecipes(recipes: ReadonlyArray<RecipeBookItem>): boolean {
 }
 
 function sanitizeIngredient(rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): Ingredient | null {
-  const ingredientNameSymbol = ingredientRegistry.getSymbolFromString(rawIngredient.name);
-  if (!ingredientNameSymbol) {
-    logger.warn(`Skipping unknown ingredient name '${rawIngredient.name}' from ${source} for recipe '${recipeName}'.`);
-    return null;
-  }
-  const definition = ingredientRegistry.getIngredient(ingredientNameSymbol);
+  const ingredientName = rawIngredient.name;
+  const definition = ingredientRegistry.getIngredient(ingredientName);
   if (!definition) {
-    logger.warn(`Definition not found for known name symbol: '${rawIngredient.name}'.`);
+    logger.warn(`Skipping unknown ingredient name '${ingredientName}' from ${source} for recipe '${recipeName}'.`);
     return null;
   }
   const validatedSpices = validateSpices(definition, rawIngredient.spices);
-  return { id: rawIngredient.id, name: ingredientNameSymbol, spices: validatedSpices };
+  return { id: rawIngredient.id, name: ingredientName, spices: validatedSpices };
 }
 
 function sanitizeRecipe(rawRecipe: RawRecipeBookItem, source: 'fileImport' | 'storage'): SanitizationResult {

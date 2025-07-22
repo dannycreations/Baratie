@@ -1,6 +1,6 @@
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 
-import { errorHandler, ingredientRegistry, kitchen } from '../../app/container';
+import { ingredientRegistry, kitchen } from '../../app/container';
 import { useDragMove } from '../../hooks/useDragMove';
 import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useKitchenStore } from '../../stores/useKitchenStore';
@@ -90,10 +90,8 @@ export const RecipePanel = memo((): JSX.Element => {
       event.preventDefault();
       setIsDraggingIngredient(false);
       const typeString = event.dataTransfer.getData('application/x-baratie-ingredient-type');
-      if (typeString) {
-        const typeSymbol = ingredientRegistry.getSymbolFromString(typeString);
-        errorHandler.assert(typeSymbol, `Could not find symbol for ingredient type string: "${typeString}".`, 'Recipe Drag&Drop');
-        addIngredient(typeSymbol);
+      if (typeString && ingredientRegistry.getIngredient(typeString)) {
+        addIngredient(typeString);
       }
     },
     [addIngredient],

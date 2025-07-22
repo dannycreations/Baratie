@@ -77,9 +77,8 @@ export const IngredientPanel = memo((): JSX.Element => {
   );
 
   const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: IngredientDefinition) => {
-    const typeString = ingredientRegistry.getStringFromSymbol(item.name);
-    errorHandler.assert(typeString, 'Ingredient ID not found on dragged element.', 'Ingredient Drag');
-    event.dataTransfer.setData('application/x-baratie-ingredient-type', typeString);
+    errorHandler.assert(item.name, 'Ingredient ID not found on dragged element.', 'Ingredient Drag');
+    event.dataTransfer.setData('application/x-baratie-ingredient-type', item.name);
     event.dataTransfer.effectAllowed = 'copy';
   }, []);
 
@@ -113,7 +112,6 @@ export const IngredientPanel = memo((): JSX.Element => {
 
   const renderItemActions = useCallback(
     (item: IngredientDefinition): JSX.Element => {
-      const ingredientName = item.name.description ?? 'Unnamed Ingredient';
       const isFavorite = favorites.has(item.name);
 
       const favoriteButtonClass = `opacity-70 group-hover:opacity-100 ${
@@ -123,22 +121,22 @@ export const IngredientPanel = memo((): JSX.Element => {
       return (
         <>
           <TooltipButton
-            aria-label={isFavorite ? `Remove '${ingredientName}' from favorites` : `Add '${ingredientName}' to favorites`}
+            aria-label={isFavorite ? `Remove '${item.name}' from favorites` : `Add '${item.name}' to favorites`}
             aria-pressed={isFavorite}
             className={favoriteButtonClass}
             icon={<StarIcon isFilled={isFavorite} size={18} />}
             size="sm"
-            tooltipContent={isFavorite ? `Remove '${ingredientName}' from favorites` : `Add '${ingredientName}' to favorites`}
+            tooltipContent={isFavorite ? `Remove '${item.name}' from favorites` : `Add '${item.name}' to favorites`}
             tooltipPosition="top"
             variant="stealth"
             onClick={() => toggleFavorite(item.name)}
           />
           <TooltipButton
-            aria-label={`Add '${ingredientName}' to the recipe`}
+            aria-label={`Add '${item.name}' to the recipe`}
             className="opacity-70 group-hover:opacity-100"
             icon={<PlusIcon size={18} />}
             size="sm"
-            tooltipContent={`Add '${ingredientName}' to Recipe`}
+            tooltipContent={`Add '${item.name}' to Recipe`}
             tooltipPosition="top"
             variant="primary"
             onClick={() => addIngredient(item.name)}

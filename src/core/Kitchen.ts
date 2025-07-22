@@ -175,13 +175,9 @@ export class Kitchen {
 
       if (!definition) {
         errorHandler.handle(
-          new AppError(
-            `Definition for '${ingredient.name.description}' not found.`,
-            'Recipe Cooking',
-            `Ingredient '${ingredient.name.description}' is misconfigured.`,
-          ),
+          new AppError(`Definition for '${ingredient.name}' not found.`, 'Recipe Cooking', `Ingredient '${ingredient.name}' is misconfigured.`),
         );
-        state.cookedData = `Error: Definition for ${ingredient.name.description} not found.`;
+        state.cookedData = `Error: Definition for ${ingredient.name} not found.`;
         state.localStatuses[ingredient.id] = 'error';
         state.globalError = true;
         break;
@@ -219,8 +215,8 @@ export class Kitchen {
     currentIndex: number,
     initialInput: string,
   ): Promise<IngredientRunResult> {
-    errorHandler.assert(definition.run, `Runner for '${ingredient.name.description}' not found.`);
-    logger.debug(`Running ingredient: ${ingredient.name.description}`, { id: ingredient.id, index: currentIndex });
+    errorHandler.assert(definition.run, `Runner for '${definition.name}' not found.`);
+    logger.debug(`Running ingredient: ${definition.name}`, { id: ingredient.id, index: currentIndex });
 
     const context: IngredientContext = { currentIndex, ingredient, initialInput, recipe };
     const { error, result } = await errorHandler.attemptAsync(() => definition.run(new InputType(currentData), ingredient.spices, context));
@@ -229,14 +225,14 @@ export class Kitchen {
       return { hasError: true, nextData: `Error: ${error.message}`, status: 'error' };
     }
     if (result === null) {
-      logger.info(`Ingredient '${ingredient.name.description}' was skipped (returned null).`);
+      logger.info(`Ingredient '${definition.name}' was skipped (returned null).`);
       return { hasError: false, nextData: currentData, status: 'warning' };
     }
 
     const isPanelControlSignal = 'output' in result;
     const output = isPanelControlSignal ? result.output : result;
     const panelInstruction = isPanelControlSignal ? result.panelControl : undefined;
-    errorHandler.assert(output instanceof InputType, `Ingredient '${ingredient.name.description}' returned an invalid result type.`);
+    errorHandler.assert(output instanceof InputType, `Ingredient '${definition.name}' returned an invalid result type.`);
 
     const nextData = output.cast('string').getValue();
     let inputPanelIngId: string | null = null;

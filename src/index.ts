@@ -52,7 +52,7 @@ const BARATIE_API = {
       },
     },
     recipe: {
-      add: (type: symbol, initialSpices?: Readonly<Record<string, unknown>>) => {
+      add: (type: string, initialSpices?: Readonly<Record<string, unknown>>) => {
         return getRecipeState().addIngredient(type, initialSpices);
       },
       clear: () => {

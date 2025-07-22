@@ -7,7 +7,7 @@ export type SpiceValue = string | number | boolean;
 
 export interface Ingredient {
   readonly id: string;
-  readonly name: symbol;
+  readonly name: string;
   readonly spices: Readonly<Record<string, SpiceValue>>;
 }
 
@@ -19,8 +19,8 @@ export interface IngredientContext {
 }
 
 export interface IngredientDefinition<T = unknown> {
-  readonly name: symbol;
-  readonly category: symbol;
+  readonly name: string;
+  readonly category: string;
   readonly description: string;
   readonly spices?: ReadonlyArray<SpiceDefinition>;
   readonly run: (input: InputType, spices: T, context: IngredientContext) => ResultType | Promise<ResultType>;
@@ -109,23 +109,18 @@ type StringSpice = BaseSpice<'string' | 'textarea', string> & {
 export type SpiceDefinition = StringSpice | NumberSpice | BooleanSpice | SelectSpice;
 
 export class IngredientRegistry {
-  private readonly ingredients: Map<symbol, IngredientDefinition> = new Map();
-  private readonly stringToSymbol: Map<string, symbol> = new Map();
-  private readonly symbolToString: Map<symbol, string> = new Map();
-  private categories: ReadonlyMap<string, symbol> | null = null;
+  private readonly ingredients: Map<string, IngredientDefinition> = new Map();
+  private categories: ReadonlySet<string> | null = null;
 
-  public getAllCategories(): ReadonlyMap<string, symbol> {
+  public getAllCategories(): ReadonlySet<string> {
     if (this.categories) {
       return this.categories;
     }
-    const categoryMap = new Map<string, symbol>();
+    const categorySet = new Set<string>();
     for (const ingredient of this.ingredients.values()) {
-      const description = ingredient.category.description;
-      if (description && !categoryMap.has(description)) {
-        categoryMap.set(description, ingredient.category);
-      }
+      categorySet.add(ingredient.category);
     }
-    this.categories = categoryMap;
+    this.categories = categorySet;
     return this.categories;
   }
 
@@ -133,56 +128,26 @@ export class IngredientRegistry {
     return Array.from(this.ingredients.values());
   }
 
-  public getIngredient(type: symbol): IngredientDefinition | undefined {
+  public getIngredient(type: string): IngredientDefinition | undefined {
     return this.ingredients.get(type);
-  }
-
-  public getStringFromSymbol(typeSymbol: symbol): string | undefined {
-    return this.symbolToString.get(typeSymbol);
-  }
-
-  public getSymbolFromString(typeString: string): symbol | undefined {
-    return this.stringToSymbol.get(typeString);
   }
 
   public registerIngredient(definition: IngredientDefinition): void {
     if (this.ingredients.has(definition.name)) {
-      logger.warn(`IngredientRegistry: Re-registering type "${String(definition.name)}", which overwrites the existing definition.`);
+      logger.warn(`IngredientRegistry: Re-registering type "${definition.name}", which overwrites the existing definition.`);
     }
 
     this.ingredients.set(definition.name, definition);
-
-    const typeString = definition.name.description?.trim();
-    if (typeString) {
-      if (this.stringToSymbol.has(typeString) && this.stringToSymbol.get(typeString) !== definition.name) {
-        logger.warn(
-          `IngredientRegistry: The type string "${typeString}" is already registered with a different symbol instance. This can cause serialization conflicts.`,
-        );
-      }
-      this.symbolToString.set(definition.name, typeString);
-      this.stringToSymbol.set(typeString, definition.name);
-    } else {
-      logger.warn('IngredientRegistry: An ingredient was registered without a description on its name symbol, which is required for serialization.', {
-        name: definition.name,
-      });
-    }
-
     this.categories = null;
     useIngredientStore.getState().refreshRegistry();
   }
 
-  public unregisterIngredients(types: ReadonlyArray<symbol>): void {
+  public unregisterIngredients(types: ReadonlyArray<string>): void {
     let changed = false;
     for (const type of types) {
-      if (this.ingredients.has(type)) {
-        this.ingredients.delete(type);
-        const typeString = this.symbolToString.get(type);
-        if (typeString) {
-          this.symbolToString.delete(type);
-          this.stringToSymbol.delete(typeString);
-        }
+      if (this.ingredients.delete(type)) {
         changed = true;
-        logger.info(`Unregistered ingredient: ${String(type)}`);
+        logger.info(`Unregistered ingredient: ${type}`);
       }
     }
     if (changed) {

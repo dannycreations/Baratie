@@ -20,7 +20,7 @@ export const CUSTOM_INPUT_DEF: IngredientDefinition = {
         config = {
           mode: 'spiceEditor',
           targetIngredientId: targetIngredient.id,
-          title: `Options: ${targetDefinition.name.description}`,
+          title: `Options: ${targetIngredient.name}`,
         };
       } else {
         config = {

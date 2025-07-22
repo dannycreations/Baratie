@@ -5,20 +5,20 @@ import { STORAGE_CATEGORIES, STORAGE_INGREDIENTS } from '../app/constants';
 import { ingredientRegistry, storage } from '../app/container';
 
 interface IngredientState {
-  readonly disabledCategories: ReadonlySet<symbol>;
-  readonly disabledIngredients: ReadonlySet<symbol>;
+  readonly disabledCategories: ReadonlySet<string>;
+  readonly disabledIngredients: ReadonlySet<string>;
   readonly isModalOpen: boolean;
   readonly registryVersion: number;
   readonly closeModal: () => void;
   readonly init: () => void;
   readonly openModal: () => void;
   readonly refreshRegistry: () => void;
-  readonly setFilters: (filters: { readonly categories: ReadonlyArray<symbol>; readonly ingredients: ReadonlyArray<symbol> }) => void;
-  readonly toggleCategory: (category: symbol) => void;
-  readonly toggleIngredient: (id: symbol) => void;
+  readonly setFilters: (filters: { readonly categories: ReadonlyArray<string>; readonly ingredients: ReadonlyArray<string> }) => void;
+  readonly toggleCategory: (category: string) => void;
+  readonly toggleIngredient: (id: string) => void;
 }
 
-function loadFilters(key: string, forCategories: boolean): Array<symbol> {
+function loadFilters(key: string, forCategories: boolean): Array<string> {
   const storedItems = storage.get<Array<string>>(key, 'Ingredient Filters');
   if (!Array.isArray(storedItems)) {
     return [];
@@ -27,23 +27,11 @@ function loadFilters(key: string, forCategories: boolean): Array<symbol> {
   const validatedItems = storedItems.filter((item): item is string => typeof item === 'string');
 
   if (forCategories) {
-    const allCategorySymbols = ingredientRegistry.getAllCategories();
-    return validatedItems.reduce<Array<symbol>>((acc, item) => {
-      const symbol = allCategorySymbols.get(item);
-      if (symbol) {
-        acc.push(symbol);
-      }
-      return acc;
-    }, []);
+    const allCategories = ingredientRegistry.getAllCategories();
+    return validatedItems.filter((item) => allCategories.has(item));
   }
 
-  return validatedItems.reduce<Array<symbol>>((acc, item) => {
-    const symbol = ingredientRegistry.getSymbolFromString(item);
-    if (symbol) {
-      acc.push(symbol);
-    }
-    return acc;
-  }, []);
+  return validatedItems.filter((item) => !!ingredientRegistry.getIngredient(item));
 }
 
 export const useIngredientStore = create<IngredientState>()(
@@ -103,19 +91,13 @@ export const useIngredientStore = create<IngredientState>()(
 useIngredientStore.subscribe(
   (state) => state.disabledCategories,
   (categories) => {
-    const categoryStrings = Array.from(categories)
-      .map((cat) => cat.description)
-      .filter((desc): desc is string => !!desc);
-    storage.set(STORAGE_CATEGORIES, categoryStrings, 'Disabled Categories');
+    storage.set(STORAGE_CATEGORIES, Array.from(categories), 'Disabled Categories');
   },
 );
 
 useIngredientStore.subscribe(
   (state) => state.disabledIngredients,
   (ingredients) => {
-    const ingredientStrings = Array.from(ingredients)
-      .map((ing) => ingredientRegistry.getStringFromSymbol(ing))
-      .filter((str): str is string => !!str);
-    storage.set(STORAGE_INGREDIENTS, ingredientStrings, 'Disabled Ingredients');
+    storage.set(STORAGE_INGREDIENTS, Array.from(ingredients), 'Disabled Ingredients');
   },
 );

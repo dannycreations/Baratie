@@ -73,7 +73,7 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
   const leftContent = (
     <div className="flex flex-col">
       <span className={`font-medium text-${theme.contentPrimary}`}>{displayName}</span>
-      <span className={`text-xs text-${theme.contentTertiary}`}>{extension.id}</span>
+      <span className={`text-xs text-${theme.contentTertiary}`}>{extension.name}</span>
     </div>
   );
 

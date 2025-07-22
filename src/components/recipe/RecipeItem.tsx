@@ -58,12 +58,9 @@ export const RecipeItem = memo<RecipeItemProps>(
     const status = useKitchenStore((state) => state.ingredientStatuses[ingredient.id] || 'idle');
 
     const definition = ingredientRegistry.getIngredient(ingredient.name);
-    errorHandler.assert(
-      definition,
-      `Ingredient definition not found for name "${String(ingredient.name)}" (name: "${ingredient.name.description}").`,
-      'Recipe Item Panel',
-      { genericMessage: `The definition for ingredient "${ingredient.name.description}" is missing.` },
-    );
+    errorHandler.assert(definition, `Ingredient definition not found for name "${ingredient.name}".`, 'Recipe Item Panel', {
+      genericMessage: `The definition for ingredient "${ingredient.name}" is missing.`,
+    });
 
     const handleDragStart = useCallback(
       (event: DragEvent<HTMLElement>) => {
@@ -121,7 +118,7 @@ export const RecipeItem = memo<RecipeItemProps>(
     const settingsTooltip = isSpiceInInput ? 'Options are in the Input panel' : isEditing ? 'Hide Options' : 'Edit Options';
 
     const ariaLabelParts = [
-      `Recipe Item: ${definition.name.description}`,
+      `Recipe Item: ${definition.name}`,
       `Status: ${isAutoCook ? status : 'Auto-Cook Disabled'}`,
       isSpiceInInput ? 'Options are managed in the Input panel.' : '',
       isEditorVisible ? 'The options editor is expanded.' : '',
@@ -143,8 +140,8 @@ export const RecipeItem = memo<RecipeItemProps>(
             <GrabIcon size={20} />
           </span>
         </Tooltip>
-        <Tooltip content={definition.name.description} position="top">
-          <span className={`truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default`}>{ingredient.name.description}</span>
+        <Tooltip content={definition.name} position="top">
+          <span className={`truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default`}>{definition.name}</span>
         </Tooltip>
       </>
     );
@@ -166,7 +163,7 @@ export const RecipeItem = memo<RecipeItemProps>(
           />
         )}
         <TooltipButton
-          aria-label={`Remove ingredient "${ingredient.name.description}" from recipe`}
+          aria-label={`Remove ingredient "${definition.name}" from recipe`}
           className="opacity-50 group-hover:opacity-100 hover:!opacity-100"
           icon={<XIcon size={18} />}
           size="sm"

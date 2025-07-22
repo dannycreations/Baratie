@@ -38,8 +38,8 @@ export const IngredientManager = memo((): JSX.Element => {
   }, [ingredientsByCategory, query]);
 
   const renderHeader = useCallback(
-    (category: symbol): JSX.Element => {
-      const categoryId = `manager-category-${(category.description ?? '').replace(/\s+/g, '-')}`;
+    (category: string): JSX.Element => {
+      const categoryId = `manager-category-${category.replace(/\s+/g, '-')}`;
       const isCategoryDisabled = disabledCategories.has(category);
 
       return (
@@ -47,11 +47,9 @@ export const IngredientManager = memo((): JSX.Element => {
           <BooleanInput id={`${categoryId}-toggle`} checked={!isCategoryDisabled} onChange={() => toggleCategory(category)} />
           <label
             htmlFor={`${categoryId}-toggle`}
-            className={`cursor-pointer font-medium ${
-              isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`
-            }`}
+            className={`cursor-pointer font-medium ${isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}`}
           >
-            {category.description}
+            {category}
           </label>
         </div>
       );
@@ -62,8 +60,7 @@ export const IngredientManager = memo((): JSX.Element => {
   const renderItemPrefix = useCallback(
     (ingredient: IngredientDefinition): JSX.Element => {
       const isCategoryDisabled = disabledCategories.has(ingredient.category);
-      const ingredientName = ingredient.name.description ?? 'Unnamed Ingredient';
-      const ingredientId = `manager-ingredient-${ingredientName.replace(/\s+/g, '-')}`;
+      const ingredientId = `manager-ingredient-${ingredient.name.replace(/\s+/g, '-')}`;
       const isIngredientDisabled = disabledIngredients.has(ingredient.name);
 
       return (

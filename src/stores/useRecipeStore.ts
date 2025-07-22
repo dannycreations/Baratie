@@ -11,7 +11,7 @@ interface RecipeState {
   readonly ingredients: ReadonlyArray<Ingredient>;
   readonly ingredientMap: ReadonlyMap<string, Ingredient>;
   readonly ingredientIndexMap: ReadonlyMap<string, number>;
-  readonly addIngredient: (type: symbol, initialSpices?: Readonly<Record<string, unknown>>) => void;
+  readonly addIngredient: (type: string, initialSpices?: Readonly<Record<string, unknown>>) => void;
   readonly clearRecipe: () => void;
   readonly getActiveRecipeId: () => string | null;
   readonly removeIngredient: (id: string) => void;
@@ -40,8 +40,8 @@ export const useRecipeStore = create<RecipeState>()(
     ingredientIndexMap: new Map(),
     addIngredient: (type, initialSpices) => {
       const ingredientDefinition = ingredientRegistry.getIngredient(type);
-      errorHandler.assert(ingredientDefinition, `Ingredient definition not found for type: ${String(type)}`, 'Recipe Add Ingredient', {
-        genericMessage: `Ingredient "${String(type)}" could not be added because its definition is missing.`,
+      errorHandler.assert(ingredientDefinition, `Ingredient definition not found for type: ${type}`, 'Recipe Add Ingredient', {
+        genericMessage: `Ingredient "${type}" could not be added because its definition is missing.`,
       });
 
       const validSpices = validateSpices(ingredientDefinition, initialSpices || {});
@@ -120,9 +120,7 @@ export const useRecipeStore = create<RecipeState>()(
           const validatedSpices = validateSpices(ingredientDefinition, ingredient.spices);
           return { ...ingredient, spices: validatedSpices };
         }
-        logger.warn(
-          `Ingredient definition not found for type "${String(ingredient.name)}" during setRecipe. Options may not be correctly validated.`,
-        );
+        logger.warn(`Ingredient definition not found for type "${ingredient.name}" during setRecipe. Options may not be correctly validated.`);
         return ingredient;
       });
 
@@ -141,18 +139,14 @@ export const useRecipeStore = create<RecipeState>()(
         errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${id}" not found for spice change.`, 'Recipe Change Spice');
 
         const ingredientDefinition = ingredientRegistry.getIngredient(ingredientToUpdate.name);
-        errorHandler.assert(
-          ingredientDefinition,
-          `Ingredient definition not found for type "${String(ingredientToUpdate.name)}".`,
-          'Recipe Change Spice',
-        );
+        errorHandler.assert(ingredientDefinition, `Ingredient definition not found for type "${ingredientToUpdate.name}".`, 'Recipe Change Spice');
 
         const isSpiceInDefinition = ingredientDefinition.spices?.some((s) => s.id === spiceId);
         errorHandler.assert(
           isSpiceInDefinition,
-          `Spice with ID "${spiceId}" is not a valid spice for ingredient "${ingredientDefinition.name.description}".`,
+          `Spice with ID "${spiceId}" is not a valid spice for ingredient "${ingredientDefinition.name}".`,
           'Recipe Spice Update',
-          { genericMessage: `An internal error occurred while updating options for "${ingredientDefinition.name.description}".` },
+          { genericMessage: `An internal error occurred while updating options for "${ingredientDefinition.name}".` },
         );
 
         const newValidSpices = updateAndValidate(ingredientDefinition, ingredientToUpdate.spices, spiceId, rawValue, spice);

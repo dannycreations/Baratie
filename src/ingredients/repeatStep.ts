@@ -75,15 +75,19 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
       return null;
     }
 
-    const { ingredient: currentIngredient, currentIndex, initialInput, recipe } = context;
-    const ingredientName = currentIngredient.name.description ?? 'Unnamed Ingredient';
+    const { currentIndex, initialInput, recipe } = context;
+    const ingredientDisplayName = REPEAT_STEP_DEF.name;
 
     const ingredientsToRepeat = recipe.slice(0, currentIndex);
 
     if (ingredientsToRepeat.length === 0) {
       useNotificationStore
         .getState()
-        .show("'Repeat Step' has no preceding ingredients to execute. Add one or more ingredients before it.", 'warning', 'Configuration Warning');
+        .show(
+          `'${ingredientDisplayName}' has no preceding ingredients to execute. Add one or more ingredients before it.`,
+          'warning',
+          'Configuration Warning',
+        );
       return new InputType('');
     }
 
@@ -97,7 +101,7 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
               for (let subIndex = 0; subIndex < ingredientsToRepeat.length; subIndex++) {
                 const ingredient = ingredientsToRepeat[subIndex];
                 const definition = ingredientRegistry.getIngredient(ingredient.name);
-                errorHandler.assert(definition, `Definition for '${ingredient.name.description}' not found during sub-recipe execution.`);
+                errorHandler.assert(definition, `Definition for '${ingredient.name}' not found during sub-recipe execution.`);
 
                 const subContext: IngredientContext = { ...context, currentIndex: subIndex, ingredient };
                 const runResult = await definition.run(new InputType(currentData), ingredient.spices, subContext);
@@ -107,18 +111,15 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
                 }
 
                 const outputResult = 'output' in runResult ? runResult.output : runResult;
-                errorHandler.assert(
-                  outputResult instanceof InputType,
-                  `Ingredient '${ingredient.name.description}' returned an invalid result type.`,
-                );
+                errorHandler.assert(outputResult instanceof InputType, `Ingredient '${definition.name}' returned an invalid result type.`);
 
                 currentData = outputResult.cast('string').getValue();
               }
               return currentData;
             },
-            `Ingredient: ${ingredientName} > Repetition ${repetitionIndex + 1} (Attempt ${attempt + 1})`,
+            `Ingredient: ${ingredientDisplayName} > Repetition ${repetitionIndex + 1} (Attempt ${attempt + 1})`,
             {
-              genericMessage: `An error occurred during repetition ${repetitionIndex + 1} for '${ingredientName}'.`,
+              genericMessage: `An error occurred during repetition ${repetitionIndex + 1} for '${ingredientDisplayName}'.`,
               shouldNotify: false,
             },
           );
@@ -136,13 +137,13 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
       } catch (error) {
         const isLastAttempt = attempt >= retriesOnError;
         if (isLastAttempt) {
-          errorHandler.handle(error, `Ingredient: ${ingredientName}`, {
-            defaultMessage: `The ingredient '${ingredientName}' failed after ${retriesOnError} retries.`,
+          errorHandler.handle(error, `Ingredient: ${ingredientDisplayName}`, {
+            defaultMessage: `The ingredient '${ingredientDisplayName}' failed after ${retriesOnError} retries.`,
             shouldNotify: true,
           });
           throw error;
         } else {
-          logger.warn(`Repeat Step: Attempt ${attempt + 1} failed for '${ingredientName}'. Retrying in ${retryDelayMs}ms...`, error);
+          logger.warn(`Repeat Step: Attempt ${attempt + 1} failed for '${ingredientDisplayName}'. Retrying in ${retryDelayMs}ms...`, error);
           if (retryDelayMs > 0) {
             await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
           }

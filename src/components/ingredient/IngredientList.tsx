@@ -1,6 +1,5 @@
 import { memo, useCallback, useState } from 'react';
 
-import { errorHandler, ingredientRegistry } from '../../app/container';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { ChevronRightIcon } from '../shared/Icon';
 import { ItemListLayout } from '../shared/layout/ItemListLayout';
@@ -12,10 +11,10 @@ import type { IngredientDefinition } from '../../core/IngredientRegistry';
 
 export interface IngredientListProps<T extends IngredientDefinition> {
   readonly emptyMessage?: string;
-  readonly itemsByCategory: ReadonlyArray<readonly [symbol, ReadonlyArray<T>]>;
+  readonly itemsByCategory: ReadonlyArray<readonly [string, ReadonlyArray<T>]>;
   readonly noResultsMessage?: (query: string) => string;
   readonly query: string;
-  readonly renderHeader?: (category: symbol) => JSX.Element;
+  readonly renderHeader?: (category: string) => JSX.Element;
   readonly renderItemActions?: (item: T) => ReactNode;
   readonly renderItemPrefix?: (item: T) => ReactNode;
   readonly onItemDragStart?: (event: DragEvent<HTMLElement>, item: T) => void;
@@ -34,10 +33,10 @@ export const IngredientList = memo(
     onItemDragStart,
     isItemDisabled,
   }: IngredientListProps<T>): JSX.Element => {
-    const [expandedCategory, setExpandedCategory] = useState<symbol | null>(null);
+    const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
     const theme = useThemeStore((state) => state.theme);
 
-    const handleCategoryToggle = useCallback((category: symbol) => {
+    const handleCategoryToggle = useCallback((category: string) => {
       setExpandedCategory((current) => (current === category ? null : category));
     }, []);
 
@@ -48,10 +47,6 @@ export const IngredientList = memo(
     }
 
     const renderListItem = (item: T): JSX.Element => {
-      const ingredientName = item.name.description ?? 'Unnamed Ingredient';
-      const ingredientIdString = ingredientRegistry.getStringFromSymbol(item.name);
-      errorHandler.assert(ingredientIdString, `Could not get string from symbol for ingredient: ${ingredientName}`, 'Render Ingredient');
-
       const isDisabled = isItemDisabled?.(item) ?? false;
       const nameClass = `truncate pr-2 text-sm transition-colors duration-150 cursor-default ${
         isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`
@@ -61,7 +56,7 @@ export const IngredientList = memo(
         <div className="flex min-w-0 items-center gap-3">
           {renderItemPrefix?.(item)}
           <Tooltip content={item.description} position="top" tooltipClasses="max-w-xs">
-            <span className={nameClass}>{ingredientName}</span>
+            <span className={nameClass}>{item.name}</span>
           </Tooltip>
         </div>
       );
@@ -73,7 +68,7 @@ export const IngredientList = memo(
       };
 
       return (
-        <li key={item.name.toString()} data-ingredient-id={ingredientIdString} draggable={!!onItemDragStart} onDragStart={handleDragStart}>
+        <li key={item.name} data-ingredient-id={item.name} draggable={!!onItemDragStart} onDragStart={handleDragStart}>
           <ItemListLayout
             className={`group h-11 rounded-md bg-${theme.surfaceTertiary} px-2 py-1.5 transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
             leftContent={leftColumn}
@@ -88,7 +83,7 @@ export const IngredientList = memo(
       <>
         {itemsByCategory.map(([category, items], index) => {
           const isExpanded = !!query.trim() || expandedCategory === category;
-          const categoryId = `category-panel-${(category.description || '').replace(/\s+/g, '-').toLowerCase()}`;
+          const categoryId = `category-panel-${category.replace(/\s+/g, '-').toLowerCase()}`;
           const buttonId = `${categoryId}-button`;
           const panelId = `${categoryId}-content`;
 
@@ -100,7 +95,7 @@ export const IngredientList = memo(
               className={`flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-3 text-left text-${theme.contentSecondary} outline-none hover:bg-${theme.surfaceHover}`}
               onClick={() => handleCategoryToggle(category)}
             >
-              {renderHeader ? renderHeader(category) : <span className="font-medium">{category.description}</span>}
+              {renderHeader ? renderHeader(category) : <span className="font-medium">{category}</span>}
               <ChevronRightIcon
                 aria-hidden="true"
                 className={`transform transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
@@ -112,7 +107,7 @@ export const IngredientList = memo(
           const containerClass = `overflow-hidden rounded-md ${!isExpanded && index < itemsByCategory.length - 1 ? 'mb-2' : ''}`.trim();
 
           return (
-            <div key={category.toString()} className={containerClass}>
+            <div key={category} className={containerClass}>
               {header}
               {isExpanded && (
                 <div
