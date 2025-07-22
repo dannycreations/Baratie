@@ -112,7 +112,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
     [importFromFile],
   );
 
-  const filtered = useMemo<readonly RecipeBookItem[]>(() => {
+  const filtered = useMemo<ReadonlyArray<RecipeBookItem>>(() => {
     const lowerQuery = deferredQuery.toLowerCase().trim();
     if (!lowerQuery) {
       return recipes;

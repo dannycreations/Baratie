@@ -17,7 +17,7 @@ import type { Extension } from '../../stores/useExtensionStore';
 
 interface ExtensionItemStatusProps {
   readonly status: Extension['status'];
-  readonly errors?: readonly string[];
+  readonly errors?: ReadonlyArray<string>;
 }
 
 interface ExtensionItemProps {

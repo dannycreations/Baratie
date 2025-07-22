@@ -8,7 +8,7 @@ import type { Ingredient, SpiceDefinition, SpiceValue } from '../core/Ingredient
 
 interface RecipeState {
   readonly activeRecipeId: string | null;
-  readonly ingredients: readonly Ingredient[];
+  readonly ingredients: ReadonlyArray<Ingredient>;
   readonly ingredientMap: ReadonlyMap<string, Ingredient>;
   readonly ingredientIndexMap: ReadonlyMap<string, number>;
   readonly addIngredient: (type: symbol, initialSpices?: Readonly<Record<string, unknown>>) => void;
@@ -17,11 +17,11 @@ interface RecipeState {
   readonly removeIngredient: (id: string) => void;
   readonly reorderIngredients: (draggedId: string, targetId: string) => void;
   readonly setActiveRecipeId: (id: string | null) => void;
-  readonly setRecipe: (ingredients: readonly Ingredient[], activeRecipeId: string | null) => void;
+  readonly setRecipe: (ingredients: ReadonlyArray<Ingredient>, activeRecipeId: string | null) => void;
   readonly updateSpice: (id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>) => void;
 }
 
-function getDerivedRecipeState(ingredients: readonly Ingredient[]) {
+function getDerivedRecipeState(ingredients: ReadonlyArray<Ingredient>) {
   const ingredientMap = new Map<string, Ingredient>();
   const ingredientIndexMap = new Map<string, number>();
   for (let i = 0; i < ingredients.length; i++) {

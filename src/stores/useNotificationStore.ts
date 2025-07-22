@@ -5,7 +5,7 @@ import { NOTIFICATION_SHOW_MS } from '../app/constants';
 import type { NotificationMessage, NotificationType } from '../components/main/NotificationPanel';
 
 interface NotificationState {
-  readonly order: readonly string[];
+  readonly order: ReadonlyArray<string>;
   readonly map: ReadonlyMap<string, NotificationMessage>;
   readonly dedupeMap: ReadonlyMap<string, string>;
   readonly add: (notification: NotificationMessage) => void;

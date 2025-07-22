@@ -12,7 +12,7 @@ import type { IngredientDefinition } from '../../core/IngredientRegistry';
 
 export interface IngredientListProps<T extends IngredientDefinition> {
   readonly emptyMessage?: string;
-  readonly itemsByCategory: readonly (readonly [symbol, readonly T[]])[];
+  readonly itemsByCategory: ReadonlyArray<readonly [symbol, ReadonlyArray<T>]>;
   readonly noResultsMessage?: (query: string) => string;
   readonly query: string;
   readonly renderHeader?: (category: symbol) => JSX.Element;

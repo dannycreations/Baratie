@@ -132,7 +132,7 @@ export class Kitchen {
     useKitchenStore.getState().setInputData(data);
   }
 
-  private async cookRecipe(recipe: readonly Ingredient[], initialInput: string): Promise<RecipeCookResult> {
+  private async cookRecipe(recipe: ReadonlyArray<Ingredient>, initialInput: string): Promise<RecipeCookResult> {
     if (recipe.length === 0) {
       return {
         cookingStatus: initialInput ? 'success' : 'idle',
@@ -158,7 +158,7 @@ export class Kitchen {
     };
   }
 
-  private async executeRecipeLoop(recipe: readonly Ingredient[], initialInput: string): Promise<RecipeLoopState> {
+  private async executeRecipeLoop(recipe: ReadonlyArray<Ingredient>, initialInput: string): Promise<RecipeLoopState> {
     const state: RecipeLoopState = {
       cookedData: initialInput,
       globalError: false,
@@ -215,7 +215,7 @@ export class Kitchen {
     ingredient: Ingredient,
     definition: IngredientDefinition,
     currentData: string,
-    recipe: readonly Ingredient[],
+    recipe: ReadonlyArray<Ingredient>,
     currentIndex: number,
     initialInput: string,
   ): Promise<IngredientRunResult> {

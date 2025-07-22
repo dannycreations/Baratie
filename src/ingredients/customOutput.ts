@@ -1,15 +1,14 @@
 import { CATEGORY_FLOW, KEY_CUSTOM_OUTPUT } from '../app/constants';
-import { InputType } from '../core/InputType';
 
-import type { IngredientContext, IngredientDefinition, OutputPanelConfig, PanelControlConfig, PanelControlSignal } from '../core/IngredientRegistry';
+import type { IngredientDefinition, OutputPanelConfig, PanelControlConfig } from '../core/IngredientRegistry';
 
-export const CUSTOM_OUTPUT_DEF: IngredientDefinition<unknown> = {
+export const CUSTOM_OUTPUT_DEF: IngredientDefinition = {
   name: KEY_CUSTOM_OUTPUT,
   category: CATEGORY_FLOW,
-  description: 'Displays the output as plain text in the Output panel. Can be used to reset any custom output settings from other ingredients.',
-  spices: [],
-  run: (input: InputType<unknown>, _spices: unknown, context: IngredientContext): PanelControlSignal | null => {
-    if (input.cast('string').getValue().trim() === '') {
+  description: 'Displays the output as plain text in the Output panel.',
+  run: (input, _spices, context) => {
+    const inputValue = input.cast('string').getValue().trim();
+    if (!inputValue) {
       return null;
     }
 

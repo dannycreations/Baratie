@@ -1,7 +1,7 @@
 import type { IngredientDefinition } from '../core/IngredientRegistry';
 
-export function groupAndSortIngredients(ingredients: readonly IngredientDefinition[]): ReadonlyMap<symbol, readonly IngredientDefinition[]> {
-  const grouped = new Map<symbol, IngredientDefinition[]>();
+export function groupAndSortIngredients(ingredients: ReadonlyArray<IngredientDefinition>): ReadonlyMap<symbol, ReadonlyArray<IngredientDefinition>> {
+  const grouped = new Map<symbol, Array<IngredientDefinition>>();
   for (const ingredient of ingredients) {
     if (!grouped.has(ingredient.category)) {
       grouped.set(ingredient.category, []);
@@ -23,14 +23,14 @@ export function groupAndSortIngredients(ingredients: readonly IngredientDefiniti
 }
 
 export function searchGroupedIngredients(
-  groupedIngredients: ReadonlyMap<symbol, readonly IngredientDefinition[]>,
+  groupedIngredients: ReadonlyMap<symbol, ReadonlyArray<IngredientDefinition>>,
   lowerQuery: string,
-): [symbol, readonly IngredientDefinition[]][] {
+): Array<[symbol, ReadonlyArray<IngredientDefinition>]> {
   if (!lowerQuery) {
     return Array.from(groupedIngredients.entries());
   }
 
-  const result: [symbol, readonly IngredientDefinition[]][] = [];
+  const result: Array<[symbol, ReadonlyArray<IngredientDefinition>]> = [];
   const searchPredicate = (ing: IngredientDefinition): boolean =>
     (ing.name.description ?? '').toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
 

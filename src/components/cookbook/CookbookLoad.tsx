@@ -10,7 +10,7 @@ import type { RecipeBookItem } from '../../core/IngredientRegistry';
 
 interface CookbookLoadProps {
   readonly importRef: RefObject<HTMLInputElement | null>;
-  readonly recipes: readonly RecipeBookItem[];
+  readonly recipes: ReadonlyArray<RecipeBookItem>;
   readonly totalRecipes: number;
   readonly query: string;
   readonly onDelete: (id: string) => void;

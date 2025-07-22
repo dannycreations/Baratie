@@ -13,7 +13,7 @@ interface RepeatStepSpices {
   readonly retriesOnError: number;
 }
 
-const REPEAT_STEP_SPICES: readonly SpiceDefinition[] = [
+const REPEAT_STEP_SPICES: ReadonlyArray<SpiceDefinition> = [
   {
     id: 'repeatCount',
     label: 'Number of Repetitions',
@@ -66,7 +66,7 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
   category: CATEGORY_FLOW,
   description: 'Repeats a sequence of preceding ingredients a specified number of times.',
   spices: REPEAT_STEP_SPICES,
-  run: async (input: InputType<unknown>, spices: RepeatStepSpices, context: IngredientContext): Promise<InputType<string> | null> => {
+  run: async (input, spices, context) => {
     const { delimiter, repeatCount, retriesOnError, retryDelayMs, intervalMs } = spices;
 
     kitchen.setCookingInterval(intervalMs);
@@ -89,7 +89,7 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
 
     for (let attempt = 0; attempt <= retriesOnError; attempt++) {
       try {
-        const collectedOutputs: string[] = [];
+        const collectedOutputs: Array<string> = [];
         for (let repetitionIndex = 0; repetitionIndex < repeatCount; repetitionIndex++) {
           const { result: output, error } = await errorHandler.attemptAsync(
             async () => {

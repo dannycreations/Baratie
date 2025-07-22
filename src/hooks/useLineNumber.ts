@@ -23,10 +23,10 @@ interface VirtualResult {
   readonly lineHeight: number;
   readonly paddingTop: number;
   readonly paddingBottom: number;
-  readonly visibleItems: readonly VirtualItem[];
+  readonly visibleItems: ReadonlyArray<VirtualItem>;
 }
 
-function findStartLogicalLineIndex(prefixSum: readonly number[], targetVisualLine: number): number {
+function findStartLogicalLineIndex(prefixSum: ReadonlyArray<number>, targetVisualLine: number): number {
   let low = 0;
   let high = prefixSum.length - 1;
   let resultIndex = prefixSum.length;
@@ -44,8 +44,8 @@ function findStartLogicalLineIndex(prefixSum: readonly number[], targetVisualLin
 }
 
 export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }: LineNumberProps): VirtualResult {
-  const [lineMetrics, setLineMetrics] = useState<readonly LineMetric[]>([]);
-  const [visualLinePrefixSum, setVisualLinePrefixSum] = useState<readonly number[]>([]);
+  const [lineMetrics, setLineMetrics] = useState<ReadonlyArray<LineMetric>>([]);
+  const [visualLinePrefixSum, setVisualLinePrefixSum] = useState<ReadonlyArray<number>>([]);
   const lineHeightRef = useRef(0);
   const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
 
@@ -76,8 +76,8 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
     const contentWidth = textarea.clientWidth - xPadding;
     const maxLineChars = charWidth > 0 ? Math.floor(contentWidth / charWidth) : 0;
 
-    const newMetrics: LineMetric[] = [];
-    const newPrefixSum: number[] = [];
+    const newMetrics: Array<LineMetric> = [];
+    const newPrefixSum: Array<number> = [];
     let visualLineCount = 0;
 
     if (value.length === 0) {
@@ -147,7 +147,7 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
     const startIndex = Math.max(0, Math.floor(scrollTop / lineHeight) - buffer);
     const endIndex = Math.min(totalVisualLines, Math.ceil((scrollTop + clientHeight) / lineHeight) + buffer);
 
-    const visibleItems: { key: number; number: number | null }[] = [];
+    const visibleItems: Array<VirtualItem> = [];
     if (startIndex < endIndex) {
       const startLogicalIndex = findStartLogicalLineIndex(visualLinePrefixSum, startIndex + 1);
       let currentVisualLine = startLogicalIndex > 0 ? visualLinePrefixSum[startLogicalIndex - 1] : 0;

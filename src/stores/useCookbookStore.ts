@@ -39,16 +39,16 @@ interface SanitizationResult {
 }
 
 interface SerializedRecipeItem extends Omit<RecipeBookItem, 'ingredients'> {
-  readonly ingredients: readonly {
+  readonly ingredients: ReadonlyArray<{
     readonly id: string;
     readonly name: string | undefined;
     readonly spices: Readonly<Record<string, unknown>>;
-  }[];
+  }>;
 }
 
 type OpenCookbookArgs =
   | { readonly mode: 'load' }
-  | { readonly mode: 'save'; readonly ingredients: readonly Ingredient[]; readonly activeRecipeId: string | null; readonly name?: string };
+  | { readonly mode: 'save'; readonly ingredients: ReadonlyArray<Ingredient>; readonly activeRecipeId: string | null; readonly name?: string };
 
 interface OpenModalArgs {
   readonly mode: 'load' | 'save';
@@ -60,29 +60,29 @@ interface CookbookState {
   readonly modalMode: 'load' | 'save' | null;
   readonly nameInput: string;
   readonly query: string;
-  readonly recipes: readonly RecipeBookItem[];
+  readonly recipes: ReadonlyArray<RecipeBookItem>;
   readonly recipeIdMap: ReadonlyMap<string, RecipeBookItem>;
   readonly recipeContentHashMap: ReadonlyMap<string, string>;
-  readonly _internalSetRecipes: (recipes: readonly RecipeBookItem[]) => void;
+  readonly _internalSetRecipes: (recipes: ReadonlyArray<RecipeBookItem>) => void;
   readonly closeModal: () => void;
-  readonly computeInitialName: (ingredients: readonly Ingredient[], activeRecipeId: string | null) => string;
+  readonly computeInitialName: (ingredients: ReadonlyArray<Ingredient>, activeRecipeId: string | null) => string;
   readonly delete: (id: string) => void;
   readonly exportAll: () => void;
   readonly exportCurrent: () => void;
   readonly importFromFile: (file: File) => Promise<void>;
   readonly init: () => void;
   readonly load: (id: string) => void;
-  readonly merge: (recipesToImport: readonly RecipeBookItem[]) => void;
+  readonly merge: (recipesToImport: ReadonlyArray<RecipeBookItem>) => void;
   readonly open: (args: Readonly<OpenCookbookArgs>) => void;
   readonly openModal: (args: Readonly<OpenModalArgs>) => void;
   readonly resetModal: () => void;
   readonly setName: (name: string) => void;
   readonly setQuery: (term: string) => void;
-  readonly setRecipes: (recipes: readonly RecipeBookItem[]) => void;
+  readonly setRecipes: (recipes: ReadonlyArray<RecipeBookItem>) => void;
   readonly upsert: () => void;
 }
 
-function createIngredientHash(ingredients: readonly Ingredient[]): string {
+function createIngredientHash(ingredients: ReadonlyArray<Ingredient>): string {
   const canonicalParts = ingredients.map((ing) => {
     const name = ingredientRegistry.getStringFromSymbol(ing.name) ?? ing.name.toString();
     const definition = ingredientRegistry.getIngredient(ing.name);
@@ -112,7 +112,7 @@ function serializeRecipe(recipe: Readonly<RecipeBookItem>): SerializedRecipeItem
   };
 }
 
-function saveAllRecipes(recipes: readonly RecipeBookItem[]): boolean {
+function saveAllRecipes(recipes: ReadonlyArray<RecipeBookItem>): boolean {
   const serialized = recipes.map(serializeRecipe);
   logger.info(`Saving ${serialized.length} recipes to storage.`);
   return storage.set(STORAGE_COOKBOOK, serialized, 'Saved Recipes');
@@ -135,7 +135,7 @@ function sanitizeIngredient(rawIngredient: RawIngredient, source: 'fileImport' |
 
 function sanitizeRecipe(rawRecipe: RawRecipeBookItem, source: 'fileImport' | 'storage'): SanitizationResult {
   const { id, name, createdAt, updatedAt, ingredients: rawIngredients } = rawRecipe;
-  const validIngredients: Ingredient[] = [];
+  const validIngredients: Array<Ingredient> = [];
   for (const raw of rawIngredients) {
     const validIngredient = sanitizeIngredient(raw, source, name);
     if (validIngredient) {
@@ -267,12 +267,12 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     }
     const dataToValidate = Array.isArray(jsonData) ? jsonData : [jsonData];
     const fullValidation = safeParse(CookbookImportSchema, dataToValidate);
-    let validRawRecipes: RawRecipeBookItem[];
+    let validRawRecipes: Array<RawRecipeBookItem>;
     if (fullValidation.success) {
       validRawRecipes = fullValidation.output;
     } else {
       logger.warn('Cookbook import validation failed, attempting partial recovery.', { issues: fullValidation.issues });
-      validRawRecipes = dataToValidate.reduce<RawRecipeBookItem[]>((acc, item) => {
+      validRawRecipes = dataToValidate.reduce<Array<RawRecipeBookItem>>((acc, item) => {
         const itemValidation = safeParse(RecipeBookItemSchema, item);
         if (itemValidation.success) {
           acc.push(itemValidation.output);
@@ -288,7 +288,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       return;
     }
     const allWarnings = new Set<string>();
-    const recipes = validRawRecipes.reduce<RecipeBookItem[]>((acc, rawRecipe) => {
+    const recipes = validRawRecipes.reduce<Array<RecipeBookItem>>((acc, rawRecipe) => {
       const { recipe, warning } = sanitizeRecipe(rawRecipe, 'fileImport');
       if (recipe) {
         acc.push(recipe);
@@ -316,13 +316,13 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       get().setRecipes([]);
       return;
     }
-    const rawItems: unknown[] = storedRecipes;
+    const rawItems: Array<unknown> = storedRecipes;
     const validationResult = safeParse(CookbookImportSchema, rawItems);
     if (!validationResult.success) {
       logger.warn('Corrupted cookbook data in storage, attempting partial recovery.', { issues: validationResult.issues });
       show('Some saved recipes were corrupted and could not be loaded. Data will be cleaned on next save.', 'warning', 'Cookbook Warning', 7000);
     }
-    const sanitizedRecipes = rawItems.reduce<RecipeBookItem[]>((acc, item) => {
+    const sanitizedRecipes = rawItems.reduce<Array<RecipeBookItem>>((acc, item) => {
       const itemValidation = safeParse(RecipeBookItemSchema, item);
       if (itemValidation.success) {
         const { recipe } = sanitizeRecipe(itemValidation.output, 'storage');
@@ -440,7 +440,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     const now = Date.now();
     const recipeToUpdate = activeRecipeId ? recipeIdMap.get(activeRecipeId) : null;
     const isUpdate = !!recipeToUpdate && recipeToUpdate.name.toLowerCase() === trimmedName.toLowerCase();
-    let newRecipes: RecipeBookItem[];
+    let newRecipes: Array<RecipeBookItem>;
     let recipeToSave: RecipeBookItem;
     let userMessage: string;
 

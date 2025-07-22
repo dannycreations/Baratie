@@ -13,13 +13,13 @@ interface IngredientState {
   readonly init: () => void;
   readonly openModal: () => void;
   readonly refreshRegistry: () => void;
-  readonly setFilters: (filters: { readonly categories: readonly symbol[]; readonly ingredients: readonly symbol[] }) => void;
+  readonly setFilters: (filters: { readonly categories: ReadonlyArray<symbol>; readonly ingredients: ReadonlyArray<symbol> }) => void;
   readonly toggleCategory: (category: symbol) => void;
   readonly toggleIngredient: (id: symbol) => void;
 }
 
-function loadFilters(key: string, forCategories: boolean): symbol[] {
-  const storedItems = storage.get(key, 'Ingredient Filters');
+function loadFilters(key: string, forCategories: boolean): Array<symbol> {
+  const storedItems = storage.get<Array<string>>(key, 'Ingredient Filters');
   if (!Array.isArray(storedItems)) {
     return [];
   }
@@ -28,7 +28,7 @@ function loadFilters(key: string, forCategories: boolean): symbol[] {
 
   if (forCategories) {
     const allCategorySymbols = ingredientRegistry.getAllCategories();
-    return validatedItems.reduce<symbol[]>((acc, item) => {
+    return validatedItems.reduce<Array<symbol>>((acc, item) => {
       const symbol = allCategorySymbols.get(item);
       if (symbol) {
         acc.push(symbol);
@@ -37,7 +37,7 @@ function loadFilters(key: string, forCategories: boolean): symbol[] {
     }, []);
   }
 
-  return validatedItems.reduce<symbol[]>((acc, item) => {
+  return validatedItems.reduce<Array<symbol>>((acc, item) => {
     const symbol = ingredientRegistry.getSymbolFromString(item);
     if (symbol) {
       acc.push(symbol);

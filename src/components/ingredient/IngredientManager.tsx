@@ -25,7 +25,7 @@ export const IngredientManager = memo((): JSX.Element => {
   const [query, setQuery] = useState('');
   const listId = useId();
 
-  const allIngredients = useMemo<readonly IngredientDefinition[]>(() => {
+  const allIngredients = useMemo<ReadonlyArray<IngredientDefinition>>(() => {
     return ingredientRegistry.getAllIngredients();
   }, [registryVersion]);
 
@@ -46,6 +46,7 @@ export const IngredientManager = memo((): JSX.Element => {
         <div className="flex items-center gap-3">
           <BooleanInput id={`${categoryId}-toggle`} checked={!isCategoryDisabled} onChange={() => toggleCategory(category)} />
           <label
+            htmlFor={`${categoryId}-toggle`}
             className={`cursor-pointer font-medium ${
               isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`
             }`}

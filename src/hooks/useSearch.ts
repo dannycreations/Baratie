@@ -6,20 +6,20 @@ import { groupAndSortIngredients, searchGroupedIngredients } from '../helpers/in
 import type { IngredientDefinition } from '../core/IngredientRegistry';
 
 export interface SearchedIngredientsResult {
-  readonly filteredIngredients: readonly (readonly [symbol, readonly IngredientDefinition[]])[];
+  readonly filteredIngredients: ReadonlyArray<readonly [symbol, ReadonlyArray<IngredientDefinition>]>;
   readonly visibleIngredients: number;
 }
 
 export function useSearchIngredients(
-  allIngredients: readonly IngredientDefinition[],
+  allIngredients: ReadonlyArray<IngredientDefinition>,
   query: string,
   favoriteIngredients: ReadonlySet<symbol>,
   disabledCategories: ReadonlySet<symbol>,
   disabledIngredients: ReadonlySet<symbol>,
 ): SearchedIngredientsResult {
   const { favoritesList, categorizedIngredients, visibleIngredients } = useMemo(() => {
-    const favorites: IngredientDefinition[] = [];
-    const nonFavorites: IngredientDefinition[] = [];
+    const favorites: Array<IngredientDefinition> = [];
+    const nonFavorites: Array<IngredientDefinition> = [];
     let visibleCount = 0;
 
     for (const ingredient of allIngredients) {
@@ -47,7 +47,7 @@ export function useSearchIngredients(
   const filteredIngredients = useMemo(() => {
     const lowerQuery = query.toLowerCase().trim();
     if (!lowerQuery) {
-      const result: [symbol, readonly IngredientDefinition[]][] = [];
+      const result: Array<[symbol, ReadonlyArray<IngredientDefinition>]> = [];
       if (favoritesList.length > 0) {
         result.push([CATEGORY_FAVORITES, favoritesList]);
       }
@@ -55,7 +55,7 @@ export function useSearchIngredients(
       return result;
     }
 
-    const result: [symbol, readonly IngredientDefinition[]][] = [];
+    const result: Array<[symbol, ReadonlyArray<IngredientDefinition>]> = [];
     const searchPredicate = (ing: IngredientDefinition): boolean =>
       (ing.name.description ?? '').toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
 

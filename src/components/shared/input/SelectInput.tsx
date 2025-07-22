@@ -9,7 +9,10 @@ import type { SpiceValue } from '../../../core/IngredientRegistry';
 interface SelectInputProps<T extends SpiceValue> extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'value'> {
   readonly className?: string;
   readonly id: string;
-  readonly options: readonly { readonly label: string; readonly value: T }[];
+  readonly options: ReadonlyArray<{
+    readonly label: string;
+    readonly value: T;
+  }>;
   readonly value: T;
   readonly onChange: (value: T) => void;
 }

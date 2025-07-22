@@ -1,14 +1,13 @@
 import { CATEGORY_FLOW, KEY_CUSTOM_INPUT } from '../app/constants';
 import { ingredientRegistry } from '../app/container';
-import { InputType } from '../core/InputType';
 
-import type { IngredientContext, IngredientDefinition, InputPanelConfig, PanelControlConfig, PanelControlSignal } from '../core/IngredientRegistry';
+import type { IngredientDefinition, InputPanelConfig, PanelControlConfig } from '../core/IngredientRegistry';
 
 export const CUSTOM_INPUT_DEF: IngredientDefinition = {
   name: KEY_CUSTOM_INPUT,
   category: CATEGORY_FLOW,
   description: 'Controls the Input Panel to display options for the next ingredient in the recipe.',
-  run: (input: InputType<unknown>, _spices: unknown, context: IngredientContext): PanelControlSignal => {
+  run: (input, _spices, context) => {
     const { ingredient: currentIngredient, recipe, currentIndex } = context;
 
     let config: InputPanelConfig;

@@ -14,7 +14,7 @@ function prepareSelectValue(newValue: SpiceValue, spice: Readonly<SpiceDefinitio
 export function getVisibleSpices(
   ingredientDefinition: Readonly<IngredientDefinition>,
   currentSpices: Readonly<Record<string, SpiceValue>>,
-): SpiceDefinition[] {
+): Array<SpiceDefinition> {
   const allSpices = ingredientDefinition.spices || [];
   if (!allSpices.length) {
     return [];
@@ -99,10 +99,10 @@ export function validateSpices(
         break;
       }
       case 'string':
-        validatedSpices[spice.id] = input.cast('string', { trim: true, value: spice.value }).getValue();
+        validatedSpices[spice.id] = input.cast('string', { value: spice.value }).getValue().trim();
         break;
       case 'textarea':
-        validatedSpices[spice.id] = input.cast('string', { trim: false, value: spice.value }).getValue();
+        validatedSpices[spice.id] = input.cast('string', { value: spice.value }).getValue();
         break;
       default: {
         const unhandled = spice as SpiceDefinition;

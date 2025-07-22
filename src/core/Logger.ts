@@ -17,31 +17,31 @@ export class Logger {
     this.level = level;
   }
 
-  public debug(message?: unknown, ...args: unknown[]): void {
+  public debug(message?: unknown, ...args: Array<unknown>): void {
     this.log(LogLevel.DEBUG, message, ...args);
   }
 
-  public error(message?: unknown, ...args: unknown[]): void {
+  public error(message?: unknown, ...args: Array<unknown>): void {
     this.log(LogLevel.ERROR, message, ...args);
   }
 
-  public fatal(message?: unknown, ...args: unknown[]): void {
+  public fatal(message?: unknown, ...args: Array<unknown>): void {
     this.log(LogLevel.FATAL, message, ...args);
   }
 
-  public info(message?: unknown, ...args: unknown[]): void {
+  public info(message?: unknown, ...args: Array<unknown>): void {
     this.log(LogLevel.INFO, message, ...args);
   }
 
-  public trace(message?: unknown, ...args: unknown[]): void {
+  public trace(message?: unknown, ...args: Array<unknown>): void {
     this.log(LogLevel.TRACE, message, ...args);
   }
 
-  public warn(message?: unknown, ...args: unknown[]): void {
+  public warn(message?: unknown, ...args: Array<unknown>): void {
     this.log(LogLevel.WARN, message, ...args);
   }
 
-  private log(level: LogLevel, message?: unknown, ...args: unknown[]): void {
+  private log(level: LogLevel, message?: unknown, ...args: Array<unknown>): void {
     if (level < this.level) {
       return;
     }

@@ -18,10 +18,10 @@ export const useFavoriteStore = create<FavoriteState>()(
 
     init: () => {
       const parsedFavorites = storage.get(STORAGE_FAVORITES, 'Favorite Ingredients');
-      let favorites: symbol[] = [];
+      let favorites: Array<symbol> = [];
       if (parsedFavorites) {
         if (Array.isArray(parsedFavorites)) {
-          favorites = parsedFavorites.reduce<symbol[]>((acc, item) => {
+          favorites = parsedFavorites.reduce<Array<symbol>>((acc, item) => {
             if (typeof item === 'string') {
               const symbol = ingredientRegistry.getSymbolFromString(item);
               if (symbol) {

@@ -29,26 +29,26 @@ const StorableExtensionSchema = v.object({
 export type StorableExtension = v.InferInput<typeof StorableExtensionSchema>;
 
 export interface Extension {
-  readonly entry?: string | readonly string[];
-  readonly errors?: readonly string[];
+  readonly entry?: string | ReadonlyArray<string>;
+  readonly errors?: ReadonlyArray<string>;
   readonly fetchedAt?: number;
   readonly id: string;
-  readonly ingredients?: readonly symbol[];
+  readonly ingredients?: ReadonlyArray<symbol>;
   readonly name?: string;
   readonly scripts?: Readonly<Record<string, string>>;
   readonly status: 'loading' | 'loaded' | 'error' | 'partial';
 }
 
 interface ExtensionState {
-  readonly extensions: readonly Extension[];
+  readonly extensions: ReadonlyArray<Extension>;
   readonly extensionMap: ReadonlyMap<string, Extension>;
   readonly add: (url: string) => Promise<void>;
   readonly init: () => Promise<void>;
   readonly refresh: (id: string) => Promise<void>;
   readonly remove: (id: string) => void;
-  readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: readonly string[]) => void;
-  readonly setExtensions: (extensions: readonly Extension[]) => void;
-  readonly setIngredients: (id: string, ingredients: readonly symbol[]) => void;
+  readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: ReadonlyArray<string>) => void;
+  readonly setExtensions: (extensions: ReadonlyArray<Extension>) => void;
+  readonly setIngredients: (id: string, ingredients: ReadonlyArray<symbol>) => void;
   readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
 }
 
@@ -127,7 +127,7 @@ function parseGitHubUrl(url: string): { readonly owner: string; readonly repo: s
   return null;
 }
 
-const updateStateWithExtensions = (extensions: readonly Extension[]) => {
+const updateStateWithExtensions = (extensions: ReadonlyArray<Extension>) => {
   return {
     extensions,
     extensionMap: new Map(extensions.map((ext) => [ext.id, ext])),
@@ -151,13 +151,13 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
   }
 
   const originalRegister = ingredientRegistry.registerIngredient.bind(ingredientRegistry);
-  const newlyRegisteredSymbols: symbol[] = [];
-  const errorLogs: string[] = [];
+  const newlyRegisteredSymbols: Array<symbol> = [];
+  const errorLogs: Array<string> = [];
   const fetchedScripts: Record<string, string> = {};
   let successCount = 0;
 
   try {
-    ingredientRegistry.registerIngredient = <T>(definition: IngredientDefinition<T>) => {
+    ingredientRegistry.registerIngredient = (definition: IngredientDefinition) => {
       originalRegister({ ...definition, extensionId: id });
       newlyRegisteredSymbols.push(definition.name);
     };
@@ -234,10 +234,10 @@ export const useExtensionStore = create<ExtensionState>()(
     },
 
     init: async () => {
-      const rawExtensions = storage.get<unknown[]>(STORAGE_EXTENSIONS, 'Extensions');
+      const rawExtensions = storage.get<Array<unknown>>(STORAGE_EXTENSIONS, 'Extensions');
 
       const validationResult = v.safeParse(v.array(StorableExtensionSchema), rawExtensions);
-      let validStoredExtensions: StorableExtension[];
+      let validStoredExtensions: Array<StorableExtension>;
 
       if (!validationResult.success) {
         logger.warn('Corrupted extension data in storage, attempting partial recovery.', { issues: validationResult.issues });
@@ -246,7 +246,7 @@ export const useExtensionStore = create<ExtensionState>()(
         validStoredExtensions = validationResult.output;
       }
 
-      const extensions: Extension[] = validStoredExtensions.map((e) => ({ ...e, status: 'loading' }));
+      const extensions: Array<Extension> = validStoredExtensions.map((e) => ({ ...e, status: 'loading' }));
       get().setExtensions(extensions);
 
       const loadPromises = extensions.map((ext) => {

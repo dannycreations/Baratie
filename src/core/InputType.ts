@@ -1,9 +1,7 @@
 import { base64ToUint8Array, isObjectLike, uint8ArrayToBase64 } from '../utilities/appUtil';
 
-export type InputDataType = keyof TypeMap;
-
 interface TypeMap {
-  array: unknown[];
+  array: Array<unknown>;
   arraybuffer: ArrayBuffer;
   boolean: boolean;
   bytearray: Uint8Array;
@@ -12,12 +10,9 @@ interface TypeMap {
   string: string;
 }
 
-class CastError extends Error {
-  public constructor(message: string) {
-    super(message);
-    this.name = 'CastError';
-  }
-}
+type InputDataType = keyof TypeMap;
+
+type HandleFailure = <T>(e?: string) => InputType<T>;
 
 export class InputType<T = unknown> {
   private readonly value: T;
@@ -26,28 +21,27 @@ export class InputType<T = unknown> {
     this.value = value;
   }
 
-  public cast(type: 'array', options?: { readonly value?: unknown[] }): InputType<unknown[]>;
+  public cast<T = unknown>(type: 'array', options?: { readonly value?: Array<T> }): InputType<Array<T>>;
   public cast(type: 'arraybuffer', options?: { readonly value?: ArrayBuffer }): InputType<ArrayBuffer>;
   public cast(type: 'boolean', options?: { readonly value?: boolean }): InputType<boolean>;
   public cast(type: 'bytearray', options?: { readonly value?: Uint8Array }): InputType<Uint8Array>;
   public cast(type: 'number', options?: { readonly max?: number; readonly min?: number; readonly value?: number }): InputType<number>;
   public cast(type: 'object', options?: { readonly value?: object }): InputType<object>;
-  public cast(type: 'string', options?: { readonly trim?: boolean; readonly value?: string }): InputType<string>;
+  public cast(type: 'string', options?: { readonly value?: string }): InputType<string>;
   public cast(
     type: InputDataType,
     options?: {
       readonly max?: number;
       readonly min?: number;
-      readonly trim?: boolean;
       readonly value?: unknown;
     },
   ): InputType<unknown> {
-    const handleFailure = (e?: Error): InputType<unknown> => {
+    const handleFailure = <T>(e?: string): InputType<T> => {
       if (typeof options?.value !== 'undefined') {
-        return new InputType(options.value);
+        return new InputType(options.value as T);
       }
-      const error = e || new CastError(`Casting to ${type} failed for value '${String(this.value)}' and no fallback was provided.`);
-      throw error;
+
+      throw new Error(e);
     };
 
     switch (type) {
@@ -60,14 +54,14 @@ export class InputType<T = unknown> {
       case 'bytearray':
         return this.castToByteArray(handleFailure);
       case 'number':
-        return this.castToNumber(options, handleFailure);
+        return this.castToNumber(handleFailure, options);
       case 'object':
         return this.castToObject(handleFailure);
       case 'string':
-        return this.castToString(options);
+        return this.castToString();
       default: {
         const unhandled = String(type);
-        return handleFailure(new CastError(`Unhandled cast target type: ${unhandled}`));
+        return handleFailure(`Cannot cast to unknown type: ${unhandled}`);
       }
     }
   }
@@ -95,7 +89,7 @@ export class InputType<T = unknown> {
     if (isObjectLike(value)) {
       return 'object';
     }
-    throw new CastError(`Cannot determine InputDataType for value: ${String(value)}`);
+    throw new Error(`Cannot determine InputDataType: Unknown value type (${String(value)})`);
   }
 
   public getValue(): T {
@@ -106,7 +100,7 @@ export class InputType<T = unknown> {
     return new InputType(newValue);
   }
 
-  private castToArray(handleFailure: (e?: Error) => InputType<unknown>): InputType<unknown[]> {
+  private castToArray(handleFailure: HandleFailure): InputType<Array<unknown>> {
     if (Array.isArray(this.value)) {
       return new InputType(this.value);
     }
@@ -116,12 +110,12 @@ export class InputType<T = unknown> {
         if (Array.isArray(parsed)) {
           return new InputType(parsed);
         }
-      } catch (error) {}
+      } catch {}
     }
-    return handleFailure(new CastError(`Cannot cast to array from type ${typeof this.value}`)) as InputType<unknown[]>;
+    return handleFailure(`Cannot cast to array: Invalid type (${typeof this.value})`);
   }
 
-  private castToArrayBuffer(handleFailure: (e?: Error) => InputType<unknown>): InputType<ArrayBuffer> {
+  private castToArrayBuffer(handleFailure: HandleFailure): InputType<ArrayBuffer> {
     if (this.value instanceof ArrayBuffer) {
       return new InputType(this.value);
     }
@@ -132,16 +126,14 @@ export class InputType<T = unknown> {
       try {
         return new InputType(base64ToUint8Array(this.value).buffer);
       } catch (error) {
-        const inputError = error instanceof Error ? error : new Error(String(error));
-        return handleFailure(
-          new CastError(`Value is not a valid Base64 string for ArrayBuffer conversion: ${inputError.message}`),
-        ) as InputType<ArrayBuffer>;
+        const inputError = error instanceof Error ? error.message : String(error);
+        return handleFailure(`Cannot cast to ArrayBuffer: Invalid Base64 string (${inputError})`);
       }
     }
-    return handleFailure(new CastError(`Cannot cast to ArrayBuffer from type ${typeof this.value}`)) as InputType<ArrayBuffer>;
+    return handleFailure(`Cannot cast to ArrayBuffer: Invalid type (${typeof this.value})`);
   }
 
-  private castToBoolean(handleFailure: (e?: Error) => InputType<unknown>): InputType<boolean> {
+  private castToBoolean(handleFailure: HandleFailure): InputType<boolean> {
     if (typeof this.value === 'boolean') {
       return new InputType(this.value);
     }
@@ -157,11 +149,11 @@ export class InputType<T = unknown> {
       case '':
         return new InputType(false);
       default:
-        return handleFailure(new CastError(`Cannot unambiguously cast value to boolean: ${String(this.value)}`)) as InputType<boolean>;
+        return handleFailure(`Cannot cast to boolean: Ambiguous value (${String(this.value)})`);
     }
   }
 
-  private castToByteArray(handleFailure: (e?: Error) => InputType<unknown>): InputType<Uint8Array> {
+  private castToByteArray(handleFailure: HandleFailure): InputType<Uint8Array> {
     if (this.value instanceof Uint8Array) {
       return new InputType(this.value);
     }
@@ -172,24 +164,25 @@ export class InputType<T = unknown> {
       try {
         return new InputType(base64ToUint8Array(this.value));
       } catch (error) {
-        const inputError = error instanceof Error ? error : new Error(String(error));
-        return handleFailure(
-          new CastError(`Value is not a valid Base64 string for Uint8Array conversion: ${inputError.message}`),
-        ) as InputType<Uint8Array>;
+        const inputError = error instanceof Error ? error.message : String(error);
+        return handleFailure(`Cannot cast to Uint8Array: Invalid Base64 string (${inputError})`);
       }
     }
-    return handleFailure(new CastError(`Cannot cast to Uint8Array from type ${typeof this.value}`)) as InputType<Uint8Array>;
+    return handleFailure(`Cannot cast to Uint8Array: Invalid type (${typeof this.value})`);
   }
 
   private castToNumber(
-    options: { readonly max?: number; readonly min?: number; readonly value?: unknown } | undefined,
-    handleFailure: (e?: Error) => InputType<unknown>,
+    handleFailure: HandleFailure,
+    options?: {
+      readonly max?: number;
+      readonly min?: number;
+    },
   ): InputType<number> {
     const stringValue = String(this.value ?? '').trim();
     let numericValue = Number(stringValue);
 
     if (isNaN(numericValue) || !isFinite(numericValue)) {
-      return handleFailure() as InputType<number>;
+      return handleFailure(`Cannot cast to number: Invalid value (${stringValue})`);
     }
 
     const { min, max } = options || {};
@@ -202,7 +195,7 @@ export class InputType<T = unknown> {
     return new InputType(numericValue);
   }
 
-  private castToObject(handleFailure: (e?: Error) => InputType<unknown>): InputType<object> {
+  private castToObject(handleFailure: HandleFailure): InputType<object> {
     if (isObjectLike(this.value) && !Array.isArray(this.value)) {
       return new InputType(this.value);
     }
@@ -212,14 +205,13 @@ export class InputType<T = unknown> {
         if (isObjectLike(parsed) && !Array.isArray(parsed)) {
           return new InputType(parsed);
         }
-      } catch (error) {}
+      } catch {}
     }
-    return handleFailure(new CastError(`Cannot cast to object from type ${typeof this.value}`)) as InputType<object>;
+    return handleFailure(`Cannot cast to object: Invalid type (${typeof this.value})`);
   }
 
-  private castToString(options: { readonly trim?: boolean; readonly value?: unknown } | undefined): InputType<string> {
-    const { trim = true } = options || {};
-    let stringValue: string;
+  private castToString(): InputType<string> {
+    let stringValue = String(this.value ?? '');
     if (this.value instanceof ArrayBuffer) {
       stringValue = uint8ArrayToBase64(new Uint8Array(this.value));
     } else if (this.value instanceof Uint8Array) {
@@ -227,12 +219,8 @@ export class InputType<T = unknown> {
     } else if (isObjectLike(this.value)) {
       try {
         stringValue = JSON.stringify(this.value);
-      } catch {
-        stringValue = String(this.value ?? '');
-      }
-    } else {
-      stringValue = String(this.value ?? '');
+      } catch {}
     }
-    return new InputType(trim ? stringValue.trim() : stringValue);
+    return new InputType(stringValue);
   }
 }

@@ -37,7 +37,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   const [isDragOverRecipe, setDragOverRecipe] = useState(false);
   const listId = useId();
 
-  const allIngredients = useMemo<readonly IngredientDefinition[]>(() => {
+  const allIngredients = useMemo<ReadonlyArray<IngredientDefinition>>(() => {
     return ingredientRegistry.getAllIngredients();
   }, [registryVersion]);
   const { filteredIngredients, visibleIngredients } = useSearchIngredients(allIngredients, query, favorites, disabledCategories, disabledIngredients);

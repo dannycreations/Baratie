@@ -12,8 +12,8 @@ type InitializationTask = {
 };
 
 export class AppRegistry {
-  private readonly systemTasks: readonly InitializationTask[];
-  private readonly userTasks: InitializationTask[] = [];
+  private readonly systemTasks: ReadonlyArray<InitializationTask>;
+  private readonly userTasks: Array<InitializationTask> = [];
   private isRunning = false;
 
   public constructor() {

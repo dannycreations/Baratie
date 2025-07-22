@@ -15,29 +15,37 @@ export interface IngredientContext {
   readonly currentIndex: number;
   readonly ingredient: Ingredient;
   readonly initialInput: string;
-  readonly recipe: readonly Ingredient[];
+  readonly recipe: ReadonlyArray<Ingredient>;
 }
 
-export type IngredientRunner<T = unknown, InType = unknown, OutType = unknown> = (
-  input: InputType<InType>,
-  spices: T,
-  context: IngredientContext,
-) => ResultType<OutType> | Promise<ResultType<OutType>>;
-
-export interface IngredientDefinition<T = unknown, InType = unknown, OutType = unknown> {
+export interface IngredientDefinition<T = unknown> {
   readonly name: symbol;
   readonly category: symbol;
   readonly description: string;
-  readonly spices?: readonly SpiceDefinition[];
-  readonly run: IngredientRunner<T, InType, OutType>;
+  readonly spices?: ReadonlyArray<SpiceDefinition>;
+  readonly run: (input: InputType, spices: T, context: IngredientContext) => ResultType | Promise<ResultType>;
   readonly extensionId?: string;
 }
 
 export type InputPanelConfig =
-  | { readonly mode: 'textarea'; readonly placeholder: string; readonly title: string; readonly disabled?: boolean; readonly showClear: boolean }
-  | { readonly mode: 'spiceEditor'; readonly targetIngredientId: string; readonly title: string };
+  | {
+      readonly mode: 'textarea';
+      readonly placeholder: string;
+      readonly title: string;
+      readonly disabled?: boolean;
+      readonly showClear: boolean;
+    }
+  | {
+      readonly mode: 'spiceEditor';
+      readonly targetIngredientId: string;
+      readonly title: string;
+    };
 
-export type OutputPanelConfig = { readonly mode: 'textarea'; readonly title: string; readonly placeholder: string };
+export type OutputPanelConfig = {
+  readonly mode: 'textarea';
+  readonly title: string;
+  readonly placeholder: string;
+};
 
 export type PanelControlConfig =
   | {
@@ -59,68 +67,46 @@ export interface PanelControlSignal<OutType = unknown> {
 export interface RecipeBookItem {
   readonly id: string;
   readonly name: string;
-  readonly ingredients: readonly Ingredient[];
+  readonly ingredients: ReadonlyArray<Ingredient>;
   readonly createdAt: number;
   readonly updatedAt: number;
 }
 
-export type ResultType<OutType = unknown> = InputType<OutType> | PanelControlSignal<OutType> | null;
+export type ResultType = InputType | PanelControlSignal | null;
 
 interface BaseSpice<SpiceType extends 'boolean' | 'number' | 'select' | 'string' | 'textarea', ValueType> {
-  readonly dependsOn?: readonly SpiceDependency[];
-  readonly description?: string;
   readonly id: string;
   readonly label: string;
   readonly type: SpiceType;
   readonly value: ValueType;
+  readonly description?: string;
+  readonly dependsOn?: ReadonlyArray<{
+    readonly spiceId: string;
+    readonly value: SpiceValue | ReadonlyArray<SpiceValue>;
+  }>;
 }
 
-type BooleanSpice = BaseSpice<'boolean', boolean> & {
-  readonly max?: never;
-  readonly min?: never;
-  readonly options?: never;
-  readonly placeholder?: never;
-  readonly step?: never;
-};
+type BooleanSpice = BaseSpice<'boolean', boolean>;
 
 type NumberSpice = BaseSpice<'number', number> & {
   readonly max?: number;
   readonly min?: number;
-  readonly options?: never;
-  readonly placeholder?: string;
   readonly step?: number;
+  readonly placeholder?: string;
 };
 
 type SelectSpice = BaseSpice<'select', SpiceValue> & {
-  readonly max?: never;
-  readonly min?: never;
-  readonly options: readonly { readonly label: string; readonly value: SpiceValue }[];
-  readonly placeholder?: never;
-  readonly step?: never;
+  readonly options: ReadonlyArray<{
+    readonly label: string;
+    readonly value: SpiceValue;
+  }>;
 };
 
-type StringSpice = BaseSpice<'string', string> & {
-  readonly max?: never;
-  readonly min?: never;
-  readonly options?: never;
+type StringSpice = BaseSpice<'string' | 'textarea', string> & {
   readonly placeholder?: string;
-  readonly step?: never;
 };
 
-type TextareaSpice = BaseSpice<'textarea', string> & {
-  readonly max?: never;
-  readonly min?: never;
-  readonly options?: never;
-  readonly placeholder?: string;
-  readonly step?: never;
-};
-
-export interface SpiceDependency {
-  readonly spiceId: string;
-  readonly value: SpiceValue | readonly SpiceValue[];
-}
-
-export type SpiceDefinition = StringSpice | TextareaSpice | NumberSpice | BooleanSpice | SelectSpice;
+export type SpiceDefinition = StringSpice | NumberSpice | BooleanSpice | SelectSpice;
 
 export class IngredientRegistry {
   private readonly ingredients: Map<symbol, IngredientDefinition> = new Map();
@@ -143,7 +129,7 @@ export class IngredientRegistry {
     return this.categories;
   }
 
-  public getAllIngredients(): readonly IngredientDefinition[] {
+  public getAllIngredients(): ReadonlyArray<IngredientDefinition> {
     return Array.from(this.ingredients.values());
   }
 
@@ -159,12 +145,12 @@ export class IngredientRegistry {
     return this.stringToSymbol.get(typeString);
   }
 
-  public registerIngredient<T>(definition: IngredientDefinition<T>): void {
+  public registerIngredient(definition: IngredientDefinition): void {
     if (this.ingredients.has(definition.name)) {
       logger.warn(`IngredientRegistry: Re-registering type "${String(definition.name)}", which overwrites the existing definition.`);
     }
 
-    this.ingredients.set(definition.name, definition as IngredientDefinition);
+    this.ingredients.set(definition.name, definition);
 
     const typeString = definition.name.description?.trim();
     if (typeString) {
@@ -185,7 +171,7 @@ export class IngredientRegistry {
     useIngredientStore.getState().refreshRegistry();
   }
 
-  public unregisterIngredients(types: readonly symbol[]): void {
+  public unregisterIngredients(types: ReadonlyArray<symbol>): void {
     let changed = false;
     for (const type of types) {
       if (this.ingredients.has(type)) {
