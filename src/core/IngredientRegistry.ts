@@ -132,12 +132,12 @@ export class IngredientRegistry {
     return this.ingredients.get(type);
   }
 
-  public registerIngredient(definition: IngredientDefinition): void {
+  public registerIngredient<T>(definition: IngredientDefinition<T>): void {
     if (this.ingredients.has(definition.name)) {
       logger.warn(`IngredientRegistry: Re-registering type "${definition.name}", which overwrites the existing definition.`);
     }
 
-    this.ingredients.set(definition.name, definition);
+    this.ingredients.set(definition.name, definition as IngredientDefinition);
     this.categories = null;
     useIngredientStore.getState().refreshRegistry();
   }
