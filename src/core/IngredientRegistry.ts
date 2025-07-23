@@ -8,6 +8,7 @@ export type SpiceValue = string | number | boolean;
 
 export interface IngredientItem {
   readonly id: string;
+  readonly ingredientId: string;
   readonly name: string;
   readonly spices: Readonly<Record<string, SpiceValue>>;
 }

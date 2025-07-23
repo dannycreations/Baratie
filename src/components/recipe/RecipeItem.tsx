@@ -1,11 +1,11 @@
 import { memo, useCallback } from 'react';
 
-import { errorHandler, ingredientRegistry } from '../../app/container';
+import { ingredientRegistry } from '../../app/container';
 import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
-import { GrabIcon, PreferencesIcon, XIcon } from '../shared/Icon';
+import { AlertTriangleIcon, GrabIcon, PreferencesIcon, XIcon } from '../shared/Icon';
 import { ItemListLayout } from '../shared/layout/ItemListLayout';
 import { SpiceLayout } from '../shared/layout/SpiceLayout';
 import { Tooltip } from '../shared/Tooltip';
@@ -48,8 +48,47 @@ export const RecipeItem = memo<RecipeItemProps>(
     const isSpiceInInput = inputPanelId === ingredientItem.id;
     const isEditing = !isSpiceInInput && editingId === ingredientItem.id;
 
-    const definition = ingredientRegistry.getIngredient(ingredientItem.name);
-    errorHandler.assert(definition, `Ingredient definition not found for ID "${ingredientItem.name}".`);
+    const definition = ingredientRegistry.getIngredient(ingredientItem.ingredientId);
+
+    const handleRemove = useCallback(() => {
+      onRemove(ingredientItem.id);
+    }, [onRemove, ingredientItem.id]);
+
+    if (!definition) {
+      return (
+        <div
+          role="listitem"
+          aria-label={`Error: Ingredient ${ingredientItem.name} not found.`}
+          className={`group flex flex-col rounded-md bg-${theme.dangerBg} text-sm outline-none`}
+        >
+          <div className="p-3">
+            <ItemListLayout
+              leftContent={
+                <div className="flex items-center gap-2">
+                  <AlertTriangleIcon aria-hidden="true" className={`text-${theme.dangerFg}`} size={20} />
+                  <span className={`truncate pr-2 font-medium text-${theme.dangerFg}`}>{ingredientItem.name} (Missing)</span>
+                </div>
+              }
+              leftClasses="flex grow items-center min-w-0"
+              rightContent={
+                <TooltipButton
+                  aria-label={`Remove missing ingredient "${ingredientItem.name}" from recipe`}
+                  icon={<XIcon size={18} />}
+                  size="sm"
+                  tooltipContent="Remove Missing Ingredient"
+                  tooltipPosition="top"
+                  variant="danger"
+                  onClick={handleRemove}
+                />
+              }
+            />
+            <p className={`mt-1 text-xs text-${theme.dangerFg}`}>
+              This ingredient could not be found. It may be from a disabled or uninstalled extension.
+            </p>
+          </div>
+        </div>
+      );
+    }
 
     const handleDragStart = useCallback(
       (event: DragEvent<HTMLElement>) => {
@@ -64,10 +103,6 @@ export const RecipeItem = memo<RecipeItemProps>(
       },
       [onDragEnter, ingredientItem.id],
     );
-
-    const handleRemove = useCallback(() => {
-      onRemove(ingredientItem.id);
-    }, [onRemove, ingredientItem.id]);
 
     const handleEditToggle = useCallback(() => {
       if (inputPanelId === ingredientItem.id) {
@@ -91,7 +126,7 @@ export const RecipeItem = memo<RecipeItemProps>(
     const settingsTooltip = isSpiceInInput ? 'Options are in the Input panel' : isEditing ? 'Hide Options' : 'Edit Options';
 
     const ariaLabelParts = [
-      `Recipe Item: ${definition.name}`,
+      `Recipe Item: ${ingredientItem.name}`,
       `Status: ${isAutoCook ? status : 'Auto-Cook Disabled'}`,
       isSpiceInInput ? 'Options are managed in the Input panel.' : '',
       isEditorVisible ? 'The options editor is expanded.' : '',
@@ -113,8 +148,8 @@ export const RecipeItem = memo<RecipeItemProps>(
             <GrabIcon size={20} />
           </span>
         </Tooltip>
-        <Tooltip content={definition.name} position="top">
-          <span className={`truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default`}>{definition.name}</span>
+        <Tooltip content={ingredientItem.name} position="top">
+          <span className={`truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default`}>{ingredientItem.name}</span>
         </Tooltip>
       </>
     );
@@ -136,7 +171,7 @@ export const RecipeItem = memo<RecipeItemProps>(
           />
         )}
         <TooltipButton
-          aria-label={`Remove ingredient "${definition.name}" from recipe`}
+          aria-label={`Remove ingredient "${ingredientItem.name}" from recipe`}
           className="opacity-50 group-hover:opacity-100 hover:!opacity-100"
           icon={<XIcon size={18} />}
           size="sm"

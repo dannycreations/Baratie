@@ -46,38 +46,41 @@ export const IngredientList = memo(
       );
     }
 
-    const renderListItem = (item: T): JSX.Element => {
-      const isDisabled = isItemDisabled?.(item) ?? false;
-      const nameClass = `truncate pr-2 text-sm transition-colors duration-150 cursor-default ${
-        isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`
-      } group-hover:text-${theme.infoFg}`;
+    const renderListItem = useCallback(
+      (item: T): JSX.Element => {
+        const isDisabled = isItemDisabled?.(item) ?? false;
+        const nameClass = `truncate pr-2 text-sm transition-colors duration-150 cursor-default ${
+          isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`
+        } group-hover:text-${theme.infoFg}`;
 
-      const leftColumn = (
-        <div className="flex min-w-0 items-center gap-3">
-          {renderItemPrefix?.(item)}
-          <Tooltip content={item.description} position="top" tooltipClasses="max-w-xs">
-            <span className={nameClass}>{item.name}</span>
-          </Tooltip>
-        </div>
-      );
+        const leftColumn = (
+          <div className="flex min-w-0 items-center gap-3">
+            {renderItemPrefix?.(item)}
+            <Tooltip content={item.description} position="top" tooltipClasses="max-w-xs">
+              <span className={nameClass}>{item.name}</span>
+            </Tooltip>
+          </div>
+        );
 
-      const rightColumn = renderItemActions?.(item);
+        const rightColumn = renderItemActions?.(item);
 
-      const handleDragStart = (event: DragEvent<HTMLElement>) => {
-        onItemDragStart?.(event, item);
-      };
+        const handleDragStart = (event: DragEvent<HTMLElement>) => {
+          onItemDragStart?.(event, item);
+        };
 
-      return (
-        <li key={item.id} data-ingredient-id={item.id} draggable={!!onItemDragStart} onDragStart={handleDragStart}>
-          <ItemListLayout
-            className={`group h-11 rounded-md bg-${theme.surfaceTertiary} px-2 py-1.5 transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
-            leftContent={leftColumn}
-            leftClasses="grow min-w-0"
-            rightContent={rightColumn}
-          />
-        </li>
-      );
-    };
+        return (
+          <li key={item.id} data-ingredient-id={item.id} draggable={!!onItemDragStart} onDragStart={handleDragStart}>
+            <ItemListLayout
+              className={`group h-11 rounded-md bg-${theme.surfaceTertiary} px-2 py-1.5 transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
+              leftContent={leftColumn}
+              leftClasses="grow min-w-0"
+              rightContent={rightColumn}
+            />
+          </li>
+        );
+      },
+      [theme, isItemDisabled, renderItemPrefix, renderItemActions, onItemDragStart],
+    );
 
     return (
       <>
@@ -118,7 +121,7 @@ export const IngredientList = memo(
                   className={`max-h-64 overflow-y-auto bg-${theme.surfaceMuted} p-3`}
                 >
                   <ul aria-labelledby={buttonId} className="space-y-1.5">
-                    {items.map((item) => renderListItem(item))}
+                    {items.map(renderListItem)}
                   </ul>
                 </div>
               )}

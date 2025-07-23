@@ -93,8 +93,8 @@ const OutputActions = memo<OutputActionsProps>(({ data, onDownload }) => (
 ));
 
 const SpiceContent = memo<SpiceContentProps>(({ config, onSpiceChange }) => {
-  const ingredientMap = useRecipeStore((state) => state.ingredientMap);
-  const targetIngredient = ingredientMap.get(config.targetIngredientId);
+  const ingredients = useRecipeStore((state) => state.ingredients);
+  const targetIngredient = ingredients.find((ing) => ing.id === config.targetIngredientId);
 
   const handleSpiceChange = useCallback(
     (spiceId: string, rawValue: SpiceValue, spice: SpiceDefinition) => {

@@ -171,17 +171,14 @@ export class Kitchen {
 
     for (let index = 0; index < recipe.length; index++) {
       const ingredient = recipe[index];
-      const definition = ingredientRegistry.getIngredient(ingredient.name);
+      const definition = ingredientRegistry.getIngredient(ingredient.ingredientId);
 
       if (!definition) {
+        const errorMessage = `Ingredient '${ingredient.name}' is misconfigured or from a removed extension.`;
         errorHandler.handle(
-          new AppError(
-            `Definition for ID '${ingredient.name}' not found.`,
-            'Recipe Cooking',
-            'An ingredient in the recipe is misconfigured or from a removed extension.',
-          ),
+          new AppError(`Definition for ID '${ingredient.ingredientId}' (${ingredient.name}) not found.`, 'Recipe Cooking', errorMessage),
         );
-        state.cookedData = 'Error: An ingredient in the recipe is misconfigured or from a removed extension.';
+        state.cookedData = `Error: ${errorMessage}`;
         state.localStatuses[ingredient.id] = 'error';
         state.globalError = true;
         break;

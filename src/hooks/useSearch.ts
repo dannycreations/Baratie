@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { CATEGORY_FAVORITES } from '../app/constants';
-import { createIngredientSearchPredicate, processIngredients, searchGroupedIngredients } from '../helpers/ingredientHelper';
+import { createIngredientSearchPredicate, searchGroupedIngredients } from '../helpers/ingredientHelper';
 
 import type { IngredientProps } from '../core/IngredientRegistry';
 
@@ -17,41 +17,57 @@ export function useSearchIngredients(
   disabledCategories: ReadonlySet<string>,
   disabledIngredients: ReadonlySet<string>,
 ): SearchedIngredientsResult {
-  const {
-    favorites: favoritesList,
-    categories: categorizedIngredients,
-    visibleCount: visibleIngredients,
-  } = useMemo(() => {
-    return processIngredients(allIngredients, favoriteIngredients, disabledCategories, disabledIngredients);
-  }, [allIngredients, favoriteIngredients, disabledCategories, disabledIngredients]);
+  const visibleIngredients = useMemo(() => {
+    return allIngredients.filter((ingredient) => !disabledCategories.has(ingredient.category) && !disabledIngredients.has(ingredient.id));
+  }, [allIngredients, disabledCategories, disabledIngredients]);
+
+  const groupedIngredients = useMemo(() => {
+    const favorites: Array<IngredientProps> = [];
+    const categorized = new Map<string, Array<IngredientProps>>();
+
+    for (const ingredient of visibleIngredients) {
+      if (favoriteIngredients.has(ingredient.id)) {
+        favorites.push(ingredient);
+      } else {
+        const list = categorized.get(ingredient.category);
+        if (list) {
+          list.push(ingredient);
+        } else {
+          categorized.set(ingredient.category, [ingredient]);
+        }
+      }
+    }
+
+    const sortedCategorized = new Map([...categorized.entries()].sort(([a], [b]) => a.localeCompare(b)));
+    return { favorites, categorized: sortedCategorized };
+  }, [visibleIngredients, favoriteIngredients]);
 
   const filteredIngredients = useMemo(() => {
-    const lowerQuery = query.toLowerCase().trim();
-    if (!lowerQuery) {
-      const result: Array<[string, ReadonlyArray<IngredientProps>]> = [];
-      if (favoritesList.length > 0) {
-        result.push([CATEGORY_FAVORITES, favoritesList]);
+    const { favorites, categorized } = groupedIngredients;
+    const finalResult: Array<[string, ReadonlyArray<IngredientProps>]> = [];
+
+    if (!query) {
+      if (favorites.length > 0) {
+        finalResult.push([CATEGORY_FAVORITES, favorites]);
       }
-      result.push(...categorizedIngredients.entries());
-      return result;
+      finalResult.push(...categorized.entries());
+      return finalResult;
     }
 
-    const result: Array<[string, ReadonlyArray<IngredientProps>]> = [];
+    const lowerQuery = query.toLowerCase().trim();
     const searchPredicate = createIngredientSearchPredicate(lowerQuery);
 
-    const favoriteMatches = favoritesList.filter(searchPredicate);
-    if (favoriteMatches.length > 0) {
-      result.push([CATEGORY_FAVORITES, favoriteMatches]);
+    const matchingFavorites = favorites.filter(searchPredicate);
+    if (matchingFavorites.length > 0) {
+      finalResult.push([CATEGORY_FAVORITES, matchingFavorites]);
     }
 
-    const categorizedMatches = searchGroupedIngredients(categorizedIngredients, lowerQuery);
-    result.push(...categorizedMatches);
-
-    return result;
-  }, [query, categorizedIngredients, favoritesList]);
+    finalResult.push(...searchGroupedIngredients(categorized, query));
+    return finalResult;
+  }, [groupedIngredients, query]);
 
   return {
     filteredIngredients,
-    visibleIngredients,
+    visibleIngredients: visibleIngredients.length,
   };
 }

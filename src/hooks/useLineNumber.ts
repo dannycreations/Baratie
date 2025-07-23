@@ -26,6 +26,12 @@ interface VirtualResult {
   readonly visibleItems: ReadonlyArray<VirtualItem>;
 }
 
+interface TextareaMetrics {
+  readonly lineHeight: number;
+  readonly charWidth: number;
+  readonly contentWidth: number;
+}
+
 function findStartLogicalLineIndex(prefixSum: ReadonlyArray<number>, targetVisualLine: number): number {
   let low = 0;
   let high = prefixSum.length - 1;
@@ -46,7 +52,7 @@ function findStartLogicalLineIndex(prefixSum: ReadonlyArray<number>, targetVisua
 export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }: LineNumberProps): VirtualResult {
   const [lineMetrics, setLineMetrics] = useState<ReadonlyArray<LineMetric>>([]);
   const [visualLinePrefixSum, setVisualLinePrefixSum] = useState<ReadonlyArray<number>>([]);
-  const lineHeightRef = useRef(0);
+  const metricsRef = useRef<TextareaMetrics | null>(null);
   const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
 
   const getCanvasContext = useCallback((): CanvasRenderingContext2D | null => {
@@ -57,14 +63,52 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
     return canvasContextRef.current;
   }, []);
 
-  const calculate = useCallback(
+  const calculateLineCounts = useCallback(
     (currentValue: string) => {
-      const textarea = textareaRef.current;
-      if (!showLineNumbers || !textarea) {
+      if (!showLineNumbers || !metricsRef.current) {
         setLineMetrics([]);
         setVisualLinePrefixSum([]);
         return;
       }
+
+      const { contentWidth, charWidth } = metricsRef.current;
+      const maxLineChars = charWidth > 0 ? Math.floor(contentWidth / charWidth) : 0;
+
+      const newPrefixSum: Array<number> = [];
+      const newMetrics: Array<LineMetric> = [];
+      let visualLineCount = 0;
+      let logicalLineNumber = 1;
+      let lastIndex = 0;
+
+      do {
+        let nextIndex = currentValue.indexOf('\n', lastIndex);
+        if (nextIndex === -1) {
+          nextIndex = currentValue.length;
+        }
+
+        const lineLength = nextIndex - lastIndex;
+        const count = maxLineChars > 0 ? Math.max(1, Math.ceil(lineLength / maxLineChars)) : 1;
+        visualLineCount += count;
+        newPrefixSum.push(visualLineCount);
+        newMetrics.push({ number: logicalLineNumber, count });
+
+        logicalLineNumber++;
+        lastIndex = nextIndex + 1;
+      } while (lastIndex <= currentValue.length);
+
+      setLineMetrics(newMetrics);
+      setVisualLinePrefixSum(newPrefixSum);
+    },
+    [showLineNumbers],
+  );
+
+  useLayoutEffect(() => {
+    const textarea = textareaRef.current;
+    if (!showLineNumbers || !textarea) {
+      return;
+    }
+
+    const measureAndCalculate = () => {
       const styles = window.getComputedStyle(textarea);
       const font = styles.font;
       const context = getCanvasContext();
@@ -75,58 +119,35 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
       }
       const xPadding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
       const contentWidth = textarea.clientWidth - xPadding;
-      const maxLineChars = charWidth > 0 ? Math.floor(contentWidth / charWidth) : 0;
+      const lh = parseFloat(styles.lineHeight);
+      metricsRef.current = {
+        lineHeight: isNaN(lh) ? 24 : lh,
+        contentWidth,
+        charWidth,
+      };
+      calculateLineCounts(textarea.value);
+    };
 
-      const lines = currentValue.split('\n');
-      const newPrefixSum: Array<number> = [];
-      let visualLineCount = 0;
-
-      const newMetrics = lines.map((line, index) => {
-        const lineLength = line.length;
-        const count = maxLineChars > 0 ? Math.max(1, Math.ceil(lineLength / maxLineChars)) : 1;
-        visualLineCount += count;
-        newPrefixSum.push(visualLineCount);
-        return { number: index + 1, count };
-      });
-
-      setLineMetrics(newMetrics);
-      setVisualLinePrefixSum(newPrefixSum);
-    },
-    [getCanvasContext, showLineNumbers, textareaRef],
-  );
-
-  useLayoutEffect(() => {
-    const textarea = textareaRef.current;
-    if (!showLineNumbers || !textarea) {
-      return;
-    }
-
-    const handleCalculate = () => calculate(textarea.value);
-
-    document.fonts.ready.then(handleCalculate).catch(handleCalculate);
-    const resizeObserver = new ResizeObserver(handleCalculate);
+    document.fonts.ready.then(measureAndCalculate).catch(measureAndCalculate);
+    const resizeObserver = new ResizeObserver(measureAndCalculate);
     resizeObserver.observe(textarea);
-
-    const styles = window.getComputedStyle(textarea);
-    const lh = parseFloat(styles.lineHeight);
-    lineHeightRef.current = isNaN(lh) ? 24 : lh;
 
     return () => {
       resizeObserver.disconnect();
     };
-  }, [showLineNumbers, textareaRef, calculate]);
+  }, [showLineNumbers, textareaRef, getCanvasContext, calculateLineCounts]);
 
   useLayoutEffect(() => {
     if (showLineNumbers) {
-      calculate(value);
+      calculateLineCounts(value);
     }
-  }, [value, showLineNumbers, calculate]);
+  }, [value, showLineNumbers, calculateLineCounts]);
 
   return useMemo((): VirtualResult => {
-    if (!showLineNumbers || !textareaRef.current || lineHeightRef.current === 0) {
+    const lineHeight = metricsRef.current?.lineHeight ?? 0;
+    if (!showLineNumbers || !textareaRef.current || lineHeight === 0) {
       return { lineHeight: 0, paddingTop: 0, paddingBottom: 0, visibleItems: [] };
     }
-    const lineHeight = lineHeightRef.current;
     const { clientHeight } = textareaRef.current;
     const totalVisualLines = visualLinePrefixSum.length > 0 ? visualLinePrefixSum[visualLinePrefixSum.length - 1] : 0;
 

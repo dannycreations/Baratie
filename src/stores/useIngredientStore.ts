@@ -3,6 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_FILTERS } from '../app/constants';
 import { ingredientRegistry, storage } from '../app/container';
+import { toggleSetItem } from '../helpers/ingredientHelper';
 
 interface IngredientState {
   readonly disabledCategories: ReadonlySet<string>;
@@ -16,16 +17,6 @@ interface IngredientState {
   readonly setFilters: (filters: { readonly categories: ReadonlyArray<string>; readonly ingredients: ReadonlyArray<string> }) => void;
   readonly toggleCategory: (category: string) => void;
   readonly toggleIngredient: (id: string) => void;
-}
-
-function toggleSetItem<T>(set: ReadonlySet<T>, item: T): Set<T> {
-  const newSet = new Set(set);
-  if (newSet.has(item)) {
-    newSet.delete(item);
-  } else {
-    newSet.add(item);
-  }
-  return newSet;
 }
 
 export const useIngredientStore = create<IngredientState>()(
