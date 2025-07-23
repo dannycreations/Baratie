@@ -11,7 +11,7 @@ import { useNotificationStore } from './stores/useNotificationStore';
 import { useRecipeStore } from './stores/useRecipeStore';
 import { readAsBase64, readAsText, triggerDownload } from './utilities/fileUtil';
 
-import type { NotificationMessage, NotificationType } from '../src/components/main/NotificationPanel';
+import type { NotificationType } from '../src/components/main/NotificationPanel';
 import type { BaratieOptions } from './app/Baratie';
 import type {
   IngredientContext,
@@ -82,7 +82,6 @@ export type {
   IngredientDefinition,
   IngredientItem,
   InputType,
-  NotificationMessage,
   NotificationType,
   RecipeBookItem,
   ResultType,
