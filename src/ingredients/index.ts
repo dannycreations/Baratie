@@ -1,7 +1,7 @@
-import { CUSTOM_INPUT_DEF } from './customInput';
-import { CUSTOM_OUTPUT_DEF } from './customOutput';
-import { REPEAT_STEP_DEF } from './repeatStep';
+import { CustomInput } from './customInput';
+import { CustomOutput } from './customOutput';
+import { RepeatStep } from './repeatStep';
 
-import type { IngredientDefinition } from '../core/IngredientRegistry';
+import type { Ingredient } from '../core/Ingredient';
 
-export const internalIngredients = [CUSTOM_INPUT_DEF, CUSTOM_OUTPUT_DEF, REPEAT_STEP_DEF] as ReadonlyArray<IngredientDefinition>;
+export const internalIngredients: ReadonlyArray<new () => Ingredient> = [CustomInput, CustomOutput, RepeatStep];

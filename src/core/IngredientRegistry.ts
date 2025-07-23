@@ -1,6 +1,7 @@
 import { errorHandler, logger } from '../app/container';
 import { useIngredientStore } from '../stores/useIngredientStore';
 import { getObjectHash } from '../utilities/appUtil';
+import { Ingredient } from './Ingredient';
 
 import type { InputType } from './InputType';
 
@@ -18,14 +19,6 @@ export interface IngredientContext {
   readonly initialInput: string;
   readonly ingredient: IngredientItem;
   readonly recipe: ReadonlyArray<IngredientItem>;
-}
-
-export interface IngredientDefinition<T = unknown> {
-  readonly name: string;
-  readonly category: string;
-  readonly description: string;
-  readonly spices?: ReadonlyArray<SpiceDefinition>;
-  readonly run: (input: InputType, spices: T, context: IngredientContext) => ResultType | Promise<ResultType>;
 }
 
 export type InputPanelConfig =
@@ -109,9 +102,7 @@ type StringSpice = BaseSpice<'string' | 'textarea', string> & {
 
 export type SpiceDefinition = StringSpice | NumberSpice | BooleanSpice | SelectSpice;
 
-export interface IngredientProps<T = unknown> extends IngredientDefinition<T> {
-  readonly id: string;
-}
+export type IngredientProps = Ingredient & { readonly id: string };
 
 export class IngredientRegistry {
   private ingredients: Map<string, IngredientProps> = new Map();
@@ -149,19 +140,23 @@ export class IngredientRegistry {
     return this.ingredients.get(id);
   }
 
-  public registerIngredient<T>(definition: IngredientDefinition<T>, namespace?: string): string {
-    const { run, ...restOfDefinition } = definition;
-    const id = getObjectHash(restOfDefinition, namespace);
+  public register<T>(IngredientClass: new () => Ingredient<T>, namespace?: string): string {
+    const instance = new IngredientClass();
+    const definitionShape = {
+      name: instance.name,
+      category: instance.category,
+      description: instance.description,
+      spices: instance.spices?.toString() || '',
+    };
+    const id = getObjectHash(definitionShape, namespace);
 
-    errorHandler.assert(typeof id === 'string' && id.length > 0, `Ingredient definition "${definition.name}" failed to generate a valid ID.`);
+    errorHandler.assert(typeof id === 'string' && id.length > 0, `Ingredient with name "${instance.name}" failed to generate a valid ID.`);
 
     if (this.ingredients.has(id)) {
-      logger.warn(
-        `IngredientRegistry: Re-registering type with generated ID "${id}" (${definition.name}), which overwrites the existing definition.`,
-      );
+      logger.warn(`IngredientRegistry: Re-registering type with generated ID "${id}" (${instance.name}), which overwrites the existing definition.`);
     }
 
-    const ingredientWithId = { ...definition, id } as IngredientProps;
+    const ingredientWithId = Object.assign(instance, { id }) as IngredientProps;
 
     this.ingredients.set(id, ingredientWithId);
     if (!this.isBatching) {

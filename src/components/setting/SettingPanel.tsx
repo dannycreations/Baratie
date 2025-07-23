@@ -33,15 +33,11 @@ export const SettingPanel = memo((): JSX.Element => {
   const isModalOpen = useSettingStore((state) => state.isModalOpen);
   const activeTab = useSettingStore((state) => state.activeTab);
   const closeModal = useSettingStore((state) => state.closeModal);
-  const setActiveTab = useSettingStore((state) => state.setActiveTab);
   const theme = useThemeStore((state) => state.theme);
 
-  const handleTabSelect = useCallback(
-    (tab: SettingTab) => {
-      setActiveTab(tab);
-    },
-    [setActiveTab],
-  );
+  const handleTabSelect = useCallback((tab: SettingTab) => {
+    useSettingStore.getState().setActiveTab(tab);
+  }, []);
 
   const bodyContent = useMemo<JSX.Element | null>(() => {
     switch (activeTab) {

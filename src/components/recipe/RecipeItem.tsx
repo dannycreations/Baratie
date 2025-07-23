@@ -43,7 +43,6 @@ export const RecipeItem = memo<RecipeItemProps>(
     const status = useKitchenStore((state) => state.ingredientStatus[ingredientItem.id] || 'idle');
     const inputPanelId = useKitchenStore((state) => state.inputPanelId);
     const editingId = useRecipeStore((state) => state.editingId);
-    const setEditingId = useRecipeStore((state) => state.setEditingId);
 
     const isSpiceInInput = inputPanelId === ingredientItem.id;
     const isEditing = !isSpiceInInput && editingId === ingredientItem.id;
@@ -90,6 +89,8 @@ export const RecipeItem = memo<RecipeItemProps>(
       );
     }
 
+    const hasSpices = !!(definition.spices && definition.spices(ingredientItem.spices).length > 0);
+
     const handleDragStart = useCallback(
       (event: DragEvent<HTMLElement>) => {
         onDragStart(event, ingredientItem);
@@ -106,11 +107,12 @@ export const RecipeItem = memo<RecipeItemProps>(
 
     const handleEditToggle = useCallback(() => {
       if (inputPanelId === ingredientItem.id) {
-        setEditingId(null);
+        useRecipeStore.getState().setEditingId(null);
         return;
       }
-      setEditingId(editingId === ingredientItem.id ? null : ingredientItem.id);
-    }, [inputPanelId, ingredientItem.id, setEditingId, editingId]);
+      const newEditingId = editingId === ingredientItem.id ? null : ingredientItem.id;
+      useRecipeStore.getState().setEditingId(newEditingId);
+    }, [inputPanelId, ingredientItem.id, editingId]);
 
     const handleSpiceChange = useCallback(
       (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => {
@@ -119,9 +121,7 @@ export const RecipeItem = memo<RecipeItemProps>(
       [onSpiceChange, ingredientItem.id],
     );
 
-    const hasSpices = !!definition.spices && definition.spices.length > 0;
     const canToggleEditor = hasSpices && !isSpiceInInput;
-
     const isEditorVisible = isEditing && !isSpiceInInput && !isDragged;
     const settingsTooltip = isSpiceInInput ? 'Options are in the Input panel' : isEditing ? 'Hide Options' : 'Edit Options';
 

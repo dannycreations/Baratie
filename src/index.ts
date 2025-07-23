@@ -5,85 +5,38 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import { createRoot } from './app/Baratie';
-import { appRegistry, errorHandler, ingredientRegistry, logger } from './app/container';
+import { appRegistry, errorHandler, eventSystem, ingredientRegistry, logger } from './app/container';
+import { Ingredient } from './core/Ingredient';
 import { LogLevel } from './core/Logger';
-import { useNotificationStore } from './stores/useNotificationStore';
-import { useRecipeStore } from './stores/useRecipeStore';
-import { readAsBase64, readAsText, triggerDownload } from './utilities/fileUtil';
 
-import type { NotificationMessage, NotificationType } from '../src/components/main/NotificationPanel';
 import type { BaratieOptions } from './app/Baratie';
-import type {
-  IngredientContext,
-  IngredientDefinition,
-  IngredientItem,
-  RecipeBookItem,
-  ResultType,
-  SpiceDefinition,
-  SpiceValue,
-} from './core/IngredientRegistry';
+import type { AppEvents } from './app/events';
+import type { IngredientOptions } from './core/Ingredient';
+import type { IngredientContext, IngredientItem, RecipeBookItem, ResultType, SpiceDefinition, SpiceValue } from './core/IngredientRegistry';
 import type { InputType } from './core/InputType';
 
-const { getState: getRecipeState } = useRecipeStore;
-const { getState: getNotificationState } = useNotificationStore;
-
 const BARATIE_API = {
-  app: appRegistry,
-  createRoot,
-  error: errorHandler,
-  ingredient: ingredientRegistry,
   logger,
   LogLevel,
-  helpers: {
-    file: {
-      download: triggerDownload,
-      readAsBase64,
-      readAsText,
-    },
-    notification: {
-      clear: () => {
-        return getNotificationState().clear();
-      },
-      remove: (id: string) => {
-        return getNotificationState().remove(id);
-      },
-      show: (message: string, type?: NotificationType, title?: string, duration?: number) => {
-        return getNotificationState().show(message, type, title, duration);
-      },
-    },
-    recipe: {
-      add: (type: string, initialSpices?: Readonly<Record<string, unknown>>) => {
-        return getRecipeState().addIngredient(type, initialSpices);
-      },
-      clear: () => {
-        return getRecipeState().clearRecipe();
-      },
-      getActiveId: () => {
-        return getRecipeState().getActiveRecipeId();
-      },
-      remove: (id: string) => {
-        return getRecipeState().removeIngredient(id);
-      },
-      update: (id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>) => {
-        return getRecipeState().updateSpice(id, spiceId, rawValue, spice);
-      },
-    },
-  },
+  createRoot,
+  app: appRegistry,
+  error: errorHandler,
+  events: eventSystem,
+  ingredient: ingredientRegistry,
 } as const;
 
 type BaratieApi = typeof BARATIE_API;
 
-export { create, React, ReactDOM, subscribeWithSelector, v };
+export { create, Ingredient, React, ReactDOM, subscribeWithSelector, v };
 
 export type {
+  AppEvents,
   BaratieApi,
   BaratieOptions,
   IngredientContext,
-  IngredientDefinition,
   IngredientItem,
+  IngredientOptions,
   InputType,
-  NotificationMessage,
-  NotificationType,
   RecipeBookItem,
   ResultType,
   SpiceDefinition,

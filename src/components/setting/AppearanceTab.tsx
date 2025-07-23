@@ -40,17 +40,10 @@ const PalettePreview = memo<PalettePreviewProps>(({ theme }): JSX.Element => {
 export const AppearanceTab = memo((): JSX.Element => {
   const id = useThemeStore((state) => state.id);
   const theme = useThemeStore((state) => state.theme);
-  const setTheme = useThemeStore((state) => state.setTheme);
 
-  const handleSelectTheme = useCallback(
-    (themeId: ThemeId) => {
-      const themeToSet = APP_THEMES.find((theme) => theme.id === themeId);
-      if (themeToSet) {
-        setTheme(themeToSet.id);
-      }
-    },
-    [setTheme],
-  );
+  const handleSelectTheme = useCallback((themeId: ThemeId) => {
+    useThemeStore.getState().setTheme(themeId);
+  }, []);
 
   return (
     <div role="radiogroup" aria-labelledby="theme-group-label">

@@ -1,12 +1,19 @@
 import { CATEGORY_FLOW, KEY_CUSTOM_OUTPUT } from '../app/constants';
+import { Ingredient } from '../core/Ingredient';
 
-import type { IngredientDefinition, OutputPanelConfig, PanelControlConfig } from '../core/IngredientRegistry';
+import type { IngredientContext, OutputPanelConfig, PanelControlConfig, ResultType } from '../core/IngredientRegistry';
+import type { InputType } from '../core/InputType';
 
-export const CUSTOM_OUTPUT_DEF: IngredientDefinition = {
-  name: KEY_CUSTOM_OUTPUT,
-  category: CATEGORY_FLOW,
-  description: 'Displays the output as plain text in the Output panel.',
-  run: (input, _spices, context) => {
+export class CustomOutput extends Ingredient {
+  public constructor() {
+    super({
+      name: KEY_CUSTOM_OUTPUT,
+      category: CATEGORY_FLOW,
+      description: 'Displays the output as plain text in the Output panel.',
+    });
+  }
+
+  public run(input: InputType, _spices: unknown, context: IngredientContext): ResultType {
     const inputValue = input.cast('string').getValue().trim();
     if (!inputValue) {
       return null;
@@ -30,5 +37,5 @@ export const CUSTOM_OUTPUT_DEF: IngredientDefinition = {
       output: input,
       panelControl: panelInstruction,
     };
-  },
-};
+  }
+}

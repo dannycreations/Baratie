@@ -11,7 +11,10 @@ import {
   parseGitHubUrl,
   updateStateWithExtensions,
 } from '../helpers/extensionHelper';
+import { debounce } from '../utilities/timingUtil';
+import { useCookbookStore } from './useCookbookStore';
 import { useFavoriteStore } from './useFavoriteStore';
+import { useIngredientStore } from './useIngredientStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
 
@@ -48,6 +51,7 @@ interface ExtensionState {
   readonly setExtensions: (extensions: ReadonlyArray<Extension>) => void;
   readonly setIngredients: (id: string, ingredients: ReadonlyArray<string>) => void;
   readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
+  readonly _onExtensionsChanged: () => void;
 }
 
 export const useExtensionStore = create<ExtensionState>()(
@@ -56,10 +60,13 @@ export const useExtensionStore = create<ExtensionState>()(
     extensionMap: new Map(),
 
     add: async (url) => {
-      const { show } = useNotificationStore.getState();
       const repoInfo = parseGitHubUrl(url);
       if (!repoInfo) {
-        show('Invalid GitHub URL. Use `owner/repo`, `owner/repo@branch`, or a full GitHub URL.', 'error', 'Add Extension Error');
+        useNotificationStore.getState().internalShow({
+          message: 'Invalid GitHub URL. Use `owner/repo`, `owner/repo@branch`, or a full GitHub URL.',
+          type: 'error',
+          title: 'Add Extension Error',
+        });
         return;
       }
       const { extensionMap, refresh } = get();
@@ -67,7 +74,11 @@ export const useExtensionStore = create<ExtensionState>()(
       const existing = extensionMap.get(id);
 
       if (existing && isCacheValid(existing.fetchedAt)) {
-        show('This extension is already installed and up-to-date.', 'info', 'Add Extension');
+        useNotificationStore.getState().internalShow({
+          message: 'This extension is already installed and up-to-date.',
+          type: 'info',
+          title: 'Add Extension',
+        });
         return;
       }
 
@@ -162,7 +173,6 @@ export const useExtensionStore = create<ExtensionState>()(
     },
 
     remove: (id) => {
-      const { show } = useNotificationStore.getState();
       const { extensionMap, setExtensions } = get();
       const extension = extensionMap.get(id);
       if (!extension) {
@@ -177,12 +187,10 @@ export const useExtensionStore = create<ExtensionState>()(
         const ingredientsToRemoveSet = new Set(ingredientsToRemove);
         ingredientRegistry.unregisterIngredients(ingredientsToRemove);
 
-        const { ingredients: recipe, setRecipe, activeRecipeId } = useRecipeStore.getState();
-        const updatedRecipe = recipe.filter((ing) => !ingredientsToRemoveSet.has(ing.name));
-        if (updatedRecipe.length < recipe.length) {
-          show(`${recipe.length - updatedRecipe.length} ingredient(s) from '${displayName}' removed from your recipe.`, 'info');
-          setRecipe(updatedRecipe, activeRecipeId);
-        }
+        useRecipeStore.getState().setRecipe(
+          useRecipeStore.getState().ingredients.filter((ing) => !ingredientsToRemoveSet.has(ing.ingredientId)),
+          null,
+        );
 
         const { favorites, setFavorites } = useFavoriteStore.getState();
         const newFavorites = new Set(favorites);
@@ -205,7 +213,13 @@ export const useExtensionStore = create<ExtensionState>()(
         setExtensions(newExtensions);
       }
 
-      show(`Extension '${displayName}' has been successfully uninstalled.`, 'success', 'Extension Manager');
+      useNotificationStore.getState().internalShow({
+        message: `Extension '${displayName}' has been successfully uninstalled.`,
+        type: 'success',
+        title: 'Extension Manager',
+      });
+
+      get()._onExtensionsChanged();
     },
 
     setExtensionStatus: (id, status, errors) => {
@@ -219,6 +233,11 @@ export const useExtensionStore = create<ExtensionState>()(
         ...((status === 'loaded' || status === 'partial') && { fetchedAt: Date.now() }),
       };
       const newExtensions = extensions.map((ext) => (ext.id === id ? { ...ext, ...updates } : ext));
+      const loadedExtension = newExtensions.find((ext) => ext.id === id);
+      if (loadedExtension && (loadedExtension.status === 'loaded' || loadedExtension.status === 'partial')) {
+        get()._onExtensionsChanged();
+      }
+
       setExtensions(newExtensions);
     },
 
@@ -242,6 +261,11 @@ export const useExtensionStore = create<ExtensionState>()(
         : [...extensions, extension as Extension];
       setExtensions(newExtensions);
     },
+    _onExtensionsChanged: debounce(() => {
+      logger.info('Extensions have changed, re-initializing dependent stores...');
+      useCookbookStore.getState().init();
+      useIngredientStore.getState().init();
+    }, 250),
   })),
 );
 

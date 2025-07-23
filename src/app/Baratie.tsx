@@ -76,8 +76,8 @@ export function createRoot(element: HTMLElement | null, options?: Readonly<Barat
       handler: () => {
         try {
           ingredientRegistry.startBatch();
-          for (const definition of internalIngredients) {
-            ingredientRegistry.registerIngredient(definition, 'baratie');
+          for (const IngredientClass of internalIngredients) {
+            ingredientRegistry.register(IngredientClass, 'baratie');
           }
         } finally {
           ingredientRegistry.endBatch();

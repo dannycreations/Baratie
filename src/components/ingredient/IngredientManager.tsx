@@ -17,8 +17,6 @@ export const IngredientManager = memo((): JSX.Element => {
   const closeModal = useIngredientStore((state) => state.closeModal);
   const disabledCategories = useIngredientStore((state) => state.disabledCategories);
   const disabledIngredients = useIngredientStore((state) => state.disabledIngredients);
-  const toggleCategory = useIngredientStore((state) => state.toggleCategory);
-  const toggleIngredient = useIngredientStore((state) => state.toggleIngredient);
   const registryVersion = useIngredientStore((state) => state.registryVersion);
   const theme = useThemeStore((state) => state.theme);
 
@@ -36,6 +34,14 @@ export const IngredientManager = memo((): JSX.Element => {
   const filteredList = useMemo(() => {
     return searchGroupedIngredients(ingredientsByCategory, query);
   }, [ingredientsByCategory, query]);
+
+  const toggleCategory = useCallback((category: string) => {
+    useIngredientStore.getState().toggleCategory(category);
+  }, []);
+
+  const toggleIngredient = useCallback((id: string) => {
+    useIngredientStore.getState().toggleIngredient(id);
+  }, []);
 
   const renderHeader = useCallback(
     (category: string): JSX.Element => {

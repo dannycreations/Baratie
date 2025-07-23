@@ -5,7 +5,7 @@ import { ingredientRegistry, logger, storage } from '../app/container';
 import { validateSpices } from '../helpers/spiceHelper';
 import { getSortedSpices } from './spiceHelper';
 
-import type { IngredientItem, RecipeBookItem } from '../core/IngredientRegistry';
+import type { IngredientItem, IngredientProps, RecipeBookItem } from '../core/IngredientRegistry';
 
 const SpiceValueSchema = v.union([v.string(), v.number(), v.boolean()]);
 
@@ -52,12 +52,15 @@ export function createRecipeHash(ingredients: ReadonlyArray<IngredientItem>): st
   const canonicalParts = ingredients.map((ing) => {
     const ingredientId = ing.ingredientId;
     const definition = ingredientRegistry.getIngredient(ing.ingredientId);
-
-    if (!definition?.spices || definition.spices.length === 0) {
+    if (!definition?.spices) {
       return ingredientId;
     }
 
-    const sortedSpices = getSortedSpices(definition);
+    const sortedSpices = getSortedSpices(definition, ing.spices);
+    if (sortedSpices.length === 0) {
+      return ingredientId;
+    }
+
     const spicesString = sortedSpices.map((spiceDef) => `${spiceDef.id}:${String(ing.spices[spiceDef.id])}`).join(';');
 
     return `${ingredientId}|${spicesString}`;
@@ -84,7 +87,7 @@ export function saveAllRecipes(recipes: ReadonlyArray<RecipeBookItem>): boolean 
 }
 
 export function sanitizeIngredient(rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientItem | null {
-  const definition = rawIngredient.ingredientId
+  const definition: IngredientProps | undefined = rawIngredient.ingredientId
     ? ingredientRegistry.getIngredient(rawIngredient.ingredientId)
     : ingredientRegistry.getAllIngredients().find((i) => i.name === rawIngredient.name);
 

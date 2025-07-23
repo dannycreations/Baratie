@@ -89,7 +89,12 @@ export class ErrorHandler {
     if (handlerOptions.shouldNotify) {
       const messageToShow = displayMessage.trim() || handlerOptions.defaultMessage!;
       try {
-        useNotificationStore.getState().show(messageToShow, 'error', notificationTitle, 7000);
+        useNotificationStore.getState().internalShow({
+          message: messageToShow,
+          type: 'error',
+          title: notificationTitle,
+          duration: 7000,
+        });
       } catch (notificationError) {
         logger.error('ErrorHandler: Failed to show a notification due to an internal notification system error.', {
           notificationSystemError: notificationError,

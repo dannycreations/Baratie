@@ -72,13 +72,6 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const resetModal = useCookbookStore((state) => state.resetModal);
   const setName = useCookbookStore((state) => state.setName);
   const setQuery = useCookbookStore((state) => state.setQuery);
-  const upsert = useCookbookStore((state) => state.upsert);
-  const deleteRecipe = useCookbookStore((state) => state.delete);
-  const load = useCookbookStore((state) => state.load);
-  const exportAll = useCookbookStore((state) => state.exportAll);
-  const exportCurrent = useCookbookStore((state) => state.exportCurrent);
-  const importFromFile = useCookbookStore((state) => state.importFromFile);
-
   const ingredients = useRecipeStore((state) => state.ingredients);
 
   const nameRef = useRef<HTMLInputElement>(null);
@@ -90,32 +83,38 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const deferredQuery = useDeferredValue(query);
 
   const handleSave = useCallback(() => {
-    upsert();
+    useCookbookStore.getState().upsert();
     closeModal();
-  }, [upsert, closeModal]);
+  }, [closeModal]);
 
-  const handleLoad = useCallback(
-    (id: string) => {
-      load(id);
-    },
-    [load],
-  );
+  const handleLoad = useCallback((id: string) => {
+    useCookbookStore.getState().load(id);
+  }, []);
+
+  const handleDelete = useCallback((id: string) => {
+    useCookbookStore.getState().delete(id);
+  }, []);
+
+  const handleExportAll = useCallback(() => {
+    useCookbookStore.getState().exportAll();
+  }, []);
+
+  const handleExportCurrent = useCallback(() => {
+    useCookbookStore.getState().exportCurrent();
+  }, []);
 
   const handleTriggerImport = useCallback(() => {
     importRef.current?.click();
   }, []);
 
-  const handleFileImport = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      event.target.value = '';
-      if (!file) {
-        return;
-      }
-      await importFromFile(file);
-    },
-    [importFromFile],
-  );
+  const handleFileImport = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) {
+      return;
+    }
+    useCookbookStore.getState().importFromFile(file);
+  }, []);
 
   const filtered = useMemo<ReadonlyArray<RecipeBookItem>>(() => {
     const lowerQuery = deferredQuery.toLowerCase().trim();
@@ -129,9 +128,9 @@ export const CookbookPanel = memo((): JSX.Element | null => {
 
   const headerActions =
     modalMode === 'save' ? (
-      <SaveHeaderActions isSaveDisabled={isSaveDisabled} onExportCurrent={exportCurrent} onSave={handleSave} />
+      <SaveHeaderActions isSaveDisabled={isSaveDisabled} onExportCurrent={handleExportCurrent} onSave={handleSave} />
     ) : (
-      <LoadHeaderActions isExportDisabled={recipes.length === 0} onExportAll={exportAll} onTriggerImport={handleTriggerImport} />
+      <LoadHeaderActions isExportDisabled={recipes.length === 0} onExportAll={handleExportAll} onTriggerImport={handleTriggerImport} />
     );
 
   const bodyContent =
@@ -143,7 +142,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
         query={query}
         recipes={filtered}
         totalRecipes={recipes.length}
-        onDelete={deleteRecipe}
+        onDelete={handleDelete}
         onImport={handleFileImport}
         onLoad={handleLoad}
         onQueryChange={setQuery}

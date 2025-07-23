@@ -54,12 +54,11 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
 
 const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
-  const removeExtension = useExtensionStore((state) => state.remove);
   const displayName = extension.name || extension.id;
 
   const handleConfirmDelete = useCallback(() => {
-    removeExtension(extension.id);
-  }, [removeExtension, extension.id]);
+    useExtensionStore.getState().remove(extension.id);
+  }, [extension.id]);
 
   const leftContent = (
     <div className="flex flex-col">
@@ -91,22 +90,22 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
 export const ExtensionTab = memo((): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const extensions = useExtensionStore((state) => state.extensions);
-  const addExtension = useExtensionStore((state) => state.add);
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleAdd = useCallback(async () => {
-    if (!url.trim() || isLoading) {
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl || isLoading) {
       return;
     }
     setIsLoading(true);
     try {
-      await addExtension(url);
+      await useExtensionStore.getState().add(trimmedUrl);
       setUrl('');
     } finally {
       setIsLoading(false);
     }
-  }, [url, isLoading, addExtension]);
+  }, [url, isLoading]);
 
   const handleUrlChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setUrl(event.target.value);

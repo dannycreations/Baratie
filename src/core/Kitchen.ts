@@ -3,16 +3,10 @@ import { errorHandler, ingredientRegistry, logger } from '../app/container';
 import { useKitchenStore } from '../stores/useKitchenStore';
 import { useRecipeStore } from '../stores/useRecipeStore';
 import { AppError } from './ErrorHandler';
+import { Ingredient } from './Ingredient';
 import { InputType } from './InputType';
 
-import type {
-  IngredientContext,
-  IngredientDefinition,
-  IngredientItem,
-  InputPanelConfig,
-  OutputPanelConfig,
-  PanelControlConfig,
-} from './IngredientRegistry';
+import type { IngredientContext, IngredientItem, InputPanelConfig, OutputPanelConfig, PanelControlConfig } from './IngredientRegistry';
 
 export type CookingStatusType = 'idle' | 'error' | 'success' | 'warning';
 
@@ -128,10 +122,6 @@ export class Kitchen {
     }
   }
 
-  public setInputData(data: string): void {
-    useKitchenStore.getState().setInputData(data);
-  }
-
   private async cookRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeCookResult> {
     if (recipe.length === 0) {
       return {
@@ -210,7 +200,7 @@ export class Kitchen {
 
   private async runIngredient(
     ingredient: IngredientItem,
-    definition: IngredientDefinition,
+    definition: Ingredient,
     currentData: string,
     recipe: ReadonlyArray<IngredientItem>,
     currentIndex: number,

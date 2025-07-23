@@ -60,9 +60,6 @@ export class AppRegistry {
       logger.info('Initialization sequence already running.');
       return;
     }
-    if (useAppStore.getState().isInitialized) {
-      return;
-    }
 
     this.isRunning = true;
     logger.info('Starting application initialization sequence.');

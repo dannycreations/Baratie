@@ -2,7 +2,8 @@ import { create } from 'zustand';
 
 import { NOTIFICATION_SHOW_MS } from '../app/constants';
 
-import type { NotificationMessage, NotificationType } from '../components/main/NotificationPanel';
+import type { AppEvents } from '../app/events';
+import type { NotificationMessage } from '../components/main/NotificationPanel';
 
 interface NotificationState {
   readonly order: ReadonlyArray<string>;
@@ -11,8 +12,8 @@ interface NotificationState {
   readonly add: (notification: NotificationMessage) => void;
   readonly clear: () => void;
   readonly remove: (id: string) => void;
-  readonly show: (message: string, type?: NotificationType, title?: string, duration?: number) => void;
   readonly update: (id: string, duration: number, resetAt: number) => void;
+  readonly internalShow: (payload: AppEvents['notification:show']) => void;
 }
 
 function getDedupeKey(n: Pick<NotificationMessage, 'type' | 'title' | 'message'>): string {
@@ -57,7 +58,7 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
       return { map: newMap, order: newOrder, dedupeMap: newDedupeMap };
     });
   },
-  show: (message, type: NotificationType = 'info', title, duration) => {
+  internalShow: ({ message, type = 'info', title, duration }) => {
     const { add, update, dedupeMap } = get();
     const details = { message, title, type };
     const existingId = dedupeMap.get(getDedupeKey(details));

@@ -1,6 +1,6 @@
 import { memo, useCallback, useRef } from 'react';
 
-import { errorHandler, ingredientRegistry, kitchen } from '../../app/container';
+import { errorHandler, ingredientRegistry } from '../../app/container';
 import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { readAsText, triggerDownload } from '../../utilities/fileUtil';
@@ -121,6 +121,10 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, fileInputRef, 
   const isTextareaDisabled = config?.mode === 'textarea' ? !!config.disabled : false;
   const placeholder = (config?.mode === 'textarea' && config.placeholder) || 'Place Raw Ingredients Here.';
 
+  const handleInputChange = useCallback((value: string) => {
+    useKitchenStore.getState().setInputData(value);
+  }, []);
+
   return (
     <>
       <input ref={fileInputRef} accept="text/*" type="file" aria-hidden="true" className="hidden" onChange={onFileSelect} />
@@ -132,7 +136,7 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, fileInputRef, 
         textareaClasses="font-mono"
         value={data}
         wrapperClasses="flex-1 min-h-0"
-        onChange={kitchen.setInputData}
+        onChange={handleInputChange}
       />
     </>
   );
@@ -154,7 +158,6 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const outputPanelConfig = useKitchenStore((state) => state.outputPanelConfig);
   const inputData = useKitchenStore((state) => state.inputData);
   const outputData = useKitchenStore((state) => state.outputData);
-  const updateSpice = useRecipeStore((state) => state.updateSpice);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importOperationRef = useRef<number>(0);
@@ -170,7 +173,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
     if (file) {
       const { result: text, error } = await errorHandler.attemptAsync(() => readAsText(file));
       if (operationId === importOperationRef.current && !error && typeof text === 'string') {
-        kitchen.setInputData(text);
+        useKitchenStore.getState().setInputData(text);
       }
     }
     if (event.target) {
@@ -184,9 +187,13 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
 
   const handleClearInput = useCallback(() => {
     if (isInput) {
-      kitchen.setInputData('');
+      useKitchenStore.getState().setInputData('');
     }
   }, [isInput]);
+
+  const handleUpdateSpice = useCallback((ingredientId: string, spiceId: string, rawValue: SpiceValue, spice: SpiceDefinition) => {
+    useRecipeStore.getState().updateSpice(ingredientId, spiceId, rawValue, spice);
+  }, []);
 
   const handleDownloadOutput = useCallback(() => {
     const timestamp = new Date().toISOString().slice(0, 19).replace(/-/g, '').replace('T', '_').replace(/:/g, '');
@@ -205,7 +212,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
       return <OutputContent config={outputPanelConfig} data={outputData} />;
     }
     if (inputPanelConfig?.mode === 'spiceEditor') {
-      return <SpiceContent config={inputPanelConfig} onSpiceChange={updateSpice} />;
+      return <SpiceContent config={inputPanelConfig} onSpiceChange={handleUpdateSpice} />;
     }
     return <DefaultContent config={inputPanelConfig} data={inputData} fileInputRef={fileInputRef} onFileSelect={handleFileSelect} />;
   };

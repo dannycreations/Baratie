@@ -1,9 +1,10 @@
 import { CATEGORY_FLOW, KEY_REPEAT_STEP } from '../app/constants';
 import { errorHandler, ingredientRegistry, kitchen, logger } from '../app/container';
+import { Ingredient } from '../core/Ingredient';
 import { InputType } from '../core/InputType';
 import { useNotificationStore } from '../stores/useNotificationStore';
 
-import type { IngredientContext, IngredientDefinition, SpiceDefinition } from '../core/IngredientRegistry';
+import type { IngredientContext, SpiceDefinition } from '../core/IngredientRegistry';
 
 interface RepeatStepSpices {
   readonly delimiter: string;
@@ -13,60 +14,66 @@ interface RepeatStepSpices {
   readonly retriesOnError: number;
 }
 
-const REPEAT_STEP_SPICES: ReadonlyArray<SpiceDefinition> = [
-  {
-    id: 'repeatCount',
-    label: 'Number of Repetitions',
-    type: 'number',
-    value: 3,
-    min: 1,
-    max: 100,
-    description: 'How many times to execute the preceding ingredients.',
-  },
-  {
-    id: 'delimiter',
-    label: 'Output Delimiter',
-    type: 'string',
-    value: '\\n',
-    placeholder: 'e.g., \\n, ---, <br>',
-    description: "String used to separate the outputs of each repetition. Use '\\n' for newlines.",
-  },
-  {
-    id: 'intervalMs',
-    label: 'Refresh Interval (ms)',
-    type: 'number',
-    value: 0,
-    min: 0,
-    step: 1000,
-    max: 60000,
-    description: 'If > 0, re-cooks the entire recipe every N milliseconds. Use 0 to disable. Only one interval can be active in a recipe.',
-  },
-  {
-    id: 'retriesOnError',
-    label: 'Retries on Error',
-    type: 'number',
-    value: 0,
-    min: 0,
-    max: 10,
-    description: 'Number of times to retry the entire block of repetitions if an error occurs. Zero means no retries.',
-  },
-  {
-    id: 'retryDelayMs',
-    label: 'Retry Delay (ms)',
-    type: 'number',
-    value: 1000,
-    min: 0,
-    max: 30000,
-    description: 'Delay in milliseconds between each retry attempt. This is only used if "Retries on Error" is greater than zero.',
-  },
-];
+export class RepeatStep extends Ingredient<RepeatStepSpices> {
+  public constructor() {
+    super({
+      name: KEY_REPEAT_STEP,
+      category: CATEGORY_FLOW,
+      description: 'Repeats a sequence of preceding ingredients a specified number of times.',
+    });
+  }
 
-export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
-  name: KEY_REPEAT_STEP,
-  category: CATEGORY_FLOW,
-  description: 'Repeats a sequence of preceding ingredients a specified number of times.',
-  spices: REPEAT_STEP_SPICES,
-  run: async (input, spices, context) => {
+  public spices(): ReadonlyArray<SpiceDefinition> {
+    return [
+      {
+        id: 'repeatCount',
+        label: 'Number of Repetitions',
+        type: 'number',
+        value: 3,
+        min: 1,
+        max: 100,
+        description: 'How many times to execute the preceding ingredients.',
+      },
+      {
+        id: 'delimiter',
+        label: 'Output Delimiter',
+        type: 'string',
+        value: '\\n',
+        placeholder: 'e.g., \\n, ---, <br>',
+        description: "String used to separate the outputs of each repetition. Use '\\n' for newlines.",
+      },
+      {
+        id: 'intervalMs',
+        label: 'Refresh Interval (ms)',
+        type: 'number',
+        value: 0,
+        min: 0,
+        step: 1000,
+        max: 60000,
+        description: 'If > 0, re-cooks the entire recipe every N milliseconds. Use 0 to disable. Only one interval can be active in a recipe.',
+      },
+      {
+        id: 'retriesOnError',
+        label: 'Retries on Error',
+        type: 'number',
+        value: 0,
+        min: 0,
+        max: 10,
+        description: 'Number of times to retry the entire block of repetitions if an error occurs. Zero means no retries.',
+      },
+      {
+        id: 'retryDelayMs',
+        label: 'Retry Delay (ms)',
+        type: 'number',
+        value: 1000,
+        min: 0,
+        max: 30000,
+        description: 'Delay in milliseconds between each retry attempt. This is only used if "Retries on Error" is greater than zero.',
+      },
+    ];
+  }
+
+  public async run(input: InputType, spices: RepeatStepSpices, context: IngredientContext): Promise<InputType<string> | null> {
     const { delimiter, repeatCount, retriesOnError, retryDelayMs, intervalMs } = spices;
 
     kitchen.setCookingInterval(intervalMs);
@@ -76,18 +83,16 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
     }
 
     const { currentIndex, initialInput, recipe } = context;
-    const ingredientDisplayName = REPEAT_STEP_DEF.name;
+    const ingredientDisplayName = this.name;
 
     const ingredientsToRepeat = recipe.slice(0, currentIndex);
 
     if (ingredientsToRepeat.length === 0) {
-      useNotificationStore
-        .getState()
-        .show(
-          `'${ingredientDisplayName}' has no preceding ingredients to execute. Add one or more ingredients before it.`,
-          'warning',
-          'Configuration Warning',
-        );
+      useNotificationStore.getState().internalShow({
+        message: `'${ingredientDisplayName}' has no preceding ingredients to execute. Add one or more ingredients before it.`,
+        type: 'warning',
+        title: 'Configuration Warning',
+      });
       return new InputType('');
     }
 
@@ -100,7 +105,7 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
               let currentData = initialInput;
               for (let subIndex = 0; subIndex < ingredientsToRepeat.length; subIndex++) {
                 const ingredient = ingredientsToRepeat[subIndex];
-                const definition = ingredientRegistry.getIngredient(ingredient.name);
+                const definition = ingredientRegistry.getIngredient(ingredient.ingredientId);
                 errorHandler.assert(definition, `Definition for '${ingredient.name}' not found during sub-recipe execution.`);
 
                 const subContext: IngredientContext = { ...context, currentIndex: subIndex, ingredient };
@@ -152,5 +157,5 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
     }
 
     return new InputType('');
-  },
-};
+  }
+}

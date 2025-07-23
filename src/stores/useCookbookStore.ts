@@ -83,7 +83,6 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     return `My Recipe ${dateString}`;
   },
   delete: (id) => {
-    const { show } = useNotificationStore.getState();
     const { recipes, recipeIdMap, setRecipes } = get();
     const recipeToDelete = recipeIdMap.get(id);
     if (!recipeToDelete) {
@@ -92,32 +91,42 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     const updatedList = recipes.filter((r) => r.id !== id);
     if (saveAllRecipes(updatedList)) {
       setRecipes(updatedList);
-      show(`Recipe '${recipeToDelete.name}' was deleted.`, 'info', 'Cookbook Action');
+      useNotificationStore.getState().internalShow({
+        message: `Recipe '${recipeToDelete.name}' was deleted.`,
+        type: 'info',
+        title: 'Cookbook Action',
+      });
     }
   },
   exportAll: () => {
     const { recipes } = get();
-    const { show } = useNotificationStore.getState();
     if (recipes.length === 0) {
-      show('There are no saved recipes to export.', 'info', 'Export All');
+      useNotificationStore.getState().internalShow({ message: 'There are no saved recipes to export.', type: 'info', title: 'Export All' });
       return;
     }
     const fileName = 'baratie_cookbook_export.json';
     const serialized = recipes.map(serializeRecipe);
     triggerDownload(JSON.stringify(serialized, null, 2), fileName);
-    show(`${recipes.length} recipes are ready for download.`, 'success', 'Export All Successful');
+    useNotificationStore.getState().internalShow({
+      message: `${recipes.length} recipes are ready for download.`,
+      type: 'success',
+      title: 'Export All Successful',
+    });
   },
   exportCurrent: () => {
     const { nameInput } = get();
     const { ingredients } = useRecipeStore.getState();
-    const { show } = useNotificationStore.getState();
     const trimmedName = nameInput.trim();
     if (!trimmedName) {
-      show('The recipe name cannot be empty.', 'warning', 'Export Error');
+      useNotificationStore.getState().internalShow({ message: 'The recipe name cannot be empty.', type: 'warning', title: 'Export Error' });
       return;
     }
     if (ingredients.length === 0) {
-      show('Cannot export an empty recipe. Please add ingredients first.', 'warning', 'Export Error');
+      useNotificationStore.getState().internalShow({
+        message: 'Cannot export an empty recipe. Please add ingredients first.',
+        type: 'warning',
+        title: 'Export Error',
+      });
       return;
     }
     const recipeToExport: RecipeBookItem = {
@@ -129,12 +138,17 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     };
     const fileName = `${sanitizeFileName(recipeToExport.name, 'recipe')}.json`;
     triggerDownload(JSON.stringify(serializeRecipe(recipeToExport), null, 2), fileName);
-    show(`Recipe '${recipeToExport.name}' is ready for download.`, 'success', 'Export Successful');
+    useNotificationStore.getState().internalShow({
+      message: `Recipe '${recipeToExport.name}' is ready for download.`,
+      type: 'success',
+      title: 'Export Successful',
+    });
   },
   importFromFile: async (file) => {
-    const { show } = useNotificationStore.getState();
     if (file.type !== 'application/json') {
-      show('Invalid file type. Please select a .json file.', 'error', 'Import Error');
+      useNotificationStore
+        .getState()
+        .internalShow({ message: 'Invalid file type. Please select a .json file.', type: 'error', title: 'Import Error' });
       return;
     }
     const { result: content } = await errorHandler.attemptAsync(() => readAsText(file), 'File Read for Import');
@@ -155,18 +169,21 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     }
 
     for (const warning of mutableWarnings) {
-      show(warning, 'warning', 'Import Notice', 7000);
+      useNotificationStore.getState().internalShow({ message: warning, type: 'warning', title: 'Import Notice', duration: 7000 });
     }
 
     if (recipes.length === 0) {
-      show('No valid recipes were found in the selected file.', 'warning', 'Import Notice');
+      useNotificationStore.getState().internalShow({
+        message: 'No valid recipes were found in the selected file.',
+        type: 'warning',
+        title: 'Import Notice',
+      });
       return;
     }
 
     get().merge(recipes);
   },
   init: () => {
-    const { show } = useNotificationStore.getState();
     const storedRecipes = storage.get<Array<unknown>>(STORAGE_COOKBOOK, 'Saved Recipes');
     if (!Array.isArray(storedRecipes)) {
       get().setRecipes([]);
@@ -177,22 +194,25 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
 
     if (hasCorruption) {
       logger.warn('Corrupted cookbook data in storage; attempting partial recovery.');
-      show('Some saved recipes may be corrupted and could not be loaded. Data will be cleaned on next save.', 'warning', 'Cookbook Warning', 7000);
+      useNotificationStore.getState().internalShow({
+        message: 'Some saved recipes may be corrupted and could not be loaded. Data will be cleaned on next save.',
+        type: 'warning',
+        title: 'Cookbook Warning',
+        duration: 7000,
+      });
     }
 
     get().setRecipes(recipes);
   },
   load: (id) => {
-    const { show } = useNotificationStore.getState();
     const recipeToLoad = get().recipeIdMap.get(id);
     if (recipeToLoad) {
       useRecipeStore.getState().setRecipe(recipeToLoad.ingredients, recipeToLoad.id);
-      show(`Recipe '${recipeToLoad.name}' loaded.`, 'success', 'Cookbook Action');
+      useNotificationStore.getState().internalShow({ message: `Recipe '${recipeToLoad.name}' loaded.`, type: 'success', title: 'Cookbook Action' });
       get().closeModal();
     }
   },
   merge: (recipesToImport: ReadonlyArray<RecipeBookItem>) => {
-    const { show } = useNotificationStore.getState();
     const { recipes, setRecipes } = get();
     logger.info('Merging imported recipes...', { importedCount: recipesToImport.length, existingCount: recipes.length });
 
@@ -225,13 +245,13 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
           .filter(Boolean)
           .join(' ');
         if (summary) {
-          show(summary, 'success', 'Import Complete');
+          useNotificationStore.getState().internalShow({ message: summary, type: 'success', title: 'Import Complete' });
         }
         setRecipes(mergedList);
       }
     } else {
       const summary = skipped > 0 ? `${skipped} recipe${skipped > 1 ? 's' : ''} skipped (duplicates or outdated).` : 'No new recipes to import.';
-      show(summary, 'info', 'Import Notice');
+      useNotificationStore.getState().internalShow({ message: summary, type: 'info', title: 'Import Notice' });
     }
   },
   open: (args) => {
@@ -286,10 +306,9 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
   upsert: () => {
     const { nameInput, recipes, recipeIdMap, setRecipes } = get();
     const { ingredients, activeRecipeId, setActiveRecipeId } = useRecipeStore.getState();
-    const { show } = useNotificationStore.getState();
     const trimmedName = nameInput.trim();
     if (!trimmedName) {
-      show('The recipe name cannot be empty.', 'warning', 'Save Error');
+      useNotificationStore.getState().internalShow({ message: 'The recipe name cannot be empty.', type: 'warning', title: 'Save Error' });
       return;
     }
 
@@ -320,7 +339,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     if (saveAllRecipes(finalRecipes)) {
       setRecipes(finalRecipes);
       setActiveRecipeId(recipeToSave.id);
-      show(userMessage, 'success', 'Cookbook Action');
+      useNotificationStore.getState().internalShow({ message: userMessage, type: 'success', title: 'Cookbook Action' });
     }
   },
 }));

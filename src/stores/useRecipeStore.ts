@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import { errorHandler, ingredientRegistry, logger } from '../app/container';
-import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
+import { resolveSpices, updateAndValidate, validateSpices } from '../helpers/spiceHelper';
 
 import type { IngredientItem, SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
 
@@ -12,7 +12,6 @@ interface RecipeState {
   readonly ingredients: ReadonlyArray<IngredientItem>;
   readonly addIngredient: (ingredientId: string, initialSpices?: Readonly<Record<string, unknown>>) => void;
   readonly clearRecipe: () => void;
-  readonly getActiveRecipeId: () => string | null;
   readonly removeIngredient: (id: string) => void;
   readonly reorderIngredients: (draggedId: string, targetId: string) => void;
   readonly setActiveRecipeId: (id: string | null) => void;
@@ -22,7 +21,7 @@ interface RecipeState {
 }
 
 export const useRecipeStore = create<RecipeState>()(
-  subscribeWithSelector((set, get) => ({
+  subscribeWithSelector((set) => ({
     activeRecipeId: null,
     editingId: null,
     ingredients: [],
@@ -50,9 +49,6 @@ export const useRecipeStore = create<RecipeState>()(
         ingredients: [],
         editingId: null,
       });
-    },
-    getActiveRecipeId: () => {
-      return get().activeRecipeId;
     },
     removeIngredient: (id) => {
       set((state) => {
@@ -129,7 +125,7 @@ export const useRecipeStore = create<RecipeState>()(
           'Recipe Change Spice',
         );
 
-        const isSpiceInDefinition = ingredientDefinition.spices?.some((s) => s.id === spiceId);
+        const isSpiceInDefinition = resolveSpices(ingredientDefinition, ingredientToUpdate.spices).some((s) => s.id === spiceId);
         errorHandler.assert(
           isSpiceInDefinition,
           `Spice with ID "${spiceId}" is not a valid spice for ingredient "${ingredientDefinition.name}".`,

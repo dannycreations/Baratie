@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo } from 'react';
 
 import { logger } from '../../../app/container';
-import { getVisibleSpices } from '../../../helpers/spiceHelper';
+import { getVisibleSpices, resolveSpices } from '../../../helpers/spiceHelper';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { BooleanInput } from '../input/BooleanInput';
 import { SelectInput } from '../input/SelectInput';
@@ -9,7 +9,7 @@ import { StringInput } from '../input/StringInput';
 import { FormLayout } from './FormLayout';
 
 import type { ChangeEvent, FormEvent, JSX, ReactNode } from 'react';
-import type { IngredientDefinition, SpiceDefinition, SpiceValue } from '../../../core/IngredientRegistry';
+import type { IngredientProps, SpiceDefinition, SpiceValue } from '../../../core/IngredientRegistry';
 
 interface SpiceRendererProps {
   readonly onSpiceChange: (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => void;
@@ -20,7 +20,7 @@ interface SpiceRendererProps {
 interface SpiceLayoutProps {
   readonly containerClasses?: string;
   readonly currentSpices: Readonly<Record<string, SpiceValue>>;
-  readonly ingredient: IngredientDefinition;
+  readonly ingredient: IngredientProps;
   readonly onSpiceChange: (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => void;
 }
 
@@ -129,11 +129,15 @@ export const SpiceLayout = memo<SpiceLayoutProps>(({ ingredient, currentSpices, 
     event.preventDefault();
   }, []);
 
+  const allSpices = useMemo(() => {
+    return resolveSpices(ingredient, currentSpices);
+  }, [ingredient, currentSpices]);
+
   const visibleSpices = useMemo(() => {
     return getVisibleSpices(ingredient, currentSpices);
   }, [ingredient, currentSpices]);
 
-  if (!ingredient.spices || ingredient.spices.length === 0) {
+  if (allSpices.length === 0) {
     return <p className={`text-sm italic text-${theme.contentTertiary}`}>This ingredient has no configurable options.</p>;
   }
 

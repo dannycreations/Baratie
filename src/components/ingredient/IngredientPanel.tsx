@@ -21,15 +21,10 @@ import type { IngredientProps } from '../../core/IngredientRegistry';
 
 export const IngredientPanel = memo((): JSX.Element => {
   const favorites = useFavoriteStore((state) => state.favorites);
-  const toggleFavorite = useFavoriteStore((state) => state.toggle);
-  const addIngredient = useRecipeStore((state) => state.addIngredient);
-  const removeIngredient = useRecipeStore((state) => state.removeIngredient);
   const disabledCategories = useIngredientStore((state) => state.disabledCategories);
   const disabledIngredients = useIngredientStore((state) => state.disabledIngredients);
-  const openIngredientModal = useIngredientStore((state) => state.openModal);
   const isIngredientOpen = useIngredientStore((state) => state.isModalOpen);
   const registryVersion = useIngredientStore((state) => state.registryVersion);
-  const openSettingModal = useSettingStore((state) => state.openModal);
   const isSettingOpen = useSettingStore((state) => state.isModalOpen);
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
   const theme = useThemeStore((state) => state.theme);
@@ -50,6 +45,14 @@ export const IngredientPanel = memo((): JSX.Element => {
     disabledIngredients,
   );
   const totalIngredients = allIngredients.length;
+
+  const openIngredientModal = useCallback(() => {
+    useIngredientStore.getState().openModal();
+  }, []);
+
+  const openSettingModal = useCallback(() => {
+    useSettingStore.getState().openModal();
+  }, []);
 
   const handleDragEnterRecipe = useCallback((event: DragEvent<HTMLDivElement>) => {
     if (event.dataTransfer.types.includes('application/x-baratie-recipe-item-id')) {
@@ -76,18 +79,26 @@ export const IngredientPanel = memo((): JSX.Element => {
       event.preventDefault();
       const id = event.dataTransfer.getData('application/x-baratie-recipe-item-id');
       if (id) {
-        removeIngredient(id);
+        useRecipeStore.getState().removeIngredient(id);
       }
       setDragOverRecipe(false);
       setDraggedItemId(null);
     },
-    [removeIngredient, setDraggedItemId],
+    [setDraggedItemId],
   );
 
   const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: IngredientProps) => {
     errorHandler.assert(item.id, 'Ingredient unique name not found on dragged element.', 'Ingredient Drag');
     event.dataTransfer.setData('application/x-baratie-ingredient-type', item.id);
     event.dataTransfer.effectAllowed = 'copy';
+  }, []);
+
+  const handleAddIngredient = useCallback((id: string) => {
+    useRecipeStore.getState().addIngredient(id);
+  }, []);
+
+  const handleToggleFavorite = useCallback((id: string) => {
+    useFavoriteStore.getState().toggle(id);
   }, []);
 
   const headerActions = useMemo<JSX.Element>(
@@ -137,7 +148,7 @@ export const IngredientPanel = memo((): JSX.Element => {
             tooltipContent={isFavorite ? `Remove '${item.name}' from favorites` : `Add '${item.name}' to favorites`}
             tooltipPosition="top"
             variant="stealth"
-            onClick={() => toggleFavorite(item.id)}
+            onClick={() => handleToggleFavorite(item.id)}
           />
           <TooltipButton
             aria-label={`Add '${item.name}' to the recipe`}
@@ -147,12 +158,12 @@ export const IngredientPanel = memo((): JSX.Element => {
             tooltipContent={`Add '${item.name}' to Recipe`}
             tooltipPosition="top"
             variant="primary"
-            onClick={() => addIngredient(item.id)}
+            onClick={() => handleAddIngredient(item.id)}
           />
         </>
       );
     },
-    [favorites, theme, toggleFavorite, addIngredient],
+    [favorites, theme, handleToggleFavorite, handleAddIngredient],
   );
 
   return (

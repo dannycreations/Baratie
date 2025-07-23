@@ -1,13 +1,20 @@
 import { CATEGORY_FLOW, KEY_CUSTOM_INPUT } from '../app/constants';
 import { ingredientRegistry } from '../app/container';
+import { Ingredient } from '../core/Ingredient';
 
-import type { IngredientDefinition, InputPanelConfig, PanelControlConfig } from '../core/IngredientRegistry';
+import type { IngredientContext, InputPanelConfig, PanelControlConfig, ResultType } from '../core/IngredientRegistry';
+import type { InputType } from '../core/InputType';
 
-export const CUSTOM_INPUT_DEF: IngredientDefinition = {
-  name: KEY_CUSTOM_INPUT,
-  category: CATEGORY_FLOW,
-  description: 'Controls the Input Panel to display options for the next ingredient in the recipe.',
-  run: (input, _spices, context) => {
+export class CustomInput extends Ingredient {
+  public constructor() {
+    super({
+      name: KEY_CUSTOM_INPUT,
+      category: CATEGORY_FLOW,
+      description: 'Controls the Input Panel to display options for the next ingredient in the recipe.',
+    });
+  }
+
+  public run(input: InputType, _spices: unknown, context: IngredientContext): ResultType {
     const { ingredient: currentIngredient, recipe, currentIndex } = context;
 
     let config: InputPanelConfig;
@@ -15,8 +22,15 @@ export const CUSTOM_INPUT_DEF: IngredientDefinition = {
 
     if (nextIngredientIndex < recipe.length) {
       const targetIngredient = recipe[nextIngredientIndex];
-      const targetDefinition = ingredientRegistry.getIngredient(targetIngredient.name);
-      if (targetDefinition?.spices && targetDefinition.spices.length > 0) {
+      const targetDefinition = ingredientRegistry.getIngredient(targetIngredient.ingredientId);
+
+      const targetHasSpices = !!(
+        targetDefinition &&
+        typeof targetDefinition.spices === 'function' &&
+        targetDefinition.spices(targetIngredient.spices).length > 0
+      );
+
+      if (targetHasSpices) {
         config = {
           mode: 'spiceEditor',
           targetIngredientId: targetIngredient.id,
@@ -51,5 +65,5 @@ export const CUSTOM_INPUT_DEF: IngredientDefinition = {
       output: input,
       panelControl: panelInstruction,
     };
-  },
-};
+  }
+}

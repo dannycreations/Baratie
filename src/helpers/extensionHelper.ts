@@ -1,8 +1,9 @@
 import * as v from 'valibot';
 
 import { ingredientRegistry, logger } from '../app/container';
+import { Ingredient } from '../core/Ingredient';
 
-import type { IngredientDefinition, IngredientRegistry } from '../core/IngredientRegistry';
+import type { IngredientRegistry } from '../core/IngredientRegistry';
 import type { Extension } from '../stores/useExtensionStore';
 
 const NonEmptyString = v.pipe(v.string(), v.nonEmpty());
@@ -38,7 +39,7 @@ async function fetchProvider(repoInfo: { readonly owner: string; readonly repo: 
 function executeScript(scriptContent: string, api: typeof window.Baratie): void {
   try {
     // eslint-disable-next-line @typescript-eslint/no-implied-eval
-    new Function('Baratie', scriptContent)(api);
+    new Function('Baratie', 'Ingredient', scriptContent)(api, Ingredient);
   } catch (error) {
     throw new Error(`Execution failed: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -122,14 +123,9 @@ export async function loadAndExecuteExtension(extension: Readonly<Extension>, de
   const customBaratieApi = {
     ...window.Baratie,
     ingredient: {
-      startBatch: () => ingredientRegistry.startBatch(),
-      endBatch: () => ingredientRegistry.endBatch(),
-      getAllCategories: () => ingredientRegistry.getAllCategories(),
-      getAllIngredients: () => ingredientRegistry.getAllIngredients(),
-      getIngredient: (ingId: string) => ingredientRegistry.getIngredient(ingId),
-      unregisterIngredients: (ids: ReadonlyArray<string>) => ingredientRegistry.unregisterIngredients(ids),
-      registerIngredient: <T>(definition: IngredientDefinition<T>, _namespace?: string): string => {
-        const registeredId = ingredientRegistry.registerIngredient(definition, id);
+      ...window.Baratie.ingredient,
+      register: <T>(IngredientClass: new () => Ingredient<T>, _namespace?: string): string => {
+        const registeredId = ingredientRegistry.register(IngredientClass, id);
         newlyRegisteredKeys.push(registeredId);
         return registeredId;
       },

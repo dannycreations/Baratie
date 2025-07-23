@@ -38,7 +38,9 @@ export const useThemeStore = create<ThemeState>()(
       theme,
       setTheme: (newId) => {
         const newTheme = APP_THEMES.find((t) => t.id === newId)?.theme;
-        set({ theme: newTheme || DEFAULT_THEME.theme, id: newId });
+        if (newTheme) {
+          set({ theme: newTheme, id: newId });
+        }
       },
     };
   }),
