@@ -119,7 +119,6 @@ export const useExtensionStore = create<ExtensionState>()(
         id,
         status: 'loading',
         name: storeExtension?.name || 'Refreshing...',
-        scripts: {},
       });
 
       const repoInfo = parseGitHubUrl(id);
@@ -146,7 +145,7 @@ export const useExtensionStore = create<ExtensionState>()(
           setIngredients(id, []);
         }
 
-        const freshExtension: Extension = { id, ...manifest, status: 'loading', scripts: {} };
+        const freshExtension: Extension = { id, ...manifest, status: 'loading', scripts: storeExtension?.scripts || {} };
         upsert(freshExtension);
         await loadAndExecuteExtension(freshExtension, {
           getExtensionMap: () => get().extensionMap,
