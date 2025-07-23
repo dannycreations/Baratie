@@ -7,9 +7,9 @@ import { Tooltip } from '../shared/Tooltip';
 import { EmptyView } from '../shared/View';
 
 import type { DragEvent, JSX, ReactNode } from 'react';
-import type { IngredientDefinition } from '../../core/IngredientRegistry';
+import type { IngredientProps } from '../../core/IngredientRegistry';
 
-export interface IngredientListProps<T extends IngredientDefinition> {
+export interface IngredientListProps<T extends IngredientProps> {
   readonly emptyMessage?: string;
   readonly itemsByCategory: ReadonlyArray<readonly [string, ReadonlyArray<T>]>;
   readonly noResultsMessage?: (query: string) => string;
@@ -22,7 +22,7 @@ export interface IngredientListProps<T extends IngredientDefinition> {
 }
 
 export const IngredientList = memo(
-  <T extends IngredientDefinition>({
+  <T extends IngredientProps>({
     itemsByCategory,
     query,
     renderHeader,
@@ -68,7 +68,7 @@ export const IngredientList = memo(
       };
 
       return (
-        <li key={item.name} data-ingredient-id={item.name} draggable={!!onItemDragStart} onDragStart={handleDragStart}>
+        <li key={item.id} data-ingredient-id={item.id} draggable={!!onItemDragStart} onDragStart={handleDragStart}>
           <ItemListLayout
             className={`group h-11 rounded-md bg-${theme.surfaceTertiary} px-2 py-1.5 transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
             leftContent={leftColumn}

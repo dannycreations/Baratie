@@ -10,7 +10,7 @@ import { Modal } from '../shared/Modal';
 import { IngredientList } from './IngredientList';
 
 import type { JSX } from 'react';
-import type { IngredientDefinition } from '../../core/IngredientRegistry';
+import type { IngredientProps } from '../../core/IngredientRegistry';
 
 export const IngredientManager = memo((): JSX.Element => {
   const isModalOpen = useIngredientStore((state) => state.isModalOpen);
@@ -25,7 +25,7 @@ export const IngredientManager = memo((): JSX.Element => {
   const [query, setQuery] = useState('');
   const listId = useId();
 
-  const allIngredients = useMemo<ReadonlyArray<IngredientDefinition>>(() => {
+  const allIngredients = useMemo<ReadonlyArray<IngredientProps>>(() => {
     return ingredientRegistry.getAllIngredients();
   }, [registryVersion]);
 
@@ -39,7 +39,7 @@ export const IngredientManager = memo((): JSX.Element => {
 
   const renderHeader = useCallback(
     (category: string): JSX.Element => {
-      const categoryId = `manager-category-${category.replace(/\s+/g, '-')}`;
+      const categoryId = `manager-category-${category.replace(/\s+/g, '-').toLowerCase()}`;
       const isCategoryDisabled = disabledCategories.has(category);
 
       return (
@@ -58,17 +58,17 @@ export const IngredientManager = memo((): JSX.Element => {
   );
 
   const renderItemPrefix = useCallback(
-    (ingredient: IngredientDefinition): JSX.Element => {
+    (ingredient: IngredientProps): JSX.Element => {
       const isCategoryDisabled = disabledCategories.has(ingredient.category);
-      const ingredientId = `manager-ingredient-${ingredient.name.replace(/\s+/g, '-')}`;
-      const isIngredientDisabled = disabledIngredients.has(ingredient.name);
+      const ingredientId = `manager-ingredient-${ingredient.name.replace(/\s+/g, '-').toLowerCase()}`;
+      const isIngredientDisabled = disabledIngredients.has(ingredient.id);
 
       return (
         <BooleanInput
           id={ingredientId}
           checked={!isIngredientDisabled}
           disabled={isCategoryDisabled}
-          onChange={() => toggleIngredient(ingredient.name)}
+          onChange={() => toggleIngredient(ingredient.id)}
         />
       );
     },
@@ -76,8 +76,8 @@ export const IngredientManager = memo((): JSX.Element => {
   );
 
   const isItemDisabled = useCallback(
-    (ingredient: IngredientDefinition) => {
-      return disabledCategories.has(ingredient.category) || disabledIngredients.has(ingredient.name);
+    (ingredient: IngredientProps) => {
+      return disabledCategories.has(ingredient.category) || disabledIngredients.has(ingredient.id);
     },
     [disabledCategories, disabledIngredients],
   );

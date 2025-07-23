@@ -74,7 +74,7 @@ export function createRoot(element: HTMLElement | null, options?: Readonly<Barat
       message: 'Stocking rare ingredients...',
       handler: () => {
         for (const definition of internalIngredients) {
-          ingredientRegistry.registerIngredient(definition);
+          ingredientRegistry.registerIngredient(definition, 'baratie');
         }
       },
     });

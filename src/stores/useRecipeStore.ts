@@ -4,32 +4,23 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { errorHandler, ingredientRegistry, logger } from '../app/container';
 import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
 
-import type { Ingredient, SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
+import type { IngredientItem, SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
 
 interface RecipeState {
   readonly activeRecipeId: string | null;
-  readonly ingredients: ReadonlyArray<Ingredient>;
-  readonly ingredientMap: ReadonlyMap<string, Ingredient>;
+  readonly ingredients: ReadonlyArray<IngredientItem>;
+  readonly ingredientMap: ReadonlyMap<string, IngredientItem>;
   readonly ingredientIndexMap: ReadonlyMap<string, number>;
+  readonly editingId: string | null;
   readonly addIngredient: (type: string, initialSpices?: Readonly<Record<string, unknown>>) => void;
   readonly clearRecipe: () => void;
   readonly getActiveRecipeId: () => string | null;
   readonly removeIngredient: (id: string) => void;
   readonly reorderIngredients: (draggedId: string, targetId: string) => void;
   readonly setActiveRecipeId: (id: string | null) => void;
-  readonly setRecipe: (ingredients: ReadonlyArray<Ingredient>, activeRecipeId: string | null) => void;
+  readonly setEditingId: (id: string | null) => void;
+  readonly setRecipe: (ingredients: ReadonlyArray<IngredientItem>, activeRecipeId: string | null) => void;
   readonly updateSpice: (id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>) => void;
-}
-
-function getDerivedRecipeState(ingredients: ReadonlyArray<Ingredient>) {
-  const ingredientMap = new Map<string, Ingredient>();
-  const ingredientIndexMap = new Map<string, number>();
-  for (let i = 0; i < ingredients.length; i++) {
-    const ingredient = ingredients[i];
-    ingredientMap.set(ingredient.id, ingredient);
-    ingredientIndexMap.set(ingredient.id, i);
-  }
-  return { ingredientMap, ingredientIndexMap };
 }
 
 export const useRecipeStore = create<RecipeState>()(
@@ -38,6 +29,7 @@ export const useRecipeStore = create<RecipeState>()(
     ingredients: [],
     ingredientMap: new Map(),
     ingredientIndexMap: new Map(),
+    editingId: null,
     addIngredient: (type, initialSpices) => {
       const ingredientDefinition = ingredientRegistry.getIngredient(type);
       errorHandler.assert(ingredientDefinition, `Ingredient definition not found for type: ${type}`, 'Recipe Add Ingredient', {
@@ -45,9 +37,9 @@ export const useRecipeStore = create<RecipeState>()(
       });
 
       const validSpices = validateSpices(ingredientDefinition, initialSpices || {});
-      const newIngredient: Ingredient = {
+      const newIngredient: IngredientItem = {
         id: crypto.randomUUID(),
-        name: ingredientDefinition.name,
+        name: ingredientDefinition.id,
         spices: validSpices,
       };
 
@@ -68,6 +60,7 @@ export const useRecipeStore = create<RecipeState>()(
         ingredients: [],
         ingredientMap: new Map(),
         ingredientIndexMap: new Map(),
+        editingId: null,
       });
     },
     getActiveRecipeId: () => {
@@ -79,21 +72,30 @@ export const useRecipeStore = create<RecipeState>()(
           return {};
         }
 
-        const newIngredients = state.ingredients.filter((ingredient) => ingredient.id !== id);
-        const { ingredientMap, ingredientIndexMap } = getDerivedRecipeState(newIngredients);
-        const activeRecipeId = state.activeRecipeId === id ? null : state.activeRecipeId;
+        const newIngredients: Array<IngredientItem> = [];
+        const newIngredientMap = new Map(state.ingredientMap);
+        const newIngredientIndexMap = new Map<string, number>();
+
+        newIngredientMap.delete(id);
+        for (const ingredient of state.ingredients) {
+          if (ingredient.id !== id) {
+            newIngredientIndexMap.set(ingredient.id, newIngredients.length);
+            newIngredients.push(ingredient);
+          }
+        }
 
         return {
           ingredients: newIngredients,
-          ingredientMap,
-          ingredientIndexMap,
-          activeRecipeId,
+          ingredientMap: newIngredientMap,
+          ingredientIndexMap: newIngredientIndexMap,
+          activeRecipeId: state.activeRecipeId === id ? null : state.activeRecipeId,
+          editingId: state.editingId === id ? null : state.editingId,
         };
       });
     },
     reorderIngredients: (draggedId, targetId) => {
       set((state) => {
-        const { ingredients, ingredientIndexMap } = state;
+        const { ingredients, ingredientMap, ingredientIndexMap } = state;
         const draggedIndex = ingredientIndexMap.get(draggedId);
         const targetIndex = ingredientIndexMap.get(targetId);
 
@@ -105,15 +107,28 @@ export const useRecipeStore = create<RecipeState>()(
         const [draggedItem] = newIngredients.splice(draggedIndex, 1);
         newIngredients.splice(targetIndex, 0, draggedItem);
 
-        const { ingredientIndexMap: newIndexMap } = getDerivedRecipeState(newIngredients);
+        const newIngredientIndexMap = new Map<string, number>();
+        for (let i = 0; i < newIngredients.length; i++) {
+          newIngredientIndexMap.set(newIngredients[i].id, i);
+        }
 
-        return { ingredients: newIngredients, ingredientIndexMap: newIndexMap };
+        return {
+          ingredients: newIngredients,
+          ingredientMap,
+          ingredientIndexMap: newIngredientIndexMap,
+        };
       });
     },
-    setActiveRecipeId: (id) => {
-      set({ activeRecipeId: id });
+    setActiveRecipeId: (activeRecipeId) => {
+      set({ activeRecipeId });
+    },
+    setEditingId: (editingId) => {
+      set({ editingId });
     },
     setRecipe: (ingredients, activeRecipeId = null) => {
+      const newIngredientMap = new Map<string, IngredientItem>();
+      const newIngredientIndexMap = new Map<string, number>();
+
       const validIngredients = ingredients.map((ingredient) => {
         const ingredientDefinition = ingredientRegistry.getIngredient(ingredient.name);
         if (ingredientDefinition) {
@@ -124,13 +139,18 @@ export const useRecipeStore = create<RecipeState>()(
         return ingredient;
       });
 
-      const { ingredientMap, ingredientIndexMap } = getDerivedRecipeState(validIngredients);
-      const newActiveRecipeId = activeRecipeId && ingredientMap.has(activeRecipeId) ? activeRecipeId : null;
+      for (let i = 0; i < validIngredients.length; i++) {
+        const ingredient = validIngredients[i];
+        newIngredientMap.set(ingredient.id, ingredient);
+        newIngredientIndexMap.set(ingredient.id, i);
+      }
+
       set({
-        activeRecipeId: newActiveRecipeId,
+        activeRecipeId: activeRecipeId && newIngredientMap.has(activeRecipeId) ? activeRecipeId : null,
         ingredients: validIngredients,
-        ingredientMap,
-        ingredientIndexMap,
+        ingredientMap: newIngredientMap,
+        ingredientIndexMap: newIngredientIndexMap,
+        editingId: null,
       });
     },
     updateSpice: (id, spiceId, rawValue, spice) => {

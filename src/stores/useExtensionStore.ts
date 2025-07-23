@@ -98,15 +98,16 @@ function parseGitHubUrl(url: string): { readonly owner: string; readonly repo: s
       const pathParts = urlObj.pathname.split('/').filter(Boolean);
       if (pathParts.length >= 2) {
         const [owner, repo] = pathParts;
-        const cleanRepo = repo.endsWith('.git') ? repo.slice(0, -4) : repo;
+        let cleanRepo = repo.endsWith('.git') ? repo.slice(0, -4) : repo;
         let ref = 'latest';
 
         if (pathParts[2] === 'tree' && pathParts[3]) {
           ref = pathParts[3];
         } else {
-          const atMatch = urlObj.pathname.match(/@([\w.-]+)$/);
-          if (atMatch) {
-            ref = atMatch[1];
+          const atIndex = cleanRepo.indexOf('@');
+          if (atIndex !== -1) {
+            ref = cleanRepo.substring(atIndex + 1);
+            cleanRepo = cleanRepo.substring(0, atIndex);
           }
         }
         return { owner, repo: cleanRepo, ref };
@@ -116,7 +117,7 @@ function parseGitHubUrl(url: string): { readonly owner: string; readonly repo: s
     // URL parsing failed, proceed to shorthand match
   }
 
-  const shorthandMatch = trimmedUrl.match(/^([\w.-]+)\/([\w.-]+)(?:[@#]([\w.-]+))?$/);
+  const shorthandMatch = trimmedUrl.match(/^([\w.-]+)\/([\w.-]+)(?:[@#](.+))?$/);
   if (shorthandMatch) {
     if (shorthandMatch[1].includes('.')) {
       return null;
@@ -151,16 +152,16 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
   }
 
   const originalRegister = ingredientRegistry.registerIngredient.bind(ingredientRegistry);
-  const newlyRegisteredNames: Array<string> = [];
+  const newlyRegisteredKeys: Array<string> = [];
   const errorLogs: Array<string> = [];
   const fetchedScripts: Record<string, string> = {};
   let successCount = 0;
 
   try {
-    ingredientRegistry.registerIngredient = (definition: IngredientDefinition) => {
-      const prefixedName = `${id}:${definition.name}`;
-      originalRegister({ ...definition, name: prefixedName, extensionId: id });
-      newlyRegisteredNames.push(prefixedName);
+    ingredientRegistry.registerIngredient = <T>(definition: IngredientDefinition<T>, _namespace?: string): string => {
+      const registeredId = originalRegister(definition, id);
+      newlyRegisteredKeys.push(registeredId);
+      return registeredId;
     };
 
     for (const entryPoint of entryPoints) {
@@ -194,15 +195,15 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
     upsert({ id, scripts: { ...cachedScripts, ...fetchedScripts } });
   }
 
-  if (newlyRegisteredNames.length > 0) {
-    setIngredients(id, newlyRegisteredNames);
+  if (newlyRegisteredKeys.length > 0) {
+    setIngredients(id, newlyRegisteredKeys);
   }
   const finalStatus: Extension['status'] = successCount > 0 ? (errorLogs.length > 0 ? 'partial' : 'loaded') : 'error';
   setExtensionStatus(id, finalStatus, errorLogs);
 
   const nameForLog = name || id;
   if (finalStatus === 'loaded') {
-    logger.info(`Extension '${nameForLog}' loaded successfully with ${newlyRegisteredNames.length} ingredient(s).`);
+    logger.info(`Extension '${nameForLog}' loaded successfully with ${newlyRegisteredKeys.length} ingredient(s).`);
   } else if (finalStatus === 'partial') {
     logger.warn(`Extension '${nameForLog}' partially loaded with ${errorLogs.length} error(s).`, errorLogs);
   } else {

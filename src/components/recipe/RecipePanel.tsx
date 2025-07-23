@@ -15,7 +15,7 @@ import { EmptyView } from '../shared/View';
 import { RecipeItem } from './RecipeItem';
 
 import type { DragEvent, JSX } from 'react';
-import type { Ingredient } from '../../core/IngredientRegistry';
+import type { IngredientItem } from '../../core/IngredientRegistry';
 
 export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
@@ -24,10 +24,8 @@ export const RecipePanel = memo((): JSX.Element => {
   const openCookbook = useCookbookStore((state) => state.open);
   const isCookbookOpen = useCookbookStore((state) => state.isModalOpen);
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
-  const inputPanelIngId = useKitchenStore((state) => state.inputPanelIngId);
   const theme = useThemeStore((state) => state.theme);
 
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [isDraggingIngredient, setIsDraggingIngredient] = useState(false);
   const listId = useId();
 
@@ -37,23 +35,10 @@ export const RecipePanel = memo((): JSX.Element => {
     onDragEnter: onMoveEnter,
     onDragOver: onMoveOver,
     onDragEnd: onMoveEnd,
-  } = useDragMove({
-    onDragMove: reorderIngredients,
-  });
-
-  const handleEditToggle = useCallback(
-    (ingredient: Ingredient) => {
-      if (inputPanelIngId === ingredient.id) {
-        setEditingId(null);
-        return;
-      }
-      setEditingId((currentId) => (currentId === ingredient.id ? null : ingredient.id));
-    },
-    [inputPanelIngId],
-  );
+  } = useDragMove({ onDragMove: reorderIngredients });
 
   const handleDragStart = useCallback(
-    (event: DragEvent<HTMLElement>, ingredient: Ingredient) => {
+    (event: DragEvent<HTMLElement>, ingredient: IngredientItem) => {
       onMoveStart(event, ingredient.id);
       event.dataTransfer.setData('application/x-baratie-recipe-item-id', ingredient.id);
     },
@@ -97,22 +82,14 @@ export const RecipePanel = memo((): JSX.Element => {
     [addIngredient],
   );
 
-  const handleSave = useCallback(() => {
-    openCookbook({ mode: 'save', ingredients, activeRecipeId });
-  }, [openCookbook, ingredients, activeRecipeId]);
+  const headerActions = useMemo(() => {
+    const autoCookTooltip = isAutoCookEnabled ? 'Pause Auto-Cooking' : 'Resume Auto-Cooking';
+    const autoCookLabel = isAutoCookEnabled ? 'Pause Automatic Cooking' : 'Resume Automatic Cooking and Run';
+    const autoCookClass = isAutoCookEnabled
+      ? `text-${theme.warningFg} hover:!bg-${theme.warningBg}`
+      : `text-${theme.successFg} hover:!bg-${theme.successBg}`;
 
-  const handleLoad = useCallback(() => {
-    openCookbook({ mode: 'load' });
-  }, [openCookbook]);
-
-  const autoCookTooltip = isAutoCookEnabled ? 'Pause Auto-Cooking' : 'Resume Auto-Cooking';
-  const autoCookLabel = isAutoCookEnabled ? 'Pause Automatic Cooking' : 'Resume Automatic Cooking and Run';
-  const autoCookClass = isAutoCookEnabled
-    ? `text-${theme.warningFg} hover:!bg-${theme.warningBg}`
-    : `text-${theme.successFg} hover:!bg-${theme.successBg}`;
-
-  const headerActions = useMemo(
-    () => (
+    return (
       <>
         <TooltipButton
           aria-label="Save current recipe to cookbook"
@@ -123,7 +100,7 @@ export const RecipePanel = memo((): JSX.Element => {
           tooltipDisabled={isCookbookOpen}
           tooltipPosition="bottom"
           variant="stealth"
-          onClick={handleSave}
+          onClick={() => openCookbook({ mode: 'save', ingredients, activeRecipeId })}
         />
         <TooltipButton
           aria-label="Load a saved recipe from the cookbook"
@@ -133,7 +110,7 @@ export const RecipePanel = memo((): JSX.Element => {
           tooltipDisabled={isCookbookOpen}
           tooltipPosition="bottom"
           variant="stealth"
-          onClick={handleLoad}
+          onClick={() => openCookbook({ mode: 'load' })}
         />
         <TooltipButton
           aria-label={autoCookLabel}
@@ -156,9 +133,8 @@ export const RecipePanel = memo((): JSX.Element => {
           onClick={clearRecipe}
         />
       </>
-    ),
-    [ingredients.length, isCookbookOpen, isAutoCookEnabled, autoCookLabel, autoCookClass, autoCookTooltip, handleSave, handleLoad, clearRecipe],
-  );
+    );
+  }, [ingredients, activeRecipeId, isCookbookOpen, isAutoCookEnabled, theme, openCookbook, clearRecipe]);
 
   let content: JSX.Element;
   if (ingredients.length === 0) {
@@ -176,19 +152,16 @@ export const RecipePanel = memo((): JSX.Element => {
   } else {
     content = (
       <div role="list" aria-label="Current recipe steps" className="space-y-1.5">
-        {ingredients.map((ingredient: Ingredient) => (
+        {ingredients.map((ingredient: IngredientItem) => (
           <RecipeItem
             key={ingredient.id}
-            ingredient={ingredient}
+            ingredientItem={ingredient}
             isAutoCook={isAutoCookEnabled}
             isDragged={dragId === ingredient.id}
-            isEditing={editingId === ingredient.id && ingredient.id !== inputPanelIngId}
-            isSpiceInInput={ingredient.id === inputPanelIngId}
             onDragEnd={onMoveEnd}
             onDragEnter={onMoveEnter}
             onDragOver={onMoveOver}
             onDragStart={handleDragStart}
-            onEditToggle={handleEditToggle}
             onRemove={removeIngredient}
             onSpiceChange={updateSpice}
           />

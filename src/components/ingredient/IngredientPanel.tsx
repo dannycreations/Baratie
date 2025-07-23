@@ -17,7 +17,7 @@ import { IngredientList } from './IngredientList';
 import { IngredientManager } from './IngredientManager';
 
 import type { DragEvent, JSX } from 'react';
-import type { IngredientDefinition } from '../../core/IngredientRegistry';
+import type { IngredientProps } from '../../core/IngredientRegistry';
 
 export const IngredientPanel = memo((): JSX.Element => {
   const favorites = useFavoriteStore((state) => state.favorites);
@@ -37,7 +37,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   const [isDragOverRecipe, setDragOverRecipe] = useState(false);
   const listId = useId();
 
-  const allIngredients = useMemo<ReadonlyArray<IngredientDefinition>>(() => {
+  const allIngredients = useMemo<ReadonlyArray<IngredientProps>>(() => {
     return ingredientRegistry.getAllIngredients();
   }, [registryVersion]);
   const { filteredIngredients, visibleIngredients } = useSearchIngredients(allIngredients, query, favorites, disabledCategories, disabledIngredients);
@@ -76,9 +76,9 @@ export const IngredientPanel = memo((): JSX.Element => {
     [removeIngredient, setDraggedItemId],
   );
 
-  const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: IngredientDefinition) => {
-    errorHandler.assert(item.name, 'Ingredient ID not found on dragged element.', 'Ingredient Drag');
-    event.dataTransfer.setData('application/x-baratie-ingredient-type', item.name);
+  const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: IngredientProps) => {
+    errorHandler.assert(item.id, 'Ingredient unique name not found on dragged element.', 'Ingredient Drag');
+    event.dataTransfer.setData('application/x-baratie-ingredient-type', item.id);
     event.dataTransfer.effectAllowed = 'copy';
   }, []);
 
@@ -111,8 +111,8 @@ export const IngredientPanel = memo((): JSX.Element => {
   );
 
   const renderItemActions = useCallback(
-    (item: IngredientDefinition): JSX.Element => {
-      const isFavorite = favorites.has(item.name);
+    (item: IngredientProps): JSX.Element => {
+      const isFavorite = favorites.has(item.id);
 
       const favoriteButtonClass = `opacity-70 group-hover:opacity-100 ${
         isFavorite ? `text-${theme.favoriteFg} hover:text-${theme.favoriteFgHover}` : `text-${theme.contentTertiary} hover:text-${theme.favoriteFg}`
@@ -129,7 +129,7 @@ export const IngredientPanel = memo((): JSX.Element => {
             tooltipContent={isFavorite ? `Remove '${item.name}' from favorites` : `Add '${item.name}' to favorites`}
             tooltipPosition="top"
             variant="stealth"
-            onClick={() => toggleFavorite(item.name)}
+            onClick={() => toggleFavorite(item.id)}
           />
           <TooltipButton
             aria-label={`Add '${item.name}' to the recipe`}
@@ -139,7 +139,7 @@ export const IngredientPanel = memo((): JSX.Element => {
             tooltipContent={`Add '${item.name}' to Recipe`}
             tooltipPosition="top"
             variant="primary"
-            onClick={() => addIngredient(item.name)}
+            onClick={() => addIngredient(item.id)}
           />
         </>
       );

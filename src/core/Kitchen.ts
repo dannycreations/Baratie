@@ -6,9 +6,9 @@ import { AppError } from './ErrorHandler';
 import { InputType } from './InputType';
 
 import type {
-  Ingredient,
   IngredientContext,
   IngredientDefinition,
+  IngredientItem,
   InputPanelConfig,
   OutputPanelConfig,
   PanelControlConfig,
@@ -132,7 +132,7 @@ export class Kitchen {
     useKitchenStore.getState().setInputData(data);
   }
 
-  private async cookRecipe(recipe: ReadonlyArray<Ingredient>, initialInput: string): Promise<RecipeCookResult> {
+  private async cookRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeCookResult> {
     if (recipe.length === 0) {
       return {
         cookingStatus: initialInput ? 'success' : 'idle',
@@ -158,7 +158,7 @@ export class Kitchen {
     };
   }
 
-  private async executeRecipeLoop(recipe: ReadonlyArray<Ingredient>, initialInput: string): Promise<RecipeLoopState> {
+  private async executeRecipeLoop(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeLoopState> {
     const state: RecipeLoopState = {
       cookedData: initialInput,
       globalError: false,
@@ -175,9 +175,13 @@ export class Kitchen {
 
       if (!definition) {
         errorHandler.handle(
-          new AppError(`Definition for '${ingredient.name}' not found.`, 'Recipe Cooking', `Ingredient '${ingredient.name}' is misconfigured.`),
+          new AppError(
+            `Definition for ID '${ingredient.name}' not found.`,
+            'Recipe Cooking',
+            'An ingredient in the recipe is misconfigured or from a removed extension.',
+          ),
         );
-        state.cookedData = `Error: Definition for ${ingredient.name} not found.`;
+        state.cookedData = 'Error: An ingredient in the recipe is misconfigured or from a removed extension.';
         state.localStatuses[ingredient.id] = 'error';
         state.globalError = true;
         break;
@@ -208,10 +212,10 @@ export class Kitchen {
   }
 
   private async runIngredient(
-    ingredient: Ingredient,
+    ingredient: IngredientItem,
     definition: IngredientDefinition,
     currentData: string,
-    recipe: ReadonlyArray<Ingredient>,
+    recipe: ReadonlyArray<IngredientItem>,
     currentIndex: number,
     initialInput: string,
   ): Promise<IngredientRunResult> {

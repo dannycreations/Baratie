@@ -76,34 +76,17 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
     const contentWidth = textarea.clientWidth - xPadding;
     const maxLineChars = charWidth > 0 ? Math.floor(contentWidth / charWidth) : 0;
 
-    const newMetrics: Array<LineMetric> = [];
+    const lines = value.split('\n');
     const newPrefixSum: Array<number> = [];
     let visualLineCount = 0;
 
-    if (value.length === 0) {
-      newMetrics.push({ number: 1, count: 1 });
-      newPrefixSum.push(1);
-    } else {
-      let logicalLineCount = 0;
-      let lineStartIndex = 0;
-      for (let i = 0; i < value.length; i++) {
-        if (value[i] === '\n') {
-          logicalLineCount++;
-          const lineLength = i - lineStartIndex;
-          const count = maxLineChars > 0 ? Math.max(1, Math.ceil(lineLength / maxLineChars)) : 1;
-          newMetrics.push({ number: logicalLineCount, count });
-          visualLineCount += count;
-          newPrefixSum.push(visualLineCount);
-          lineStartIndex = i + 1;
-        }
-      }
-      logicalLineCount++;
-      const lineLength = value.length - lineStartIndex;
+    const newMetrics = lines.map((line, index) => {
+      const lineLength = line.length;
       const count = maxLineChars > 0 ? Math.max(1, Math.ceil(lineLength / maxLineChars)) : 1;
-      newMetrics.push({ number: logicalLineCount, count });
       visualLineCount += count;
       newPrefixSum.push(visualLineCount);
-    }
+      return { number: index + 1, count };
+    });
 
     setLineMetrics(newMetrics);
     setVisualLinePrefixSum(newPrefixSum);

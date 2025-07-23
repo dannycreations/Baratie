@@ -14,9 +14,9 @@ import { readAsBase64, readAsText, triggerDownload } from './utilities/fileUtil'
 import type { NotificationMessage, NotificationType } from '../src/components/main/NotificationPanel';
 import type { BaratieOptions } from './app/Baratie';
 import type {
-  Ingredient,
   IngredientContext,
   IngredientDefinition,
+  IngredientItem,
   RecipeBookItem,
   ResultType,
   SpiceDefinition,
@@ -78,9 +78,9 @@ export { create, React, ReactDOM, subscribeWithSelector, v };
 export type {
   BaratieApi,
   BaratieOptions,
-  Ingredient,
   IngredientContext,
   IngredientDefinition,
+  IngredientItem,
   InputType,
   NotificationMessage,
   NotificationType,

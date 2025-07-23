@@ -21,7 +21,7 @@ interface SpiceRendererProps {
 interface SpiceLayoutProps {
   readonly containerClasses?: string;
   readonly currentSpices: Readonly<Record<string, SpiceValue>>;
-  readonly ingredientDefinition: IngredientDefinition;
+  readonly ingredient: IngredientDefinition;
   readonly onSpiceChange: (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => void;
 }
 
@@ -121,7 +121,7 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
   );
 });
 
-export const SpiceLayout = memo<SpiceLayoutProps>(({ ingredientDefinition, currentSpices, onSpiceChange, containerClasses }): JSX.Element => {
+export const SpiceLayout = memo<SpiceLayoutProps>(({ ingredient, currentSpices, onSpiceChange, containerClasses }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const finalContainerClass = containerClasses || 'space-y-3';
 
@@ -130,10 +130,10 @@ export const SpiceLayout = memo<SpiceLayoutProps>(({ ingredientDefinition, curre
   }, []);
 
   const visibleSpices = useMemo(() => {
-    return getVisibleSpices(ingredientDefinition, currentSpices);
-  }, [ingredientDefinition, currentSpices]);
+    return getVisibleSpices(ingredient, currentSpices);
+  }, [ingredient, currentSpices]);
 
-  if (!ingredientDefinition.spices || ingredientDefinition.spices.length === 0) {
+  if (!ingredient.spices || ingredient.spices.length === 0) {
     return <p className={`text-sm italic text-${theme.contentTertiary}`}>This ingredient has no configurable options.</p>;
   }
 
@@ -142,7 +142,7 @@ export const SpiceLayout = memo<SpiceLayoutProps>(({ ingredientDefinition, curre
   }
 
   return (
-    <form role="form" aria-label={`Options for ${ingredientDefinition.name}`} className={finalContainerClass} onSubmit={handleSubmit}>
+    <form role="form" aria-label={`Options for ${ingredient.name}`} className={finalContainerClass} onSubmit={handleSubmit}>
       {visibleSpices.map((spice) => {
         const rawValue = currentSpices[spice.id];
         return <SpiceRenderer key={spice.id} spice={spice} value={rawValue} onSpiceChange={onSpiceChange} />;

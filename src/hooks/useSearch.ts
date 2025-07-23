@@ -3,15 +3,15 @@ import { useMemo } from 'react';
 import { CATEGORY_FAVORITES } from '../app/constants';
 import { processIngredients, searchGroupedIngredients } from '../helpers/ingredientHelper';
 
-import type { IngredientDefinition } from '../core/IngredientRegistry';
+import type { IngredientProps } from '../core/IngredientRegistry';
 
 export interface SearchedIngredientsResult {
-  readonly filteredIngredients: ReadonlyArray<readonly [string, ReadonlyArray<IngredientDefinition>]>;
+  readonly filteredIngredients: ReadonlyArray<readonly [string, ReadonlyArray<IngredientProps>]>;
   readonly visibleIngredients: number;
 }
 
 export function useSearchIngredients(
-  allIngredients: ReadonlyArray<IngredientDefinition>,
+  allIngredients: ReadonlyArray<IngredientProps>,
   query: string,
   favoriteIngredients: ReadonlySet<string>,
   disabledCategories: ReadonlySet<string>,
@@ -28,7 +28,7 @@ export function useSearchIngredients(
   const filteredIngredients = useMemo(() => {
     const lowerQuery = query.toLowerCase().trim();
     if (!lowerQuery) {
-      const result: Array<[string, ReadonlyArray<IngredientDefinition>]> = [];
+      const result: Array<[string, ReadonlyArray<IngredientProps>]> = [];
       if (favoritesList.length > 0) {
         result.push([CATEGORY_FAVORITES, favoritesList]);
       }
@@ -36,8 +36,8 @@ export function useSearchIngredients(
       return result;
     }
 
-    const result: Array<[string, ReadonlyArray<IngredientDefinition>]> = [];
-    const searchPredicate = (ing: IngredientDefinition): boolean =>
+    const result: Array<[string, ReadonlyArray<IngredientProps>]> = [];
+    const searchPredicate = (ing: IngredientProps): boolean =>
       ing.name.toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
 
     const favoriteMatches = favoritesList.filter(searchPredicate);

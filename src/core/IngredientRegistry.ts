@@ -1,11 +1,12 @@
-import { logger } from '../app/container';
+import { errorHandler, logger } from '../app/container';
 import { useIngredientStore } from '../stores/useIngredientStore';
+import { getObjectHash } from '../utilities/appUtil';
 
 import type { InputType } from './InputType';
 
 export type SpiceValue = string | number | boolean;
 
-export interface Ingredient {
+export interface IngredientItem {
   readonly id: string;
   readonly name: string;
   readonly spices: Readonly<Record<string, SpiceValue>>;
@@ -13,9 +14,9 @@ export interface Ingredient {
 
 export interface IngredientContext {
   readonly currentIndex: number;
-  readonly ingredient: Ingredient;
   readonly initialInput: string;
-  readonly recipe: ReadonlyArray<Ingredient>;
+  readonly ingredient: IngredientItem;
+  readonly recipe: ReadonlyArray<IngredientItem>;
 }
 
 export interface IngredientDefinition<T = unknown> {
@@ -24,7 +25,6 @@ export interface IngredientDefinition<T = unknown> {
   readonly description: string;
   readonly spices?: ReadonlyArray<SpiceDefinition>;
   readonly run: (input: InputType, spices: T, context: IngredientContext) => ResultType | Promise<ResultType>;
-  readonly extensionId?: string;
 }
 
 export type InputPanelConfig =
@@ -67,7 +67,7 @@ export interface PanelControlSignal<OutType = unknown> {
 export interface RecipeBookItem {
   readonly id: string;
   readonly name: string;
-  readonly ingredients: ReadonlyArray<Ingredient>;
+  readonly ingredients: ReadonlyArray<IngredientItem>;
   readonly createdAt: number;
   readonly updatedAt: number;
 }
@@ -108,46 +108,62 @@ type StringSpice = BaseSpice<'string' | 'textarea', string> & {
 
 export type SpiceDefinition = StringSpice | NumberSpice | BooleanSpice | SelectSpice;
 
+export interface IngredientProps<T = unknown> extends IngredientDefinition<T> {
+  readonly id: string;
+}
+
 export class IngredientRegistry {
-  private readonly ingredients: Map<string, IngredientDefinition> = new Map();
+  private readonly ingredients: Map<string, IngredientProps> = new Map();
   private categories: ReadonlySet<string> | null = null;
 
   public getAllCategories(): ReadonlySet<string> {
     if (this.categories) {
       return this.categories;
     }
+
     const categorySet = new Set<string>();
     for (const ingredient of this.ingredients.values()) {
       categorySet.add(ingredient.category);
     }
+
     this.categories = categorySet;
     return this.categories;
   }
 
-  public getAllIngredients(): ReadonlyArray<IngredientDefinition> {
+  public getAllIngredients(): ReadonlyArray<IngredientProps> {
     return Array.from(this.ingredients.values());
   }
 
-  public getIngredient(type: string): IngredientDefinition | undefined {
-    return this.ingredients.get(type);
+  public getIngredient(id: string): IngredientProps | undefined {
+    return this.ingredients.get(id);
   }
 
-  public registerIngredient<T>(definition: IngredientDefinition<T>): void {
-    if (this.ingredients.has(definition.name)) {
-      logger.warn(`IngredientRegistry: Re-registering type "${definition.name}", which overwrites the existing definition.`);
+  public registerIngredient<T>(definition: IngredientDefinition<T>, namespace?: string): string {
+    const { run, ...restOfDefinition } = definition;
+    const id = getObjectHash(restOfDefinition, namespace);
+
+    errorHandler.assert(typeof id === 'string' && id.length > 0, `Ingredient definition "${definition.name}" failed to generate a valid ID.`);
+
+    if (this.ingredients.has(id)) {
+      logger.warn(
+        `IngredientRegistry: Re-registering type with generated ID "${id}" (${definition.name}), which overwrites the existing definition.`,
+      );
     }
 
-    this.ingredients.set(definition.name, definition as IngredientDefinition);
+    const ingredientWithId = { ...definition, id } as IngredientProps;
+
+    this.ingredients.set(id, ingredientWithId);
     this.categories = null;
     useIngredientStore.getState().refreshRegistry();
+    return id;
   }
 
-  public unregisterIngredients(types: ReadonlyArray<string>): void {
+  public unregisterIngredients(ids: ReadonlyArray<string>): void {
     let changed = false;
-    for (const type of types) {
-      if (this.ingredients.delete(type)) {
+    for (const id of ids) {
+      if (this.ingredients.delete(id)) {
         changed = true;
-        logger.info(`Unregistered ingredient: ${type}`);
+        logger.info(`Unregistered ingredient: ${id}`);
       }
     }
     if (changed) {

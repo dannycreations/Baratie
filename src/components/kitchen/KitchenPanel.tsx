@@ -112,12 +112,7 @@ const SpiceContent = memo<SpiceContentProps>(({ config, onSpiceChange }) => {
 
   return (
     <div aria-label={`Parameters for ${definition.name}`} className="overflow-y-auto p-3">
-      <SpiceLayout
-        containerClasses="space-y-3"
-        currentSpices={targetIngredient.spices}
-        ingredientDefinition={definition}
-        onSpiceChange={handleSpiceChange}
-      />
+      <SpiceLayout containerClasses="space-y-3" currentSpices={targetIngredient.spices} ingredient={definition} onSpiceChange={handleSpiceChange} />
     </div>
   );
 });
