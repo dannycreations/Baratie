@@ -1,4 +1,4 @@
-import { StrictMode, useEffect } from 'react';
+import { memo, StrictMode, useEffect } from 'react';
 import { createRoot as createReactRoot } from 'react-dom/client';
 
 import { CookbookPanel } from '../components/cookbook/CookbookPanel';
@@ -22,7 +22,7 @@ export interface BaratieOptions {
   readonly disableIngredients?: boolean;
 }
 
-function BaratieView(): JSX.Element {
+const BaratieView = memo((): JSX.Element => {
   const isAppReady = useAppStore((state) => state.isInitialized);
 
   useEffect(() => {
@@ -31,32 +31,33 @@ function BaratieView(): JSX.Element {
     }
   }, [isAppReady]);
 
-  if (!isAppReady) {
-    return <LoadingScreen />;
-  }
+  const mainContentClass = `h-screen w-screen overflow-hidden transition-opacity duration-300 ${isAppReady ? 'opacity-100' : 'opacity-0'}`;
 
   return (
-    <div className="h-screen w-screen overflow-hidden">
-      <main
-        aria-label="Main Application Workspace"
-        className="flex h-full w-full flex-col gap-4 overflow-y-auto p-4 md:flex-row md:overflow-hidden"
-        role="main"
-      >
-        <section aria-label="Ingredient and Recipe Management" className="flex w-full flex-col gap-4 md:flex-1 md:flex-row md:overflow-hidden">
-          <IngredientPanel />
-          <RecipePanel />
-        </section>
-        <section aria-label="Input and Output Panels" className="flex w-full flex-col gap-4 md:flex-1 md:overflow-hidden">
-          <KitchenPanel type="input" />
-          <KitchenPanel type="output" />
-        </section>
-      </main>
-      <NotificationPanel />
-      <CookbookPanel />
-      <SettingPanel />
-    </div>
+    <>
+      <LoadingScreen />
+      <div className={mainContentClass} aria-hidden={!isAppReady}>
+        <main
+          aria-label="Main Application Workspace"
+          className="flex h-full w-full flex-col gap-4 overflow-y-auto p-4 md:flex-row md:overflow-hidden"
+          role="main"
+        >
+          <section aria-label="Ingredient and Recipe Management" className="flex w-full flex-col gap-4 md:flex-1 md:flex-row md:overflow-hidden">
+            <IngredientPanel />
+            <RecipePanel />
+          </section>
+          <section aria-label="Input and Output Panels" className="flex w-full flex-col gap-4 md:flex-1 md:overflow-hidden">
+            <KitchenPanel type="input" />
+            <KitchenPanel type="output" />
+          </section>
+        </main>
+        <NotificationPanel />
+        <CookbookPanel />
+        <SettingPanel />
+      </div>
+    </>
   );
-}
+});
 
 export function createRoot(element: HTMLElement | null, options?: Readonly<BaratieOptions>): void {
   errorHandler.assert(element, 'Could not find the root element to mount the application.', 'Baratie Mount');
@@ -73,8 +74,13 @@ export function createRoot(element: HTMLElement | null, options?: Readonly<Barat
       type: 'preInit',
       message: 'Stocking rare ingredients...',
       handler: () => {
-        for (const definition of internalIngredients) {
-          ingredientRegistry.registerIngredient(definition, 'baratie');
+        try {
+          ingredientRegistry.startBatch();
+          for (const definition of internalIngredients) {
+            ingredientRegistry.registerIngredient(definition, 'baratie');
+          }
+        } finally {
+          ingredientRegistry.endBatch();
         }
       },
     });

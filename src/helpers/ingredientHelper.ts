@@ -1,12 +1,29 @@
 import type { IngredientProps } from '../core/IngredientRegistry';
 
-const ingredientSortFn = (a: IngredientProps, b: IngredientProps): number => a.name.localeCompare(b.name);
 const categorySortFn = ([catA]: readonly [string, unknown], [catB]: readonly [string, unknown]): number => catA.localeCompare(catB);
 
 export interface ProcessedIngredients {
   readonly favorites: ReadonlyArray<IngredientProps>;
   readonly categories: ReadonlyMap<string, ReadonlyArray<IngredientProps>>;
   readonly visibleCount: number;
+}
+
+export function createIngredientSearchPredicate(lowerQuery: string): (ing: IngredientProps) => boolean {
+  return (ing: IngredientProps): boolean => ing.name.toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
+}
+
+export function groupAndSortIngredients(ingredients: ReadonlyArray<IngredientProps>): ReadonlyMap<string, ReadonlyArray<IngredientProps>> {
+  const grouped = new Map<string, Array<IngredientProps>>();
+  for (const ingredient of ingredients) {
+    const categoryList = grouped.get(ingredient.category);
+    if (categoryList) {
+      categoryList.push(ingredient);
+    } else {
+      grouped.set(ingredient.category, [ingredient]);
+    }
+  }
+  const sortedEntries = [...grouped.entries()].sort(categorySortFn);
+  return new Map(sortedEntries);
 }
 
 export function processIngredients(
@@ -16,42 +33,25 @@ export function processIngredients(
   disabledIngredients: ReadonlySet<string>,
 ): ProcessedIngredients {
   const favorites: Array<IngredientProps> = [];
-  const grouped = new Map<string, Array<IngredientProps>>();
+  const others: Array<IngredientProps> = [];
   let visibleCount = 0;
 
   for (const ingredient of allIngredients) {
-    const uniqueName = ingredient.id || ingredient.name;
-    if (!disabledCategories.has(ingredient.category) && !disabledIngredients.has(uniqueName)) {
+    if (!disabledCategories.has(ingredient.category) && !disabledIngredients.has(ingredient.id)) {
       visibleCount++;
-      if (favoriteNames.has(uniqueName)) {
+      if (favoriteNames.has(ingredient.id)) {
         favorites.push(ingredient);
       } else {
-        const categoryList = grouped.get(ingredient.category);
-        if (categoryList) {
-          categoryList.push(ingredient);
-        } else {
-          grouped.set(ingredient.category, [ingredient]);
-        }
+        others.push(ingredient);
       }
     }
   }
 
-  favorites.sort(ingredientSortFn);
-
-  for (const categoryIngredients of grouped.values()) {
-    categoryIngredients.sort(ingredientSortFn);
-  }
-  const sortedEntries = [...grouped.entries()].sort(categorySortFn);
-
   return {
     favorites,
-    categories: new Map(sortedEntries),
+    categories: groupAndSortIngredients(others),
     visibleCount,
   };
-}
-
-export function groupAndSortIngredients(ingredients: ReadonlyArray<IngredientProps>): ReadonlyMap<string, ReadonlyArray<IngredientProps>> {
-  return processIngredients(ingredients, new Set<string>(), new Set<string>(), new Set<string>()).categories;
 }
 
 export function searchGroupedIngredients(
@@ -63,8 +63,7 @@ export function searchGroupedIngredients(
   }
 
   const result: Array<[string, ReadonlyArray<IngredientProps>]> = [];
-  const searchPredicate = (ing: IngredientProps): boolean =>
-    ing.name.toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
+  const searchPredicate = createIngredientSearchPredicate(lowerQuery);
 
   for (const [category, ingredients] of groupedIngredients.entries()) {
     if (category.toLowerCase().includes(lowerQuery)) {

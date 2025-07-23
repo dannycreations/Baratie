@@ -4,7 +4,7 @@ import { COPY_SHOW_MS } from '../../app/constants';
 import { errorHandler } from '../../app/container';
 import { useControlTimer } from '../../hooks/useControlTimer';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { CheckIcon, CopyIcon } from './Icon';
+import { CheckIcon, CopyIcon, Loader2Icon } from './Icon';
 import { Tooltip } from './Tooltip';
 
 import type { ButtonHTMLAttributes, JSX, ReactNode } from 'react';
@@ -73,14 +73,15 @@ export const Button = memo<ButtonProps>(
     onClick,
     size = 'md',
     type = 'button',
-    variant = 'primary',
+    variant,
     ...props
   }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
+    const finalVariant = variant ?? 'primary';
 
     const baseClass = `inline-flex items-center justify-center border font-medium outline-none transition-all duration-150 ease-in-out focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
-    const variantClass = getVariantClasses(variant, theme);
+    const variantClass = getVariantClasses(finalVariant, theme);
     const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
 
     const finalClassName = `${baseClass} ${shapeClass} ${variantClass} ${sizeClass}${loading ? ' opacity-60' : ''}${
@@ -88,18 +89,7 @@ export const Button = memo<ButtonProps>(
     } ${className}`.trim();
 
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-1.5' : 'ml-1.5') : '';
-    const loadingSpinner = (
-      <svg
-        aria-hidden="true"
-        className={`h-4 w-4 animate-spin ${iconMarginClass}`}
-        fill="none"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-        <path className="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" />
-      </svg>
-    );
+    const loadingSpinner = <Loader2Icon aria-hidden="true" className={`h-4 w-4 animate-spin ${iconMarginClass}`} />;
 
     const showIconLeft = iconPosition === 'left';
     const showIconRight = iconPosition === 'right';

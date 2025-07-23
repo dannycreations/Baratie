@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { STORAGE_CATEGORIES, STORAGE_INGREDIENTS } from '../app/constants';
+import { STORAGE_FILTERS } from '../app/constants';
 import { ingredientRegistry, storage } from '../app/container';
 
 interface IngredientState {
@@ -18,20 +18,14 @@ interface IngredientState {
   readonly toggleIngredient: (id: string) => void;
 }
 
-function loadFilters(key: string, forCategories: boolean): Array<string> {
-  const storedItems = storage.get<Array<string>>(key, 'Ingredient Filters');
-  if (!Array.isArray(storedItems)) {
-    return [];
+function toggleSetItem<T>(set: ReadonlySet<T>, item: T): Set<T> {
+  const newSet = new Set(set);
+  if (newSet.has(item)) {
+    newSet.delete(item);
+  } else {
+    newSet.add(item);
   }
-
-  const validatedItems = storedItems.filter((item): item is string => typeof item === 'string');
-
-  if (forCategories) {
-    const allCategories = ingredientRegistry.getAllCategories();
-    return validatedItems.filter((item) => allCategories.has(item));
-  }
-
-  return validatedItems.filter((item) => !!ingredientRegistry.getIngredient(item));
+  return newSet;
 }
 
 export const useIngredientStore = create<IngredientState>()(
@@ -44,11 +38,18 @@ export const useIngredientStore = create<IngredientState>()(
       set({ isModalOpen: false });
     },
     init: () => {
-      const disabledCategories = loadFilters(STORAGE_CATEGORIES, true);
-      const disabledIngredients = loadFilters(STORAGE_INGREDIENTS, false);
+      const filters = storage.get<{
+        readonly categories?: ReadonlyArray<string>;
+        readonly ingredients?: ReadonlyArray<string>;
+      }>(STORAGE_FILTERS, 'Ingredient Filters');
+
+      const allCategories = ingredientRegistry.getAllCategories();
+      const validCategories = (filters?.categories ?? []).filter((c) => typeof c === 'string' && allCategories.has(c));
+      const validIngredients = (filters?.ingredients ?? []).filter((i) => typeof i === 'string' && ingredientRegistry.getIngredient(i));
+
       set({
-        disabledCategories: new Set(disabledCategories),
-        disabledIngredients: new Set(disabledIngredients),
+        disabledCategories: new Set(validCategories),
+        disabledIngredients: new Set(validIngredients),
       });
     },
     openModal: () => {
@@ -64,40 +65,29 @@ export const useIngredientStore = create<IngredientState>()(
       });
     },
     toggleCategory: (category) => {
-      set((state) => {
-        const newDisabledCategories = new Set(state.disabledCategories);
-        if (newDisabledCategories.has(category)) {
-          newDisabledCategories.delete(category);
-        } else {
-          newDisabledCategories.add(category);
-        }
-        return { disabledCategories: newDisabledCategories };
-      });
+      set((state) => ({ disabledCategories: toggleSetItem(state.disabledCategories, category) }));
     },
     toggleIngredient: (id) => {
-      set((state) => {
-        const newDisabledIngredients = new Set(state.disabledIngredients);
-        if (newDisabledIngredients.has(id)) {
-          newDisabledIngredients.delete(id);
-        } else {
-          newDisabledIngredients.add(id);
-        }
-        return { disabledIngredients: newDisabledIngredients };
-      });
+      set((state) => ({ disabledIngredients: toggleSetItem(state.disabledIngredients, id) }));
     },
   })),
 );
 
-useIngredientStore.subscribe(
-  (state) => state.disabledCategories,
-  (categories) => {
-    storage.set(STORAGE_CATEGORIES, Array.from(categories), 'Disabled Categories');
-  },
-);
+let lastCategories = useIngredientStore.getState().disabledCategories;
+let lastIngredients = useIngredientStore.getState().disabledIngredients;
 
-useIngredientStore.subscribe(
-  (state) => state.disabledIngredients,
-  (ingredients) => {
-    storage.set(STORAGE_INGREDIENTS, Array.from(ingredients), 'Disabled Ingredients');
-  },
-);
+useIngredientStore.subscribe((state) => {
+  const { disabledCategories, disabledIngredients } = state;
+  if (disabledCategories !== lastCategories || disabledIngredients !== lastIngredients) {
+    storage.set(
+      STORAGE_FILTERS,
+      {
+        categories: Array.from(disabledCategories),
+        ingredients: Array.from(disabledIngredients),
+      },
+      'Ingredient Filters',
+    );
+    lastCategories = disabledCategories;
+    lastIngredients = disabledIngredients;
+  }
+});

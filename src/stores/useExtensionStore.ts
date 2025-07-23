@@ -157,6 +157,7 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
   const fetchedScripts: Record<string, string> = {};
   let successCount = 0;
 
+  ingredientRegistry.startBatch();
   try {
     ingredientRegistry.registerIngredient = <T>(definition: IngredientDefinition<T>, _namespace?: string): string => {
       const registeredId = originalRegister(definition, id);
@@ -189,6 +190,7 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
     }
   } finally {
     ingredientRegistry.registerIngredient = originalRegister;
+    ingredientRegistry.endBatch();
   }
 
   const currentState = useExtensionStore.getState();
@@ -245,16 +247,21 @@ export const useExtensionStore = create<ExtensionState>()(
     },
 
     init: async () => {
-      const rawExtensions = storage.get<Array<unknown>>(STORAGE_EXTENSIONS, 'Extensions');
+      const rawExtensions = storage.get<Array<unknown>>(STORAGE_EXTENSIONS, 'Extensions') || [];
+      const validStoredExtensions: Array<StorableExtension> = [];
+      let hadCorruption = false;
 
-      const validationResult = v.safeParse(v.array(StorableExtensionSchema), rawExtensions);
-      let validStoredExtensions: Array<StorableExtension>;
+      for (const rawExt of rawExtensions) {
+        const { success, output } = v.safeParse(StorableExtensionSchema, rawExt);
+        if (success) {
+          validStoredExtensions.push(output);
+        } else {
+          hadCorruption = true;
+        }
+      }
 
-      if (!validationResult.success) {
-        logger.warn('Corrupted extension data in storage, attempting partial recovery.', { issues: validationResult.issues });
-        validStoredExtensions = (rawExtensions || []).filter((e): e is StorableExtension => v.safeParse(StorableExtensionSchema, e).success);
-      } else {
-        validStoredExtensions = validationResult.output;
+      if (hadCorruption) {
+        logger.warn('Corrupted extension data in storage; performing partial recovery.');
       }
 
       const extensions: Array<Extension> = validStoredExtensions.map((e) => ({ ...e, status: 'loading' }));
@@ -318,13 +325,16 @@ export const useExtensionStore = create<ExtensionState>()(
 
     remove: (id) => {
       const { show } = useNotificationStore.getState();
-      const extension = get().extensionMap.get(id);
+      const { extensionMap, setExtensions } = get();
+      const extension = extensionMap.get(id);
       if (!extension) {
         logger.warn(`Attempted to remove non-existent extension with id: ${id}`);
         return;
       }
+
       const displayName = extension.name || id;
       const ingredientsToRemove = extension.ingredients || [];
+
       if (ingredientsToRemove.length > 0) {
         const ingredientsToRemoveSet = new Set(ingredientsToRemove);
         ingredientRegistry.unregisterIngredients(ingredientsToRemove);
@@ -342,7 +352,15 @@ export const useExtensionStore = create<ExtensionState>()(
           setFavorites(updatedFavorites);
         }
       }
-      set((state) => updateStateWithExtensions(state.extensions.filter((ext) => ext.id !== id)));
+
+      const currentExtensions = get().extensions;
+      const indexToRemove = currentExtensions.findIndex((ext) => ext.id === id);
+      if (indexToRemove !== -1) {
+        const newExtensions = [...currentExtensions];
+        newExtensions.splice(indexToRemove, 1);
+        setExtensions(newExtensions);
+      }
+
       show(`Extension '${displayName}' has been successfully uninstalled.`, 'success', 'Extension Manager');
     },
 

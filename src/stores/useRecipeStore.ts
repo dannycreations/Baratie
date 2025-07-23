@@ -68,20 +68,24 @@ export const useRecipeStore = create<RecipeState>()(
     },
     removeIngredient: (id) => {
       set((state) => {
-        if (!state.ingredientMap.has(id)) {
+        const { ingredientMap, ingredientIndexMap, ingredients } = state;
+        const indexToRemove = ingredientIndexMap.get(id);
+
+        if (indexToRemove === undefined) {
+          logger.warn(`Attempted to remove non-existent ingredient with id: ${id}`);
           return {};
         }
 
-        const newIngredients: Array<IngredientItem> = [];
-        const newIngredientMap = new Map(state.ingredientMap);
-        const newIngredientIndexMap = new Map<string, number>();
+        const newIngredients = [...ingredients];
+        newIngredients.splice(indexToRemove, 1);
 
+        const newIngredientMap = new Map(ingredientMap);
         newIngredientMap.delete(id);
-        for (const ingredient of state.ingredients) {
-          if (ingredient.id !== id) {
-            newIngredientIndexMap.set(ingredient.id, newIngredients.length);
-            newIngredients.push(ingredient);
-          }
+
+        const newIngredientIndexMap = new Map(ingredientIndexMap);
+        newIngredientIndexMap.delete(id);
+        for (let i = indexToRemove; i < newIngredients.length; i++) {
+          newIngredientIndexMap.set(newIngredients[i].id, i);
         }
 
         return {
@@ -107,8 +111,10 @@ export const useRecipeStore = create<RecipeState>()(
         const [draggedItem] = newIngredients.splice(draggedIndex, 1);
         newIngredients.splice(targetIndex, 0, draggedItem);
 
-        const newIngredientIndexMap = new Map<string, number>();
-        for (let i = 0; i < newIngredients.length; i++) {
+        const newIngredientIndexMap = new Map(ingredientIndexMap);
+        const start = Math.min(draggedIndex, targetIndex);
+        const end = Math.max(draggedIndex, targetIndex);
+        for (let i = start; i <= end; i++) {
           newIngredientIndexMap.set(newIngredients[i].id, i);
         }
 

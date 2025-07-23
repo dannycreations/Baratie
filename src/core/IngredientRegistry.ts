@@ -113,8 +113,18 @@ export interface IngredientProps<T = unknown> extends IngredientDefinition<T> {
 }
 
 export class IngredientRegistry {
-  private readonly ingredients: Map<string, IngredientProps> = new Map();
+  private ingredients: Map<string, IngredientProps> = new Map();
   private categories: ReadonlySet<string> | null = null;
+  private isBatching = false;
+
+  public startBatch(): void {
+    this.isBatching = true;
+  }
+
+  public endBatch(): void {
+    this.isBatching = false;
+    this.resort();
+  }
 
   public getAllCategories(): ReadonlySet<string> {
     if (this.categories) {
@@ -153,8 +163,9 @@ export class IngredientRegistry {
     const ingredientWithId = { ...definition, id } as IngredientProps;
 
     this.ingredients.set(id, ingredientWithId);
-    this.categories = null;
-    useIngredientStore.getState().refreshRegistry();
+    if (!this.isBatching) {
+      this.resort();
+    }
     return id;
   }
 
@@ -166,9 +177,15 @@ export class IngredientRegistry {
         logger.info(`Unregistered ingredient: ${id}`);
       }
     }
-    if (changed) {
-      this.categories = null;
-      useIngredientStore.getState().refreshRegistry();
+    if (changed && !this.isBatching) {
+      this.resort();
     }
+  }
+
+  private resort(): void {
+    const sortedEntries = Array.from(this.ingredients.entries()).sort(([, a], [, b]) => a.name.localeCompare(b.name));
+    this.ingredients = new Map(sortedEntries);
+    this.categories = null;
+    useIngredientStore.getState().refreshRegistry();
   }
 }

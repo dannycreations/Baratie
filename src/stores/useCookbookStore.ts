@@ -4,13 +4,13 @@ import { create } from 'zustand';
 
 import { STORAGE_COOKBOOK } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger, storage } from '../app/container';
+import { createRecipeContentHash } from '../helpers/recipeHelper';
 import { validateSpices } from '../helpers/spiceHelper';
 import { readAsText, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
-import { useIngredientStore } from './useIngredientStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
 
-import type { IngredientDefinition, IngredientItem, IngredientProps, RecipeBookItem, SpiceDefinition } from '../core/IngredientRegistry';
+import type { IngredientItem, RecipeBookItem } from '../core/IngredientRegistry';
 
 const SpiceValueSchema = v.union([v.string(), v.number(), v.boolean()]);
 
@@ -32,11 +32,15 @@ const RecipeBookItemSchema = v.object({
 
 type RawRecipeBookItem = v.InferInput<typeof RecipeBookItemSchema>;
 
-const CookbookImportSchema = v.array(RecipeBookItemSchema);
-
 interface SanitizationResult {
   readonly recipe: RecipeBookItem | null;
   readonly warning: string | null;
+}
+
+interface SanitizedRecipesResult {
+  readonly recipes: ReadonlyArray<RecipeBookItem>;
+  readonly warnings: ReadonlySet<string>;
+  readonly hasCorruption: boolean;
 }
 
 interface SerializedRecipeItem extends Omit<RecipeBookItem, 'ingredients'> {
@@ -82,56 +86,6 @@ interface CookbookState {
   readonly upsert: () => void;
 }
 
-const sortedSpicesCache = new WeakMap<Readonly<IngredientDefinition>, ReadonlyArray<SpiceDefinition>>();
-
-const getNameToDefinitionMap = (() => {
-  let cache: ReadonlyMap<string, IngredientProps> | null = null;
-  let lastVersion = -1;
-
-  return () => {
-    const currentVersion = useIngredientStore.getState().registryVersion;
-    if (cache && lastVersion === currentVersion) {
-      return cache;
-    }
-
-    const allIngredients = ingredientRegistry.getAllIngredients();
-    cache = new Map(allIngredients.map((def) => [def.name, def]));
-    lastVersion = currentVersion;
-    return cache;
-  };
-})();
-
-function getSortedSpices(definition: Readonly<IngredientDefinition>): ReadonlyArray<SpiceDefinition> {
-  if (sortedSpicesCache.has(definition)) {
-    return sortedSpicesCache.get(definition)!;
-  }
-  if (!definition.spices || definition.spices.length === 0) {
-    const result: ReadonlyArray<SpiceDefinition> = [];
-    sortedSpicesCache.set(definition, result);
-    return result;
-  }
-  const result = [...definition.spices].sort((a, b) => a.id.localeCompare(b.id));
-  sortedSpicesCache.set(definition, result);
-  return result;
-}
-
-function createIngredientHash(ingredients: ReadonlyArray<IngredientItem>): string {
-  const canonicalParts = ingredients.map((ing) => {
-    const name = ing.name;
-    const definition = ingredientRegistry.getIngredient(ing.name);
-
-    if (!definition?.spices || definition.spices.length === 0) {
-      return name;
-    }
-
-    const sortedSpices = getSortedSpices(definition);
-    const spicesString = sortedSpices.map((spiceDef) => `${spiceDef.id}:${String(ing.spices[spiceDef.id])}`).join(';');
-
-    return `${name}|${spicesString}`;
-  });
-  return canonicalParts.join('||');
-}
-
 function serializeRecipe(recipe: Readonly<RecipeBookItem>): SerializedRecipeItem {
   return {
     ...recipe,
@@ -149,21 +103,11 @@ function saveAllRecipes(recipes: ReadonlyArray<RecipeBookItem>): boolean {
   return storage.set(STORAGE_COOKBOOK, serialized, 'Saved Recipes');
 }
 
-function sanitizeIngredient(
-  rawIngredient: RawIngredient,
-  source: 'fileImport' | 'storage',
-  recipeName: string,
-  nameToDefinitionMap: ReadonlyMap<string, IngredientProps>,
-): IngredientItem | null {
-  const ingredientNameOrId = rawIngredient.name;
-  let definition = ingredientRegistry.getIngredient(ingredientNameOrId);
+function sanitizeIngredient(rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientItem | null {
+  const definition = ingredientRegistry.getIngredient(rawIngredient.name);
 
   if (!definition) {
-    definition = nameToDefinitionMap.get(ingredientNameOrId);
-  }
-
-  if (!definition) {
-    logger.warn(`Skipping unknown ingredient name or ID '${ingredientNameOrId}' from ${source} for recipe '${recipeName}'.`);
+    logger.warn(`Skipping unknown ingredient name or ID '${rawIngredient.name}' from ${source} for recipe '${recipeName}'.`);
     return null;
   }
 
@@ -171,15 +115,11 @@ function sanitizeIngredient(
   return { id: rawIngredient.id, name: definition.id, spices: validatedSpices };
 }
 
-function sanitizeRecipe(
-  rawRecipe: RawRecipeBookItem,
-  source: 'fileImport' | 'storage',
-  nameToDefinitionMap: ReadonlyMap<string, IngredientProps>,
-): SanitizationResult {
+function sanitizeRecipe(rawRecipe: RawRecipeBookItem, source: 'fileImport' | 'storage'): SanitizationResult {
   const { id, name, createdAt, updatedAt, ingredients: rawIngredients } = rawRecipe;
   const validIngredients: Array<IngredientItem> = [];
   for (const raw of rawIngredients) {
-    const validIngredient = sanitizeIngredient(raw, source, name, nameToDefinitionMap);
+    const validIngredient = sanitizeIngredient(raw, source, name);
     if (validIngredient) {
       validIngredients.push(validIngredient);
     }
@@ -195,27 +135,25 @@ function sanitizeRecipe(
   return { recipe, warning };
 }
 
-function processAndSanitizeRecipes(
-  rawItems: ReadonlyArray<unknown>,
-  source: 'fileImport' | 'storage',
-): { readonly recipes: ReadonlyArray<RecipeBookItem>; readonly warnings: ReadonlySet<string> } {
-  const nameToDefinitionMap = getNameToDefinitionMap();
-
+function processAndSanitizeRecipes(rawItems: ReadonlyArray<unknown>, source: 'fileImport' | 'storage'): SanitizedRecipesResult {
   const allWarnings = new Set<string>();
+  let corruptionCount = 0;
   const recipes = rawItems.reduce<Array<RecipeBookItem>>((acc, rawItem) => {
     const itemValidation = safeParse(RecipeBookItemSchema, rawItem);
     if (itemValidation.success) {
-      const { recipe, warning } = sanitizeRecipe(itemValidation.output, source, nameToDefinitionMap);
+      const { recipe, warning } = sanitizeRecipe(itemValidation.output, source);
       if (recipe) {
         acc.push(recipe);
       }
       if (warning) {
         allWarnings.add(warning);
       }
+    } else {
+      corruptionCount++;
     }
     return acc;
   }, []);
-  return { recipes, warnings: allWarnings };
+  return { recipes, warnings: allWarnings, hasCorruption: corruptionCount > 0 };
 }
 
 export const useCookbookStore = create<CookbookState>()((set, get) => ({
@@ -240,7 +178,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
         return activeRecipe.name;
       }
     }
-    const currentHash = createIngredientHash(ingredients);
+    const currentHash = createRecipeContentHash(ingredients);
     const existingRecipeId = recipeContentHashMap.get(currentHash);
     if (existingRecipeId) {
       const existingRecipe = recipeIdMap.get(existingRecipeId);
@@ -262,9 +200,19 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     if (!recipeToDelete) {
       return;
     }
-    const updatedList = recipes.filter((recipe) => recipe.id !== id);
+
+    const indexToDelete = recipes.findIndex((r) => r.id === id);
+
+    if (indexToDelete === -1) {
+      logger.error(`Cookbook state inconsistency: recipe ${id} found in map but not in array.`);
+      return;
+    }
+
+    const updatedList = [...recipes];
+    updatedList.splice(indexToDelete, 1);
+
     if (saveAllRecipes(updatedList)) {
-      const hash = createIngredientHash(recipeToDelete.ingredients);
+      const hash = createRecipeContentHash(recipeToDelete.ingredients);
       const newIdMap = new Map(recipeIdMap);
       newIdMap.delete(id);
       const newContentHashMap = new Map(recipeContentHashMap);
@@ -331,10 +279,10 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     }
 
     const dataToValidate = Array.isArray(jsonData) ? jsonData : [jsonData];
-    const { recipes, warnings } = processAndSanitizeRecipes(dataToValidate, 'fileImport');
+    const { recipes, warnings, hasCorruption } = processAndSanitizeRecipes(dataToValidate, 'fileImport');
 
     const mutableWarnings = new Set(warnings);
-    if (recipes.length > 0 && recipes.length < dataToValidate.length) {
+    if (hasCorruption) {
       mutableWarnings.add('Some recipe entries in the file were malformed and have been skipped.');
     }
 
@@ -357,13 +305,13 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       return;
     }
 
-    const isCorrupt = !safeParse(CookbookImportSchema, storedRecipes).success;
-    if (isCorrupt) {
+    const { recipes, hasCorruption } = processAndSanitizeRecipes(storedRecipes, 'storage');
+
+    if (hasCorruption) {
       logger.warn('Corrupted cookbook data in storage; attempting partial recovery.');
       show('Some saved recipes may be corrupted and could not be loaded. Data will be cleaned on next save.', 'warning', 'Cookbook Warning', 7000);
     }
 
-    const { recipes } = processAndSanitizeRecipes(storedRecipes, 'storage');
     get().setRecipes(recipes);
   },
   load: (id) => {
@@ -390,15 +338,15 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       const existingItem = newIdMap.get(item.id);
       if (!existingItem) {
         newIdMap.set(item.id, item);
-        newContentHashMap.set(createIngredientHash(item.ingredients), item.id);
+        newContentHashMap.set(createRecipeContentHash(item.ingredients), item.id);
         added++;
       } else if (item.updatedAt > existingItem.updatedAt) {
-        const oldHash = createIngredientHash(existingItem.ingredients);
+        const oldHash = createRecipeContentHash(existingItem.ingredients);
         if (newContentHashMap.get(oldHash) === existingItem.id) {
           newContentHashMap.delete(oldHash);
         }
         newIdMap.set(item.id, item);
-        newContentHashMap.set(createIngredientHash(item.ingredients), item.id);
+        newContentHashMap.set(createRecipeContentHash(item.ingredients), item.id);
         updated++;
       } else {
         skipped++;
@@ -406,7 +354,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     }
 
     if (added > 0 || updated > 0) {
-      const mergedList = Array.from(newIdMap.values());
+      const mergedList = Array.from(newIdMap.values()).sort((a, b) => b.updatedAt - a.updatedAt);
       if (saveAllRecipes(mergedList)) {
         const summary = [
           added > 0 ? `${added} new recipe${added > 1 ? 's' : ''} added.` : '',
@@ -419,7 +367,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
           show(summary, 'success', 'Import Complete');
         }
         set({
-          recipes: mergedList.sort((a, b) => b.updatedAt - a.updatedAt),
+          recipes: mergedList,
           recipeIdMap: newIdMap,
           recipeContentHashMap: newContentHashMap,
         });
@@ -470,7 +418,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     const idMap = new Map(recipes.map((recipe) => [recipe.id, recipe]));
     const contentHashMap = new Map<string, string>();
     for (const recipe of recipes) {
-      contentHashMap.set(createIngredientHash(recipe.ingredients), recipe.id);
+      contentHashMap.set(createRecipeContentHash(recipe.ingredients), recipe.id);
     }
     set({
       recipes,
@@ -503,7 +451,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
 
     if (isUpdate) {
       recipeToSave = { ...recipeToUpdate, name: trimmedName, ingredients, updatedAt: now };
-      const oldHash = createIngredientHash(recipeToUpdate.ingredients);
+      const oldHash = createRecipeContentHash(recipeToUpdate.ingredients);
       if (newContentHashMap.get(oldHash) === recipeToUpdate.id) {
         newContentHashMap.delete(oldHash);
       }
@@ -515,7 +463,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       userMessage = recipeToUpdate ? `Recipe '${trimmedName}' saved as a new copy.` : `Recipe '${trimmedName}' was saved.`;
     }
 
-    newContentHashMap.set(createIngredientHash(recipeToSave.ingredients), recipeToSave.id);
+    newContentHashMap.set(createRecipeContentHash(recipeToSave.ingredients), recipeToSave.id);
     newIdMap.set(recipeToSave.id, recipeToSave);
 
     if (saveAllRecipes(finalRecipes)) {

@@ -5,11 +5,11 @@ import { useExtensionStore } from '../stores/useExtensionStore';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
 import { useIngredientStore } from '../stores/useIngredientStore';
 
-type InitializationTask = {
+interface InitializationTask {
   readonly type?: 'preInit' | 'postInit';
   readonly message: string;
   readonly handler?: () => unknown;
-};
+}
 
 export class AppRegistry {
   private readonly systemTasks: ReadonlyArray<InitializationTask>;

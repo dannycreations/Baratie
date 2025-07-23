@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { CATEGORY_FAVORITES } from '../app/constants';
-import { processIngredients, searchGroupedIngredients } from '../helpers/ingredientHelper';
+import { createIngredientSearchPredicate, processIngredients, searchGroupedIngredients } from '../helpers/ingredientHelper';
 
 import type { IngredientProps } from '../core/IngredientRegistry';
 
@@ -37,8 +37,7 @@ export function useSearchIngredients(
     }
 
     const result: Array<[string, ReadonlyArray<IngredientProps>]> = [];
-    const searchPredicate = (ing: IngredientProps): boolean =>
-      ing.name.toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
+    const searchPredicate = createIngredientSearchPredicate(lowerQuery);
 
     const favoriteMatches = favoritesList.filter(searchPredicate);
     if (favoriteMatches.length > 0) {

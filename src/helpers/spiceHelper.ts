@@ -3,6 +3,22 @@ import { InputType } from '../core/InputType';
 
 import type { IngredientDefinition, SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
 
+const sortedSpicesCache = new WeakMap<Readonly<IngredientDefinition>, ReadonlyArray<SpiceDefinition>>();
+
+export function getSortedSpices(definition: Readonly<IngredientDefinition>): ReadonlyArray<SpiceDefinition> {
+  if (sortedSpicesCache.has(definition)) {
+    return sortedSpicesCache.get(definition)!;
+  }
+  if (!definition.spices || definition.spices.length === 0) {
+    const result: ReadonlyArray<SpiceDefinition> = [];
+    sortedSpicesCache.set(definition, result);
+    return result;
+  }
+  const result = [...definition.spices].sort((a, b) => a.id.localeCompare(b.id));
+  sortedSpicesCache.set(definition, result);
+  return result;
+}
+
 function prepareSelectValue(newValue: SpiceValue, spice: Readonly<SpiceDefinition>): SpiceValue {
   if (spice.type !== 'select') {
     return newValue;
