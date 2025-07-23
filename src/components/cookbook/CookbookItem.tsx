@@ -1,11 +1,8 @@
 import { memo, useCallback } from 'react';
 
-import { CONFIRM_SHOW_MS } from '../../app/constants';
-import { getConfirmClasses } from '../../helpers/styleHelper';
-import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { TooltipButton } from '../shared/Button';
-import { AlertTriangleIcon, Trash2Icon, UploadCloudIcon } from '../shared/Icon';
+import { ConfirmButton, TooltipButton } from '../shared/Button';
+import { UploadCloudIcon } from '../shared/Icon';
 import { ItemListLayout } from '../shared/layout/ItemListLayout';
 import { Tooltip } from '../shared/Tooltip';
 
@@ -37,15 +34,9 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
     onDelete(recipe.id);
   }, [onDelete, recipe.id]);
 
-  const { isConfirm: isDeleting, trigger: triggerDelete } = useConfirmAction(handleConfirmDelete, CONFIRM_SHOW_MS);
-
   const handleLoad = useCallback(() => {
     onLoad(recipe.id);
   }, [onLoad, recipe.id]);
-
-  const deleteTip = isDeleting ? 'Confirm Deletion' : 'Delete Recipe';
-  const deleteLabel = isDeleting ? `Confirm deletion of ${recipe.name}` : `Delete the recipe: ${recipe.name}`;
-  const deleteClass = isDeleting ? getConfirmClasses(theme) : undefined;
 
   return (
     <li className="list-none">
@@ -75,16 +66,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
             >
               Load
             </TooltipButton>
-            <TooltipButton
-              aria-label={deleteLabel}
-              className={deleteClass}
-              icon={isDeleting ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
-              size="sm"
-              tooltipContent={deleteTip}
-              tooltipPosition="left"
-              variant="danger"
-              onClick={triggerDelete}
-            />
+            <ConfirmButton actionName="Delete" itemName={recipe.name} itemType="Recipe" tooltipPosition="left" onConfirm={handleConfirmDelete} />
           </>
         }
         rightClasses="flex shrink-0 items-center space-x-2"

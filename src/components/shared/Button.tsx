@@ -1,10 +1,11 @@
 import { memo, useCallback, useState } from 'react';
 
-import { COPY_SHOW_MS } from '../../app/constants';
+import { CONFIRM_SHOW_MS, COPY_SHOW_MS } from '../../app/constants';
 import { errorHandler } from '../../app/container';
+import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { useControlTimer } from '../../hooks/useControlTimer';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { CheckIcon, CopyIcon, Loader2Icon } from './Icon';
+import { AlertTriangleIcon, CheckIcon, CopyIcon, Loader2Icon, Trash2Icon } from './Icon';
 import { Tooltip } from './Tooltip';
 
 import type { ButtonHTMLAttributes, JSX, ReactNode } from 'react';
@@ -110,10 +111,12 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
   const [isCopied, setIsCopied] = useState(false);
   const theme = useThemeStore((state) => state.theme);
 
+  const resetCopied = useCallback(() => {
+    setIsCopied(false);
+  }, []);
+
   useControlTimer({
-    callback: () => {
-      setIsCopied(false);
-    },
+    callback: resetCopied,
     duration: COPY_SHOW_MS,
     reset: isCopied,
     state: isCopied,
@@ -150,6 +153,44 @@ export const TooltipButton = memo<TooltipButtonProps>(
       <Tooltip content={tooltipContent} disabled={tooltipDisabled || buttonProps.disabled} position={tooltipPosition} tooltipClasses={tooltipClasses}>
         <Button {...buttonProps} />
       </Tooltip>
+    );
+  },
+);
+
+function getConfirmClasses(theme: Readonly<AppTheme>): string {
+  return `border border-${theme.dangerBorder} bg-${theme.dangerBg} text-${theme.accentFg} hover:bg-${theme.dangerBgHover}`;
+}
+
+interface ConfirmButtonProps {
+  readonly onConfirm: () => void;
+  readonly itemName: string;
+  readonly itemType: string;
+  readonly className?: string;
+  readonly actionName?: string;
+  readonly tooltipPosition?: TooltipProps['position'];
+}
+
+export const ConfirmButton = memo<ConfirmButtonProps>(
+  ({ onConfirm, itemName, itemType, actionName = 'Delete', tooltipPosition = 'top', className = '' }): JSX.Element => {
+    const theme = useThemeStore((state) => state.theme);
+
+    const { isConfirm, trigger } = useConfirmAction(onConfirm, CONFIRM_SHOW_MS);
+
+    const tooltipContent = isConfirm ? 'Confirm Deletion' : `${actionName} ${itemType}`;
+    const ariaLabel = isConfirm ? `Confirm ${actionName.toLowerCase()} of ${itemName}` : `${actionName} ${itemType}: ${itemName}`;
+    const buttonClass = `${className} ${isConfirm ? getConfirmClasses(theme) : ''}`.trim();
+
+    return (
+      <TooltipButton
+        aria-label={ariaLabel}
+        className={buttonClass}
+        icon={isConfirm ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
+        size="sm"
+        tooltipContent={tooltipContent}
+        tooltipPosition={tooltipPosition}
+        variant="danger"
+        onClick={trigger}
+      />
     );
   },
 );

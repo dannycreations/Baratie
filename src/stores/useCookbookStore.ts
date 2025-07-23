@@ -4,8 +4,7 @@ import { create } from 'zustand';
 
 import { STORAGE_COOKBOOK } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger, storage } from '../app/container';
-import { createRecipeContentHash } from '../helpers/recipeHelper';
-import { validateSpices } from '../helpers/spiceHelper';
+import { getSortedSpices, validateSpices } from '../helpers/spiceHelper';
 import { readAsText, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
@@ -154,6 +153,23 @@ function processAndSanitizeRecipes(rawItems: ReadonlyArray<unknown>, source: 'fi
     return acc;
   }, []);
   return { recipes, warnings: allWarnings, hasCorruption: corruptionCount > 0 };
+}
+
+function createRecipeContentHash(ingredients: ReadonlyArray<IngredientItem>): string {
+  const canonicalParts = ingredients.map((ing) => {
+    const name = ing.name;
+    const definition = ingredientRegistry.getIngredient(ing.name);
+
+    if (!definition?.spices || definition.spices.length === 0) {
+      return name;
+    }
+
+    const sortedSpices = getSortedSpices(definition);
+    const spicesString = sortedSpices.map((spiceDef) => `${spiceDef.id}:${String(ing.spices[spiceDef.id])}`).join(';');
+
+    return `${name}|${spicesString}`;
+  });
+  return canonicalParts.join('||');
 }
 
 export const useCookbookStore = create<CookbookState>()((set, get) => ({

@@ -4,6 +4,21 @@ import { InputType } from '../core/InputType';
 import type { IngredientDefinition, SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
 
 const sortedSpicesCache = new WeakMap<Readonly<IngredientDefinition>, ReadonlyArray<SpiceDefinition>>();
+const spiceMapCache = new WeakMap<Readonly<IngredientDefinition>, ReadonlyMap<string, Readonly<SpiceDefinition>>>();
+
+function getSpiceMap(definition: Readonly<IngredientDefinition>): ReadonlyMap<string, Readonly<SpiceDefinition>> {
+  if (spiceMapCache.has(definition)) {
+    return spiceMapCache.get(definition)!;
+  }
+  if (!definition.spices || definition.spices.length === 0) {
+    const result = new Map<string, Readonly<SpiceDefinition>>();
+    spiceMapCache.set(definition, result);
+    return result;
+  }
+  const result = new Map(definition.spices.map((s) => [s.id, s]));
+  spiceMapCache.set(definition, result);
+  return result;
+}
 
 export function getSortedSpices(definition: Readonly<IngredientDefinition>): ReadonlyArray<SpiceDefinition> {
   if (sortedSpicesCache.has(definition)) {
@@ -36,7 +51,7 @@ export function getVisibleSpices(
     return [];
   }
 
-  const spiceMap = new Map<string, Readonly<SpiceDefinition>>(allSpices.map((s) => [s.id, s]));
+  const spiceMap = getSpiceMap(ingredientDefinition);
   const visibilityCache = new Map<string, boolean>();
 
   const checkVisibility = (spiceId: string): boolean => {

@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef, useState } from 'react';
+import { memo, useCallback, useDeferredValue, useRef, useState } from 'react';
 
 import { errorHandler } from '../../../app/container';
 import { useDragDrop } from '../../../hooks/useDragDrop';
@@ -27,7 +27,8 @@ export const TextareaInput = memo<TextareaInputProps>(
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [scrollTop, setScrollTop] = useState(0);
 
-    const virtualizedLines = useLineNumber({ value, showLineNumbers, textareaRef, scrollTop });
+    const deferredValue = useDeferredValue(value);
+    const virtualizedLines = useLineNumber({ value: deferredValue, showLineNumbers, textareaRef, scrollTop });
 
     const handleFileDrop = useCallback(
       async (file: File) => {

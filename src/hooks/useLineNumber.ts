@@ -57,52 +57,54 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
     return canvasContextRef.current;
   }, []);
 
-  const calculate = useCallback(() => {
-    const textarea = textareaRef.current;
-    if (!showLineNumbers || !textarea) {
-      setLineMetrics([]);
-      setVisualLinePrefixSum([]);
-      return;
-    }
-    const styles = window.getComputedStyle(textarea);
-    const font = styles.font;
-    const context = getCanvasContext();
-    let charWidth = 8;
-    if (context) {
-      context.font = font;
-      charWidth = context.measureText('M').width;
-    }
-    const xPadding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
-    const contentWidth = textarea.clientWidth - xPadding;
-    const maxLineChars = charWidth > 0 ? Math.floor(contentWidth / charWidth) : 0;
+  const calculate = useCallback(
+    (currentValue: string) => {
+      const textarea = textareaRef.current;
+      if (!showLineNumbers || !textarea) {
+        setLineMetrics([]);
+        setVisualLinePrefixSum([]);
+        return;
+      }
+      const styles = window.getComputedStyle(textarea);
+      const font = styles.font;
+      const context = getCanvasContext();
+      let charWidth = 8;
+      if (context) {
+        context.font = font;
+        charWidth = context.measureText('M').width;
+      }
+      const xPadding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+      const contentWidth = textarea.clientWidth - xPadding;
+      const maxLineChars = charWidth > 0 ? Math.floor(contentWidth / charWidth) : 0;
 
-    const lines = value.split('\n');
-    const newPrefixSum: Array<number> = [];
-    let visualLineCount = 0;
+      const lines = currentValue.split('\n');
+      const newPrefixSum: Array<number> = [];
+      let visualLineCount = 0;
 
-    const newMetrics = lines.map((line, index) => {
-      const lineLength = line.length;
-      const count = maxLineChars > 0 ? Math.max(1, Math.ceil(lineLength / maxLineChars)) : 1;
-      visualLineCount += count;
-      newPrefixSum.push(visualLineCount);
-      return { number: index + 1, count };
-    });
+      const newMetrics = lines.map((line, index) => {
+        const lineLength = line.length;
+        const count = maxLineChars > 0 ? Math.max(1, Math.ceil(lineLength / maxLineChars)) : 1;
+        visualLineCount += count;
+        newPrefixSum.push(visualLineCount);
+        return { number: index + 1, count };
+      });
 
-    setLineMetrics(newMetrics);
-    setVisualLinePrefixSum(newPrefixSum);
-  }, [getCanvasContext, value, showLineNumbers, textareaRef]);
+      setLineMetrics(newMetrics);
+      setVisualLinePrefixSum(newPrefixSum);
+    },
+    [getCanvasContext, showLineNumbers, textareaRef],
+  );
 
   useLayoutEffect(() => {
-    calculate();
-  }, [value, calculate]);
-
-  useLayoutEffect(() => {
     const textarea = textareaRef.current;
     if (!showLineNumbers || !textarea) {
       return;
     }
-    document.fonts.ready.then(calculate).catch(() => calculate());
-    const resizeObserver = new ResizeObserver(calculate);
+
+    const handleCalculate = () => calculate(textarea.value);
+
+    document.fonts.ready.then(handleCalculate).catch(handleCalculate);
+    const resizeObserver = new ResizeObserver(handleCalculate);
     resizeObserver.observe(textarea);
 
     const styles = window.getComputedStyle(textarea);
@@ -114,6 +116,12 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
     };
   }, [showLineNumbers, textareaRef, calculate]);
 
+  useLayoutEffect(() => {
+    if (showLineNumbers) {
+      calculate(value);
+    }
+  }, [value, showLineNumbers, calculate]);
+
   return useMemo((): VirtualResult => {
     if (!showLineNumbers || !textareaRef.current || lineHeightRef.current === 0) {
       return { lineHeight: 0, paddingTop: 0, paddingBottom: 0, visibleItems: [] };
@@ -123,7 +131,7 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
     const totalVisualLines = visualLinePrefixSum.length > 0 ? visualLinePrefixSum[visualLinePrefixSum.length - 1] : 0;
 
     if (totalVisualLines === 0) {
-      return { lineHeight, paddingTop: 0, paddingBottom: 0, visibleItems: [] };
+      return { lineHeight, paddingTop: 0, paddingBottom: 0, visibleItems: [{ key: 0, number: 1 }] };
     }
 
     const buffer = 10;

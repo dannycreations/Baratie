@@ -8,7 +8,7 @@ import { useFavoriteStore } from './useFavoriteStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
 
-import type { IngredientDefinition } from '../core/IngredientRegistry';
+import type { IngredientDefinition, IngredientRegistry } from '../core/IngredientRegistry';
 
 const NonEmptyString = v.pipe(v.string(), v.nonEmpty());
 
@@ -73,10 +73,10 @@ async function fetchProvider(repoInfo: { readonly owner: string; readonly repo: 
   return fetch(fallbackUrl);
 }
 
-function executeScript(scriptContent: string): void {
+function executeScript(scriptContent: string, api: typeof window.Baratie): void {
   try {
     // eslint-disable-next-line @typescript-eslint/no-implied-eval
-    new Function('Baratie', scriptContent)(window.Baratie);
+    new Function('Baratie', scriptContent)(api);
   } catch (error) {
     throw new Error(`Execution failed: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -151,24 +151,35 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
     return;
   }
 
-  const originalRegister = ingredientRegistry.registerIngredient.bind(ingredientRegistry);
   const newlyRegisteredKeys: Array<string> = [];
   const errorLogs: Array<string> = [];
   const fetchedScripts: Record<string, string> = {};
   let successCount = 0;
 
-  ingredientRegistry.startBatch();
-  try {
-    ingredientRegistry.registerIngredient = <T>(definition: IngredientDefinition<T>, _namespace?: string): string => {
-      const registeredId = originalRegister(definition, id);
-      newlyRegisteredKeys.push(registeredId);
-      return registeredId;
-    };
+  const customBaratieApi = {
+    ...window.Baratie,
+    ingredient: {
+      startBatch: () => ingredientRegistry.startBatch(),
+      endBatch: () => ingredientRegistry.endBatch(),
+      getAllCategories: () => ingredientRegistry.getAllCategories(),
+      getAllIngredients: () => ingredientRegistry.getAllIngredients(),
+      getIngredient: (ingId: string) => ingredientRegistry.getIngredient(ingId),
+      unregisterIngredients: (ids: ReadonlyArray<string>) => ingredientRegistry.unregisterIngredients(ids),
+      registerIngredient: <T>(definition: IngredientDefinition<T>, _namespace?: string): string => {
+        const registeredId = ingredientRegistry.registerIngredient(definition, id);
+        newlyRegisteredKeys.push(registeredId);
+        return registeredId;
+      },
+    } as IngredientRegistry,
+  };
 
+  try {
+    ingredientRegistry.startBatch();
     for (const entryPoint of entryPoints) {
       if (!entryPoint.trim()) {
         continue;
       }
+
       try {
         let scriptContent = cachedScripts?.[entryPoint];
         if (!scriptContent) {
@@ -177,19 +188,20 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
           if (!response.ok) {
             throw new Error(`Fetch failed: ${response.statusText}`);
           }
+
           scriptContent = await response.text();
           fetchedScripts[entryPoint] = scriptContent;
         } else {
           logger.debug(`Cache hit for script: ${entryPoint}`);
         }
-        executeScript(scriptContent);
+
+        executeScript(scriptContent, customBaratieApi);
         successCount++;
       } catch (error) {
         errorLogs.push(`Error in '${entryPoint}': ${error instanceof Error ? error.message : String(error)}`);
       }
     }
   } finally {
-    ingredientRegistry.registerIngredient = originalRegister;
     ingredientRegistry.endBatch();
   }
 

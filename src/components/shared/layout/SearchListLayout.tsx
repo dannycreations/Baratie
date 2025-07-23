@@ -1,9 +1,9 @@
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 
 import { useOverflowScroll } from '../../../hooks/useOverflowScroll';
-import { SearchInput } from '../input/SearchInput';
+import { StringInput } from '../input/StringInput';
 
-import type { JSX, ReactNode } from 'react';
+import type { ChangeEvent, JSX, ReactNode } from 'react';
 
 interface BaseSearchListProps {
   readonly containerClasses?: string;
@@ -40,18 +40,29 @@ export const SearchListLayout = memo<SearchListLayoutProps>((props): JSX.Element
   const { containerClasses = 'flex h-full flex-col', listContent, listId, listWrapperClasses = 'grow overflow-y-auto' } = props;
   const listScrollRef = useOverflowScroll<HTMLDivElement>({ yClasses: 'pr-1' });
 
+  const handleChange =
+    props.showSearch !== false
+      ? useCallback(
+          (event: ChangeEvent<HTMLInputElement>) => {
+            props.onQueryChange(event.target.value);
+          },
+          [props.onQueryChange],
+        )
+      : undefined;
+
   return (
     <div className={containerClasses}>
       {props.showSearch !== false && (
         <div className={props.searchWrapperClasses}>
-          <SearchInput
+          <StringInput
             id={props.searchId}
+            type="search"
             aria-controls={listId}
             aria-label={props.searchAriaLabel}
             className={props.searchClasses}
             placeholder={props.searchPlaceholder}
-            query={props.query}
-            onQueryChange={props.onQueryChange}
+            value={props.query}
+            onChange={handleChange!}
           />
         </div>
       )}

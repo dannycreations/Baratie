@@ -1,12 +1,9 @@
 import { memo, useCallback, useState } from 'react';
 
-import { CONFIRM_SHOW_MS } from '../../app/constants';
-import { getConfirmClasses } from '../../helpers/styleHelper';
-import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { useExtensionStore } from '../../stores/useExtensionStore';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { Button, TooltipButton } from '../shared/Button';
-import { AlertTriangleIcon, CheckIcon, GitMergeIcon, Loader2Icon, Trash2Icon } from '../shared/Icon';
+import { Button, ConfirmButton } from '../shared/Button';
+import { AlertTriangleIcon, CheckIcon, GitMergeIcon, Loader2Icon } from '../shared/Icon';
 import { StringInput } from '../shared/input/StringInput';
 import { ItemListLayout } from '../shared/layout/ItemListLayout';
 import { Tooltip } from '../shared/Tooltip';
@@ -64,12 +61,6 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
     removeExtension(extension.id);
   }, [removeExtension, extension.id]);
 
-  const { isConfirm: isDeleting, trigger: triggerDelete } = useConfirmAction(handleConfirmDelete, CONFIRM_SHOW_MS);
-
-  const deleteButtonTip = isDeleting ? 'Confirm Deletion' : 'Remove Extension';
-  const deleteButtonLabel = isDeleting ? `Confirm removal of extension ${displayName}` : `Remove extension ${displayName}`;
-  const deleteButtonClass = isDeleting ? getConfirmClasses(theme) : undefined;
-
   const leftContent = (
     <div className="flex flex-col">
       <span className={`font-medium text-${theme.contentPrimary}`}>{displayName}</span>
@@ -80,15 +71,7 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
   const rightContent = (
     <div className="flex items-center gap-4">
       <ExtensionItemStatus errors={extension.errors} status={extension.status} />
-      <TooltipButton
-        aria-label={deleteButtonLabel}
-        className={deleteButtonClass}
-        icon={isDeleting ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
-        size="sm"
-        tooltipContent={deleteButtonTip}
-        variant="danger"
-        onClick={triggerDelete}
-      />
+      <ConfirmButton actionName="Remove" itemName={displayName} itemType="Extension" onConfirm={handleConfirmDelete} />
     </div>
   );
 

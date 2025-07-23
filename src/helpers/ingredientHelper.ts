@@ -33,7 +33,7 @@ export function processIngredients(
   disabledIngredients: ReadonlySet<string>,
 ): ProcessedIngredients {
   const favorites: Array<IngredientProps> = [];
-  const others: Array<IngredientProps> = [];
+  const grouped = new Map<string, Array<IngredientProps>>();
   let visibleCount = 0;
 
   for (const ingredient of allIngredients) {
@@ -42,14 +42,21 @@ export function processIngredients(
       if (favoriteNames.has(ingredient.id)) {
         favorites.push(ingredient);
       } else {
-        others.push(ingredient);
+        const categoryList = grouped.get(ingredient.category);
+        if (categoryList) {
+          categoryList.push(ingredient);
+        } else {
+          grouped.set(ingredient.category, [ingredient]);
+        }
       }
     }
   }
 
+  const sortedEntries = [...grouped.entries()].sort(categorySortFn);
+
   return {
     favorites,
-    categories: groupAndSortIngredients(others),
+    categories: new Map(sortedEntries),
     visibleCount,
   };
 }

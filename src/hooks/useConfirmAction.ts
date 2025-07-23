@@ -27,13 +27,14 @@ export function useConfirmAction(callback: () => void, timeout: number): Confirm
   });
 
   const trigger = useCallback(() => {
-    if (isConfirm) {
-      callbackRef.current();
-      setIsConfirm(false);
-    } else {
-      setIsConfirm(true);
-    }
-  }, [isConfirm]);
+    setIsConfirm((current) => {
+      if (current) {
+        callbackRef.current();
+        return false;
+      }
+      return true;
+    });
+  }, []);
 
   return { isConfirm, trigger };
 }
