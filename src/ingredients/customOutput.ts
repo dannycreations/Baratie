@@ -1,8 +1,8 @@
-import { CATEGORY_FLOW, KEY_CUSTOM_OUTPUT } from '../app/constants';
-import { Ingredient } from '../core/Ingredient';
+import { CATEGORY_FLOW, KEY_CUSTOM_OUTPUT } from '../lib/app/constants';
+import { Ingredient } from '../lib/structures/Ingredient';
 
-import type { IngredientContext, OutputPanelConfig, PanelControlConfig, ResultType } from '../core/IngredientRegistry';
-import type { InputType } from '../core/InputType';
+import type { IngredientContext, OutputPanelConfig, PanelControlConfig, ResultType } from '../lib/core/IngredientRegistry';
+import type { InputType } from '../lib/core/InputType';
 
 export class CustomOutput extends Ingredient {
   public constructor() {

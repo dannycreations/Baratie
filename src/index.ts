@@ -4,16 +4,16 @@ import * as v from 'valibot';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { createRoot } from './app/Baratie';
-import { appRegistry, errorHandler, eventSystem, ingredientRegistry, logger } from './app/container';
-import { Ingredient } from './core/Ingredient';
-import { LogLevel } from './core/Logger';
+import { createRoot } from './lib/app/Baratie';
+import { appRegistry, errorHandler, eventSystem, ingredientRegistry, logger } from './lib/app/container';
+import { LogLevel } from './lib/core/Logger';
+import { Ingredient } from './lib/structures/Ingredient';
 
-import type { BaratieOptions } from './app/Baratie';
-import type { AppEvents } from './app/events';
-import type { IngredientOptions } from './core/Ingredient';
-import type { IngredientContext, IngredientItem, RecipeBookItem, ResultType, SpiceDefinition, SpiceValue } from './core/IngredientRegistry';
-import type { InputType } from './core/InputType';
+import type { BaratieOptions } from './lib/app/Baratie';
+import type { AppEvents } from './lib/app/events';
+import type { IngredientContext, IngredientItem, RecipeBookItem, ResultType, SpiceDefinition, SpiceValue } from './lib/core/IngredientRegistry';
+import type { InputType } from './lib/core/InputType';
+import type { IngredientOptions } from './lib/structures/Ingredient';
 
 const BARATIE_API = {
   logger,

@@ -1,9 +1,9 @@
-import { CATEGORY_FLOW, KEY_CUSTOM_INPUT } from '../app/constants';
-import { ingredientRegistry } from '../app/container';
-import { Ingredient } from '../core/Ingredient';
+import { CATEGORY_FLOW, KEY_CUSTOM_INPUT } from '../lib/app/constants';
+import { ingredientRegistry } from '../lib/app/container';
+import { Ingredient } from '../lib/structures/Ingredient';
 
-import type { IngredientContext, InputPanelConfig, PanelControlConfig, ResultType } from '../core/IngredientRegistry';
-import type { InputType } from '../core/InputType';
+import type { IngredientContext, InputPanelConfig, PanelControlConfig, ResultType } from '../lib/core/IngredientRegistry';
+import type { InputType } from '../lib/core/InputType';
 
 export class CustomInput extends Ingredient {
   public constructor() {

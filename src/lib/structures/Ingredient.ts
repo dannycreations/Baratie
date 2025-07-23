@@ -1,5 +1,5 @@
-import type { IngredientContext, ResultType, SpiceDefinition, SpiceValue } from './IngredientRegistry';
-import type { InputType } from './InputType';
+import type { IngredientContext, ResultType, SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
+import type { InputType } from '../core/InputType';
 
 export interface IngredientOptions {
   readonly name: string;

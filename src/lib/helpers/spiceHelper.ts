@@ -1,8 +1,8 @@
 import { errorHandler, logger } from '../app/container';
-import { Ingredient } from '../core/Ingredient';
 import { InputType } from '../core/InputType';
 
 import type { SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
+import type { Ingredient } from '../structures/Ingredient';
 
 export function resolveSpices(
   ingredientDefinition: Readonly<Ingredient>,

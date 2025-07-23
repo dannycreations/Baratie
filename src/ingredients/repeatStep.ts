@@ -1,10 +1,10 @@
-import { CATEGORY_FLOW, KEY_REPEAT_STEP } from '../app/constants';
-import { errorHandler, ingredientRegistry, kitchen, logger } from '../app/container';
-import { Ingredient } from '../core/Ingredient';
-import { InputType } from '../core/InputType';
-import { useNotificationStore } from '../stores/useNotificationStore';
+import { CATEGORY_FLOW, KEY_REPEAT_STEP } from '../lib/app/constants';
+import { errorHandler, ingredientRegistry, kitchen, logger } from '../lib/app/container';
+import { InputType } from '../lib/core/InputType';
+import { useNotificationStore } from '../lib/stores/useNotificationStore';
+import { Ingredient } from '../lib/structures/Ingredient';
 
-import type { IngredientContext, SpiceDefinition } from '../core/IngredientRegistry';
+import type { IngredientContext, SpiceDefinition } from '../lib/core/IngredientRegistry';
 
 interface RepeatStepSpices {
   readonly delimiter: string;
@@ -93,7 +93,7 @@ export class RepeatStep extends Ingredient<RepeatStepSpices> {
         type: 'warning',
         title: 'Configuration Warning',
       });
-      return new InputType('');
+      return input.update('');
     }
 
     for (let attempt = 0; attempt <= retriesOnError; attempt++) {
@@ -109,7 +109,7 @@ export class RepeatStep extends Ingredient<RepeatStepSpices> {
                 errorHandler.assert(definition, `Definition for '${ingredient.name}' not found during sub-recipe execution.`);
 
                 const subContext: IngredientContext = { ...context, currentIndex: subIndex, ingredient };
-                const runResult = await definition.run(new InputType(currentData), ingredient.spices, subContext);
+                const runResult = await definition.run(input.update(currentData), ingredient.spices, subContext);
 
                 if (runResult === null) {
                   continue;
@@ -138,7 +138,7 @@ export class RepeatStep extends Ingredient<RepeatStepSpices> {
         }
 
         const processedDelimiter = delimiter.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
-        return new InputType(collectedOutputs.join(processedDelimiter));
+        return input.update(collectedOutputs.join(processedDelimiter));
       } catch (error) {
         const isLastAttempt = attempt >= retriesOnError;
         if (isLastAttempt) {
@@ -156,6 +156,6 @@ export class RepeatStep extends Ingredient<RepeatStepSpices> {
       }
     }
 
-    return new InputType('');
+    return input.update('');
   }
 }

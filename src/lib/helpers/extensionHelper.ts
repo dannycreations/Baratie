@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 
 import { ingredientRegistry, logger } from '../app/container';
-import { Ingredient } from '../core/Ingredient';
+import { Ingredient } from '../structures/Ingredient';
 
 import type { IngredientRegistry } from '../core/IngredientRegistry';
 import type { Extension } from '../stores/useExtensionStore';

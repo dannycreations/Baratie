@@ -3,9 +3,9 @@ import { errorHandler, ingredientRegistry, logger } from '../app/container';
 import { useKitchenStore } from '../stores/useKitchenStore';
 import { useRecipeStore } from '../stores/useRecipeStore';
 import { AppError } from './ErrorHandler';
-import { Ingredient } from './Ingredient';
 import { InputType } from './InputType';
 
+import type { Ingredient } from '../structures/Ingredient';
 import type { IngredientContext, IngredientItem, InputPanelConfig, OutputPanelConfig, PanelControlConfig } from './IngredientRegistry';
 
 export type CookingStatusType = 'idle' | 'error' | 'success' | 'warning';

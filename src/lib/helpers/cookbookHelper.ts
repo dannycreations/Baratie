@@ -2,8 +2,7 @@ import * as v from 'valibot';
 import { safeParse } from 'valibot';
 
 import { ingredientRegistry, logger, storage } from '../app/container';
-import { validateSpices } from '../helpers/spiceHelper';
-import { getSortedSpices } from './spiceHelper';
+import { getSortedSpices, validateSpices } from './spiceHelper';
 
 import type { IngredientItem, IngredientProps, RecipeBookItem } from '../core/IngredientRegistry';
 

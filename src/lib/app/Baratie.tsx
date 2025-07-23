@@ -1,6 +1,7 @@
 import { memo, StrictMode, useEffect } from 'react';
 import { createRoot as createReactRoot } from 'react-dom/client';
 
+import { internalIngredients } from '../../ingredients';
 import { CookbookPanel } from '../components/cookbook/CookbookPanel';
 import { IngredientPanel } from '../components/ingredient/IngredientPanel';
 import { KitchenPanel } from '../components/kitchen/KitchenPanel';
@@ -9,7 +10,6 @@ import { LoadingScreen } from '../components/main/LoadingScreen';
 import { NotificationPanel } from '../components/main/NotificationPanel';
 import { RecipePanel } from '../components/recipe/RecipePanel';
 import { SettingPanel } from '../components/setting/SettingPanel';
-import { internalIngredients } from '../ingredients';
 import { useAppStore } from '../stores/useAppStore';
 import { appRegistry, errorHandler, ingredientRegistry, kitchen } from './container';
 import { APP_STYLES } from './styles';

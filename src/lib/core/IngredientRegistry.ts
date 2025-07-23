@@ -1,8 +1,8 @@
 import { errorHandler, logger } from '../app/container';
 import { useIngredientStore } from '../stores/useIngredientStore';
 import { getObjectHash } from '../utilities/appUtil';
-import { Ingredient } from './Ingredient';
 
+import type { Ingredient } from '../structures/Ingredient';
 import type { InputType } from './InputType';
 
 export type SpiceValue = string | number | boolean;
