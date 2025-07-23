@@ -1,13 +1,13 @@
 import { AppRegistry } from '../core/AppRegistry';
 import { ErrorHandler } from '../core/ErrorHandler';
-import { EventSystem } from '../core/EventSystem';
+import { EventEmitter } from '../core/EventEmitter';
 import { IngredientRegistry } from '../core/IngredientRegistry';
 import { Kitchen } from '../core/Kitchen';
 import { Logger, LogLevel } from '../core/Logger';
 import { Storage } from '../core/Storage';
 
 export const logger: Logger = new Logger(LogLevel.WARN);
-export const eventSystem: EventSystem = new EventSystem();
+export const events: EventEmitter = new EventEmitter();
 
 export const storage: Storage = new Storage();
 export const appRegistry: AppRegistry = new AppRegistry();

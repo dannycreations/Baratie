@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import { createRoot } from './lib/app/Baratie';
-import { appRegistry, errorHandler, eventSystem, ingredientRegistry, logger } from './lib/app/container';
+import { appRegistry, errorHandler, events, ingredientRegistry, logger } from './lib/app/container';
 import { LogLevel } from './lib/core/Logger';
 import { Ingredient } from './lib/structures/Ingredient';
 
@@ -21,7 +21,7 @@ const BARATIE_API = {
   createRoot,
   app: appRegistry,
   error: errorHandler,
-  events: eventSystem,
+  events: events,
   ingredient: ingredientRegistry,
 } as const;
 
