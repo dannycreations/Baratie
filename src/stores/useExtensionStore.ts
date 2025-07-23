@@ -191,6 +191,15 @@ async function loadAndExecuteExtension(extension: Readonly<Extension>): Promise<
     ingredientRegistry.registerIngredient = originalRegister;
   }
 
+  const currentState = useExtensionStore.getState();
+  if (!currentState.extensionMap.has(id)) {
+    logger.info(`Extension '${name || id}' was removed during load. Aborting update and cleaning up registered ingredients.`);
+    if (newlyRegisteredKeys.length > 0) {
+      ingredientRegistry.unregisterIngredients(newlyRegisteredKeys);
+    }
+    return;
+  }
+
   if (Object.keys(fetchedScripts).length > 0) {
     upsert({ id, scripts: { ...cachedScripts, ...fetchedScripts } });
   }

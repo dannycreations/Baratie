@@ -20,7 +20,11 @@ import type { IngredientItem } from '../../core/IngredientRegistry';
 export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
   const activeRecipeId = useRecipeStore((state) => state.activeRecipeId);
-  const { addIngredient, removeIngredient, reorderIngredients, updateSpice, clearRecipe } = useRecipeStore.getState();
+  const addIngredient = useRecipeStore((state) => state.addIngredient);
+  const removeIngredient = useRecipeStore((state) => state.removeIngredient);
+  const reorderIngredients = useRecipeStore((state) => state.reorderIngredients);
+  const updateSpice = useRecipeStore((state) => state.updateSpice);
+  const clearRecipe = useRecipeStore((state) => state.clearRecipe);
   const openCookbook = useCookbookStore((state) => state.open);
   const isCookbookOpen = useCookbookStore((state) => state.isModalOpen);
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);

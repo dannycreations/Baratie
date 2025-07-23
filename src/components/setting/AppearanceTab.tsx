@@ -91,12 +91,6 @@ export const AppearanceTab = memo((): JSX.Element => {
               onClick={() => {
                 handleSelectTheme(item.id);
               }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleSelectTheme(item.id);
-                }
-              }}
             >
               <ItemListLayout
                 className={itemLayoutClass}

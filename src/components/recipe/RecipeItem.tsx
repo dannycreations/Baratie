@@ -43,7 +43,7 @@ export const RecipeItem = memo<RecipeItemProps>(
     const status = useKitchenStore((state) => state.ingredientStatus[ingredientItem.id] || 'idle');
     const inputPanelId = useKitchenStore((state) => state.inputPanelId);
     const editingId = useRecipeStore((state) => state.editingId);
-    const setEditingId = useRecipeStore.getState().setEditingId;
+    const setEditingId = useRecipeStore((state) => state.setEditingId);
 
     const isSpiceInInput = inputPanelId === ingredientItem.id;
     const isEditing = !isSpiceInInput && editingId === ingredientItem.id;
@@ -74,10 +74,8 @@ export const RecipeItem = memo<RecipeItemProps>(
         setEditingId(null);
         return;
       }
-
-      const currentId = useRecipeStore.getState().editingId;
-      setEditingId(currentId === ingredientItem.id ? null : ingredientItem.id);
-    }, [inputPanelId, ingredientItem.id, setEditingId]);
+      setEditingId(editingId === ingredientItem.id ? null : ingredientItem.id);
+    }, [inputPanelId, ingredientItem.id, setEditingId, editingId]);
 
     const handleSpiceChange = useCallback(
       (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => {
@@ -164,14 +162,6 @@ export const RecipeItem = memo<RecipeItemProps>(
         }}
         onDragEnter={handleDragEnter}
         onDragOver={onDragOver}
-        onKeyUp={(event) => {
-          event.preventDefault();
-          setEditingId(ingredientItem.id);
-        }}
-        onKeyDown={(event) => {
-          event.preventDefault();
-          setEditingId(null);
-        }}
       >
         <ItemListLayout
           className="h-12 cursor-default p-3"

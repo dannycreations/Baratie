@@ -6,6 +6,7 @@ import { STORAGE_COOKBOOK } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger, storage } from '../app/container';
 import { validateSpices } from '../helpers/spiceHelper';
 import { readAsText, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
+import { useIngredientStore } from './useIngredientStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
 
@@ -82,6 +83,23 @@ interface CookbookState {
 }
 
 const sortedSpicesCache = new WeakMap<Readonly<IngredientDefinition>, ReadonlyArray<SpiceDefinition>>();
+
+const getNameToDefinitionMap = (() => {
+  let cache: ReadonlyMap<string, IngredientProps> | null = null;
+  let lastVersion = -1;
+
+  return () => {
+    const currentVersion = useIngredientStore.getState().registryVersion;
+    if (cache && lastVersion === currentVersion) {
+      return cache;
+    }
+
+    const allIngredients = ingredientRegistry.getAllIngredients();
+    cache = new Map(allIngredients.map((def) => [def.name, def]));
+    lastVersion = currentVersion;
+    return cache;
+  };
+})();
 
 function getSortedSpices(definition: Readonly<IngredientDefinition>): ReadonlyArray<SpiceDefinition> {
   if (sortedSpicesCache.has(definition)) {
@@ -181,7 +199,7 @@ function processAndSanitizeRecipes(
   rawItems: ReadonlyArray<unknown>,
   source: 'fileImport' | 'storage',
 ): { readonly recipes: ReadonlyArray<RecipeBookItem>; readonly warnings: ReadonlySet<string> } {
-  const nameToDefinitionMap = new Map(ingredientRegistry.getAllIngredients().map((def) => [def.name, def]));
+  const nameToDefinitionMap = getNameToDefinitionMap();
 
   const allWarnings = new Set<string>();
   const recipes = rawItems.reduce<Array<RecipeBookItem>>((acc, rawItem) => {
@@ -502,7 +520,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
 
     if (saveAllRecipes(finalRecipes)) {
       set({
-        recipes: [...finalRecipes].sort((a, b) => b.updatedAt - a.updatedAt),
+        recipes: finalRecipes,
         recipeIdMap: newIdMap,
         recipeContentHashMap: newContentHashMap,
       });

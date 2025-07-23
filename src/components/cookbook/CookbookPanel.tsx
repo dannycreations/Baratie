@@ -72,7 +72,12 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const resetModal = useCookbookStore((state) => state.resetModal);
   const setName = useCookbookStore((state) => state.setName);
   const setQuery = useCookbookStore((state) => state.setQuery);
-  const { upsert, delete: deleteRecipe, load, exportAll, exportCurrent, importFromFile } = useCookbookStore.getState();
+  const upsert = useCookbookStore((state) => state.upsert);
+  const deleteRecipe = useCookbookStore((state) => state.delete);
+  const load = useCookbookStore((state) => state.load);
+  const exportAll = useCookbookStore((state) => state.exportAll);
+  const exportCurrent = useCookbookStore((state) => state.exportCurrent);
+  const importFromFile = useCookbookStore((state) => state.importFromFile);
 
   const ingredients = useRecipeStore((state) => state.ingredients);
 

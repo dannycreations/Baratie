@@ -154,7 +154,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const outputPanelConfig = useKitchenStore((state) => state.outputPanelConfig);
   const inputData = useKitchenStore((state) => state.inputData);
   const outputData = useKitchenStore((state) => state.outputData);
-  const { updateSpice } = useRecipeStore.getState();
+  const updateSpice = useRecipeStore((state) => state.updateSpice);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importOperationRef = useRef<number>(0);

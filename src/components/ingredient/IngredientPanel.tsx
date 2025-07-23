@@ -1,4 +1,4 @@
-import { memo, useCallback, useId, useMemo, useState } from 'react';
+import { memo, useCallback, useDeferredValue, useId, useMemo, useState } from 'react';
 
 import { errorHandler, ingredientRegistry } from '../../app/container';
 import { useSearchIngredients } from '../../hooks/useSearch';
@@ -22,7 +22,8 @@ import type { IngredientProps } from '../../core/IngredientRegistry';
 export const IngredientPanel = memo((): JSX.Element => {
   const favorites = useFavoriteStore((state) => state.favorites);
   const toggleFavorite = useFavoriteStore((state) => state.toggle);
-  const { addIngredient, removeIngredient } = useRecipeStore.getState();
+  const addIngredient = useRecipeStore((state) => state.addIngredient);
+  const removeIngredient = useRecipeStore((state) => state.removeIngredient);
   const disabledCategories = useIngredientStore((state) => state.disabledCategories);
   const disabledIngredients = useIngredientStore((state) => state.disabledIngredients);
   const openIngredientModal = useIngredientStore((state) => state.openModal);
@@ -35,12 +36,19 @@ export const IngredientPanel = memo((): JSX.Element => {
 
   const [query, setQuery] = useState<string>('');
   const [isDragOverRecipe, setDragOverRecipe] = useState(false);
+  const deferredQuery = useDeferredValue(query);
   const listId = useId();
 
   const allIngredients = useMemo<ReadonlyArray<IngredientProps>>(() => {
     return ingredientRegistry.getAllIngredients();
   }, [registryVersion]);
-  const { filteredIngredients, visibleIngredients } = useSearchIngredients(allIngredients, query, favorites, disabledCategories, disabledIngredients);
+  const { filteredIngredients, visibleIngredients } = useSearchIngredients(
+    allIngredients,
+    deferredQuery,
+    favorites,
+    disabledCategories,
+    disabledIngredients,
+  );
   const totalIngredients = allIngredients.length;
 
   const handleDragEnterRecipe = useCallback((event: DragEvent<HTMLDivElement>) => {
@@ -165,8 +173,8 @@ export const IngredientPanel = memo((): JSX.Element => {
         <SearchListLayout
           listContent={
             <IngredientList
+              query={deferredQuery}
               itemsByCategory={filteredIngredients}
-              query={query}
               renderItemActions={renderItemActions}
               onItemDragStart={handleItemDragStart}
             />
