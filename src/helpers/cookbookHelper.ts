@@ -39,15 +39,6 @@ export interface SanitizedRecipesResult {
   readonly hasCorruption: boolean;
 }
 
-interface SerializedRecipeItem extends Omit<RecipeBookItem, 'ingredients'> {
-  readonly ingredients: ReadonlyArray<{
-    readonly id: string;
-    readonly ingredientId: string;
-    readonly name: string;
-    readonly spices: Readonly<Record<string, unknown>>;
-  }>;
-}
-
 export function createRecipeHash(ingredients: ReadonlyArray<IngredientItem>): string {
   const canonicalParts = ingredients.map((ing) => {
     const ingredientId = ing.ingredientId;
@@ -65,22 +56,9 @@ export function createRecipeHash(ingredients: ReadonlyArray<IngredientItem>): st
   return canonicalParts.join('||');
 }
 
-export function serializeRecipe(recipe: Readonly<RecipeBookItem>): SerializedRecipeItem {
-  return {
-    ...recipe,
-    ingredients: recipe.ingredients.map((ingredient) => ({
-      id: ingredient.id,
-      ingredientId: ingredient.ingredientId,
-      name: ingredient.name,
-      spices: ingredient.spices,
-    })),
-  };
-}
-
 export function saveAllRecipes(recipes: ReadonlyArray<RecipeBookItem>): boolean {
-  const serialized = recipes.map(serializeRecipe);
-  logger.info(`Saving ${serialized.length} recipes to storage.`);
-  return storage.set('baratie-cookbook', serialized, 'Saved Recipes');
+  logger.info(`Saving ${recipes.length} recipes to storage.`);
+  return storage.set('baratie-cookbook', recipes, 'Saved Recipes');
 }
 
 export function sanitizeIngredient(rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientItem | null {

@@ -41,11 +41,13 @@ export const ExtensionModal = memo((): JSX.Element | null => {
   const listId = useId();
   const deferredQuery = useDeferredValue(query);
 
-  const manifestModules = useMemo(
-    () =>
-      pendingSelection?.manifest.entry && Array.isArray(pendingSelection.manifest.entry) ? (pendingSelection.manifest.entry as ManifestModule[]) : [],
-    [pendingSelection],
-  );
+  const manifestModules = useMemo(() => {
+    const entry = pendingSelection?.manifest.entry;
+    if (Array.isArray(entry) && (entry.length === 0 || typeof entry[0] === 'object')) {
+      return entry as ManifestModule[];
+    }
+    return [];
+  }, [pendingSelection]);
 
   useEffect(() => {
     if (pendingSelection) {
@@ -88,8 +90,8 @@ export const ExtensionModal = memo((): JSX.Element | null => {
     });
   }, []);
 
-  const handleToggleCategory = useCallback((modules: ReadonlyArray<ModuleIngredient>) => {
-    const moduleEntries = modules.map((m) => m.entry);
+  const handleToggleCategory = useCallback((modules: ReadonlyArray<BaseListItem>) => {
+    const moduleEntries = modules.map((m) => m.id);
     setSelectedEntries((prev) => {
       const newSet = new Set(prev);
       const areAllSelected = modules.length > 0 && moduleEntries.every((entry) => newSet.has(entry));
@@ -141,11 +143,7 @@ export const ExtensionModal = memo((): JSX.Element | null => {
 
       return (
         <div className="flex items-center gap-3">
-          <BooleanInput
-            id={`${categoryId}-toggle`}
-            checked={areAllSelected}
-            onChange={() => handleToggleCategory(items as ReadonlyArray<ModuleIngredient>)}
-          />
+          <BooleanInput id={`${categoryId}-toggle`} checked={areAllSelected} onChange={() => handleToggleCategory(items)} />
           <label htmlFor={`${categoryId}-toggle`} className={`cursor-pointer font-medium text-${theme.contentSecondary}`}>
             {category}
           </label>

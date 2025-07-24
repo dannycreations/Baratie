@@ -4,9 +4,9 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import type { InputPanelConfig, OutputPanelConfig } from '../core/IngredientRegistry';
 import type { CookingStatusType, RecipeCookResult } from '../core/Kitchen';
 
-interface KitchenState {
+export interface KitchenState {
   readonly cookingStatus: CookingStatusType;
-  readonly ingredientStatus: Readonly<Record<string, CookingStatusType>>;
+  readonly ingredientStatuses: Readonly<Record<string, CookingStatusType>>;
   readonly inputData: string;
   readonly inputPanelConfig: InputPanelConfig | null;
   readonly inputPanelId: string | null;
@@ -21,7 +21,7 @@ interface KitchenState {
 export const useKitchenStore = create<KitchenState>()(
   subscribeWithSelector((set) => ({
     cookingStatus: 'idle',
-    ingredientStatus: {},
+    ingredientStatuses: {},
     inputData: '',
     inputPanelConfig: null,
     inputPanelId: null,
@@ -31,9 +31,9 @@ export const useKitchenStore = create<KitchenState>()(
     setCookingResult: (result) => {
       set({
         cookingStatus: result.cookingStatus,
-        ingredientStatus: result.ingredientStatuses,
+        ingredientStatuses: result.ingredientStatuses,
         inputPanelConfig: result.inputPanelConfig,
-        inputPanelId: result.inputPanelIngId,
+        inputPanelId: result.inputPanelId,
         outputData: result.outputData,
         outputPanelConfig: result.outputPanelConfig,
       });

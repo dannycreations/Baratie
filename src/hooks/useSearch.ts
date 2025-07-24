@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { CATEGORY_FAVORITES } from '../app/constants';
-import { createIngredientSearchPredicate, searchGroupedIngredients } from '../helpers/ingredientHelper';
+import { createIngredientSearchPredicate, groupAndSortIngredients, searchGroupedIngredients } from '../helpers/ingredientHelper';
 
 import type { IngredientProps } from '../core/IngredientRegistry';
 
@@ -22,24 +22,19 @@ export function useSearchIngredients(
   }, [allIngredients, disabledCategories, disabledIngredients]);
 
   const groupedIngredients = useMemo(() => {
-    const favorites: Array<IngredientProps> = [];
-    const categorized = new Map<string, Array<IngredientProps>>();
+    const favoriteItems: Array<IngredientProps> = [];
+    const otherItems: Array<IngredientProps> = [];
 
     for (const ingredient of visibleIngredients) {
       if (favoriteIngredients.has(ingredient.id)) {
-        favorites.push(ingredient);
+        favoriteItems.push(ingredient);
       } else {
-        const list = categorized.get(ingredient.category);
-        if (list) {
-          list.push(ingredient);
-        } else {
-          categorized.set(ingredient.category, [ingredient]);
-        }
+        otherItems.push(ingredient);
       }
     }
 
-    const sortedCategorized = new Map([...categorized.entries()].sort(([a], [b]) => a.localeCompare(b)));
-    return { favorites, categorized: sortedCategorized };
+    const categorized = groupAndSortIngredients(otherItems);
+    return { favorites: favoriteItems, categorized };
   }, [visibleIngredients, favoriteIngredients]);
 
   const filteredIngredients = useMemo(() => {

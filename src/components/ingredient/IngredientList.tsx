@@ -7,13 +7,9 @@ import { Tooltip } from '../shared/Tooltip';
 import { EmptyView } from '../shared/View';
 
 import type { DragEvent, JSX, ReactNode } from 'react';
+import type { IngredientProps } from '../../core/IngredientRegistry';
 
-export interface BaseListItem {
-  readonly id: string;
-  readonly name: string;
-  readonly category: string;
-  readonly description: string;
-}
+export type BaseListItem = Pick<IngredientProps, 'id' | 'name' | 'category' | 'description'>;
 
 export interface IngredientListProps {
   readonly emptyMessage?: string;
@@ -27,20 +23,16 @@ export interface IngredientListProps {
   readonly isItemDisabled?: (item: BaseListItem) => boolean;
 }
 
-const IngredientListItem = memo(
-  ({
-    item,
-    isItemDisabled,
-    renderItemPrefix,
-    renderItemActions,
-    onItemDragStart,
-  }: {
-    item: BaseListItem;
-    isItemDisabled?: (item: BaseListItem) => boolean;
-    renderItemPrefix?: (item: BaseListItem) => ReactNode;
-    renderItemActions?: (item: BaseListItem) => ReactNode;
-    onItemDragStart?: (event: DragEvent<HTMLElement>, item: BaseListItem) => void;
-  }): JSX.Element => {
+interface IngredientListItemProps {
+  readonly item: BaseListItem;
+  readonly isItemDisabled?: (item: BaseListItem) => boolean;
+  readonly renderItemPrefix?: (item: BaseListItem) => ReactNode;
+  readonly renderItemActions?: (item: BaseListItem) => ReactNode;
+  readonly onItemDragStart?: (event: DragEvent<HTMLElement>, item: BaseListItem) => void;
+}
+
+const IngredientListItem = memo<IngredientListItemProps>(
+  ({ item, isItemDisabled, renderItemPrefix, renderItemActions, onItemDragStart }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const isDisabled = isItemDisabled?.(item) ?? false;
     const nameClass = `truncate pr-2 text-sm transition-colors duration-150 cursor-default ${

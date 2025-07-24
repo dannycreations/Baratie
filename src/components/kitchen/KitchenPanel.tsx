@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef } from 'react';
+import { memo, useCallback, useMemo, useRef } from 'react';
 
 import { errorHandler, ingredientRegistry, kitchen } from '../../app/container';
 import { useKitchenStore } from '../../stores/useKitchenStore';
@@ -17,15 +17,17 @@ interface KitchenPanelProps {
   readonly type: 'input' | 'output';
 }
 
-interface InputActionsProps {
+interface KitchenPanelSectionProps {
   readonly data: string;
+}
+
+interface InputActionsProps extends KitchenPanelSectionProps {
   readonly config: InputPanelConfig | null;
   readonly onClear: () => void;
   readonly onFileSelect: () => void;
 }
 
-interface OutputActionsProps {
-  readonly data: string;
+interface OutputActionsProps extends KitchenPanelSectionProps {
   readonly onDownload: () => void;
 }
 
@@ -34,16 +36,14 @@ interface SpiceContentProps {
   readonly targetIngredient: IngredientItem;
 }
 
-interface DefaultContentProps {
+interface DefaultContentProps extends KitchenPanelSectionProps {
   readonly config: InputPanelConfig | null;
-  readonly data: string;
   readonly fileInputRef: RefObject<HTMLInputElement | null>;
   readonly onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
-interface OutputContentProps {
+interface OutputContentProps extends KitchenPanelSectionProps {
   readonly config: OutputPanelConfig | null;
-  readonly data: string;
 }
 
 const InputActions = memo<InputActionsProps>(({ data, config, onClear, onFileSelect }) => {
@@ -147,22 +147,18 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const outputPanelConfig = useKitchenStore((state) => state.outputPanelConfig);
   const inputData = useKitchenStore((state) => state.inputData);
   const outputData = useKitchenStore((state) => state.outputData);
+  const ingredients = useRecipeStore((state) => state.ingredients);
   const updateSpice = useRecipeStore((state) => state.updateSpice);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const importOperationRef = useRef<number>(0);
 
-  const targetIngredient = useRecipeStore(
-    useCallback(
-      (state) => {
-        if (inputPanelConfig?.mode === 'spiceEditor') {
-          return state.ingredients.find((ing) => ing.id === inputPanelConfig.targetIngredientId);
-        }
-        return undefined;
-      },
-      [inputPanelConfig],
-    ),
-  );
+  const targetIngredient = useMemo(() => {
+    if (inputPanelConfig?.mode === 'spiceEditor') {
+      return ingredients.find((ing) => ing.id === inputPanelConfig.targetIngredientId);
+    }
+    return undefined;
+  }, [ingredients, inputPanelConfig]);
 
   const isInput = type === 'input';
   const data = isInput ? inputData : outputData;

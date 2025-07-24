@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 import { STORAGE_COOKBOOK } from '../app/constants';
 import { errorHandler, logger, storage } from '../app/container';
-import { createRecipeHash, processAndSanitizeRecipes, saveAllRecipes, serializeRecipe } from '../helpers/cookbookHelper';
+import { createRecipeHash, processAndSanitizeRecipes, saveAllRecipes } from '../helpers/cookbookHelper';
 import { readAsText, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
@@ -103,8 +103,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       return;
     }
     const fileName = 'baratie_cookbook_export.json';
-    const serialized = recipes.map(serializeRecipe);
-    triggerDownload(JSON.stringify(serialized, null, 2), fileName);
+    triggerDownload(JSON.stringify(recipes, null, 2), fileName);
     show(`${recipes.length} recipes are ready for download.`, 'success', 'Export All Successful');
   },
   exportCurrent: () => {
@@ -128,7 +127,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       updatedAt: Date.now(),
     };
     const fileName = `${sanitizeFileName(recipeToExport.name, 'recipe')}.json`;
-    triggerDownload(JSON.stringify(serializeRecipe(recipeToExport), null, 2), fileName);
+    triggerDownload(JSON.stringify(recipeToExport, null, 2), fileName);
     show(`Recipe '${recipeToExport.name}' is ready for download.`, 'success', 'Export Successful');
   },
   importFromFile: async (file) => {

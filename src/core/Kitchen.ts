@@ -5,6 +5,7 @@ import { useRecipeStore } from '../stores/useRecipeStore';
 import { AppError } from './ErrorHandler';
 import { InputType } from './InputType';
 
+import type { KitchenState } from '../stores/useKitchenStore';
 import type {
   IngredientContext,
   IngredientDefinition,
@@ -16,14 +17,10 @@ import type {
 
 export type CookingStatusType = 'idle' | 'error' | 'success' | 'warning';
 
-export interface RecipeCookResult {
-  readonly cookingStatus: CookingStatusType;
-  readonly ingredientStatuses: Readonly<Record<string, CookingStatusType>>;
-  readonly inputPanelConfig: InputPanelConfig | null;
-  readonly inputPanelIngId: string | null;
-  readonly outputData: string;
-  readonly outputPanelConfig: OutputPanelConfig | null;
-}
+export type RecipeCookResult = Pick<
+  KitchenState,
+  'cookingStatus' | 'ingredientStatuses' | 'inputPanelConfig' | 'inputPanelId' | 'outputData' | 'outputPanelConfig'
+>;
 
 interface RecipeLoopState {
   cookedData: string;
@@ -138,7 +135,7 @@ export class Kitchen {
         cookingStatus: initialInput ? 'success' : 'idle',
         ingredientStatuses: {},
         inputPanelConfig: null,
-        inputPanelIngId: null,
+        inputPanelId: null,
         outputData: initialInput,
         outputPanelConfig: null,
       };
@@ -152,7 +149,7 @@ export class Kitchen {
       cookingStatus: finalStatus,
       ingredientStatuses: loopResult.localStatuses,
       inputPanelConfig: loopResult.lastInputConfig,
-      inputPanelIngId: loopResult.lastInputPanelId,
+      inputPanelId: loopResult.lastInputPanelId,
       outputData: loopResult.cookedData,
       outputPanelConfig: loopResult.lastOutputConfig,
     };

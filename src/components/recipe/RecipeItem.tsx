@@ -40,7 +40,7 @@ function getStatusBorder(theme: AppTheme, status: CookingStatusType): string {
 export const RecipeItem = memo<RecipeItemProps>(
   ({ ingredientItem, isDragged, isAutoCook, onSpiceChange, onRemove, onDragStart, onDragEnter, onDragEnd, onDragOver }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
-    const status = useKitchenStore((state) => state.ingredientStatus[ingredientItem.id] || 'idle');
+    const status = useKitchenStore((state) => state.ingredientStatuses[ingredientItem.id] || 'idle');
     const setEditingId = useRecipeStore((state) => state.setEditingId);
 
     const isSpiceInInput = useKitchenStore((state) => state.inputPanelId === ingredientItem.id);

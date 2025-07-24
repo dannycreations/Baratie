@@ -161,13 +161,11 @@ function getConfirmClasses(theme: Readonly<AppTheme>): string {
   return `border border-${theme.dangerBorder} bg-${theme.dangerBg} text-${theme.accentFg} hover:bg-${theme.dangerBgHover}`;
 }
 
-interface ConfirmButtonProps {
+interface ConfirmButtonProps extends Pick<TooltipButtonProps, 'className' | 'tooltipPosition'> {
   readonly onConfirm: () => void;
   readonly itemName: string;
   readonly itemType: string;
-  readonly className?: string;
   readonly actionName?: string;
-  readonly tooltipPosition?: TooltipProps['position'];
 }
 
 export const ConfirmButton = memo<ConfirmButtonProps>(

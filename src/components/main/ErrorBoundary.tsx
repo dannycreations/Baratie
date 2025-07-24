@@ -20,10 +20,7 @@ interface ErrorBoundaryState {
   readonly errorInfo: ErrorInfo | null;
 }
 
-interface ErrorDisplayProps {
-  readonly error: Error | null;
-  readonly errorInfo: ErrorInfo | null;
-}
+type ErrorDisplayProps = Omit<ErrorBoundaryState, 'hasError'>;
 
 function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);

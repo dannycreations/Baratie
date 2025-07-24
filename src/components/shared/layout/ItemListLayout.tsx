@@ -3,7 +3,6 @@ import { memo } from 'react';
 import type { HTMLAttributes, JSX, ReactNode } from 'react';
 
 interface ItemListLayoutProps extends HTMLAttributes<HTMLDivElement> {
-  readonly className?: string;
   readonly leftContent: ReactNode;
   readonly leftClasses?: string;
   readonly rightContent?: ReactNode;

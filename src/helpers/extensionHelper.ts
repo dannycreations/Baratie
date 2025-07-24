@@ -82,7 +82,8 @@ export function parseGitHubUrl(url: string): { readonly owner: string; readonly 
 
   // If shorthand was matched (group 4 is truthy), perform extra validation
   if (match[4] && match[4].includes('.')) {
-    return null; // Disallow domain-like owners in shorthand
+    // Disallow domain-like owners in shorthand
+    return null;
   }
 
   return { owner, repo, ref };

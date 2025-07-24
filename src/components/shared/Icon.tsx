@@ -3,7 +3,6 @@ import { forwardRef, memo } from 'react';
 import type { JSX, ReactNode, SVGProps } from 'react';
 
 export interface IconProps extends SVGProps<SVGSVGElement> {
-  readonly className?: string;
   readonly size?: number | string;
 }
 

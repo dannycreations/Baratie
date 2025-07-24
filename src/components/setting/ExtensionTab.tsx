@@ -12,10 +12,7 @@ import { EmptyView } from '../shared/View';
 import type { ChangeEvent, JSX, KeyboardEvent } from 'react';
 import type { Extension } from '../../stores/useExtensionStore';
 
-interface ExtensionItemStatusProps {
-  readonly status: Extension['status'];
-  readonly errors?: ReadonlyArray<string>;
-}
+type ExtensionItemStatusProps = Pick<Extension, 'status' | 'errors'>;
 
 interface ExtensionItemProps {
   readonly extension: Extension;

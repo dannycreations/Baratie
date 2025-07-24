@@ -11,11 +11,13 @@ import { CookbookSave } from './CookbookSave';
 import type { ChangeEvent, JSX } from 'react';
 import type { RecipeBookItem } from '../../core/IngredientRegistry';
 
-const SaveHeaderActions = memo<{
+interface SaveHeaderActionsProps {
   readonly isSaveDisabled: boolean;
   readonly onExportCurrent: () => void;
   readonly onSave: () => void;
-}>(({ isSaveDisabled, onExportCurrent, onSave }) => (
+}
+
+const SaveHeaderActions = memo<SaveHeaderActionsProps>(({ isSaveDisabled, onExportCurrent, onSave }) => (
   <>
     <TooltipButton
       aria-label="Export the current recipe to a file"
@@ -38,11 +40,13 @@ const SaveHeaderActions = memo<{
   </>
 ));
 
-const LoadHeaderActions = memo<{
+interface LoadHeaderActionsProps {
   readonly isExportDisabled: boolean;
   readonly onTriggerImport: () => void;
   readonly onExportAll: () => void;
-}>(({ isExportDisabled, onTriggerImport, onExportAll }) => (
+}
+
+const LoadHeaderActions = memo<LoadHeaderActionsProps>(({ isExportDisabled, onTriggerImport, onExportAll }) => (
   <>
     <TooltipButton
       aria-label="Import recipes from a JSON file"

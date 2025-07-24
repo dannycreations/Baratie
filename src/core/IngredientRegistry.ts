@@ -28,25 +28,24 @@ export interface IngredientDefinition<T = unknown> {
   readonly run: (input: InputType, spices: T, context: IngredientContext) => ResultType | Promise<ResultType>;
 }
 
-export type InputPanelConfig =
-  | {
-      readonly mode: 'textarea';
-      readonly placeholder: string;
-      readonly title: string;
-      readonly disabled?: boolean;
-      readonly showClear: boolean;
-    }
-  | {
-      readonly mode: 'spiceEditor';
-      readonly targetIngredientId: string;
-      readonly title: string;
-    };
-
-export type OutputPanelConfig = {
+export interface OutputPanelConfig {
   readonly mode: 'textarea';
   readonly title: string;
   readonly placeholder: string;
-};
+}
+
+interface InputPanelTextareaConfig extends OutputPanelConfig {
+  readonly disabled?: boolean;
+  readonly showClear: boolean;
+}
+
+interface InputPanelSpiceEditorConfig {
+  readonly mode: 'spiceEditor';
+  readonly targetIngredientId: string;
+  readonly title: string;
+}
+
+export type InputPanelConfig = InputPanelTextareaConfig | InputPanelSpiceEditorConfig;
 
 export type PanelControlConfig =
   | {
@@ -81,31 +80,29 @@ interface BaseSpice<SpiceType extends 'boolean' | 'number' | 'select' | 'string'
   readonly type: SpiceType;
   readonly value: ValueType;
   readonly description?: string;
+  readonly placeholder?: string;
   readonly dependsOn?: ReadonlyArray<{
     readonly spiceId: string;
     readonly value: SpiceValue | ReadonlyArray<SpiceValue>;
   }>;
 }
 
-type BooleanSpice = BaseSpice<'boolean', boolean>;
+type BooleanSpice = Omit<BaseSpice<'boolean', boolean>, 'placeholder'>;
 
-type NumberSpice = BaseSpice<'number', number> & {
+interface NumberSpice extends BaseSpice<'number', number> {
   readonly max?: number;
   readonly min?: number;
   readonly step?: number;
-  readonly placeholder?: string;
-};
+}
 
-type SelectSpice = BaseSpice<'select', SpiceValue> & {
+type SelectSpice = Omit<BaseSpice<'select', SpiceValue>, 'placeholder'> & {
   readonly options: ReadonlyArray<{
     readonly label: string;
     readonly value: SpiceValue;
   }>;
 };
 
-type StringSpice = BaseSpice<'string' | 'textarea', string> & {
-  readonly placeholder?: string;
-};
+type StringSpice = BaseSpice<'string' | 'textarea', string>;
 
 export type SpiceDefinition = StringSpice | NumberSpice | BooleanSpice | SelectSpice;
 
@@ -167,9 +164,7 @@ export class IngredientRegistry {
       );
     }
 
-    const ingredientWithId = { ...definition, id } as IngredientProps;
-
-    this.ingredients.set(id, ingredientWithId);
+    this.ingredients.set(id, { ...definition, id } as IngredientProps);
     if (!this.isBatching) {
       this.resort();
     }
