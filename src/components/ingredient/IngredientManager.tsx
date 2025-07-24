@@ -11,6 +11,7 @@ import { IngredientList } from './IngredientList';
 
 import type { JSX } from 'react';
 import type { IngredientProps } from '../../core/IngredientRegistry';
+import type { BaseListItem } from './IngredientList';
 
 export const IngredientManager = memo((): JSX.Element => {
   const isModalOpen = useIngredientStore((state) => state.isModalOpen);
@@ -38,7 +39,7 @@ export const IngredientManager = memo((): JSX.Element => {
   }, [ingredientsByCategory, query]);
 
   const renderHeader = useCallback(
-    (category: string): JSX.Element => {
+    (category: string, _items: ReadonlyArray<BaseListItem>): JSX.Element => {
       const categoryId = `manager-category-${category.replace(/\s+/g, '-').toLowerCase()}`;
       const isCategoryDisabled = disabledCategories.has(category);
 
@@ -58,7 +59,7 @@ export const IngredientManager = memo((): JSX.Element => {
   );
 
   const renderItemPrefix = useCallback(
-    (ingredient: IngredientProps): JSX.Element => {
+    (ingredient: BaseListItem): JSX.Element => {
       const isCategoryDisabled = disabledCategories.has(ingredient.category);
       const ingredientId = `manager-ingredient-${ingredient.name.replace(/\s+/g, '-').toLowerCase()}`;
       const isIngredientDisabled = disabledIngredients.has(ingredient.id);
@@ -76,7 +77,7 @@ export const IngredientManager = memo((): JSX.Element => {
   );
 
   const isItemDisabled = useCallback(
-    (ingredient: IngredientProps) => {
+    (ingredient: BaseListItem) => {
       return disabledCategories.has(ingredient.category) || disabledIngredients.has(ingredient.id);
     },
     [disabledCategories, disabledIngredients],

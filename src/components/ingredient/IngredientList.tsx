@@ -7,14 +7,20 @@ import { Tooltip } from '../shared/Tooltip';
 import { EmptyView } from '../shared/View';
 
 import type { DragEvent, JSX, ReactNode } from 'react';
-import type { IngredientProps } from '../../core/IngredientRegistry';
 
-export interface IngredientListProps<T extends IngredientProps> {
+export interface BaseListItem {
+  readonly id: string;
+  readonly name: string;
+  readonly category: string;
+  readonly description: string;
+}
+
+export interface IngredientListProps<T extends BaseListItem> {
   readonly emptyMessage?: string;
   readonly itemsByCategory: ReadonlyArray<readonly [string, ReadonlyArray<T>]>;
   readonly noResultsMessage?: (query: string) => string;
   readonly query: string;
-  readonly renderHeader?: (category: string) => JSX.Element;
+  readonly renderHeader?: (category: string, items: ReadonlyArray<T>) => JSX.Element;
   readonly renderItemActions?: (item: T) => ReactNode;
   readonly renderItemPrefix?: (item: T) => ReactNode;
   readonly onItemDragStart?: (event: DragEvent<HTMLElement>, item: T) => void;
@@ -22,7 +28,7 @@ export interface IngredientListProps<T extends IngredientProps> {
 }
 
 export const IngredientList = memo(
-  <T extends IngredientProps>({
+  <T extends BaseListItem>({
     itemsByCategory,
     query,
     renderHeader,
@@ -98,7 +104,7 @@ export const IngredientList = memo(
               className={`flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-3 text-left text-${theme.contentSecondary} outline-none hover:bg-${theme.surfaceHover}`}
               onClick={() => handleCategoryToggle(category)}
             >
-              {renderHeader ? renderHeader(category) : <span className="font-medium">{category}</span>}
+              {renderHeader ? renderHeader(category, items) : <span className="font-medium">{category}</span>}
               <ChevronRightIcon
                 aria-hidden="true"
                 className={`transform transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`}

@@ -18,6 +18,7 @@ import { IngredientManager } from './IngredientManager';
 
 import type { DragEvent, JSX } from 'react';
 import type { IngredientProps } from '../../core/IngredientRegistry';
+import type { BaseListItem } from './IngredientList';
 
 export const IngredientPanel = memo((): JSX.Element => {
   const favorites = useFavoriteStore((state) => state.favorites);
@@ -84,7 +85,7 @@ export const IngredientPanel = memo((): JSX.Element => {
     [removeIngredient, setDraggedItemId],
   );
 
-  const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: IngredientProps) => {
+  const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: BaseListItem) => {
     errorHandler.assert(item.id, 'Ingredient unique name not found on dragged element.', 'Ingredient Drag');
     event.dataTransfer.setData('application/x-baratie-ingredient-type', item.id);
     event.dataTransfer.effectAllowed = 'copy';
@@ -119,7 +120,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   );
 
   const renderItemActions = useCallback(
-    (item: IngredientProps): JSX.Element => {
+    (item: BaseListItem): JSX.Element => {
       const isFavorite = favorites.has(item.id);
 
       const favoriteButtonClass = `opacity-70 group-hover:opacity-100 ${
