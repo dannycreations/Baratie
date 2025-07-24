@@ -1,6 +1,7 @@
-import { memo, useCallback, useDeferredValue, useMemo, useRef } from 'react';
+import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useCookbookStore } from '../../stores/useCookbookStore';
+import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { TooltipButton } from '../shared/Button';
 import { DownloadCloudIcon, SaveIcon, UploadCloudIcon } from '../shared/Icon';
@@ -9,7 +10,8 @@ import { CookbookLoad } from './CookbookLoad';
 import { CookbookSave } from './CookbookSave';
 
 import type { ChangeEvent, JSX } from 'react';
-import type { RecipeBookItem } from '../../core/IngredientRegistry';
+import type { RecipebookItem } from '../../core/IngredientRegistry';
+import type { CookbookModalProps } from '../../stores/useCookbookStore';
 
 interface SaveHeaderActionsProps {
   readonly isSaveDisabled: boolean;
@@ -67,12 +69,24 @@ const LoadHeaderActions = memo<LoadHeaderActionsProps>(({ isExportDisabled, onTr
 ));
 
 export const CookbookPanel = memo((): JSX.Element | null => {
-  const isModalOpen = useCookbookStore((state) => state.isModalOpen);
-  const modalMode = useCookbookStore((state) => state.modalMode);
+  const activeModal = useModalStore((state) => state.activeModal);
+  const modalProps = useModalStore((state) => state.modalProps as CookbookModalProps | null);
+  const closeModal = useModalStore((state) => state.closeModal);
+
+  const isModalOpen = activeModal === 'cookbook';
+  const modalMode = isModalOpen ? modalProps?.mode : null;
+
+  const [persistedModalMode, setPersistedModalMode] = useState(modalMode);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      setPersistedModalMode(modalMode);
+    }
+  }, [isModalOpen, modalMode]);
+
   const nameInput = useCookbookStore((state) => state.nameInput);
   const query = useCookbookStore((state) => state.query);
   const recipes = useCookbookStore((state) => state.recipes);
-  const closeModal = useCookbookStore((state) => state.closeModal);
   const resetModal = useCookbookStore((state) => state.resetModal);
   const setName = useCookbookStore((state) => state.setName);
   const setQuery = useCookbookStore((state) => state.setQuery);
@@ -101,8 +115,9 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const handleLoad = useCallback(
     (id: string) => {
       load(id);
+      closeModal();
     },
-    [load],
+    [load, closeModal],
   );
 
   const handleTriggerImport = useCallback(() => {
@@ -121,7 +136,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
     [importFromFile],
   );
 
-  const filtered = useMemo<ReadonlyArray<RecipeBookItem>>(() => {
+  const filtered = useMemo<ReadonlyArray<RecipebookItem>>(() => {
     const lowerQuery = deferredQuery.toLowerCase().trim();
     if (!lowerQuery) {
       return recipes;
@@ -129,17 +144,17 @@ export const CookbookPanel = memo((): JSX.Element | null => {
     return recipes.filter((recipe) => recipe.name.toLowerCase().includes(lowerQuery));
   }, [recipes, deferredQuery]);
 
-  const title = modalMode === 'save' ? 'Add to Cookbook' : 'Open from Cookbook';
+  const title = persistedModalMode === 'save' ? 'Add to Cookbook' : 'Open from Cookbook';
 
   const headerActions =
-    modalMode === 'save' ? (
+    persistedModalMode === 'save' ? (
       <SaveHeaderActions isSaveDisabled={isSaveDisabled} onExportCurrent={exportCurrent} onSave={handleSave} />
     ) : (
       <LoadHeaderActions isExportDisabled={recipes.length === 0} onExportAll={exportAll} onTriggerImport={handleTriggerImport} />
     );
 
   const bodyContent =
-    modalMode === 'save' ? (
+    persistedModalMode === 'save' ? (
       <CookbookSave isRecipeEmpty={isRecipeEmpty} nameRef={nameRef} nameInput={nameInput} onNameChange={setName} onSave={handleSave} />
     ) : (
       <CookbookLoad

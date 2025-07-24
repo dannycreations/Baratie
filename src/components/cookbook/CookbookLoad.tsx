@@ -6,16 +6,15 @@ import { EmptyView } from '../shared/View';
 import { CookbookItem } from './CookbookItem';
 
 import type { ChangeEvent, JSX, RefObject } from 'react';
-import type { RecipeBookItem } from '../../core/IngredientRegistry';
+import type { RecipebookItem } from '../../core/IngredientRegistry';
+import type { CookbookItemHandlers } from './CookbookItem';
 
-interface CookbookLoadProps {
+interface CookbookLoadProps extends CookbookItemHandlers {
   readonly importRef: RefObject<HTMLInputElement | null>;
-  readonly recipes: ReadonlyArray<RecipeBookItem>;
+  readonly recipes: ReadonlyArray<RecipebookItem>;
   readonly totalRecipes: number;
   readonly query: string;
-  readonly onDelete: (id: string) => void;
   readonly onImport: (event: ChangeEvent<HTMLInputElement>) => void;
-  readonly onLoad: (id: string) => void;
   readonly onQueryChange: (query: string) => void;
 }
 
@@ -43,12 +42,14 @@ export const CookbookLoad = memo<CookbookLoadProps>(
           }
           listId={listId}
           listWrapperClasses="grow overflow-y-auto pt-3"
-          query={query}
-          searchAriaLabel="Search saved recipes"
-          searchId="recipe-search"
-          searchPlaceholder="Search Saved Recipes..."
-          searchWrapperClasses={`border-b border-${theme.borderPrimary} pb-3`}
-          onQueryChange={onQueryChange}
+          search={{
+            query,
+            onQueryChange,
+            ariaLabel: 'Search saved recipes',
+            id: 'recipe-search',
+            placeholder: 'Search Saved Recipes...',
+            wrapperClasses: `border-b border-${theme.borderPrimary} pb-3`,
+          }}
         />
         <input ref={importRef} accept=".json" type="file" aria-hidden="true" className="hidden" onChange={onImport} />
       </>

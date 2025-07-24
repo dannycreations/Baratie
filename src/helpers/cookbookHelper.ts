@@ -5,7 +5,7 @@ import { ingredientRegistry, logger, storage } from '../app/container';
 import { validateSpices } from '../helpers/spiceHelper';
 import { getSortedSpices } from './spiceHelper';
 
-import type { IngredientItem, RecipeBookItem } from '../core/IngredientRegistry';
+import type { IngredientItem, RecipebookItem } from '../core/IngredientRegistry';
 
 const SpiceValueSchema = v.union([v.string(), v.number(), v.boolean()]);
 
@@ -29,12 +29,12 @@ const RecipeBookItemSchema = v.object({
 type RawRecipeBookItem = v.InferInput<typeof RecipeBookItemSchema>;
 
 interface SanitizationResult {
-  readonly recipe: RecipeBookItem | null;
+  readonly recipe: RecipebookItem | null;
   readonly warning: string | null;
 }
 
 export interface SanitizedRecipesResult {
-  readonly recipes: ReadonlyArray<RecipeBookItem>;
+  readonly recipes: ReadonlyArray<RecipebookItem>;
   readonly warnings: ReadonlySet<string>;
   readonly hasCorruption: boolean;
 }
@@ -56,7 +56,7 @@ export function createRecipeHash(ingredients: ReadonlyArray<IngredientItem>): st
   return canonicalParts.join('||');
 }
 
-export function saveAllRecipes(recipes: ReadonlyArray<RecipeBookItem>): boolean {
+export function saveAllRecipes(recipes: ReadonlyArray<RecipebookItem>): boolean {
   logger.info(`Saving ${recipes.length} recipes to storage.`);
   return storage.set('baratie-cookbook', recipes, 'Saved Recipes');
 }
@@ -91,14 +91,14 @@ export function sanitizeRecipe(rawRecipe: RawRecipeBookItem, source: 'fileImport
           ingredientDifference === 1 ? '' : 's'
         } that ${ingredientDifference === 1 ? 'was' : 'were'} removed.`
       : null;
-  const recipe: RecipeBookItem = { id, name, ingredients: validIngredients, createdAt, updatedAt };
+  const recipe: RecipebookItem = { id, name, ingredients: validIngredients, createdAt, updatedAt };
   return { recipe, warning };
 }
 
 export function processAndSanitizeRecipes(rawItems: ReadonlyArray<unknown>, source: 'fileImport' | 'storage'): SanitizedRecipesResult {
   const allWarnings = new Set<string>();
   let corruptionCount = 0;
-  const recipes = rawItems.reduce<Array<RecipeBookItem>>((acc, rawItem) => {
+  const recipes = rawItems.reduce<Array<RecipebookItem>>((acc, rawItem) => {
     const itemValidation = safeParse(RecipeBookItemSchema, rawItem);
     if (itemValidation.success) {
       const { recipe, warning } = sanitizeRecipe(itemValidation.output, source);

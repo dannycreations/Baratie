@@ -9,11 +9,8 @@ import { DropzoneLayout } from '../layout/DropzoneLayout';
 
 import type { ChangeEvent, JSX, TextareaHTMLAttributes, UIEvent } from 'react';
 
-interface TextareaInputProps
-  extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'value' | 'onChange' | 'readOnly' | 'placeholder' | 'disabled' | 'spellCheck'> {
+interface TextareaInputProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'value' | 'onChange' | 'readOnly' | 'spellCheck'> {
   readonly value: string;
-  readonly disabled?: boolean;
-  readonly placeholder?: string;
   readonly showLineNumbers?: boolean;
   readonly textareaClasses?: string;
   readonly wrapperClasses?: string;
@@ -21,11 +18,12 @@ interface TextareaInputProps
 }
 
 export const TextareaInput = memo<TextareaInputProps>(
-  ({ value, onChange, disabled, placeholder = '', wrapperClasses = '', textareaClasses = '', showLineNumbers = false, ...rest }): JSX.Element => {
+  ({ value, onChange, wrapperClasses = '', textareaClasses = '', showLineNumbers = false, ...rest }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const lineNumbersRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [scrollTop, setScrollTop] = useState(0);
+    const { disabled, placeholder = '' } = rest;
 
     const virtualizedLines = useLineNumber({ value, showLineNumbers, textareaRef, scrollTop });
 
@@ -89,7 +87,6 @@ export const TextareaInput = memo<TextareaInputProps>(
           spellCheck={false}
           {...rest}
           className={textareaClass}
-          style={rest.style}
           onChange={handleChange}
           onScroll={handleScroll}
         />

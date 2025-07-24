@@ -29,8 +29,8 @@ export interface IngredientDefinition<T = unknown> {
 }
 
 export interface OutputPanelConfig {
-  readonly mode: 'textarea';
   readonly title: string;
+  readonly mode: 'textarea';
   readonly placeholder: string;
 }
 
@@ -40,9 +40,9 @@ interface InputPanelTextareaConfig extends OutputPanelConfig {
 }
 
 interface InputPanelSpiceEditorConfig {
+  readonly title: string;
   readonly mode: 'spiceEditor';
   readonly targetIngredientId: string;
-  readonly title: string;
 }
 
 export type InputPanelConfig = InputPanelTextareaConfig | InputPanelSpiceEditorConfig;
@@ -64,7 +64,7 @@ export interface PanelControlSignal<OutType = unknown> {
   readonly panelControl?: PanelControlConfig;
 }
 
-export interface RecipeBookItem {
+export interface RecipebookItem {
   readonly id: string;
   readonly name: string;
   readonly ingredients: ReadonlyArray<IngredientItem>;

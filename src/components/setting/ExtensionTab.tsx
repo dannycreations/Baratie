@@ -10,12 +10,19 @@ import { Tooltip } from '../shared/Tooltip';
 import { EmptyView } from '../shared/View';
 
 import type { ChangeEvent, JSX, KeyboardEvent } from 'react';
-import type { Extension } from '../../stores/useExtensionStore';
+import type { Extension } from '../../helpers/extensionHelper';
 
 type ExtensionItemStatusProps = Pick<Extension, 'status' | 'errors'>;
 
-interface ExtensionItemProps {
-  readonly extension: Extension;
+interface ExtensionItemActionHandlers {
+  readonly onRefresh: (id: string) => void;
+  readonly onRemove: (id: string) => void;
+}
+
+interface ExtensionItemProps extends ExtensionItemStatusProps, ExtensionItemActionHandlers {
+  readonly id: string;
+  readonly displayName: string;
+  readonly isLoading: boolean;
 }
 
 const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }): JSX.Element => {
@@ -49,33 +56,30 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
   return content;
 });
 
-const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
+const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status, errors, isLoading, onRefresh, onRemove }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
-  const removeExtension = useExtensionStore((state) => state.remove);
-  const refreshExtension = useExtensionStore((state) => state.refresh);
-  const displayName = extension.name || extension.id;
 
   const handleConfirmDelete = useCallback(() => {
-    removeExtension(extension.id);
-  }, [removeExtension, extension.id]);
+    onRemove(id);
+  }, [onRemove, id]);
 
   const handleRefresh = useCallback(() => {
-    refreshExtension(extension.id);
-  }, [refreshExtension, extension.id]);
+    onRefresh(id);
+  }, [onRefresh, id]);
 
   const leftContent = (
     <div className="flex flex-col">
       <span className={`font-medium text-${theme.contentPrimary}`}>{displayName}</span>
-      <span className={`text-xs text-${theme.contentTertiary}`}>{extension.id}</span>
+      <span className={`text-xs text-${theme.contentTertiary}`}>{id}</span>
     </div>
   );
 
   const rightContent = (
     <div className="flex items-center gap-2">
-      <ExtensionItemStatus errors={extension.errors} status={extension.status} />
+      <ExtensionItemStatus errors={errors} status={status} />
       <TooltipButton
         aria-label={`Refresh extension: ${displayName}`}
-        disabled={extension.status === 'loading'}
+        disabled={isLoading}
         icon={<RefreshCwIcon size={18} />}
         size="sm"
         tooltipContent="Refresh & Check for Updates"
@@ -103,6 +107,8 @@ export const ExtensionTab = memo((): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const extensions = useExtensionStore((state) => state.extensions);
   const addExtension = useExtensionStore((state) => state.add);
+  const removeExtension = useExtensionStore((state) => state.remove);
+  const refreshExtension = useExtensionStore((state) => state.refresh);
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -164,7 +170,16 @@ export const ExtensionTab = memo((): JSX.Element => {
         ) : (
           <ul className="space-y-1.5">
             {extensions.map((extension) => (
-              <ExtensionItem key={extension.id} extension={extension} />
+              <ExtensionItem
+                key={extension.id}
+                id={extension.id}
+                displayName={extension.name || extension.id}
+                errors={extension.errors}
+                isLoading={extension.status === 'loading'}
+                status={extension.status}
+                onRefresh={refreshExtension}
+                onRemove={removeExtension}
+              />
             ))}
           </ul>
         )}

@@ -3,6 +3,7 @@ import { memo, useCallback, useId, useMemo, useState } from 'react';
 import { ingredientRegistry } from '../../app/container';
 import { groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
 import { useIngredientStore } from '../../stores/useIngredientStore';
+import { useModalStore } from '../../stores/useModalStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { BooleanInput } from '../shared/input/BooleanInput';
 import { SearchListLayout } from '../shared/layout/SearchListLayout';
@@ -14,8 +15,8 @@ import type { IngredientProps } from '../../core/IngredientRegistry';
 import type { BaseListItem } from './IngredientList';
 
 export const IngredientManager = memo((): JSX.Element => {
-  const isModalOpen = useIngredientStore((state) => state.isModalOpen);
-  const closeModal = useIngredientStore((state) => state.closeModal);
+  const isModalOpen = useModalStore((state) => state.activeModal === 'ingredientManager');
+  const closeModal = useModalStore((state) => state.closeModal);
   const disabledCategories = useIngredientStore((state) => state.disabledCategories);
   const disabledIngredients = useIngredientStore((state) => state.disabledIngredients);
   const toggleCategory = useIngredientStore((state) => state.toggleCategory);
@@ -100,11 +101,13 @@ export const IngredientManager = memo((): JSX.Element => {
         listContent={content}
         listId={listId}
         listWrapperClasses="grow mt-2 overflow-y-auto"
-        query={query}
-        searchAriaLabel="Search ingredients or categories"
-        searchId="ingredient-manager-search"
-        searchPlaceholder="Search Ingredients..."
-        onQueryChange={setQuery}
+        search={{
+          query,
+          onQueryChange: setQuery,
+          ariaLabel: 'Search ingredients or categories',
+          id: 'ingredient-manager-search',
+          placeholder: 'Search Ingredients...',
+        }}
       />
     </Modal>
   );

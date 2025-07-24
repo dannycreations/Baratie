@@ -23,13 +23,9 @@ export interface IngredientListProps {
   readonly isItemDisabled?: (item: BaseListItem) => boolean;
 }
 
-interface IngredientListItemProps {
+type IngredientListItemProps = Pick<IngredientListProps, 'isItemDisabled' | 'renderItemActions' | 'renderItemPrefix' | 'onItemDragStart'> & {
   readonly item: BaseListItem;
-  readonly isItemDisabled?: (item: BaseListItem) => boolean;
-  readonly renderItemPrefix?: (item: BaseListItem) => ReactNode;
-  readonly renderItemActions?: (item: BaseListItem) => ReactNode;
-  readonly onItemDragStart?: (event: DragEvent<HTMLElement>, item: BaseListItem) => void;
-}
+};
 
 const IngredientListItem = memo<IngredientListItemProps>(
   ({ item, isItemDisabled, renderItemPrefix, renderItemActions, onItemDragStart }): JSX.Element => {

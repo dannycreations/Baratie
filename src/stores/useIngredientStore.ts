@@ -3,13 +3,12 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_FILTERS } from '../app/constants';
 import { ingredientRegistry, storage } from '../app/container';
+import { useModalStore } from './useModalStore';
 
 interface IngredientState {
   readonly disabledCategories: ReadonlySet<string>;
   readonly disabledIngredients: ReadonlySet<string>;
-  readonly isModalOpen: boolean;
   readonly registryVersion: number;
-  readonly closeModal: () => void;
   readonly init: () => void;
   readonly openModal: () => void;
   readonly refreshRegistry: () => void;
@@ -22,11 +21,7 @@ export const useIngredientStore = create<IngredientState>()(
   subscribeWithSelector((set) => ({
     disabledCategories: new Set(),
     disabledIngredients: new Set(),
-    isModalOpen: false,
     registryVersion: 0,
-    closeModal: () => {
-      set({ isModalOpen: false });
-    },
     init: () => {
       const filters = storage.get<{
         readonly categories?: ReadonlyArray<string>;
@@ -43,7 +38,7 @@ export const useIngredientStore = create<IngredientState>()(
       });
     },
     openModal: () => {
-      set({ isModalOpen: true });
+      useModalStore.getState().openModal('ingredientManager', undefined);
     },
     refreshRegistry: () => {
       set((state) => ({ registryVersion: state.registryVersion + 1 }));

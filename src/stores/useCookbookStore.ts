@@ -4,30 +4,23 @@ import { STORAGE_COOKBOOK } from '../app/constants';
 import { errorHandler, logger, storage } from '../app/container';
 import { createRecipeHash, processAndSanitizeRecipes, saveAllRecipes } from '../helpers/cookbookHelper';
 import { readAsText, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
+import { useModalStore } from './useModalStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
 
-import type { IngredientItem, RecipeBookItem } from '../core/IngredientRegistry';
+import type { IngredientItem, RecipebookItem } from '../core/IngredientRegistry';
 import type { SanitizedRecipesResult } from '../helpers/cookbookHelper';
 
-type OpenCookbookArgs =
+export type CookbookModalProps =
   | { readonly mode: 'load' }
   | { readonly mode: 'save'; readonly ingredients: ReadonlyArray<IngredientItem>; readonly activeRecipeId: string | null; readonly name?: string };
 
-interface OpenModalArgs {
-  readonly mode: 'load' | 'save';
-  readonly name: string;
-}
-
 interface CookbookState {
-  readonly isModalOpen: boolean;
-  readonly modalMode: 'load' | 'save' | null;
   readonly nameInput: string;
   readonly query: string;
-  readonly recipes: ReadonlyArray<RecipeBookItem>;
-  readonly recipeIdMap: ReadonlyMap<string, RecipeBookItem>;
+  readonly recipes: ReadonlyArray<RecipebookItem>;
+  readonly recipeIdMap: ReadonlyMap<string, RecipebookItem>;
   readonly recipeContentHashMap: ReadonlyMap<string, string>;
-  readonly closeModal: () => void;
   readonly computeInitialName: (ingredients: ReadonlyArray<IngredientItem>, activeRecipeId: string | null) => string;
   readonly delete: (id: string) => void;
   readonly exportAll: () => void;
@@ -35,27 +28,21 @@ interface CookbookState {
   readonly importFromFile: (file: File) => Promise<void>;
   readonly init: () => void;
   readonly load: (id: string) => void;
-  readonly merge: (recipesToImport: ReadonlyArray<RecipeBookItem>) => void;
-  readonly open: (args: Readonly<OpenCookbookArgs>) => void;
-  readonly openModal: (args: Readonly<OpenModalArgs>) => void;
+  readonly merge: (recipesToImport: ReadonlyArray<RecipebookItem>) => void;
+  readonly open: (args: Readonly<CookbookModalProps>) => void;
   readonly resetModal: () => void;
   readonly setName: (name: string) => void;
   readonly setQuery: (term: string) => void;
-  readonly setRecipes: (recipes: ReadonlyArray<RecipeBookItem>) => void;
+  readonly setRecipes: (recipes: ReadonlyArray<RecipebookItem>) => void;
   readonly upsert: () => void;
 }
 
 export const useCookbookStore = create<CookbookState>()((set, get) => ({
-  isModalOpen: false,
-  modalMode: null,
   nameInput: '',
   query: '',
-  recipes: [] as ReadonlyArray<RecipeBookItem>,
-  recipeIdMap: new Map<string, RecipeBookItem>(),
+  recipes: [] as ReadonlyArray<RecipebookItem>,
+  recipeIdMap: new Map<string, RecipebookItem>(),
   recipeContentHashMap: new Map<string, string>(),
-  closeModal: () => {
-    set({ isModalOpen: false });
-  },
   computeInitialName: (ingredients, activeRecipeId) => {
     if (ingredients.length === 0) {
       return '';
@@ -119,7 +106,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       show('Cannot export an empty recipe. Please add ingredients first.', 'warning', 'Export Error');
       return;
     }
-    const recipeToExport: RecipeBookItem = {
+    const recipeToExport: RecipebookItem = {
       id: crypto.randomUUID(),
       name: trimmedName,
       ingredients,
@@ -187,15 +174,14 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     if (recipeToLoad) {
       useRecipeStore.getState().setRecipe(recipeToLoad.ingredients, recipeToLoad.id);
       show(`Recipe '${recipeToLoad.name}' loaded.`, 'success', 'Cookbook Action');
-      get().closeModal();
     }
   },
-  merge: (recipesToImport: ReadonlyArray<RecipeBookItem>) => {
+  merge: (recipesToImport: ReadonlyArray<RecipebookItem>) => {
     const { show } = useNotificationStore.getState();
     const { recipes, setRecipes } = get();
     logger.info('Merging imported recipes...', { importedCount: recipesToImport.length, existingCount: recipes.length });
 
-    const recipeMap: Map<string, RecipeBookItem> = new Map(recipes.map((r) => [r.id, r]));
+    const recipeMap: Map<string, RecipebookItem> = new Map(recipes.map((r) => [r.id, r]));
     let added = 0;
     let updated = 0;
     let skipped = 0;
@@ -234,32 +220,19 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     }
   },
   open: (args) => {
-    if (args.mode === 'load') {
-      get().openModal({
-        name: '',
-        mode: 'load',
-      });
-      return;
+    const { openModal } = useModalStore.getState();
+    const { computeInitialName, setName } = get();
+    if (args.mode === 'save') {
+      const initialName = args.name ?? computeInitialName(args.ingredients, args.activeRecipeId);
+      setName(initialName);
+      openModal('cookbook', { ...args, name: initialName });
+    } else {
+      openModal('cookbook', args);
     }
-    const { ingredients, activeRecipeId } = args;
-    const initialName = args.name ?? get().computeInitialName(ingredients, activeRecipeId);
-    get().openModal({
-      name: initialName,
-      mode: 'save',
-    });
-  },
-  openModal: (args) => {
-    set({
-      isModalOpen: true,
-      modalMode: args.mode,
-      nameInput: args.name,
-      query: '',
-    });
   },
   resetModal: () => {
     set({
       nameInput: '',
-      modalMode: null,
       query: '',
     });
   },
@@ -269,7 +242,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
   setQuery: (query) => {
     set({ query });
   },
-  setRecipes: (newRecipes: ReadonlyArray<RecipeBookItem>) => {
+  setRecipes: (newRecipes: ReadonlyArray<RecipebookItem>) => {
     const recipes = [...newRecipes].sort((a, b) => b.updatedAt - a.updatedAt);
     const idMap = new Map(recipes.map((recipe) => [recipe.id, recipe]));
     const contentHashMap = new Map<string, string>();
@@ -297,8 +270,8 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     const isUpdate = !shouldForceCreate && !!recipeToUpdate && recipeToUpdate.name.trim().toLowerCase() === trimmedName.toLowerCase();
 
     const now = Date.now();
-    let finalRecipes: ReadonlyArray<RecipeBookItem>;
-    let recipeToSave: RecipeBookItem;
+    let finalRecipes: ReadonlyArray<RecipebookItem>;
+    let recipeToSave: RecipebookItem;
     let userMessage: string;
 
     if (isUpdate && recipeToUpdate) {

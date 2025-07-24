@@ -1,6 +1,7 @@
 import { memo, useCallback, useDeferredValue, useEffect, useId, useMemo, useState } from 'react';
 
 import { useExtensionStore } from '../../stores/useExtensionStore';
+import { useModalStore } from '../../stores/useModalStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { IngredientList } from '../ingredient/IngredientList';
 import { Button } from '../shared/Button';
@@ -9,10 +10,15 @@ import { SearchListLayout } from '../shared/layout/SearchListLayout';
 import { Modal } from '../shared/Modal';
 
 import type { JSX } from 'react';
-import type { ManifestModule } from '../../stores/useExtensionStore';
+import type { ExtensionManifest, ManifestModule } from '../../helpers/extensionHelper';
 import type { BaseListItem } from '../ingredient/IngredientList';
 
 type ModuleIngredient = ManifestModule & { id: string };
+
+export interface ExtensionModalProps {
+  id: string;
+  manifest: ExtensionManifest;
+}
 
 function groupModulesForDisplay(modules: ReadonlyArray<ManifestModule>): Array<[string, Array<ModuleIngredient>]> {
   const grouped = new Map<string, Array<ModuleIngredient>>();
@@ -29,8 +35,12 @@ function groupModulesForDisplay(modules: ReadonlyArray<ManifestModule>): Array<[
 }
 
 export const ExtensionModal = memo((): JSX.Element | null => {
-  const pendingSelection = useExtensionStore((state) => state.pendingSelection);
-  const setPendingSelection = useExtensionStore((state) => state.setPendingSelection);
+  const activeModal = useModalStore((state) => state.activeModal);
+  const modalProps = useModalStore((state) => state.modalProps as ExtensionModalProps | null);
+
+  const isModalOpen = activeModal === 'extensionInstall';
+  const pendingSelection = isModalOpen ? modalProps : null;
+
   const installSelectedModules = useExtensionStore((state) => state.installSelectedModules);
   const cancelPendingInstall = useExtensionStore((state) => state.cancelPendingInstall);
   const theme = useThemeStore((state) => state.theme);
@@ -116,8 +126,7 @@ export const ExtensionModal = memo((): JSX.Element | null => {
     const modulesToInstall = manifestModules.filter((m) => selectedEntries.has(m.entry));
     await installSelectedModules(pendingSelection.id, modulesToInstall);
     setIsLoading(false);
-    setPendingSelection(null);
-  }, [pendingSelection, selectedEntries, manifestModules, installSelectedModules, setPendingSelection]);
+  }, [pendingSelection, selectedEntries, manifestModules, installSelectedModules]);
 
   const handleClose = useCallback(() => {
     cancelPendingInstall();
@@ -159,7 +168,7 @@ export const ExtensionModal = memo((): JSX.Element | null => {
     </Button>
   );
 
-  if (!pendingSelection) {
+  if (!isModalOpen) {
     return null;
   }
 
@@ -171,9 +180,9 @@ export const ExtensionModal = memo((): JSX.Element | null => {
     <Modal
       contentClasses="flex max-h-[80vh] flex-col"
       headerActions={headerActions}
-      isOpen={!!pendingSelection}
+      isOpen={isModalOpen}
       size="xl"
-      title={pendingSelection.manifest.name}
+      title={pendingSelection?.manifest.name || 'Install Extension'}
       onClose={handleClose}
     >
       <SearchListLayout
@@ -181,11 +190,13 @@ export const ExtensionModal = memo((): JSX.Element | null => {
         listContent={content}
         listId={listId}
         listWrapperClasses="grow mt-2 overflow-y-auto"
-        query={query}
-        searchAriaLabel="Search modules to install"
-        searchId="module-install-search"
-        searchPlaceholder="Search Modules..."
-        onQueryChange={setQuery}
+        search={{
+          query,
+          onQueryChange: setQuery,
+          ariaLabel: 'Search modules to install',
+          id: 'module-install-search',
+          placeholder: 'Search Modules...',
+        }}
       />
     </Modal>
   );

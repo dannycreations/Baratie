@@ -4,6 +4,7 @@ import { ingredientRegistry, kitchen } from '../../app/container';
 import { useDragMove } from '../../hooks/useDragMove';
 import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useKitchenStore } from '../../stores/useKitchenStore';
+import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
@@ -16,6 +17,7 @@ import { RecipeItem } from './RecipeItem';
 
 import type { DragEvent, JSX } from 'react';
 import type { IngredientItem } from '../../core/IngredientRegistry';
+import type { RecipeItemHandlers } from './RecipeItem';
 
 export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
@@ -26,7 +28,7 @@ export const RecipePanel = memo((): JSX.Element => {
   const updateSpice = useRecipeStore((state) => state.updateSpice);
   const clearRecipe = useRecipeStore((state) => state.clearRecipe);
   const openCookbook = useCookbookStore((state) => state.open);
-  const isCookbookOpen = useCookbookStore((state) => state.isModalOpen);
+  const isCookbookOpen = useModalStore((state) => state.activeModal === 'cookbook');
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
   const theme = useThemeStore((state) => state.theme);
 
@@ -156,20 +158,25 @@ export const RecipePanel = memo((): JSX.Element => {
   } else {
     content = (
       <div role="list" aria-label="Current recipe steps" className="space-y-1.5">
-        {ingredients.map((ingredient: IngredientItem) => (
-          <RecipeItem
-            key={ingredient.id}
-            ingredientItem={ingredient}
-            isAutoCook={isAutoCookEnabled}
-            isDragged={dragId === ingredient.id}
-            onDragEnd={onMoveEnd}
-            onDragEnter={onMoveEnter}
-            onDragOver={onMoveOver}
-            onDragStart={handleDragStart}
-            onRemove={removeIngredient}
-            onSpiceChange={updateSpice}
-          />
-        ))}
+        {ingredients.map((ingredient: IngredientItem) => {
+          const recipeItemHandlers: RecipeItemHandlers = {
+            onRemove: removeIngredient,
+            onSpiceChange: updateSpice,
+            onDragStart: handleDragStart,
+            onDragEnter: onMoveEnter,
+            onDragEnd: onMoveEnd,
+            onDragOver: onMoveOver,
+          };
+          return (
+            <RecipeItem
+              key={ingredient.id}
+              ingredientItem={ingredient}
+              isAutoCook={isAutoCookEnabled}
+              isDragged={dragId === ingredient.id}
+              {...recipeItemHandlers}
+            />
+          );
+        })}
         {isDraggingIngredient && <DropzoneLayout mode="placeholder" text="Drop to add ingredient" variant="add" />}
       </div>
     );

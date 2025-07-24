@@ -2,13 +2,13 @@ import { memo } from 'react';
 
 import { useThemeStore } from '../../../stores/useThemeStore';
 
-import type { ChangeEventHandler, InputHTMLAttributes, JSX } from 'react';
+import type { InputHTMLAttributes, JSX } from 'react';
 
-interface BooleanInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'checked'> {
+interface BooleanInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'checked' | 'id' | 'className'> {
   readonly checked: boolean;
   readonly className?: string;
   readonly id: string;
-  readonly onChange: ChangeEventHandler<HTMLInputElement>;
+  readonly onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const BooleanInput = memo<BooleanInputProps>(({ id, checked, onChange, className = '', disabled = false, ...rest }): JSX.Element => {

@@ -15,16 +15,19 @@ import type { AppTheme } from '../../app/themes';
 import type { IngredientItem, SpiceDefinition, SpiceValue } from '../../core/IngredientRegistry';
 import type { CookingStatusType } from '../../core/Kitchen';
 
-interface RecipeItemProps {
+export interface RecipeItemHandlers {
+  readonly onRemove: (id: string) => void;
+  readonly onSpiceChange: (ingredientId: string, spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => void;
+  readonly onDragStart: (event: DragEvent<HTMLElement>, ingredient: IngredientItem) => void;
+  readonly onDragEnter: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
+  readonly onDragEnd: (event: DragEvent<HTMLElement>) => void;
+  readonly onDragOver: (event: DragEvent<HTMLElement>) => void;
+}
+
+interface RecipeItemProps extends RecipeItemHandlers {
   readonly ingredientItem: IngredientItem;
   readonly isAutoCook: boolean;
   readonly isDragged: boolean;
-  readonly onDragEnd: (event: DragEvent<HTMLElement>) => void;
-  readonly onDragEnter: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
-  readonly onDragOver: (event: DragEvent<HTMLElement>) => void;
-  readonly onDragStart: (event: DragEvent<HTMLElement>, ingredient: IngredientItem) => void;
-  readonly onRemove: (id: string) => void;
-  readonly onSpiceChange: (ingredientId: string, spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => void;
 }
 
 function getStatusBorder(theme: AppTheme, status: CookingStatusType): string {
@@ -38,7 +41,7 @@ function getStatusBorder(theme: AppTheme, status: CookingStatusType): string {
 }
 
 export const RecipeItem = memo<RecipeItemProps>(
-  ({ ingredientItem, isDragged, isAutoCook, onSpiceChange, onRemove, onDragStart, onDragEnter, onDragEnd, onDragOver }): JSX.Element => {
+  ({ ingredientItem, isDragged, isAutoCook, onRemove, onSpiceChange, onDragStart, onDragEnd, onDragOver, onDragEnter }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const status = useKitchenStore((state) => state.ingredientStatuses[ingredientItem.id] || 'idle');
     const setEditingId = useRecipeStore((state) => state.setEditingId);

@@ -7,12 +7,15 @@ import { ItemListLayout } from '../shared/layout/ItemListLayout';
 import { Tooltip } from '../shared/Tooltip';
 
 import type { JSX } from 'react';
-import type { RecipeBookItem } from '../../core/IngredientRegistry';
+import type { RecipebookItem } from '../../core/IngredientRegistry';
 
-interface CookbookItemProps {
-  readonly recipe: RecipeBookItem;
+export interface CookbookItemHandlers {
   readonly onLoad: (id: string) => void;
   readonly onDelete: (id: string) => void;
+}
+
+interface CookbookItemProps extends CookbookItemHandlers {
+  readonly recipe: RecipebookItem;
 }
 
 const timestampFormatter = new Intl.DateTimeFormat(undefined, {

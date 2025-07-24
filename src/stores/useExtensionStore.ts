@@ -9,53 +9,20 @@ import {
   isCacheValid,
   loadAndExecuteExtension,
   parseGitHubUrl,
+  StorableExtensionSchema,
   updateStateWithExtensions,
 } from '../helpers/extensionHelper';
 import { useFavoriteStore } from './useFavoriteStore';
+import { useModalStore } from './useModalStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
-import { useSettingStore } from './useSettingStore';
 
-import type { ExtensionManifest } from '../helpers/extensionHelper';
+import type { ExtensionModalProps } from '../components/setting/ExtensionModal';
+import type { Extension, ExtensionManifest, ManifestModule, StorableExtension } from '../helpers/extensionHelper';
 
-const StorableExtensionSchema = v.object({
-  id: v.pipe(v.string(), v.nonEmpty()),
-  name: v.pipe(v.string(), v.nonEmpty()),
-  fetchedAt: v.number(),
-  scripts: v.record(v.string(), v.pipe(v.string(), v.nonEmpty())),
-  entry: v.optional(
-    v.union([
-      v.string(),
-      v.array(v.string()),
-      v.array(v.object({ name: v.string(), category: v.string(), description: v.string(), entry: v.string() })),
-    ]),
-  ),
-});
-
-export type StorableExtension = v.InferInput<typeof StorableExtensionSchema>;
-
-export interface ManifestModule {
-  readonly name: string;
-  readonly category: string;
-  readonly description: string;
-  readonly entry: string;
-}
-
-export interface Extension {
-  readonly entry?: string | ReadonlyArray<string> | ReadonlyArray<ManifestModule>;
-  readonly errors?: ReadonlyArray<string>;
-  readonly fetchedAt?: number;
-  readonly id: string;
-  readonly ingredients?: ReadonlyArray<string>;
-  readonly name: string;
-  readonly scripts?: Readonly<Record<string, string>>;
-  readonly status: 'loading' | 'loaded' | 'error' | 'partial';
-}
-
-interface ExtensionState {
+export interface ExtensionState {
   readonly extensions: ReadonlyArray<Extension>;
   readonly extensionMap: ReadonlyMap<string, Extension>;
-  readonly pendingSelection: { readonly id: string; readonly manifest: ExtensionManifest } | null;
   readonly add: (url: string) => Promise<void>;
   readonly cancelPendingInstall: () => void;
   readonly init: () => Promise<void>;
@@ -65,7 +32,6 @@ interface ExtensionState {
   readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: ReadonlyArray<string>) => void;
   readonly setExtensions: (extensions: ReadonlyArray<Extension>) => void;
   readonly setIngredients: (id: string, ingredients: ReadonlyArray<string>) => void;
-  readonly setPendingSelection: (pending: { readonly id: string; readonly manifest: ExtensionManifest } | null) => void;
   readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
 }
 
@@ -80,7 +46,6 @@ export const useExtensionStore = create<ExtensionState>()(
   subscribeWithSelector((set, get) => ({
     extensions: [],
     extensionMap: new Map(),
-    pendingSelection: null,
 
     add: async (url) => {
       const { show } = useNotificationStore.getState();
@@ -102,12 +67,15 @@ export const useExtensionStore = create<ExtensionState>()(
     },
 
     cancelPendingInstall: () => {
-      const { setExtensions, extensions, pendingSelection, setPendingSelection } = get();
-      if (!pendingSelection) {
+      const { setExtensions, extensions, extensionMap } = get();
+      const { activeModal, modalProps, closeModal } = useModalStore.getState();
+
+      if (activeModal !== 'extensionInstall') {
         return;
       }
-      const { id } = pendingSelection;
-      const extension = extensions.find((ext) => ext.id === id);
+
+      const { id } = modalProps as ExtensionModalProps;
+      const extension = extensionMap.get(id);
 
       if (extension) {
         const displayName = extension.name || id;
@@ -118,7 +86,7 @@ export const useExtensionStore = create<ExtensionState>()(
         logger.warn(`Attempted to cancel non-existent pending extension with id: ${id}`);
       }
 
-      setPendingSelection(null);
+      closeModal();
     },
 
     init: async () => {
@@ -158,8 +126,8 @@ export const useExtensionStore = create<ExtensionState>()(
     },
 
     installSelectedModules: async (id, selectedModules) => {
-      const { setExtensionStatus, setIngredients, upsert } = get();
-      const extension = get().extensionMap.get(id);
+      const { setExtensionStatus, setIngredients, upsert, extensionMap } = get();
+      const extension = extensionMap.get(id);
       if (!extension) {
         logger.error(`Attempted to install modules for a non-existent extension: ${id}`);
         return;
@@ -170,7 +138,7 @@ export const useExtensionStore = create<ExtensionState>()(
         setIngredients(id, []);
       }
 
-      const updatedExtension: Extension = { ...extension, entry: selectedModules };
+      const updatedExtension: Extension = { ...extension, entry: [...selectedModules] };
       upsert(updatedExtension);
 
       await loadAndExecuteExtension(updatedExtension, {
@@ -179,11 +147,13 @@ export const useExtensionStore = create<ExtensionState>()(
         setIngredients,
         upsert,
       });
+
+      useModalStore.getState().closeModal();
     },
 
     refresh: async (id) => {
-      const { upsert, setIngredients, setExtensionStatus, setPendingSelection, extensionMap } = get();
-      const storeExtension = extensionMap.get(id);
+      const { upsert, setIngredients, setExtensionStatus } = get();
+      const storeExtension = get().extensionMap.get(id);
 
       logger.info(`Refreshing extension: ${storeExtension?.name || id}`);
       upsert({
@@ -213,7 +183,7 @@ export const useExtensionStore = create<ExtensionState>()(
 
         if (Array.isArray(manifest.entry) && typeof manifest.entry[0] === 'object') {
           upsert({ id, ...manifest, status: 'loading', scripts: {} });
-          setPendingSelection({ id, manifest });
+          useModalStore.getState().openModal('extensionInstall', { id, manifest });
         } else {
           if (storeExtension?.ingredients) {
             ingredientRegistry.unregisterIngredients(storeExtension.ingredients);
@@ -310,15 +280,6 @@ export const useExtensionStore = create<ExtensionState>()(
       setExtensions(newExtensions);
     },
 
-    setPendingSelection: (pending) => {
-      if (pending) {
-        useSettingStore.getState().pauseModal();
-      } else if (get().pendingSelection) {
-        useSettingStore.getState().resumeModal();
-      }
-      set({ pendingSelection: pending });
-    },
-
     upsert: (extension) => {
       const { extensions, extensionMap, setExtensions } = get();
       const newExtensions = extensionMap.has(extension.id)
@@ -334,7 +295,7 @@ useExtensionStore.subscribe(
   (extensions) => {
     const storable = extensions
       .filter(
-        (ext): ext is Extension & { name: string; fetchedAt: number; scripts: Readonly<Record<string, string>> } =>
+        (ext): ext is StorableExtension & Pick<Extension, 'status'> =>
           (ext.status === 'loaded' || ext.status === 'partial') &&
           !!ext.name &&
           typeof ext.fetchedAt === 'number' &&

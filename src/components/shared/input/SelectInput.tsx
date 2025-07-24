@@ -6,8 +6,7 @@ import { ChevronDownIcon } from '../Icon';
 import type { ChangeEventHandler, JSX, SelectHTMLAttributes } from 'react';
 import type { SpiceValue } from '../../../core/IngredientRegistry';
 
-interface SelectInputProps<T extends SpiceValue> extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'value'> {
-  readonly className?: string;
+interface SelectInputProps<T extends SpiceValue> extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'id' | 'onChange' | 'value'> {
   readonly id: string;
   readonly options: ReadonlyArray<{
     readonly label: string;
@@ -18,7 +17,7 @@ interface SelectInputProps<T extends SpiceValue> extends Omit<SelectHTMLAttribut
 }
 
 export const SelectInput = memo(
-  <T extends SpiceValue>({ id, value, onChange, options, className = '', disabled = false, ...rest }: SelectInputProps<T>): JSX.Element => {
+  <T extends SpiceValue>({ id, value, onChange, options, disabled = false, ...rest }: SelectInputProps<T>): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
     const valueToOptionMap = useMemo(() => {
@@ -36,12 +35,13 @@ export const SelectInput = memo(
       [valueToOptionMap, onChange],
     );
 
+    const { className, ...trueRest } = rest;
     const selectInputStyle = `w-full appearance-none rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} py-2 pl-2 pr-8 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} outline-none transition-colors duration-150 focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed`;
-    const finalClass = `${selectInputStyle} ${className}`.trim();
+    const finalClass = `${selectInputStyle} ${className || ''}`.trim();
 
     return (
       <div className="relative w-full">
-        <select id={id} value={String(value)} className={finalClass} disabled={disabled} onChange={handleChange} {...rest}>
+        <select id={id} value={String(value)} className={finalClass} disabled={disabled} onChange={handleChange} {...trueRest}>
           {options.map((option) => (
             <option key={String(option.value)} value={String(option.value)} className={`bg-${theme.surfaceSecondary} text-${theme.contentSecondary}`}>
               {option.label}

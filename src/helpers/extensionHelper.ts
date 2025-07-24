@@ -3,23 +3,51 @@ import * as v from 'valibot';
 import { ingredientRegistry, logger } from '../app/container';
 
 import type { IngredientDefinition, IngredientRegistry } from '../core/IngredientRegistry';
-import type { Extension, LoadExtensionDependencies, ManifestModule } from '../stores/useExtensionStore';
+import type { LoadExtensionDependencies } from '../stores/useExtensionStore';
 
 const NonEmptyString = v.pipe(v.string(), v.nonEmpty());
 
-const ManifestModuleSchema = v.object({
+export const ManifestModuleSchema = v.object({
   name: NonEmptyString,
   category: NonEmptyString,
   description: NonEmptyString,
   entry: NonEmptyString,
 });
 
+export type ManifestModule = v.InferInput<typeof ManifestModuleSchema>;
+
+const EntrySchema = v.union([NonEmptyString, v.pipe(v.array(NonEmptyString), v.nonEmpty()), v.pipe(v.array(ManifestModuleSchema), v.nonEmpty())]);
+
 export const ExtensionManifestSchema = v.object({
   name: NonEmptyString,
-  entry: v.union([NonEmptyString, v.pipe(v.array(NonEmptyString), v.nonEmpty()), v.pipe(v.array(ManifestModuleSchema), v.nonEmpty())]),
+  entry: EntrySchema,
 });
 
 export type ExtensionManifest = v.InferInput<typeof ExtensionManifestSchema>;
+
+const BaseExtensionSchema = v.object({
+  id: v.pipe(v.string(), v.nonEmpty()),
+  name: v.pipe(v.string(), v.nonEmpty()),
+  entry: v.optional(EntrySchema),
+});
+type BaseExtension = v.InferInput<typeof BaseExtensionSchema>;
+
+export const StorableExtensionSchema = v.intersect([
+  BaseExtensionSchema,
+  v.object({
+    fetchedAt: v.number(),
+    scripts: v.record(v.string(), v.pipe(v.string(), v.nonEmpty())),
+  }),
+]);
+export type StorableExtension = v.InferInput<typeof StorableExtensionSchema>;
+type StoredExtensionData = Pick<StorableExtension, 'fetchedAt' | 'scripts'>;
+
+export type Extension = BaseExtension &
+  Partial<StoredExtensionData> & {
+    readonly status: 'loading' | 'loaded' | 'error' | 'partial';
+    readonly errors?: ReadonlyArray<string>;
+    readonly ingredients?: ReadonlyArray<string>;
+  };
 
 const EXTENSION_CACHE_MS = 86_400_000;
 

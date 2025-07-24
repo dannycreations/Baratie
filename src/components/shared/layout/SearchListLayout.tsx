@@ -5,6 +5,16 @@ import { StringInput } from '../input/StringInput';
 
 import type { ChangeEvent, JSX, ReactNode } from 'react';
 
+interface SearchProps {
+  readonly onQueryChange: (query: string) => void;
+  readonly query: string;
+  readonly ariaLabel: string;
+  readonly classes?: string;
+  readonly id: string;
+  readonly placeholder?: string;
+  readonly wrapperClasses?: string;
+}
+
 interface BaseSearchListProps {
   readonly containerClasses?: string;
   readonly listContent: ReactNode;
@@ -13,24 +23,12 @@ interface BaseSearchListProps {
 }
 
 type SearchEnabledProps = {
-  readonly onQueryChange: (query: string) => void;
-  readonly query: string;
-  readonly searchAriaLabel: string;
-  readonly searchClasses?: string;
-  readonly searchId: string;
-  readonly searchPlaceholder?: string;
-  readonly searchWrapperClasses?: string;
+  readonly search: SearchProps;
   readonly showSearch?: true;
 };
 
 type SearchDisabledProps = {
-  readonly onQueryChange?: never;
-  readonly query?: never;
-  readonly searchAriaLabel?: never;
-  readonly searchClasses?: never;
-  readonly searchId?: never;
-  readonly searchPlaceholder?: never;
-  readonly searchWrapperClasses?: never;
+  readonly search?: never;
   readonly showSearch: false;
 };
 
@@ -44,24 +42,24 @@ export const SearchListLayout = memo<SearchListLayoutProps>((props): JSX.Element
     props.showSearch !== false
       ? useCallback(
           (event: ChangeEvent<HTMLInputElement>) => {
-            props.onQueryChange(event.target.value);
+            props.search.onQueryChange(event.target.value);
           },
-          [props.onQueryChange],
+          [props.search],
         )
       : undefined;
 
   return (
     <div className={containerClasses}>
       {props.showSearch !== false && (
-        <div className={props.searchWrapperClasses}>
+        <div className={props.search.wrapperClasses}>
           <StringInput
-            id={props.searchId}
+            id={props.search.id}
             type="search"
             aria-controls={listId}
-            aria-label={props.searchAriaLabel}
-            className={props.searchClasses}
-            placeholder={props.searchPlaceholder}
-            value={props.query}
+            aria-label={props.search.ariaLabel}
+            className={props.search.classes}
+            placeholder={props.search.placeholder}
+            value={props.search.query}
             onChange={handleChange!}
           />
         </div>

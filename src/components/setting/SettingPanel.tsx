@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo } from 'react';
 
+import { useModalStore } from '../../stores/useModalStore';
 import { useSettingStore } from '../../stores/useSettingStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { Modal } from '../shared/Modal';
@@ -30,9 +31,9 @@ const TabButton = memo<TabButtonProps>(({ children, isActive, onClick }): JSX.El
 });
 
 export const SettingPanel = memo((): JSX.Element => {
-  const isModalOpen = useSettingStore((state) => state.isModalOpen);
+  const isModalOpen = useModalStore((state) => state.activeModal === 'settings');
+  const closeModal = useModalStore((state) => state.closeModal);
   const activeTab = useSettingStore((state) => state.activeTab);
-  const closeModal = useSettingStore((state) => state.closeModal);
   const setActiveTab = useSettingStore((state) => state.setActiveTab);
   const theme = useThemeStore((state) => state.theme);
 

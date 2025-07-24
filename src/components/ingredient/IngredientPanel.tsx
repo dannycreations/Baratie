@@ -5,6 +5,7 @@ import { useSearchIngredients } from '../../hooks/useSearch';
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useFavoriteStore } from '../../stores/useFavoriteStore';
 import { useIngredientStore } from '../../stores/useIngredientStore';
+import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { useSettingStore } from '../../stores/useSettingStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -28,12 +29,13 @@ export const IngredientPanel = memo((): JSX.Element => {
   const disabledCategories = useIngredientStore((state) => state.disabledCategories);
   const disabledIngredients = useIngredientStore((state) => state.disabledIngredients);
   const openIngredientModal = useIngredientStore((state) => state.openModal);
-  const isIngredientOpen = useIngredientStore((state) => state.isModalOpen);
   const registryVersion = useIngredientStore((state) => state.registryVersion);
   const openSettingModal = useSettingStore((state) => state.openModal);
-  const isSettingOpen = useSettingStore((state) => state.isModalOpen);
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
   const theme = useThemeStore((state) => state.theme);
+  const activeModal = useModalStore((state) => state.activeModal);
+  const isIngredientOpen = activeModal === 'ingredientManager';
+  const isSettingOpen = activeModal === 'settings';
 
   const [query, setQuery] = useState<string>('');
   const [isDragOverRecipe, setDragOverRecipe] = useState(false);
@@ -181,12 +183,14 @@ export const IngredientPanel = memo((): JSX.Element => {
             />
           }
           listId={listId}
-          query={query}
-          searchAriaLabel="Search for ingredients"
-          searchClasses="mb-3"
-          searchId="ingredient-search"
-          searchPlaceholder="Search Ingredients..."
-          onQueryChange={setQuery}
+          search={{
+            query,
+            onQueryChange: setQuery,
+            ariaLabel: 'Search for ingredients',
+            id: 'ingredient-search',
+            placeholder: 'Search Ingredients...',
+            classes: 'mb-3',
+          }}
         />
       </div>
       <IngredientManager />

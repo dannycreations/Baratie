@@ -24,7 +24,7 @@ interface KitchenPanelSectionProps {
 interface InputActionsProps extends KitchenPanelSectionProps {
   readonly config: InputPanelConfig | null;
   readonly onClear: () => void;
-  readonly onFileSelect: () => void;
+  readonly onTriggerFileSelect: () => void;
 }
 
 interface OutputActionsProps extends KitchenPanelSectionProps {
@@ -39,14 +39,14 @@ interface SpiceContentProps {
 interface DefaultContentProps extends KitchenPanelSectionProps {
   readonly config: InputPanelConfig | null;
   readonly fileInputRef: RefObject<HTMLInputElement | null>;
-  readonly onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void;
+  readonly onFileSelected: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
 interface OutputContentProps extends KitchenPanelSectionProps {
   readonly config: OutputPanelConfig | null;
 }
 
-const InputActions = memo<InputActionsProps>(({ data, config, onClear, onFileSelect }) => {
+const InputActions = memo<InputActionsProps>(({ data, config, onClear, onTriggerFileSelect }) => {
   const showClearButton = config?.mode !== 'textarea' || config.showClear;
 
   return (
@@ -58,7 +58,7 @@ const InputActions = memo<InputActionsProps>(({ data, config, onClear, onFileSel
         tooltipContent="Open File..."
         tooltipPosition="left"
         variant="stealth"
-        onClick={onFileSelect}
+        onClick={onTriggerFileSelect}
       />
       {showClearButton && (
         <TooltipButton
@@ -110,13 +110,13 @@ const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient 
   );
 });
 
-const DefaultContent = memo<DefaultContentProps>(({ config, data, fileInputRef, onFileSelect }) => {
+const DefaultContent = memo<DefaultContentProps>(({ config, data, fileInputRef, onFileSelected }) => {
   const isTextareaDisabled = config?.mode === 'textarea' ? !!config.disabled : false;
   const placeholder = (config?.mode === 'textarea' && config.placeholder) || 'Place Raw Ingredients Here.';
 
   return (
     <>
-      <input ref={fileInputRef} accept="text/*" type="file" aria-hidden="true" className="hidden" onChange={onFileSelect} />
+      <input ref={fileInputRef} accept="text/*" type="file" aria-hidden="true" className="hidden" onChange={onFileSelected} />
       <TextareaInput
         aria-label="Input Panel for Raw Data"
         disabled={isTextareaDisabled}
@@ -196,7 +196,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   }, [data]);
 
   const headerActions = isInput ? (
-    <InputActions config={inputPanelConfig} data={data} onClear={handleClearInput} onFileSelect={handleTriggerFileSelect} />
+    <InputActions config={inputPanelConfig} data={data} onClear={handleClearInput} onTriggerFileSelect={handleTriggerFileSelect} />
   ) : (
     <OutputActions data={data} onDownload={handleDownloadOutput} />
   );
@@ -208,7 +208,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
     if (inputPanelConfig?.mode === 'spiceEditor' && targetIngredient) {
       return <SpiceContent targetIngredient={targetIngredient} onSpiceChange={updateSpice} />;
     }
-    return <DefaultContent config={inputPanelConfig} data={inputData} fileInputRef={fileInputRef} onFileSelect={handleFileSelect} />;
+    return <DefaultContent config={inputPanelConfig} data={inputData} fileInputRef={fileInputRef} onFileSelected={handleFileSelect} />;
   };
 
   return (
