@@ -22,6 +22,7 @@ export const useIngredientStore = create<IngredientState>()(
     disabledCategories: new Set(),
     disabledIngredients: new Set(),
     registryVersion: 0,
+
     init: () => {
       const filters = storage.get<{
         readonly categories?: ReadonlyArray<string>;
@@ -29,26 +30,38 @@ export const useIngredientStore = create<IngredientState>()(
       }>(STORAGE_FILTERS, 'Ingredient Filters');
 
       const allCategories = ingredientRegistry.getAllCategories();
-      const validCategories = (filters?.categories ?? []).filter((c) => typeof c === 'string' && allCategories.has(c));
-      const validIngredients = (filters?.ingredients ?? []).filter((i) => typeof i === 'string' && ingredientRegistry.getIngredient(i));
+      const validCategories = (filters?.categories ?? []).filter((c) => {
+        return typeof c === 'string' && allCategories.has(c);
+      });
+      const validIngredients = (filters?.ingredients ?? []).filter((i) => {
+        return typeof i === 'string' && !!ingredientRegistry.getIngredient(i);
+      });
 
       set({
         disabledCategories: new Set(validCategories),
         disabledIngredients: new Set(validIngredients),
       });
     },
+
     openModal: () => {
       useModalStore.getState().openModal('ingredientManager', undefined);
     },
+
     refreshRegistry: () => {
-      set((state) => ({ registryVersion: state.registryVersion + 1 }));
+      set((state) => {
+        return {
+          registryVersion: state.registryVersion + 1,
+        };
+      });
     },
+
     setFilters: ({ categories, ingredients }) => {
       set({
         disabledCategories: new Set(categories),
         disabledIngredients: new Set(ingredients),
       });
     },
+
     toggleCategory: (category) => {
       set((state) => {
         const newSet = new Set(state.disabledCategories);
@@ -57,9 +70,12 @@ export const useIngredientStore = create<IngredientState>()(
         } else {
           newSet.add(category);
         }
-        return { disabledCategories: newSet };
+        return {
+          disabledCategories: newSet,
+        };
       });
     },
+
     toggleIngredient: (id) => {
       set((state) => {
         const newSet = new Set(state.disabledIngredients);
@@ -68,7 +84,9 @@ export const useIngredientStore = create<IngredientState>()(
         } else {
           newSet.add(id);
         }
-        return { disabledIngredients: newSet };
+        return {
+          disabledIngredients: newSet,
+        };
       });
     },
   })),

@@ -46,21 +46,6 @@ export class Kitchen {
   private isCooking = false;
   private timeoutId: number | null = null;
 
-  public toggleAutoCook = (): void => {
-    const wasEnabled = useKitchenStore.getState().isAutoCookEnabled;
-    useKitchenStore.getState().toggleAutoCookState();
-    if (!wasEnabled) {
-      this.triggerCook();
-    } else {
-      if (this.timeoutId) {
-        clearTimeout(this.timeoutId);
-        this.timeoutId = null;
-        logger.info('Auto-cook disabled, pending scheduled cook cancelled.');
-      }
-      this.hasPendingCook = false;
-    }
-  };
-
   public initAutoCook(): () => void {
     const handleStateChange = () => {
       if (useKitchenStore.getState().isAutoCookEnabled) {
@@ -114,6 +99,10 @@ export class Kitchen {
     }
   }
 
+  public setInputData(data: string): void {
+    useKitchenStore.getState().setInputData(data);
+  }
+
   public setCookingInterval(ms: number): void {
     const newMs = Math.max(0, ms);
     if (newMs !== this.intervalMs) {
@@ -125,9 +114,21 @@ export class Kitchen {
     }
   }
 
-  public setInputData(data: string): void {
-    useKitchenStore.getState().setInputData(data);
-  }
+  public toggleAutoCook = (): void => {
+    const wasEnabled = useKitchenStore.getState().isAutoCookEnabled;
+    useKitchenStore.getState().toggleAutoCookState();
+
+    if (!wasEnabled) {
+      this.triggerCook();
+    } else {
+      if (this.timeoutId) {
+        clearTimeout(this.timeoutId);
+        this.timeoutId = null;
+        logger.info('Auto-cook disabled, pending scheduled cook cancelled.');
+      }
+      this.hasPendingCook = false;
+    }
+  };
 
   private async cookRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeCookResult> {
     if (recipe.length === 0) {

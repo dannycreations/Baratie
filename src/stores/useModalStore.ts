@@ -15,8 +15,11 @@ type ModalType = keyof ModalMap;
 interface ModalState {
   readonly activeModal: ModalType | null;
   readonly modalProps: unknown;
-  readonly previousModals: Array<{ type: ModalType; props: unknown }>;
-  readonly openModal: <T extends ModalType>(type: T, props: ModalMap[T], options?: { replace?: boolean }) => void;
+  readonly previousModals: ReadonlyArray<{
+    readonly type: ModalType;
+    readonly props: unknown;
+  }>;
+  readonly openModal: <T extends ModalType>(type: T, props: ModalMap[T], options?: { readonly replace?: boolean }) => void;
   readonly closeModal: () => void;
 }
 
@@ -28,8 +31,12 @@ export const useModalStore = create<ModalState>()((set, get) => ({
   openModal: (type, props, options) => {
     const { activeModal, modalProps } = get();
     const newPreviousModals = [...get().previousModals];
+
     if (activeModal && !options?.replace) {
-      newPreviousModals.push({ type: activeModal, props: modalProps });
+      newPreviousModals.push({
+        type: activeModal,
+        props: modalProps,
+      });
     }
 
     set({

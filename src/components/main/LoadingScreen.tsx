@@ -28,10 +28,15 @@ export const LoadingScreen = memo((): JSX.Element | null => {
     return null;
   }
 
-  const containerClass = `fixed inset-0 z-[900] flex flex-col items-center justify-center bg-${theme.surfacePrimary} transition-opacity duration-300 ${
-    isAppReady ? 'opacity-0' : 'opacity-100'
-  }`;
-  const titleClass = `mt-6 text-2xl font-semibold tracking-wider ${isError ? `text-${theme.dangerFg}` : `text-${theme.contentSecondary}`}`;
+  const containerClass = `
+    fixed inset-0 z-[900] flex flex-col items-center justify-center
+    bg-${theme.surfacePrimary} transition-opacity duration-300
+    ${isAppReady ? 'opacity-0' : 'opacity-100'}
+  `;
+  const titleClass = `
+    mt-6 text-2xl font-semibold tracking-wider
+    ${isError ? `text-${theme.dangerFg}` : `text-${theme.contentSecondary}`}
+  `;
 
   return (
     <div
@@ -41,7 +46,7 @@ export const LoadingScreen = memo((): JSX.Element | null => {
       className={containerClass}
       aria-hidden={isAppReady}
     >
-      <div className="p-4 text-center flex flex-col items-center">
+      <div className="flex flex-col items-center p-4 text-center">
         {isError ? (
           <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={48} />
         ) : (

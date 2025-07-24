@@ -3,7 +3,7 @@ import { AppError } from '../core/ErrorHandler';
 import { base64ToUint8Array } from './appUtil';
 
 function readFile<T>(
-  file: File,
+  file: Readonly<File>,
   readMethod: 'readAsText' | 'readAsDataURL' | 'readAsArrayBuffer',
   processOnLoad: (readerResult: string | ArrayBuffer | null) => T,
   context: string,
@@ -15,7 +15,14 @@ function readFile<T>(
       try {
         resolve(processOnLoad(reader.result));
       } catch (error) {
-        reject(new AppError('Error processing file content after reading.', context, `Could not process the content of '${file.name}'.`, error));
+        reject(
+          new AppError(
+            `Error processing file content after reading: ${String(error)}`,
+            context,
+            `Could not process the content of '${file.name}'.`,
+            error,
+          ),
+        );
       }
     };
 
@@ -30,14 +37,13 @@ function readFile<T>(
 
     try {
       reader[readMethod](file);
-    } catch (caughtError) {
-      const error = caughtError instanceof Error ? caughtError : new Error(String(caughtError));
-      reject(new AppError(`Exception during ${readMethod} call: ${error.message}`, context, `Could not read '${file.name}'.`, error));
+    } catch (error) {
+      reject(new AppError(`Exception during ${readMethod} call: ${String(error)}`, context, `Could not read '${file.name}'.`, error));
     }
   });
 }
 
-export function readAsBase64(file: File): Promise<string> {
+export function readAsBase64(file: Readonly<File>): Promise<string> {
   return readFile(
     file,
     'readAsDataURL',
@@ -55,7 +61,7 @@ export function readAsBase64(file: File): Promise<string> {
   );
 }
 
-export function readAsText(file: File): Promise<string> {
+export function readAsText(file: Readonly<File>): Promise<string> {
   return readFile(
     file,
     'readAsText',
@@ -66,7 +72,7 @@ export function readAsText(file: File): Promise<string> {
       throw new AppError(
         'FileReader result was not a string after readAsText.',
         'File Read As Text',
-        `Could not read the file '${file.name}' as text due to an unexpected result type.`,
+        `The file '${file.name}' could not be read as text.`,
       );
     },
     'File Read As Text',
@@ -114,13 +120,10 @@ export function triggerDownload(data: string, fileName: string, mimeType = 'text
   errorHandler.attempt(
     () => {
       let blob: Blob;
+
       if (isBase64) {
-        try {
-          const byteArray = base64ToUint8Array(data);
-          blob = new Blob([byteArray], { type: mimeType });
-        } catch (error) {
-          throw new AppError('Failed to decode Base64 data.', 'Base64 Decode', 'The provided data is not valid Base64 content.', error);
-        }
+        const byteArray = base64ToUint8Array(data);
+        blob = new Blob([byteArray], { type: mimeType });
       } else {
         blob = new Blob([data], { type: mimeType });
       }
@@ -129,9 +132,11 @@ export function triggerDownload(data: string, fileName: string, mimeType = 'text
       const downloadLink = document.createElement('a');
       downloadLink.href = url;
       downloadLink.download = fileName;
+
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
+
       URL.revokeObjectURL(url);
     },
     'File Download Trigger',

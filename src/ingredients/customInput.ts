@@ -15,7 +15,7 @@ export const CUSTOM_INPUT_DEF: IngredientDefinition = {
 
     if (nextIngredientIndex < recipe.length) {
       const targetIngredient = recipe[nextIngredientIndex];
-      const targetDefinition = ingredientRegistry.getIngredient(targetIngredient.name);
+      const targetDefinition = ingredientRegistry.getIngredient(targetIngredient.ingredientId);
       if (targetDefinition?.spices && targetDefinition.spices.length > 0) {
         config = {
           mode: 'spiceEditor',
@@ -44,7 +44,7 @@ export const CUSTOM_INPUT_DEF: IngredientDefinition = {
     const panelInstruction: PanelControlConfig = {
       panelType: 'input',
       providerId: currentIngredient.id,
-      config,
+      config: config,
     };
 
     return {

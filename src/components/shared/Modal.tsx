@@ -112,17 +112,19 @@ export const Modal = memo<ModalProps>(
     const modalSizeClass = MODAL_SIZE_MAP[size] || MODAL_SIZE_MAP.lg;
     const backdropAnimation = isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active';
     const contentAnimation = isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active';
-    const modalClass =
-      `flex w-full flex-col rounded-lg border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} ${modalSizeClass} ${contentClasses} ${contentAnimation}`.trim();
+    const backdropClass = `
+      fixed inset-0 z-[500] flex items-center justify-center
+      bg-${theme.backdrop} p-4 backdrop-blur-sm ${backdropAnimation}
+    `;
+    const modalClass = `
+      flex w-full flex-col rounded-lg border border-${theme.borderPrimary}
+      bg-${theme.surfaceSecondary} ${modalSizeClass} ${contentClasses} ${contentAnimation}
+    `.trim();
 
     errorHandler.assert(document.body, 'document.body is not available for Modal portal.', 'Modal Creation');
 
     return createPortal(
-      <div
-        ref={backdropRef}
-        className={`fixed inset-0 z-[500] flex items-center justify-center bg-${theme.backdrop} p-4 backdrop-blur-sm ${backdropAnimation}`}
-        onClick={handleBackdropClick}
-      >
+      <div ref={backdropRef} className={backdropClass} onClick={handleBackdropClick}>
         <div
           ref={modalContentRef}
           id={modalId}

@@ -19,6 +19,7 @@ export const useFavoriteStore = create<FavoriteState>()(
     init: () => {
       const parsedFavorites = storage.get<Array<unknown>>(STORAGE_FAVORITES, 'Favorite Ingredients');
       let favorites: Array<string> = [];
+
       if (parsedFavorites) {
         if (Array.isArray(parsedFavorites)) {
           favorites = parsedFavorites.reduce<Array<string>>((acc, item) => {
@@ -34,22 +35,30 @@ export const useFavoriteStore = create<FavoriteState>()(
         }
       }
 
-      set({ favorites: new Set(favorites) });
+      set({
+        favorites: new Set(favorites),
+      });
     },
 
     setFavorites: (favorites) => {
-      set({ favorites });
+      set({
+        favorites: favorites,
+      });
     },
 
     toggle: (type) => {
       const { favorites } = get();
       const newFavorites = new Set(favorites);
+
       if (newFavorites.has(type)) {
         newFavorites.delete(type);
       } else {
         newFavorites.add(type);
       }
-      set({ favorites: newFavorites });
+
+      set({
+        favorites: newFavorites,
+      });
     },
   })),
 );

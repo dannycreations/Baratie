@@ -32,10 +32,11 @@ export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
     };
   }, [dragId]);
 
-  const onDragStart = useCallback(
-    (event: DragEvent<HTMLElement>, itemId: string) => {
+  const handleDragStart = useCallback(
+    (event: DragEvent<HTMLElement>, itemId: string): void => {
       setDraggedItemId(itemId);
       event.dataTransfer.effectAllowed = 'move';
+
       errorHandler.attempt(
         () => {
           event.dataTransfer.setData('text/plain', itemId);
@@ -47,6 +48,7 @@ export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
           shouldNotify: false,
         },
       );
+
       if (event.currentTarget) {
         event.currentTarget.setAttribute('aria-grabbed', 'true');
       }
@@ -54,8 +56,8 @@ export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
     [setDraggedItemId],
   );
 
-  const onDragEnter = useCallback(
-    (event: DragEvent<HTMLElement>, targetItemId: string) => {
+  const handleDragEnter = useCallback(
+    (event: DragEvent<HTMLElement>, targetItemId: string): void => {
       event.preventDefault();
       if (dragId && dragId !== targetItemId) {
         onDragMove(dragId, targetItemId);
@@ -64,9 +66,10 @@ export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
     [dragId, onDragMove],
   );
 
-  const onDragOver = useCallback(
-    (event: DragEvent<HTMLElement>) => {
+  const handleDragOver = useCallback(
+    (event: DragEvent<HTMLElement>): void => {
       event.preventDefault();
+
       if (dragId) {
         event.dataTransfer.dropEffect = 'move';
         if (event.currentTarget) {
@@ -77,8 +80,8 @@ export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
     [dragId],
   );
 
-  const onDragEnd = useCallback(
-    (event: DragEvent<HTMLElement>) => {
+  const handleDragEnd = useCallback(
+    (event: DragEvent<HTMLElement>): void => {
       if (event.currentTarget) {
         event.currentTarget.setAttribute('aria-grabbed', 'false');
       }
@@ -89,9 +92,9 @@ export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
 
   return {
     dragId,
-    onDragStart,
-    onDragEnter,
-    onDragOver,
-    onDragEnd,
+    onDragStart: handleDragStart,
+    onDragEnter: handleDragEnter,
+    onDragOver: handleDragOver,
+    onDragEnd: handleDragEnd,
   };
 }

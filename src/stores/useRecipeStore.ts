@@ -26,6 +26,7 @@ export const useRecipeStore = create<RecipeState>()(
     activeRecipeId: null,
     editingId: null,
     ingredients: [],
+
     addIngredient: (ingredientId, initialSpices) => {
       const ingredientDefinition = ingredientRegistry.getIngredient(ingredientId);
       errorHandler.assert(ingredientDefinition, `Ingredient definition not found for ID: ${ingredientId}`, 'Recipe Add Ingredient', {
@@ -40,10 +41,13 @@ export const useRecipeStore = create<RecipeState>()(
         spices: validSpices,
       };
 
-      set((state) => ({
-        ingredients: [...state.ingredients, newIngredient],
-      }));
+      set((state) => {
+        return {
+          ingredients: [...state.ingredients, newIngredient],
+        };
+      });
     },
+
     clearRecipe: () => {
       set({
         activeRecipeId: null,
@@ -51,12 +55,14 @@ export const useRecipeStore = create<RecipeState>()(
         editingId: null,
       });
     },
+
     getActiveRecipeId: () => {
       return get().activeRecipeId;
     },
+
     removeIngredient: (id) => {
       set((state) => {
-        const index = state.ingredients.findIndex((ing) => ing.id === id);
+        const index = state.ingredients.findIndex((ingredient) => ingredient.id === id);
 
         if (index === -1) {
           logger.warn(`Attempted to remove non-existent ingredient with id: ${id}`);
@@ -73,11 +79,12 @@ export const useRecipeStore = create<RecipeState>()(
         };
       });
     },
+
     reorderIngredients: (draggedId, targetId) => {
       set((state) => {
         const { ingredients } = state;
-        const draggedIndex = ingredients.findIndex((p) => p.id === draggedId);
-        const targetIndex = ingredients.findIndex((p) => p.id === targetId);
+        const draggedIndex = ingredients.findIndex((ingredient) => ingredient.id === draggedId);
+        const targetIndex = ingredients.findIndex((ingredient) => ingredient.id === targetId);
 
         if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) {
           return {};
@@ -87,15 +94,24 @@ export const useRecipeStore = create<RecipeState>()(
         const [draggedItem] = newIngredients.splice(draggedIndex, 1);
         newIngredients.splice(targetIndex, 0, draggedItem);
 
-        return { ingredients: newIngredients };
+        return {
+          ingredients: newIngredients,
+        };
       });
     },
+
     setActiveRecipeId: (activeRecipeId) => {
-      set({ activeRecipeId });
+      set({
+        activeRecipeId: activeRecipeId,
+      });
     },
+
     setEditingId: (editingId) => {
-      set({ editingId });
+      set({
+        editingId: editingId,
+      });
     },
+
     setRecipe: (ingredients, activeRecipeId = null) => {
       const validIngredients = ingredients.map((ingredient) => {
         const ingredientDefinition = ingredientRegistry.getIngredient(ingredient.ingredientId);
@@ -110,15 +126,16 @@ export const useRecipeStore = create<RecipeState>()(
       });
 
       set({
-        activeRecipeId,
+        activeRecipeId: activeRecipeId,
         ingredients: validIngredients,
         editingId: null,
       });
     },
+
     updateSpice: (id, spiceId, rawValue, spice) => {
       set((state) => {
         const { ingredients } = state;
-        const index = ingredients.findIndex((p) => p.id === id);
+        const index = ingredients.findIndex((ingredient) => ingredient.id === id);
         errorHandler.assert(index !== -1, `Ingredient with ID "${id}" not found for spice change.`, 'Recipe Change Spice');
 
         const ingredientToUpdate = ingredients[index];
@@ -133,8 +150,10 @@ export const useRecipeStore = create<RecipeState>()(
         errorHandler.assert(
           isSpiceInDefinition,
           `Spice with ID "${spiceId}" is not a valid spice for ingredient "${ingredientDefinition.name}".`,
-          'Recipe Spice Update',
-          { genericMessage: `An internal error occurred while updating options for "${ingredientDefinition.name}".` },
+          'Recipe Change Spice',
+          {
+            genericMessage: `An internal error occurred while updating options for "${ingredientDefinition.name}".`,
+          },
         );
 
         const newValidSpices = updateAndValidate(ingredientDefinition, ingredientToUpdate.spices, spiceId, rawValue, spice);
@@ -142,7 +161,9 @@ export const useRecipeStore = create<RecipeState>()(
         const newIngredients = [...ingredients];
         newIngredients[index] = updatedIngredient;
 
-        return { ingredients: newIngredients };
+        return {
+          ingredients: newIngredients,
+        };
       });
     },
   })),

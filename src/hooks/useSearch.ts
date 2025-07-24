@@ -18,7 +18,9 @@ export function useSearchIngredients(
   disabledIngredients: ReadonlySet<string>,
 ): SearchedIngredientsResult {
   const visibleIngredients = useMemo(() => {
-    return allIngredients.filter((ingredient) => !disabledCategories.has(ingredient.category) && !disabledIngredients.has(ingredient.id));
+    return allIngredients.filter((ingredient) => {
+      return !disabledCategories.has(ingredient.category) && !disabledIngredients.has(ingredient.id);
+    });
   }, [allIngredients, disabledCategories, disabledIngredients]);
 
   const groupedIngredients = useMemo(() => {
@@ -34,7 +36,11 @@ export function useSearchIngredients(
     }
 
     const categorized = groupAndSortIngredients(otherItems);
-    return { favorites: favoriteItems, categorized };
+
+    return {
+      favorites: favoriteItems,
+      categorized: categorized,
+    };
   }, [visibleIngredients, favoriteIngredients]);
 
   const filteredIngredients = useMemo(() => {
@@ -62,7 +68,7 @@ export function useSearchIngredients(
   }, [groupedIngredients, query]);
 
   return {
-    filteredIngredients,
+    filteredIngredients: filteredIngredients,
     visibleIngredients: visibleIngredients.length,
   };
 }

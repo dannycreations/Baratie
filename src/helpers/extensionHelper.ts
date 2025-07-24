@@ -30,6 +30,7 @@ const BaseExtensionSchema = v.object({
   name: v.pipe(v.string(), v.nonEmpty()),
   entry: v.optional(EntrySchema),
 });
+
 type BaseExtension = v.InferInput<typeof BaseExtensionSchema>;
 
 export const StorableExtensionSchema = v.intersect([
@@ -39,7 +40,9 @@ export const StorableExtensionSchema = v.intersect([
     scripts: v.record(v.string(), v.pipe(v.string(), v.nonEmpty())),
   }),
 ]);
+
 export type StorableExtension = v.InferInput<typeof StorableExtensionSchema>;
+
 type StoredExtensionData = Pick<StorableExtension, 'fetchedAt' | 'scripts'>;
 
 export type Extension = BaseExtension &
@@ -50,6 +53,15 @@ export type Extension = BaseExtension &
   };
 
 const EXTENSION_CACHE_MS = 86_400_000;
+
+function executeScript(scriptContent: string, api: typeof window.Baratie): void {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    new Function('Baratie', scriptContent)(api);
+  } catch (error) {
+    throw new Error(`Execution failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
 
 async function fetchProvider(repoInfo: { readonly owner: string; readonly repo: string; readonly ref: string }, path: string): Promise<Response> {
   const primaryUrl = `https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.ref}/${path}`;
@@ -70,15 +82,6 @@ async function fetchProvider(repoInfo: { readonly owner: string; readonly repo: 
   return fetch(fallbackUrl);
 }
 
-function executeScript(scriptContent: string, api: typeof window.Baratie): void {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval
-    new Function('Baratie', scriptContent)(api);
-  } catch (error) {
-    throw new Error(`Execution failed: ${error instanceof Error ? error.message : String(error)}`);
-  }
-}
-
 export function isCacheValid(fetchedAt?: number): boolean {
   if (typeof fetchedAt !== 'number') {
     return false;
@@ -89,9 +92,6 @@ export function isCacheValid(fetchedAt?: number): boolean {
 export function parseGitHubUrl(url: string): { readonly owner: string; readonly repo: string; readonly ref: string } | null {
   const trimmedUrl = url.trim();
 
-  // This regex handles:
-  // 1. Full URLs: https://github.com/owner/repo, with .git, /tree/ref, @ref, #ref
-  // 2. Shorthand: owner/repo, with @ref, #ref
   const GH_URL_SHORTHAND_REGEX =
     /^(?:https?:\/\/)?(?:www\.)?github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?(?:(?:\/tree\/|@|#)([\w.-]+))?\/?$|^([\w.-]+)\/([\w.-]+)(?:(?:@|#)([\w.-]+))?$/;
 
@@ -101,16 +101,11 @@ export function parseGitHubUrl(url: string): { readonly owner: string; readonly 
     return null;
   }
 
-  // Group 1 is owner from full URL, Group 4 is owner from shorthand
   const owner = match[1] || match[4];
-  // Group 2 is repo from full URL, Group 5 is repo from shorthand
   const repo = match[2] || match[5];
-  // Group 3 is ref from full URL, Group 6 is ref from shorthand
   const ref = match[3] || match[6] || 'latest';
 
-  // If shorthand was matched (group 4 is truthy), perform extra validation
   if (match[4] && match[4].includes('.')) {
-    // Disallow domain-like owners in shorthand
     return null;
   }
 
@@ -136,8 +131,8 @@ export async function loadAndExecuteExtension(extension: Readonly<Extension>, de
     setExtensionStatus(id, 'error', ['Invalid GitHub URL format.']);
     return;
   }
-  const entryPointsOrModules = Array.isArray(entry) ? entry : entry ? [entry] : Object.keys(cachedScripts || {});
 
+  const entryPointsOrModules = Array.isArray(entry) ? entry : entry ? [entry] : Object.keys(cachedScripts || {});
   if (entryPointsOrModules.length === 0) {
     setExtensionStatus(id, 'error', ['Extension is missing entry point(s) in its manifest or cache.']);
     return;

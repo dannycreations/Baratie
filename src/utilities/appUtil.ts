@@ -1,27 +1,4 @@
-export function base64ToUint8Array(base64: string): Uint8Array {
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-}
-
-export function isObjectLike(value?: unknown): value is object {
-  return typeof value === 'object' && value !== null;
-}
-
-export function uint8ArrayToBase64(bytes: Uint8Array): string {
-  let binary = '';
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
-
-function canonicalStringify(obj: any, seen: Set<any>): string {
+function canonicalStringify(obj: unknown, seen: ReadonlySet<unknown>): string {
   if (obj === null || obj === undefined) {
     return String(obj);
   }
@@ -37,36 +14,62 @@ function canonicalStringify(obj: any, seen: Set<any>): string {
   if (seen.has(obj)) {
     return '[Circular]';
   }
-  seen.add(obj);
 
-  let result: string;
+  const newSeen = new Set(seen).add(obj);
+
   if (Array.isArray(obj)) {
-    const arrStr = obj.map((v) => canonicalStringify(v, seen)).join(',');
-    result = `[${arrStr}]`;
-  } else {
-    const sortedKeys = Object.keys(obj).sort();
-    const pairs = sortedKeys
-      .map((key) => {
-        const val = obj[key];
-        if (typeof val === 'function') {
-          return '';
-        }
-        return `${JSON.stringify(key)}:${canonicalStringify(val, seen)}`;
+    const arrayString = obj
+      .map((value) => {
+        return canonicalStringify(value, newSeen);
       })
-      .filter(Boolean);
-
-    result = `{${pairs.join(',')}}`;
+      .join(',');
+    return `[${arrayString}]`;
   }
 
-  seen.delete(obj);
-  return result;
+  const sortedKeys = Object.keys(obj).sort();
+  const pairs = sortedKeys
+    .map((key) => {
+      const value = (obj as Record<string, unknown>)[key];
+      if (typeof value === 'function') {
+        return '';
+      }
+      return `${JSON.stringify(key)}:${canonicalStringify(value, newSeen)}`;
+    })
+    .filter(Boolean);
+
+  return `{${pairs.join(',')}}`;
+}
+
+export function base64ToUint8Array(base64: string): Uint8Array {
+  const binaryString = atob(base64);
+  const length = binaryString.length;
+  const bytes = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
 }
 
 export function getObjectHash(obj: object, namespace?: string): string {
-  const str = (namespace || '') + canonicalStringify(obj, new Set());
+  const stringToHash = (namespace || '') + canonicalStringify(obj, new Set());
   let hash = 5381;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 33) ^ str.charCodeAt(i);
+
+  for (let i = 0; i < stringToHash.length; i++) {
+    hash = (hash * 33) ^ stringToHash.charCodeAt(i);
   }
+
   return (hash >>> 0).toString(36);
+}
+
+export function isObjectLike(value?: unknown): value is object {
+  return typeof value === 'object' && value !== null;
+}
+
+export function uint8ArrayToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  const length = bytes.byteLength;
+  for (let i = 0; i < length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }

@@ -19,12 +19,14 @@ export function useDragDrop({ onDragDrop, disabled = false }: DragDropProps): Dr
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleDragEnter = useCallback(
-    (event: DragEvent) => {
+    (event: DragEvent): void => {
       event.preventDefault();
       event.stopPropagation();
+
       if (disabled) {
         return;
       }
+
       if (event.dataTransfer.items && event.dataTransfer.items.length > 0) {
         if (Array.from(event.dataTransfer.items).some((item: DataTransferItem) => item.kind === 'file')) {
           event.dataTransfer.dropEffect = 'copy';
@@ -35,7 +37,7 @@ export function useDragDrop({ onDragDrop, disabled = false }: DragDropProps): Dr
     [disabled],
   );
 
-  const handleDragLeave = useCallback((event: DragEvent) => {
+  const handleDragLeave = useCallback((event: DragEvent): void => {
     event.preventDefault();
     event.stopPropagation();
     if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) {
@@ -45,9 +47,10 @@ export function useDragDrop({ onDragDrop, disabled = false }: DragDropProps): Dr
   }, []);
 
   const handleDragOver = useCallback(
-    (event: DragEvent) => {
+    (event: DragEvent): void => {
       event.preventDefault();
       event.stopPropagation();
+
       if (disabled) {
         event.dataTransfer.dropEffect = 'none';
       } else {
@@ -58,13 +61,15 @@ export function useDragDrop({ onDragDrop, disabled = false }: DragDropProps): Dr
   );
 
   const handleDrop = useCallback(
-    (event: DragEvent) => {
+    (event: DragEvent): void => {
       event.preventDefault();
       event.stopPropagation();
       setIsDragOver(false);
+
       if (disabled) {
         return;
       }
+
       const file = event.dataTransfer.files?.[0];
       if (file) {
         onDragDrop(file);

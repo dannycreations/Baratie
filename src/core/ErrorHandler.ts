@@ -42,6 +42,7 @@ export class ErrorHandler {
     if (condition) {
       return;
     }
+
     const error = new AppError(techMessage, context, options.genericMessage ?? options.defaultMessage);
     this.handle(error, undefined, options);
     throw error;
@@ -109,9 +110,11 @@ export class ErrorHandler {
       const finalUserMessage = genericMessage ?? error.userMessage ?? defaultMessage;
       return new AppError(error.message, finalContext, finalUserMessage, error);
     }
+
     if (error instanceof Error) {
       return new AppError(error.message, callerContext, genericMessage ?? defaultMessage, error);
     }
+
     let errorMessage: string;
     try {
       errorMessage = `Unknown error: ${JSON.stringify(error)}`;

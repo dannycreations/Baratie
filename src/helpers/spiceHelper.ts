@@ -10,27 +10,15 @@ function getSpiceMap(definition: Readonly<IngredientDefinition>): ReadonlyMap<st
   if (spiceMapCache.has(definition)) {
     return spiceMapCache.get(definition)!;
   }
+
   if (!definition.spices || definition.spices.length === 0) {
     const result = new Map<string, Readonly<SpiceDefinition>>();
     spiceMapCache.set(definition, result);
     return result;
   }
+
   const result = new Map(definition.spices.map((s) => [s.id, s]));
   spiceMapCache.set(definition, result);
-  return result;
-}
-
-export function getSortedSpices(definition: Readonly<IngredientDefinition>): ReadonlyArray<SpiceDefinition> {
-  if (sortedSpicesCache.has(definition)) {
-    return sortedSpicesCache.get(definition)!;
-  }
-  if (!definition.spices || definition.spices.length === 0) {
-    const result: ReadonlyArray<SpiceDefinition> = [];
-    sortedSpicesCache.set(definition, result);
-    return result;
-  }
-  const result = [...definition.spices].sort((a, b) => a.id.localeCompare(b.id));
-  sortedSpicesCache.set(definition, result);
   return result;
 }
 
@@ -38,8 +26,26 @@ function prepareSelectValue(newValue: SpiceValue, spice: Readonly<SpiceDefinitio
   if (spice.type !== 'select') {
     return newValue;
   }
+
   const selectedOption = spice.options.find((opt) => String(opt.value) === String(newValue));
+
   return selectedOption ? selectedOption.value : newValue;
+}
+
+export function getSortedSpices(definition: Readonly<IngredientDefinition>): ReadonlyArray<SpiceDefinition> {
+  if (sortedSpicesCache.has(definition)) {
+    return sortedSpicesCache.get(definition)!;
+  }
+
+  if (!definition.spices || definition.spices.length === 0) {
+    const result: ReadonlyArray<SpiceDefinition> = [];
+    sortedSpicesCache.set(definition, result);
+    return result;
+  }
+
+  const result = [...definition.spices].sort((a, b) => a.id.localeCompare(b.id));
+  sortedSpicesCache.set(definition, result);
+  return result;
 }
 
 export function getVisibleSpices(
@@ -60,6 +66,7 @@ export function getVisibleSpices(
     }
 
     const spice = spiceMap.get(spiceId);
+
     if (!spice || !spice.dependsOn || spice.dependsOn.length === 0) {
       if (spice) {
         visibilityCache.set(spiceId, true);
@@ -75,11 +82,12 @@ export function getVisibleSpices(
       }
 
       const targetValue = currentSpices[rule.spiceId];
-      return (
+      const isValueMet =
         targetValue !== undefined &&
         targetValue !== null &&
-        (Array.isArray(rule.value) ? rule.value.includes(targetValue) : targetValue === rule.value)
-      );
+        (Array.isArray(rule.value) ? rule.value.includes(targetValue) : targetValue === rule.value);
+
+      return isValueMet;
     });
 
     visibilityCache.set(spiceId, isVisible);
@@ -98,6 +106,7 @@ export function updateAndValidate(
 ): Record<string, SpiceValue> {
   const processedValue = prepareSelectValue(rawValue, spice);
   const newSpices = { ...currentSpices, [spiceId]: processedValue };
+
   return validateSpices(ingredientDefinition, newSpices);
 }
 
@@ -106,39 +115,49 @@ export function validateSpices(
   rawSpices: Readonly<Record<string, unknown>>,
 ): Record<string, SpiceValue> {
   const validatedSpices: Record<string, SpiceValue> = {};
+
   if (!ingredientDefinition.spices) {
     return {};
   }
+
   for (const spice of ingredientDefinition.spices) {
     const rawValue = rawSpices[spice.id];
+
     if (rawValue === undefined || rawValue === null) {
       validatedSpices[spice.id] = spice.value;
       continue;
     }
+
     const input = new InputType(rawValue);
+
     switch (spice.type) {
-      case 'number':
+      case 'number': {
         validatedSpices[spice.id] = input.cast('number', { max: spice.max, min: spice.min, value: spice.value }).getValue();
         break;
-      case 'boolean':
+      }
+      case 'boolean': {
         validatedSpices[spice.id] = input.cast('boolean', { value: spice.value }).getValue();
         break;
+      }
       case 'select': {
         const selectedValue = input.getValue();
         const isValidOption = spice.options.some((opt) => String(opt.value) === String(selectedValue));
         validatedSpices[spice.id] = isValidOption ? prepareSelectValue(selectedValue as SpiceValue, spice) : spice.value;
         break;
       }
-      case 'string':
+      case 'string': {
         validatedSpices[spice.id] = input.cast('string', { value: spice.value }).getValue().trim();
         break;
-      case 'textarea':
+      }
+      case 'textarea': {
         validatedSpices[spice.id] = input.cast('string', { value: spice.value }).getValue();
         break;
+      }
       default: {
         const unhandled = spice as SpiceDefinition;
         logger.warn(`An unhandled spice type was encountered: ${unhandled.id}`);
         validatedSpices[unhandled.id] = input.getValue() as SpiceValue;
+        break;
       }
     }
   }

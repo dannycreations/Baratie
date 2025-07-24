@@ -12,10 +12,14 @@ interface SettingState {
 
 export const useSettingStore = create<SettingState>()((set) => ({
   activeTab: 'appearance',
+
   openModal: () => {
     useModalStore.getState().openModal('settings', undefined);
   },
+
   setActiveTab: (tab) => {
-    set({ activeTab: tab });
+    set({
+      activeTab: tab,
+    });
   },
 }));

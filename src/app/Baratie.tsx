@@ -32,7 +32,10 @@ const BaratieView = memo((): JSX.Element => {
     }
   }, [isAppReady]);
 
-  const mainContentClass = `h-screen w-screen overflow-hidden transition-opacity duration-300 ${isAppReady ? 'opacity-100' : 'opacity-0'}`;
+  const mainContentClass = `
+    h-screen w-screen overflow-hidden transition-opacity
+    duration-300 ${isAppReady ? 'opacity-100' : 'opacity-0'}
+  `;
 
   return (
     <>
@@ -91,6 +94,7 @@ export function createRoot(element: HTMLElement | null, options?: Readonly<Barat
   appRegistry.runInitSequence();
 
   const root = createReactRoot(element);
+
   root.render(
     <StrictMode>
       <ErrorBoundary>

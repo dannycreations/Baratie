@@ -50,10 +50,12 @@ export const useExtensionStore = create<ExtensionState>()(
     add: async (url) => {
       const { show } = useNotificationStore.getState();
       const repoInfo = parseGitHubUrl(url);
+
       if (!repoInfo) {
         show('Invalid GitHub URL. Use `owner/repo`, `owner/repo@branch`, or a full GitHub URL.', 'error', 'Add Extension Error');
         return;
       }
+
       const { extensionMap, refresh } = get();
       const id = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
       const existing = extensionMap.get(id);
@@ -107,7 +109,9 @@ export const useExtensionStore = create<ExtensionState>()(
         logger.warn('Corrupted extension data in storage; performing partial recovery.');
       }
 
-      const extensions: Array<Extension> = validStoredExtensions.map((e) => ({ ...e, status: 'loading' }));
+      const extensions: Array<Extension> = validStoredExtensions.map((e) => {
+        return { ...e, status: 'loading' };
+      });
       get().setExtensions(extensions);
 
       const loadPromises = extensions.map((ext) => {
@@ -122,12 +126,19 @@ export const useExtensionStore = create<ExtensionState>()(
         return get().refresh(ext.id);
       });
 
-      await Promise.all(loadPromises.map((p) => p.catch((err) => logger.error('Error during extension init:', err))));
+      await Promise.all(
+        loadPromises.map((p) => {
+          return p.catch((err) => {
+            logger.error('Error during extension init:', err);
+          });
+        }),
+      );
     },
 
     installSelectedModules: async (id, selectedModules) => {
       const { setExtensionStatus, setIngredients, upsert, extensionMap } = get();
       const extension = extensionMap.get(id);
+
       if (!extension) {
         logger.error(`Attempted to install modules for a non-existent extension: ${id}`);
         return;
@@ -143,9 +154,9 @@ export const useExtensionStore = create<ExtensionState>()(
 
       await loadAndExecuteExtension(updatedExtension, {
         getExtensionMap: () => get().extensionMap,
-        setExtensionStatus,
-        setIngredients,
-        upsert,
+        setExtensionStatus: setExtensionStatus,
+        setIngredients: setIngredients,
+        upsert: upsert,
       });
 
       useModalStore.getState().closeModal();
@@ -157,7 +168,7 @@ export const useExtensionStore = create<ExtensionState>()(
 
       logger.info(`Refreshing extension: ${storeExtension?.name || id}`);
       upsert({
-        id,
+        id: id,
         status: 'loading',
         name: storeExtension?.name || 'Refreshing...',
       });
@@ -182,15 +193,15 @@ export const useExtensionStore = create<ExtensionState>()(
         const manifest: ExtensionManifest = validationResult.output;
 
         if (Array.isArray(manifest.entry) && typeof manifest.entry[0] === 'object') {
-          upsert({ id, ...manifest, status: 'loading', scripts: {} });
-          useModalStore.getState().openModal('extensionInstall', { id, manifest });
+          upsert({ id: id, ...manifest, status: 'loading', scripts: {} });
+          useModalStore.getState().openModal('extensionInstall', { id: id, manifest: manifest });
         } else {
           if (storeExtension?.ingredients) {
             ingredientRegistry.unregisterIngredients(storeExtension.ingredients);
             setIngredients(id, []);
           }
 
-          const freshExtension: Extension = { id, ...manifest, status: 'loading', scripts: {} };
+          const freshExtension: Extension = { id: id, ...manifest, status: 'loading', scripts: {} };
           upsert(freshExtension);
           await loadAndExecuteExtension(freshExtension, {
             getExtensionMap: () => get().extensionMap,
@@ -210,6 +221,7 @@ export const useExtensionStore = create<ExtensionState>()(
       const { show } = useNotificationStore.getState();
       const { extensionMap, setExtensions } = get();
       const extension = extensionMap.get(id);
+
       if (!extension) {
         logger.warn(`Attempted to remove non-existent extension with id: ${id}`);
         return;
@@ -223,7 +235,7 @@ export const useExtensionStore = create<ExtensionState>()(
         ingredientRegistry.unregisterIngredients(ingredientsToRemove);
 
         const { ingredients: recipe, setRecipe, activeRecipeId } = useRecipeStore.getState();
-        const updatedRecipe = recipe.filter((ing) => !ingredientsToRemoveSet.has(ing.name));
+        const updatedRecipe = recipe.filter((ing) => !ingredientsToRemoveSet.has(ing.ingredientId));
         if (updatedRecipe.length < recipe.length) {
           show(`${recipe.length - updatedRecipe.length} ingredient(s) from '${displayName}' removed from your recipe.`, 'info');
           setRecipe(updatedRecipe, activeRecipeId);
@@ -259,8 +271,8 @@ export const useExtensionStore = create<ExtensionState>()(
         return;
       }
       const updates: Partial<Extension> = {
-        status,
-        errors,
+        status: status,
+        errors: errors,
         ...((status === 'loaded' || status === 'partial') && { fetchedAt: Date.now() }),
       };
       const newExtensions = extensions.map((ext) => (ext.id === id ? { ...ext, ...updates } : ext));
@@ -276,7 +288,7 @@ export const useExtensionStore = create<ExtensionState>()(
       if (!extensionMap.has(id)) {
         return;
       }
-      const newExtensions = extensions.map((ext) => (ext.id === id ? { ...ext, ingredients } : ext));
+      const newExtensions = extensions.map((ext) => (ext.id === id ? { ...ext, ingredients: ingredients } : ext));
       setExtensions(newExtensions);
     },
 
@@ -302,13 +314,15 @@ useExtensionStore.subscribe(
           !!ext.scripts &&
           Object.keys(ext.scripts).length > 0,
       )
-      .map(({ id, name, fetchedAt, scripts, entry }) => ({
-        id,
-        name,
-        fetchedAt,
-        scripts: { ...scripts },
-        entry,
-      }));
+      .map(({ id, name, fetchedAt, scripts, entry }) => {
+        return {
+          id: id,
+          name: name,
+          fetchedAt: fetchedAt,
+          scripts: { ...scripts },
+          entry: entry,
+        };
+      });
     storage.set(STORAGE_EXTENSIONS, storable, 'Extensions');
   },
 );

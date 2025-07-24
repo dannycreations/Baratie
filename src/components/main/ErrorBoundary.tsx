@@ -25,8 +25,14 @@ type ErrorDisplayProps = Omit<ErrorBoundaryState, 'hasError'>;
 function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);
 
-  const backdropClass = `fixed inset-0 z-[800] flex items-center justify-center bg-${theme.backdrop} p-4 backdrop-blur-sm`;
-  const dialogClass = `w-full max-w-md rounded-lg border border-${theme.dangerBorder} bg-${theme.surfaceSecondary} p-6 text-center sm:max-w-lg md:max-w-2xl md:p-8`;
+  const backdropClass = `
+    fixed inset-0 z-[800] flex items-center justify-center
+    bg-${theme.backdrop} p-4 backdrop-blur-sm
+  `;
+  const dialogClass = `
+    w-full max-w-md rounded-lg border border-${theme.dangerBorder}
+    bg-${theme.surfaceSecondary} p-6 text-center sm:max-w-lg md:max-w-2xl md:p-8
+  `;
 
   return (
     <div role="alertdialog" aria-modal="true" aria-labelledby="error-dialog-title" aria-describedby={ERROR_DESCRIPTION_ID} className={backdropClass}>

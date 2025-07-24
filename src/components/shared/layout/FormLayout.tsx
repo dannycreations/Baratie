@@ -25,11 +25,7 @@ export const FormLayout = memo<FormLayoutProps>(
     const labelWrapClass = labelWrapperClasses ?? 'sm:shrink-0';
     const inputWrapClass = inputWrapperClasses ?? '';
 
-    const labelElement = (
-      <label htmlFor={inputId} className={labelClass}>
-        {label}:
-      </label>
-    );
+    const labelElement = <label className={labelClass}>{label}:</label>;
 
     const labelContent = description ? (
       <Tooltip className={labelWrapClass.trim()} content={description} disabled={!description} position="top" tooltipClasses="max-w-[250px]">

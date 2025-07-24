@@ -28,6 +28,10 @@ export interface IngredientDefinition<T = unknown> {
   readonly run: (input: InputType, spices: T, context: IngredientContext) => ResultType | Promise<ResultType>;
 }
 
+export interface IngredientProps<T = unknown> extends IngredientDefinition<T> {
+  readonly id: string;
+}
+
 export interface OutputPanelConfig {
   readonly title: string;
   readonly mode: 'textarea';
@@ -105,10 +109,6 @@ type SelectSpice = Omit<BaseSpice<'select', SpiceValue>, 'placeholder'> & {
 type StringSpice = BaseSpice<'string' | 'textarea', string>;
 
 export type SpiceDefinition = StringSpice | NumberSpice | BooleanSpice | SelectSpice;
-
-export interface IngredientProps<T = unknown> extends IngredientDefinition<T> {
-  readonly id: string;
-}
 
 export class IngredientRegistry {
   private ingredients: Map<string, IngredientProps> = new Map();

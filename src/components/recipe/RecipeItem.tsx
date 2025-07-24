@@ -123,7 +123,6 @@ export const RecipeItem = memo<RecipeItemProps>(
 
     const hasSpices = !!definition.spices && definition.spices.length > 0;
     const canToggleEditor = hasSpices && !isSpiceInInput;
-
     const isEditorVisible = isEditing && !isSpiceInInput && !isDragged;
     const settingsTooltip = isSpiceInInput ? 'Options are in the Input panel' : isEditing ? 'Hide Options' : 'Edit Options';
 
@@ -137,9 +136,13 @@ export const RecipeItem = memo<RecipeItemProps>(
 
     const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
     const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
-    const itemClass = `group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm outline-none transition-all duration-200 ease-in-out ${
-      isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'
-    } ${statusBorderClass} ${hasSpices && isEditorVisible ? 'pb-1' : ''}`.trim();
+    const itemClass = `
+      group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm
+      outline-none transition-all duration-200 ease-in-out
+      ${isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'}
+      ${statusBorderClass}
+      ${hasSpices && isEditorVisible ? 'pb-1' : ''}
+    `.trim();
 
     const grabHandleClass = `mr-2 cursor-grab text-${theme.contentTertiary} transition-colors group-hover:text-${theme.contentSecondary}`;
 
@@ -209,7 +212,12 @@ export const RecipeItem = memo<RecipeItemProps>(
         {hasSpices && (
           <>
             {isSpiceInInput && (
-              <div className={`mx-1 mb-1 rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} py-2 text-center text-xs italic`}>
+              <div
+                className={`
+                  mx-1 mb-1 rounded-md border border-${theme.borderSecondary}
+                  bg-${theme.surfaceHover} py-2 text-center text-xs italic
+                `}
+              >
                 Options are managed in the Input panel.
               </div>
             )}

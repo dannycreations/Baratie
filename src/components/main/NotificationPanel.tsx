@@ -97,11 +97,16 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
   const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
 
-  const containerClass =
-    `relative my-2 w-full overflow-hidden rounded-lg border-l-4 bg-${theme.surfaceSecondary} border-${borderColor} ${animationClass} ${
-      isPaused ? 'notification-paused' : ''
-    }`.trim();
-  const messageClass = `allow-text-selection text-sm text-${theme.contentSecondary} ${notification.title ? 'mt-1' : ''}`.trim();
+  const containerClass = `
+    relative my-2 w-full overflow-hidden rounded-lg border-l-4
+    bg-${theme.surfaceSecondary} border-${borderColor} ${animationClass}
+    ${isPaused ? 'notification-paused' : ''}
+  `.trim();
+
+  const messageClass = `
+    allow-text-selection text-sm text-${theme.contentSecondary}
+    ${notification.title ? 'mt-1' : ''}
+  `.trim();
 
   return (
     <div

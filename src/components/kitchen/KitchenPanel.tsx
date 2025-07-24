@@ -168,12 +168,14 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const handleFileSelect = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
     const operationId = ++importOperationRef.current;
     const file = event.target.files?.[0];
+
     if (file) {
       const { result: text, error } = await errorHandler.attemptAsync(() => readAsText(file));
       if (operationId === importOperationRef.current && !error && typeof text === 'string') {
         kitchen.setInputData(text);
       }
     }
+
     if (event.target) {
       event.target.value = '';
     }

@@ -182,7 +182,10 @@ export const RecipePanel = memo((): JSX.Element => {
     );
   }
 
-  const listClass = `grow overflow-y-auto transition-colors duration-200 ${isDraggingIngredient ? `bg-${theme.surfaceMuted}` : ''}`.trim();
+  const listClass = `
+    grow overflow-y-auto transition-colors duration-200
+    ${isDraggingIngredient ? `bg-${theme.surfaceMuted}` : ''}
+  `.trim();
 
   return (
     <SectionLayout

@@ -2,8 +2,13 @@ import type { IngredientProps } from '../core/IngredientRegistry';
 
 const categorySortFn = ([catA]: readonly [string, unknown], [catB]: readonly [string, unknown]): number => catA.localeCompare(catB);
 
+export function createIngredientSearchPredicate(lowerQuery: string): (ing: IngredientProps) => boolean {
+  return (ing: IngredientProps): boolean => ing.name.toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
+}
+
 export function groupAndSortIngredients(ingredients: ReadonlyArray<IngredientProps>): ReadonlyMap<string, ReadonlyArray<IngredientProps>> {
   const grouped = new Map<string, Array<IngredientProps>>();
+
   for (const ingredient of ingredients) {
     const categoryList = grouped.get(ingredient.category);
     if (categoryList) {
@@ -12,12 +17,9 @@ export function groupAndSortIngredients(ingredients: ReadonlyArray<IngredientPro
       grouped.set(ingredient.category, [ingredient]);
     }
   }
+
   const sortedEntries = [...grouped.entries()].sort(categorySortFn);
   return new Map(sortedEntries);
-}
-
-export function createIngredientSearchPredicate(lowerQuery: string): (ing: IngredientProps) => boolean {
-  return (ing: IngredientProps): boolean => ing.name.toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
 }
 
 export function searchGroupedIngredients(
@@ -37,10 +39,12 @@ export function searchGroupedIngredients(
       result.push([category, ingredients]);
       continue;
     }
+
     const matchingIngredients = ingredients.filter(searchPredicate);
     if (matchingIngredients.length > 0) {
       result.push([category, matchingIngredients]);
     }
   }
+
   return result;
 }

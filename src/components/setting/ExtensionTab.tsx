@@ -93,7 +93,10 @@ const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status, error
   return (
     <li className="list-none">
       <ItemListLayout
-        className={`h-16 rounded-md bg-${theme.surfaceTertiary} p-3 text-sm transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
+        className={`
+          h-16 rounded-md bg-${theme.surfaceTertiary} p-3 text-sm
+          transition-colors duration-150 hover:bg-${theme.surfaceMuted}
+        `}
         leftContent={leftContent}
         leftClasses="grow min-w-0 mr-2"
         rightContent={rightContent}

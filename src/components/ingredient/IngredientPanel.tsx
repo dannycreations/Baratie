@@ -34,6 +34,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
   const theme = useThemeStore((state) => state.theme);
   const activeModal = useModalStore((state) => state.activeModal);
+
   const isIngredientOpen = activeModal === 'ingredientManager';
   const isSettingOpen = activeModal === 'settings';
 
@@ -45,6 +46,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   const allIngredients = useMemo<ReadonlyArray<IngredientProps>>(() => {
     return ingredientRegistry.getAllIngredients();
   }, [registryVersion]);
+
   const { filteredIngredients, visibleIngredients } = useSearchIngredients(
     allIngredients,
     deferredQuery,
@@ -125,16 +127,15 @@ export const IngredientPanel = memo((): JSX.Element => {
     (item: BaseListItem): JSX.Element => {
       const isFavorite = favorites.has(item.id);
 
-      const favoriteButtonClass = `opacity-70 group-hover:opacity-100 ${
-        isFavorite ? `text-${theme.favoriteFg} hover:text-${theme.favoriteFgHover}` : `text-${theme.contentTertiary} hover:text-${theme.favoriteFg}`
-      }`;
-
       return (
         <>
           <TooltipButton
             aria-label={isFavorite ? `Remove '${item.name}' from favorites` : `Add '${item.name}' to favorites`}
             aria-pressed={isFavorite}
-            className={favoriteButtonClass}
+            className={`
+              opacity-70 group-hover:opacity-100
+              ${isFavorite ? `text-${theme.favoriteFg} hover:text-${theme.favoriteFgHover}` : `text-${theme.contentTertiary} hover:text-${theme.favoriteFg}`}
+            `}
             icon={<StarIcon isFilled={isFavorite} size={18} />}
             size="sm"
             tooltipContent={isFavorite ? `Remove '${item.name}' from favorites` : `Add '${item.name}' to favorites`}

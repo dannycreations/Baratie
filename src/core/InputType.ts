@@ -40,7 +40,6 @@ export class InputType<T = unknown> {
       if (typeof options?.value !== 'undefined') {
         return new InputType(options.value as T);
       }
-
       throw new Error(e);
     };
 

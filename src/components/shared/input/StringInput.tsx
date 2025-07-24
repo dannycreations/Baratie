@@ -15,7 +15,11 @@ interface StringInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, '
 export const StringInput = memo<StringInputProps>(({ id, value, onChange, type = 'text', inputRef, ...rest }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const { className, ...trueRest } = rest;
-  const standardInputStyle = `w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-2 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} outline-none focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50`;
+  const standardInputStyle = `
+    w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-2
+    text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary}
+    outline-none focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50
+  `;
   const finalClass = `${standardInputStyle} ${className || ''}`.trim();
 
   return <input ref={inputRef} id={id} type={type} value={value} className={finalClass} onChange={onChange} {...trueRest} />;

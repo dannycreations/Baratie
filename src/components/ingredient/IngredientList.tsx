@@ -31,9 +31,11 @@ const IngredientListItem = memo<IngredientListItemProps>(
   ({ item, isItemDisabled, renderItemPrefix, renderItemActions, onItemDragStart }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const isDisabled = isItemDisabled?.(item) ?? false;
-    const nameClass = `truncate pr-2 text-sm transition-colors duration-150 cursor-default ${
-      isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`
-    } group-hover:text-${theme.infoFg}`;
+    const nameClass = `
+      truncate pr-2 text-sm transition-colors duration-150
+      cursor-default group-hover:text-${theme.infoFg}
+      ${isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}
+    `;
 
     const leftColumn = (
       <div className="flex min-w-0 items-center gap-3">
@@ -55,7 +57,10 @@ const IngredientListItem = memo<IngredientListItemProps>(
         }}
       >
         <ItemListLayout
-          className={`group h-11 rounded-md bg-${theme.surfaceTertiary} px-2 py-1.5 transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
+          className={`
+            group h-11 rounded-md bg-${theme.surfaceTertiary} px-2 py-1.5
+            transition-colors duration-150 hover:bg-${theme.surfaceMuted}
+          `}
           leftContent={leftColumn}
           leftClasses="grow min-w-0"
           rightContent={rightColumn}
@@ -103,7 +108,10 @@ export const IngredientList = memo(
               id={buttonId}
               aria-controls={panelId}
               aria-expanded={isExpanded}
-              className={`flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-3 text-left text-${theme.contentSecondary} outline-none hover:bg-${theme.surfaceHover}`}
+              className={`
+                flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-3
+                text-left text-${theme.contentSecondary} outline-none hover:bg-${theme.surfaceHover}
+              `}
               onClick={() => handleCategoryToggle(category)}
             >
               {renderHeader ? renderHeader(category, items) : <span className="font-medium">{category}</span>}
@@ -115,7 +123,10 @@ export const IngredientList = memo(
             </button>
           );
 
-          const containerClass = `overflow-hidden rounded-md ${!isExpanded && index < itemsByCategory.length - 1 ? 'mb-2' : ''}`.trim();
+          const containerClass = `
+            overflow-hidden rounded-md
+            ${!isExpanded && index < itemsByCategory.length - 1 ? 'mb-2' : ''}
+          `.trim();
 
           return (
             <div key={category} className={containerClass}>

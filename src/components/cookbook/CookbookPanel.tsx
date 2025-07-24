@@ -1,4 +1,4 @@
-import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useDeferredValue, useMemo, useRef } from 'react';
 
 import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useModalStore } from '../../stores/useModalStore';
@@ -17,6 +17,12 @@ interface SaveHeaderActionsProps {
   readonly isSaveDisabled: boolean;
   readonly onExportCurrent: () => void;
   readonly onSave: () => void;
+}
+
+interface LoadHeaderActionsProps {
+  readonly isExportDisabled: boolean;
+  readonly onTriggerImport: () => void;
+  readonly onExportAll: () => void;
 }
 
 const SaveHeaderActions = memo<SaveHeaderActionsProps>(({ isSaveDisabled, onExportCurrent, onSave }) => (
@@ -41,12 +47,6 @@ const SaveHeaderActions = memo<SaveHeaderActionsProps>(({ isSaveDisabled, onExpo
     </TooltipButton>
   </>
 ));
-
-interface LoadHeaderActionsProps {
-  readonly isExportDisabled: boolean;
-  readonly onTriggerImport: () => void;
-  readonly onExportAll: () => void;
-}
 
 const LoadHeaderActions = memo<LoadHeaderActionsProps>(({ isExportDisabled, onTriggerImport, onExportAll }) => (
   <>
@@ -76,13 +76,11 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const isModalOpen = activeModal === 'cookbook';
   const modalMode = isModalOpen ? modalProps?.mode : null;
 
-  const [persistedModalMode, setPersistedModalMode] = useState(modalMode);
-
-  useEffect(() => {
-    if (isModalOpen) {
-      setPersistedModalMode(modalMode);
-    }
-  }, [isModalOpen, modalMode]);
+  const persistedModalModeRef = useRef(modalMode);
+  if (isModalOpen) {
+    persistedModalModeRef.current = modalMode;
+  }
+  const persistedModalMode = persistedModalModeRef.current;
 
   const nameInput = useCookbookStore((state) => state.nameInput);
   const query = useCookbookStore((state) => state.query);

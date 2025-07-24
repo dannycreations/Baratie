@@ -23,7 +23,7 @@ export const CUSTOM_OUTPUT_DEF: IngredientDefinition = {
     const panelInstruction: PanelControlConfig = {
       panelType: 'output',
       providerId: currentIngredient.id,
-      config,
+      config: config,
     };
 
     return {

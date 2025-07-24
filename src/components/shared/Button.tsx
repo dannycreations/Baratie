@@ -37,6 +37,13 @@ interface CopyButtonProps {
   readonly tooltipPosition?: TooltipProps['position'];
 }
 
+interface ConfirmButtonProps extends Pick<TooltipButtonProps, 'className' | 'tooltipPosition'> {
+  readonly onConfirm: () => void;
+  readonly itemName: string;
+  readonly itemType: string;
+  readonly actionName?: string;
+}
+
 const ICON_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
   xs: 'p-1',
   sm: 'p-1.5',
@@ -62,6 +69,10 @@ const getVariantClasses = (variant: ButtonVariant, theme: AppTheme): string => {
   return variantMap[variant];
 };
 
+function getConfirmClasses(theme: Readonly<AppTheme>): string {
+  return `border border-${theme.dangerBorder} bg-${theme.dangerBg} text-${theme.accentFg} hover:bg-${theme.dangerBgHover}`;
+}
+
 export const Button = memo<ButtonProps>(
   ({
     children,
@@ -80,14 +91,21 @@ export const Button = memo<ButtonProps>(
     const theme = useThemeStore((state) => state.theme);
     const finalVariant = variant ?? 'primary';
 
-    const baseClass = `inline-flex items-center justify-center border font-medium outline-none transition-all duration-150 ease-in-out focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
+    const baseClass = `
+      inline-flex items-center justify-center border font-medium outline-none
+      transition-all duration-150 ease-in-out focus:ring-2
+      focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50
+    `;
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
     const variantClass = getVariantClasses(finalVariant, theme);
     const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
 
-    const finalClassName = `${baseClass} ${shapeClass} ${variantClass} ${sizeClass}${loading ? ' opacity-60' : ''}${
-      fullWidth ? ' w-full' : ''
-    } ${className}`.trim();
+    const finalClassName = `
+      ${baseClass} ${shapeClass} ${variantClass} ${sizeClass}
+      ${loading ? ' opacity-60' : ''}
+      ${fullWidth ? ' w-full' : ''}
+      ${className}
+    `.trim();
 
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-1.5' : 'ml-1.5') : '';
     const loadingSpinner = <Loader2Icon aria-hidden="true" className={`h-4 w-4 animate-spin ${iconMarginClass}`} />;
@@ -156,17 +174,6 @@ export const TooltipButton = memo<TooltipButtonProps>(
     );
   },
 );
-
-function getConfirmClasses(theme: Readonly<AppTheme>): string {
-  return `border border-${theme.dangerBorder} bg-${theme.dangerBg} text-${theme.accentFg} hover:bg-${theme.dangerBgHover}`;
-}
-
-interface ConfirmButtonProps extends Pick<TooltipButtonProps, 'className' | 'tooltipPosition'> {
-  readonly onConfirm: () => void;
-  readonly itemName: string;
-  readonly itemType: string;
-  readonly actionName?: string;
-}
 
 export const ConfirmButton = memo<ConfirmButtonProps>(
   ({ onConfirm, itemName, itemType, actionName = 'Delete', tooltipPosition = 'top', className = '' }): JSX.Element => {

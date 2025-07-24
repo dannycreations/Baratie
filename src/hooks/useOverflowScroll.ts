@@ -18,8 +18,10 @@ export function useOverflowScroll<T extends HTMLElement>({ xClasses, yClasses }:
     if (!element) {
       return;
     }
+
     const hasVerticalScroll = element.scrollHeight > element.clientHeight;
     const hasHorizontalScroll = element.scrollWidth > element.clientWidth;
+
     const toggleClasses = (classString: string | undefined, condition: boolean): void => {
       if (!classString) {
         return;
@@ -27,7 +29,9 @@ export function useOverflowScroll<T extends HTMLElement>({ xClasses, yClasses }:
       classString
         .split(' ')
         .filter(Boolean)
-        .forEach((className) => element.classList.toggle(className, condition));
+        .forEach((className) => {
+          element.classList.toggle(className, condition);
+        });
     };
 
     toggleClasses(yClasses, hasVerticalScroll);

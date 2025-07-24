@@ -100,10 +100,10 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
               let currentData = initialInput;
               for (let subIndex = 0; subIndex < ingredientsToRepeat.length; subIndex++) {
                 const ingredient = ingredientsToRepeat[subIndex];
-                const definition = ingredientRegistry.getIngredient(ingredient.name);
+                const definition = ingredientRegistry.getIngredient(ingredient.ingredientId);
                 errorHandler.assert(definition, `Definition for '${ingredient.name}' not found during sub-recipe execution.`);
 
-                const subContext: IngredientContext = { ...context, currentIndex: subIndex, ingredient };
+                const subContext: IngredientContext = { ...context, currentIndex: subIndex, ingredient: ingredient };
                 const runResult = await definition.run(new InputType(currentData), ingredient.spices, subContext);
 
                 if (runResult === null) {
@@ -145,7 +145,9 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
         } else {
           logger.warn(`Repeat Step: Attempt ${attempt + 1} failed for '${ingredientDisplayName}'. Retrying in ${retryDelayMs}ms...`, error);
           if (retryDelayMs > 0) {
-            await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+            await new Promise((resolve) => {
+              setTimeout(resolve, retryDelayMs);
+            });
           }
         }
       }

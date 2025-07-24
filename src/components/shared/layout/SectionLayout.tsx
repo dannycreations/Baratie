@@ -20,7 +20,10 @@ export const SectionLayout = memo<SectionLayoutProps>(
     const theme = useThemeStore((state) => state.theme);
 
     const panelClass = `flex flex-col overflow-hidden rounded-lg bg-${theme.surfaceSecondary} ${panelClasses}`.trim();
-    const headerClass = `flex h-12 shrink-0 items-center justify-between border-b border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-3 text-${theme.contentPrimary}`;
+    const headerClass = `
+      flex h-12 shrink-0 items-center justify-between border-b
+      border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-3 text-${theme.contentPrimary}
+    `;
     const contentClass = `grow overflow-auto p-3 ${contentClasses}`.trim();
 
     return (

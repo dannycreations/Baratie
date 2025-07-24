@@ -1,9 +1,8 @@
-import * as v from 'valibot';
 import { safeParse } from 'valibot';
+import * as v from 'valibot';
 
 import { ingredientRegistry, logger, storage } from '../app/container';
-import { validateSpices } from '../helpers/spiceHelper';
-import { getSortedSpices } from './spiceHelper';
+import { getSortedSpices, validateSpices } from './spiceHelper';
 
 import type { IngredientItem, RecipebookItem } from '../core/IngredientRegistry';
 
@@ -41,17 +40,21 @@ export interface SanitizedRecipesResult {
 
 export function createRecipeHash(ingredients: ReadonlyArray<IngredientItem>): string {
   const canonicalParts = ingredients.map((ing) => {
-    const ingredientId = ing.ingredientId;
     const definition = ingredientRegistry.getIngredient(ing.ingredientId);
 
     if (!definition?.spices || definition.spices.length === 0) {
-      return ingredientId;
+      return ing.ingredientId;
     }
 
     const sortedSpices = getSortedSpices(definition);
-    const spicesString = sortedSpices.map((spiceDef) => `${spiceDef.id}:${String(ing.spices[spiceDef.id])}`).join(';');
+    const spicesString = sortedSpices
+      .map((spiceDef) => {
+        const value = ing.spices[spiceDef.id] ?? spiceDef.value;
+        return `${spiceDef.id}:${String(value)}`;
+      })
+      .join(';');
 
-    return `${ingredientId}|${spicesString}`;
+    return `${ing.ingredientId}|${spicesString}`;
   });
   return canonicalParts.join('||');
 }
@@ -78,12 +81,14 @@ export function sanitizeIngredient(rawIngredient: RawIngredient, source: 'fileIm
 export function sanitizeRecipe(rawRecipe: RawRecipeBookItem, source: 'fileImport' | 'storage'): SanitizationResult {
   const { id, name, createdAt, updatedAt, ingredients: rawIngredients } = rawRecipe;
   const validIngredients: Array<IngredientItem> = [];
+
   for (const raw of rawIngredients) {
     const validIngredient = sanitizeIngredient(raw, source, name);
     if (validIngredient) {
       validIngredients.push(validIngredient);
     }
   }
+
   const ingredientDifference = rawIngredients.length - validIngredients.length;
   const warning =
     ingredientDifference > 0
@@ -98,6 +103,7 @@ export function sanitizeRecipe(rawRecipe: RawRecipeBookItem, source: 'fileImport
 export function processAndSanitizeRecipes(rawItems: ReadonlyArray<unknown>, source: 'fileImport' | 'storage'): SanitizedRecipesResult {
   const allWarnings = new Set<string>();
   let corruptionCount = 0;
+
   const recipes = rawItems.reduce<Array<RecipebookItem>>((acc, rawItem) => {
     const itemValidation = safeParse(RecipeBookItemSchema, rawItem);
     if (itemValidation.success) {
@@ -113,5 +119,6 @@ export function processAndSanitizeRecipes(rawItems: ReadonlyArray<unknown>, sour
     }
     return acc;
   }, []);
+
   return { recipes, warnings: allWarnings, hasCorruption: corruptionCount > 0 };
 }

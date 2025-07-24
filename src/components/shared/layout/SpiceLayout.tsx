@@ -75,16 +75,12 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
       }
       case 'textarea': {
         const value = typeof rawValue === 'string' ? rawValue : spice.value;
-        return (
-          <textarea
-            id={id}
-            className={`w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-2 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} outline-none focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50`}
-            placeholder={spice.placeholder}
-            rows={4}
-            value={value}
-            onChange={handleValueChange}
-          />
-        );
+        const textareaClass = `
+          w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-2
+          text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} outline-none
+          focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50
+        `;
+        return <textarea id={id} className={textareaClass} placeholder={spice.placeholder} rows={4} value={value} onChange={handleValueChange} />;
       }
       case 'select': {
         const value = rawValue ?? spice.value;

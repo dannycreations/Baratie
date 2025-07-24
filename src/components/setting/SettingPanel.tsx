@@ -18,11 +18,13 @@ interface TabButtonProps {
 
 const TabButton = memo<TabButtonProps>(({ children, isActive, onClick }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
-  const tabClass = `px-4 py-2 text-sm font-medium rounded-t-md border-b-2 outline-none transition-colors duration-150 ${
-    isActive
-      ? `border-${theme.infoBorder} text-${theme.infoFg}`
-      : `border-transparent text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`
-  }`;
+
+  const tabClass = `
+    px-4 py-2 text-sm font-medium rounded-t-md border-b-2
+    outline-none transition-colors duration-150
+    ${isActive ? `border-${theme.infoBorder} text-${theme.infoFg}` : `border-transparent text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`}
+  `;
+
   return (
     <button role="tab" aria-selected={isActive} className={tabClass} onClick={onClick}>
       {children}

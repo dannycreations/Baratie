@@ -17,28 +17,41 @@ interface ThemeState {
 
 const DEFAULT_THEME = APP_THEMES[0];
 
+function getInitialTheme(): { readonly id: ThemeId; readonly theme: AppTheme } {
+  try {
+    const storedThemeId = storage.get<ThemeId>(STORAGE_THEME, 'Theme');
+    const themeConfig = APP_THEMES.find((theme) => theme.id === storedThemeId);
+
+    if (themeConfig) {
+      return {
+        id: themeConfig.id,
+        theme: themeConfig.theme,
+      };
+    }
+  } catch (error) {
+    logger.warn('Could not load theme from storage, using default.', error);
+  }
+
+  return {
+    id: DEFAULT_THEME.id,
+    theme: DEFAULT_THEME.theme,
+  };
+}
+
 export const useThemeStore = create<ThemeState>()(
   subscribeWithSelector((set) => {
-    let id: ThemeId = DEFAULT_THEME.id;
-    let theme = DEFAULT_THEME.theme;
-
-    try {
-      const themeName = storage.get(STORAGE_THEME, 'Theme');
-      const themeConfig = APP_THEMES.find((t) => t.id === themeName);
-      if (themeConfig) {
-        id = themeConfig.id;
-        theme = themeConfig.theme;
-      }
-    } catch (error) {
-      logger.warn('Could not load theme from storage, using default.', error);
-    }
+    const { id, theme } = getInitialTheme();
 
     return {
       id,
       theme,
+
       setTheme: (newId) => {
-        const newTheme = APP_THEMES.find((t) => t.id === newId)?.theme;
-        set({ theme: newTheme || DEFAULT_THEME.theme, id: newId });
+        const newThemeConfig = APP_THEMES.find((theme) => theme.id === newId);
+        set({
+          id: newId,
+          theme: newThemeConfig ? newThemeConfig.theme : DEFAULT_THEME.theme,
+        });
       },
     };
   }),

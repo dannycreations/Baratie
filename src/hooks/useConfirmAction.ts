@@ -36,5 +36,8 @@ export function useConfirmAction(callback: () => void, timeout: number): Confirm
     });
   }, []);
 
-  return { isConfirm, trigger };
+  return {
+    isConfirm,
+    trigger,
+  };
 }

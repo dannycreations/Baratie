@@ -22,6 +22,7 @@ export interface ExtensionModalProps {
 
 function groupModulesForDisplay(modules: ReadonlyArray<ManifestModule>): Array<[string, Array<ModuleIngredient>]> {
   const grouped = new Map<string, Array<ModuleIngredient>>();
+
   for (const module of modules) {
     const item = { ...module, id: module.entry };
     const list = grouped.get(item.category);
@@ -31,6 +32,7 @@ function groupModulesForDisplay(modules: ReadonlyArray<ManifestModule>): Array<[
       grouped.set(item.category, [item]);
     }
   }
+
   return [...grouped.entries()].sort(([a], [b]) => a.localeCompare(b));
 }
 
@@ -74,7 +76,9 @@ export const ExtensionModal = memo((): JSX.Element | null => {
     if (!lowerQuery) {
       return groupedModules;
     }
+
     const result: Array<[string, Array<ModuleIngredient>]> = [];
+
     for (const [category, modules] of groupedModules) {
       if (category.toLowerCase().includes(lowerQuery)) {
         result.push([category, modules]);
@@ -153,9 +157,7 @@ export const ExtensionModal = memo((): JSX.Element | null => {
       return (
         <div className="flex items-center gap-3">
           <BooleanInput id={`${categoryId}-toggle`} checked={areAllSelected} onChange={() => handleToggleCategory(items)} />
-          <label htmlFor={`${categoryId}-toggle`} className={`cursor-pointer font-medium text-${theme.contentSecondary}`}>
-            {category}
-          </label>
+          <label className={`cursor-pointer font-medium text-${theme.contentSecondary}`}>{category}</label>
         </div>
       );
     },

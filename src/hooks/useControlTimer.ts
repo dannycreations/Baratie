@@ -8,39 +8,50 @@ interface ControlTimerProps {
 }
 
 export function useControlTimer({ callback, duration, state = true, reset }: ControlTimerProps): void {
-  const timerIdRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number | null>(null);
-  const remainingTimeRef = useRef(duration);
-  const savedCallbackRef = useRef<() => void>(callback);
+  const savedCallback = useRef(callback);
+
+  const lastRunInfo = useRef({
+    duration,
+    reset,
+  });
+
+  const timerState = useRef({
+    id: null as number | null,
+    startTime: 0,
+    remaining: duration,
+  });
 
   useEffect(() => {
-    savedCallbackRef.current = callback;
+    savedCallback.current = callback;
   }, [callback]);
 
   useEffect(() => {
-    remainingTimeRef.current = duration;
-  }, [duration, reset]);
-
-  useEffect(() => {
-    const clearTimer = () => {
-      if (timerIdRef.current) {
-        clearTimeout(timerIdRef.current);
-        timerIdRef.current = null;
+    const clearTimer = (): void => {
+      if (timerState.current.id) {
+        clearTimeout(timerState.current.id);
+        timerState.current.id = null;
       }
     };
 
+    if (lastRunInfo.current.duration !== duration || lastRunInfo.current.reset !== reset) {
+      timerState.current.remaining = duration;
+      lastRunInfo.current = {
+        duration,
+        reset,
+      };
+    }
+
     if (state) {
       clearTimer();
-      startTimeRef.current = Date.now();
-      timerIdRef.current = window.setTimeout(() => {
-        savedCallbackRef.current();
-      }, remainingTimeRef.current);
+      timerState.current.startTime = Date.now();
+      timerState.current.id = window.setTimeout(() => {
+        savedCallback.current();
+      }, timerState.current.remaining);
     } else {
-      clearTimer();
-      if (startTimeRef.current !== null) {
-        const elapsedTime = Date.now() - startTimeRef.current;
-        remainingTimeRef.current = Math.max(0, remainingTimeRef.current - elapsedTime);
-        startTimeRef.current = null;
+      if (timerState.current.id) {
+        clearTimer();
+        const elapsed = Date.now() - timerState.current.startTime;
+        timerState.current.remaining = Math.max(0, timerState.current.remaining - elapsed);
       }
     }
 

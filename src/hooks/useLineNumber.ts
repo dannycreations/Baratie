@@ -46,12 +46,14 @@ function findStartLogicalLineIndex(prefixSum: ReadonlyArray<number>, targetVisua
       low = mid + 1;
     }
   }
+
   return resultIndex;
 }
 
 export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }: LineNumberProps): VirtualResult {
   const [lineMetrics, setLineMetrics] = useState<ReadonlyArray<LineMetric>>([]);
   const [visualLinePrefixSum, setVisualLinePrefixSum] = useState<ReadonlyArray<number>>([]);
+
   const metricsRef = useRef<TextareaMetrics | null>(null);
   const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
 
@@ -90,7 +92,7 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
         const count = maxLineChars > 0 ? Math.max(1, Math.ceil(lineLength / maxLineChars)) : 1;
         visualLineCount += count;
         newPrefixSum.push(visualLineCount);
-        newMetrics.push({ number: logicalLineNumber, count });
+        newMetrics.push({ number: logicalLineNumber, count: count });
 
         logicalLineNumber++;
         lastIndex = nextIndex + 1;
@@ -108,7 +110,7 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
       return;
     }
 
-    const measureAndCalculate = () => {
+    const measureAndCalculate = (): void => {
       const styles = window.getComputedStyle(textarea);
       const font = styles.font;
       const context = getCanvasContext();
@@ -122,8 +124,8 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
       const lh = parseFloat(styles.lineHeight);
       metricsRef.current = {
         lineHeight: isNaN(lh) ? 24 : lh,
-        contentWidth,
-        charWidth,
+        contentWidth: contentWidth,
+        charWidth: charWidth,
       };
       calculateLineCounts(textarea.value);
     };
@@ -146,13 +148,24 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
   return useMemo((): VirtualResult => {
     const lineHeight = metricsRef.current?.lineHeight ?? 0;
     if (!showLineNumbers || !textareaRef.current || lineHeight === 0) {
-      return { lineHeight: 0, paddingTop: 0, paddingBottom: 0, visibleItems: [] };
+      return {
+        lineHeight: 0,
+        paddingTop: 0,
+        paddingBottom: 0,
+        visibleItems: [],
+      };
     }
+
     const { clientHeight } = textareaRef.current;
     const totalVisualLines = visualLinePrefixSum.length > 0 ? visualLinePrefixSum[visualLinePrefixSum.length - 1] : 0;
 
     if (totalVisualLines === 0) {
-      return { lineHeight, paddingTop: 0, paddingBottom: 0, visibleItems: [{ key: 0, number: 1 }] };
+      return {
+        lineHeight: lineHeight,
+        paddingTop: 0,
+        paddingBottom: 0,
+        visibleItems: [{ key: 0, number: 1 }],
+      };
     }
 
     const buffer = 10;
@@ -166,7 +179,9 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
 
       for (let logicalIndex = startLogicalIndex; logicalIndex < lineMetrics.length; logicalIndex++) {
         const metric = lineMetrics[logicalIndex];
-        if (!metric) continue;
+        if (!metric) {
+          continue;
+        }
 
         for (let i = 0; i < metric.count; i++) {
           const visualIndex = currentVisualLine + i;
@@ -187,6 +202,12 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
 
     const paddingTop = startIndex * lineHeight;
     const paddingBottom = Math.max(0, (totalVisualLines - endIndex) * lineHeight);
-    return { lineHeight, paddingTop, paddingBottom, visibleItems };
+
+    return {
+      lineHeight: lineHeight,
+      paddingTop: paddingTop,
+      paddingBottom: paddingBottom,
+      visibleItems: visibleItems,
+    };
   }, [showLineNumbers, textareaRef, lineMetrics, scrollTop, visualLinePrefixSum]);
 }
