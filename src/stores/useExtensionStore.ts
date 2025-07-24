@@ -26,8 +26,15 @@ const StorableExtensionSchema = v.object({
 
 export type StorableExtension = v.InferInput<typeof StorableExtensionSchema>;
 
+export interface ManifestModule {
+  readonly name: string;
+  readonly category: string;
+  readonly description: string;
+  readonly entry: string;
+}
+
 export interface Extension {
-  readonly entry?: string | ReadonlyArray<string>;
+  readonly entry?: string | ReadonlyArray<string> | ReadonlyArray<ManifestModule>;
   readonly errors?: ReadonlyArray<string>;
   readonly fetchedAt?: number;
   readonly id: string;
@@ -46,6 +53,13 @@ interface ExtensionState {
   readonly remove: (id: string) => void;
   readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: ReadonlyArray<string>) => void;
   readonly setExtensions: (extensions: ReadonlyArray<Extension>) => void;
+  readonly setIngredients: (id: string, ingredients: ReadonlyArray<string>) => void;
+  readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
+}
+
+export interface LoadExtensionDependencies {
+  readonly getExtensionMap: () => ReadonlyMap<string, Extension>;
+  readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: ReadonlyArray<string>) => void;
   readonly setIngredients: (id: string, ingredients: ReadonlyArray<string>) => void;
   readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
 }

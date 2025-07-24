@@ -3,13 +3,20 @@ import * as v from 'valibot';
 import { ingredientRegistry, logger } from '../app/container';
 
 import type { IngredientDefinition, IngredientRegistry } from '../core/IngredientRegistry';
-import type { Extension } from '../stores/useExtensionStore';
+import type { Extension, LoadExtensionDependencies, ManifestModule } from '../stores/useExtensionStore';
 
 const NonEmptyString = v.pipe(v.string(), v.nonEmpty());
 
+const ManifestModuleSchema = v.object({
+  name: NonEmptyString,
+  category: NonEmptyString,
+  description: NonEmptyString,
+  entry: NonEmptyString,
+});
+
 export const ExtensionManifestSchema = v.object({
   name: NonEmptyString,
-  entry: v.union([NonEmptyString, v.pipe(v.array(NonEmptyString), v.nonEmpty())]),
+  entry: v.union([NonEmptyString, v.pipe(v.array(NonEmptyString), v.nonEmpty()), v.pipe(v.array(ManifestModuleSchema), v.nonEmpty())]),
 });
 
 export type ExtensionManifest = v.InferInput<typeof ExtensionManifestSchema>;
@@ -91,13 +98,6 @@ export function updateStateWithExtensions(extensions: ReadonlyArray<Extension>):
   };
 }
 
-interface LoadExtensionDependencies {
-  readonly getExtensionMap: () => ReadonlyMap<string, Extension>;
-  readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: ReadonlyArray<string>) => void;
-  readonly setIngredients: (id: string, ingredients: ReadonlyArray<string>) => void;
-  readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
-}
-
 export async function loadAndExecuteExtension(extension: Readonly<Extension>, dependencies: Readonly<LoadExtensionDependencies>): Promise<void> {
   const { id, name, entry, scripts: cachedScripts } = extension;
   const { setExtensionStatus, setIngredients, upsert, getExtensionMap } = dependencies;
@@ -107,12 +107,17 @@ export async function loadAndExecuteExtension(extension: Readonly<Extension>, de
     setExtensionStatus(id, 'error', ['Invalid GitHub URL format.']);
     return;
   }
-  const entryPoints = Array.isArray(entry) ? entry : entry ? [entry] : Object.keys(cachedScripts || {});
+  const entryPointsOrModules = Array.isArray(entry) ? entry : entry ? [entry] : Object.keys(cachedScripts || {});
 
-  if (entryPoints.length === 0) {
+  if (entryPointsOrModules.length === 0) {
     setExtensionStatus(id, 'error', ['Extension is missing entry point(s) in its manifest or cache.']);
     return;
   }
+
+  const isModuleBased = typeof entryPointsOrModules[0] === 'object' && entryPointsOrModules[0] !== null;
+  const entryPoints = isModuleBased
+    ? (entryPointsOrModules as ReadonlyArray<ManifestModule>).map((m) => m.entry)
+    : (entryPointsOrModules as string[]);
 
   const newlyRegisteredKeys: Array<string> = [];
   const errorLogs: Array<string> = [];
@@ -122,12 +127,7 @@ export async function loadAndExecuteExtension(extension: Readonly<Extension>, de
   const customBaratieApi = {
     ...window.Baratie,
     ingredient: {
-      startBatch: () => ingredientRegistry.startBatch(),
-      endBatch: () => ingredientRegistry.endBatch(),
-      getAllCategories: () => ingredientRegistry.getAllCategories(),
-      getAllIngredients: () => ingredientRegistry.getAllIngredients(),
-      getIngredient: (ingId: string) => ingredientRegistry.getIngredient(ingId),
-      unregisterIngredients: (ids: ReadonlyArray<string>) => ingredientRegistry.unregisterIngredients(ids),
+      ...window.Baratie.ingredient,
       registerIngredient: <T>(definition: IngredientDefinition<T>, _namespace?: string): string => {
         const registeredId = ingredientRegistry.registerIngredient(definition, id);
         newlyRegisteredKeys.push(registeredId);
