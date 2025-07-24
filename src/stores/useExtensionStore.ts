@@ -145,7 +145,7 @@ export const useExtensionStore = create<ExtensionState>()(
           setIngredients(id, []);
         }
 
-        const freshExtension: Extension = { id, ...manifest, status: 'loading', scripts: storeExtension?.scripts || {} };
+        const freshExtension: Extension = { id, ...manifest, status: 'loading', scripts: {} };
         upsert(freshExtension);
         await loadAndExecuteExtension(freshExtension, {
           getExtensionMap: () => get().extensionMap,

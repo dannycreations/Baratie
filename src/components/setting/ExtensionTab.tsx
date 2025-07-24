@@ -2,8 +2,8 @@ import { memo, useCallback, useState } from 'react';
 
 import { useExtensionStore } from '../../stores/useExtensionStore';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { Button, ConfirmButton } from '../shared/Button';
-import { AlertTriangleIcon, CheckIcon, GitMergeIcon, Loader2Icon } from '../shared/Icon';
+import { Button, ConfirmButton, TooltipButton } from '../shared/Button';
+import { AlertTriangleIcon, CheckIcon, GitMergeIcon, Loader2Icon, RefreshCwIcon } from '../shared/Icon';
 import { StringInput } from '../shared/input/StringInput';
 import { ItemListLayout } from '../shared/layout/ItemListLayout';
 import { Tooltip } from '../shared/Tooltip';
@@ -55,11 +55,16 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
 const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const removeExtension = useExtensionStore((state) => state.remove);
+  const refreshExtension = useExtensionStore((state) => state.refresh);
   const displayName = extension.name || extension.id;
 
   const handleConfirmDelete = useCallback(() => {
     removeExtension(extension.id);
   }, [removeExtension, extension.id]);
+
+  const handleRefresh = useCallback(() => {
+    refreshExtension(extension.id);
+  }, [refreshExtension, extension.id]);
 
   const leftContent = (
     <div className="flex flex-col">
@@ -69,8 +74,17 @@ const ExtensionItem = memo<ExtensionItemProps>(({ extension }): JSX.Element => {
   );
 
   const rightContent = (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-2">
       <ExtensionItemStatus errors={extension.errors} status={extension.status} />
+      <TooltipButton
+        aria-label={`Refresh extension: ${displayName}`}
+        disabled={extension.status === 'loading'}
+        icon={<RefreshCwIcon size={18} />}
+        size="sm"
+        tooltipContent="Refresh & Check for Updates"
+        variant="stealth"
+        onClick={handleRefresh}
+      />
       <ConfirmButton actionName="Remove" itemName={displayName} itemType="Extension" onConfirm={handleConfirmDelete} />
     </div>
   );
