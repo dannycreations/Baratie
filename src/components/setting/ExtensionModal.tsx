@@ -1,4 +1,4 @@
-import { memo, useCallback, useDeferredValue, useId, useMemo, useState } from 'react';
+import { memo, useCallback, useDeferredValue, useEffect, useId, useMemo, useState } from 'react';
 
 import { useExtensionStore } from '../../stores/useExtensionStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -47,7 +47,7 @@ export const ExtensionModal = memo((): JSX.Element | null => {
     [pendingSelection],
   );
 
-  useMemo(() => {
+  useEffect(() => {
     if (pendingSelection) {
       setSelectedEntries(new Set(manifestModules.map((m) => m.entry)));
     }
@@ -92,7 +92,7 @@ export const ExtensionModal = memo((): JSX.Element | null => {
     const moduleEntries = modules.map((m) => m.entry);
     setSelectedEntries((prev) => {
       const newSet = new Set(prev);
-      const areAllSelected = moduleEntries.every((entry) => newSet.has(entry));
+      const areAllSelected = modules.length > 0 && moduleEntries.every((entry) => newSet.has(entry));
       if (areAllSelected) {
         for (const entry of moduleEntries) {
           newSet.delete(entry);
@@ -175,7 +175,7 @@ export const ExtensionModal = memo((): JSX.Element | null => {
       headerActions={headerActions}
       isOpen={!!pendingSelection}
       size="xl"
-      title={`Install from: ${pendingSelection.manifest.name}`}
+      title={pendingSelection.manifest.name}
       onClose={handleClose}
     >
       <SearchListLayout

@@ -115,6 +115,7 @@ export interface IngredientProps<T = unknown> extends IngredientDefinition<T> {
 
 export class IngredientRegistry {
   private ingredients: Map<string, IngredientProps> = new Map();
+  private nameToIdMap: Map<string, string> = new Map();
   private categories: ReadonlySet<string> | null = null;
   private isBatching = false;
 
@@ -147,6 +148,11 @@ export class IngredientRegistry {
 
   public getIngredient(id: string): IngredientProps | undefined {
     return this.ingredients.get(id);
+  }
+
+  public getIngredientByName(name: string): IngredientProps | undefined {
+    const id = this.nameToIdMap.get(name);
+    return id ? this.ingredients.get(id) : undefined;
   }
 
   public registerIngredient<T>(definition: IngredientDefinition<T>, namespace?: string): string {
@@ -186,6 +192,7 @@ export class IngredientRegistry {
   private resort(): void {
     const sortedEntries = Array.from(this.ingredients.entries()).sort(([, a], [, b]) => a.name.localeCompare(b.name));
     this.ingredients = new Map(sortedEntries);
+    this.nameToIdMap = new Map(sortedEntries.map(([id, ingredient]) => [ingredient.name, id]));
     this.categories = null;
     useIngredientStore.getState().refreshRegistry();
   }

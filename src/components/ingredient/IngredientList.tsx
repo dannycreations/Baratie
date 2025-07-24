@@ -15,20 +15,70 @@ export interface BaseListItem {
   readonly description: string;
 }
 
-export interface IngredientListProps<T extends BaseListItem> {
+export interface IngredientListProps {
   readonly emptyMessage?: string;
-  readonly itemsByCategory: ReadonlyArray<readonly [string, ReadonlyArray<T>]>;
+  readonly itemsByCategory: ReadonlyArray<readonly [string, ReadonlyArray<BaseListItem>]>;
   readonly noResultsMessage?: (query: string) => string;
   readonly query: string;
-  readonly renderHeader?: (category: string, items: ReadonlyArray<T>) => JSX.Element;
-  readonly renderItemActions?: (item: T) => ReactNode;
-  readonly renderItemPrefix?: (item: T) => ReactNode;
-  readonly onItemDragStart?: (event: DragEvent<HTMLElement>, item: T) => void;
-  readonly isItemDisabled?: (item: T) => boolean;
+  readonly renderHeader?: (category: string, items: ReadonlyArray<BaseListItem>) => JSX.Element;
+  readonly renderItemActions?: (item: BaseListItem) => ReactNode;
+  readonly renderItemPrefix?: (item: BaseListItem) => ReactNode;
+  readonly onItemDragStart?: (event: DragEvent<HTMLElement>, item: BaseListItem) => void;
+  readonly isItemDisabled?: (item: BaseListItem) => boolean;
 }
 
+const IngredientListItem = memo(
+  ({
+    item,
+    isItemDisabled,
+    renderItemPrefix,
+    renderItemActions,
+    onItemDragStart,
+  }: {
+    item: BaseListItem;
+    isItemDisabled?: (item: BaseListItem) => boolean;
+    renderItemPrefix?: (item: BaseListItem) => ReactNode;
+    renderItemActions?: (item: BaseListItem) => ReactNode;
+    onItemDragStart?: (event: DragEvent<HTMLElement>, item: BaseListItem) => void;
+  }): JSX.Element => {
+    const theme = useThemeStore((state) => state.theme);
+    const isDisabled = isItemDisabled?.(item) ?? false;
+    const nameClass = `truncate pr-2 text-sm transition-colors duration-150 cursor-default ${
+      isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`
+    } group-hover:text-${theme.infoFg}`;
+
+    const leftColumn = (
+      <div className="flex min-w-0 items-center gap-3">
+        {renderItemPrefix?.(item)}
+        <Tooltip content={item.description} position="top" tooltipClasses="max-w-xs">
+          <span className={nameClass}>{item.name}</span>
+        </Tooltip>
+      </div>
+    );
+
+    const rightColumn = renderItemActions?.(item);
+
+    return (
+      <li
+        data-ingredient-id={item.id}
+        draggable={!!onItemDragStart}
+        onDragStart={(event) => {
+          onItemDragStart?.(event, item);
+        }}
+      >
+        <ItemListLayout
+          className={`group h-11 rounded-md bg-${theme.surfaceTertiary} px-2 py-1.5 transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
+          leftContent={leftColumn}
+          leftClasses="grow min-w-0"
+          rightContent={rightColumn}
+        />
+      </li>
+    );
+  },
+);
+
 export const IngredientList = memo(
-  <T extends BaseListItem>({
+  ({
     itemsByCategory,
     query,
     renderHeader,
@@ -38,7 +88,7 @@ export const IngredientList = memo(
     renderItemPrefix,
     onItemDragStart,
     isItemDisabled,
-  }: IngredientListProps<T>): JSX.Element => {
+  }: IngredientListProps): JSX.Element => {
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
     const theme = useThemeStore((state) => state.theme);
 
@@ -51,42 +101,6 @@ export const IngredientList = memo(
         <EmptyView className="flex grow flex-col items-center justify-center py-4">{query.trim() ? noResultsMessage(query) : emptyMessage}</EmptyView>
       );
     }
-
-    const renderListItem = useCallback(
-      (item: T): JSX.Element => {
-        const isDisabled = isItemDisabled?.(item) ?? false;
-        const nameClass = `truncate pr-2 text-sm transition-colors duration-150 cursor-default ${
-          isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`
-        } group-hover:text-${theme.infoFg}`;
-
-        const leftColumn = (
-          <div className="flex min-w-0 items-center gap-3">
-            {renderItemPrefix?.(item)}
-            <Tooltip content={item.description} position="top" tooltipClasses="max-w-xs">
-              <span className={nameClass}>{item.name}</span>
-            </Tooltip>
-          </div>
-        );
-
-        const rightColumn = renderItemActions?.(item);
-
-        const handleDragStart = (event: DragEvent<HTMLElement>) => {
-          onItemDragStart?.(event, item);
-        };
-
-        return (
-          <li key={item.id} data-ingredient-id={item.id} draggable={!!onItemDragStart} onDragStart={handleDragStart}>
-            <ItemListLayout
-              className={`group h-11 rounded-md bg-${theme.surfaceTertiary} px-2 py-1.5 transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
-              leftContent={leftColumn}
-              leftClasses="grow min-w-0"
-              rightContent={rightColumn}
-            />
-          </li>
-        );
-      },
-      [theme, isItemDisabled, renderItemPrefix, renderItemActions, onItemDragStart],
-    );
 
     return (
       <>
@@ -127,7 +141,16 @@ export const IngredientList = memo(
                   className={`max-h-64 overflow-y-auto bg-${theme.surfaceMuted} p-3`}
                 >
                   <ul aria-labelledby={buttonId} className="space-y-1.5">
-                    {items.map(renderListItem)}
+                    {items.map((item) => (
+                      <IngredientListItem
+                        key={item.id}
+                        item={item}
+                        isItemDisabled={isItemDisabled}
+                        renderItemActions={renderItemActions}
+                        renderItemPrefix={renderItemPrefix}
+                        onItemDragStart={onItemDragStart}
+                      />
+                    ))}
                   </ul>
                 </div>
               )}

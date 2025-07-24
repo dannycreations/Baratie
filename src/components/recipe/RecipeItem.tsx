@@ -41,12 +41,11 @@ export const RecipeItem = memo<RecipeItemProps>(
   ({ ingredientItem, isDragged, isAutoCook, onSpiceChange, onRemove, onDragStart, onDragEnter, onDragEnd, onDragOver }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const status = useKitchenStore((state) => state.ingredientStatus[ingredientItem.id] || 'idle');
-    const inputPanelId = useKitchenStore((state) => state.inputPanelId);
-    const editingId = useRecipeStore((state) => state.editingId);
     const setEditingId = useRecipeStore((state) => state.setEditingId);
 
-    const isSpiceInInput = inputPanelId === ingredientItem.id;
-    const isEditing = !isSpiceInInput && editingId === ingredientItem.id;
+    const isSpiceInInput = useKitchenStore((state) => state.inputPanelId === ingredientItem.id);
+    const isEditingItem = useRecipeStore((state) => state.editingId === ingredientItem.id);
+    const isEditing = !isSpiceInInput && isEditingItem;
 
     const definition = ingredientRegistry.getIngredient(ingredientItem.ingredientId);
 
@@ -105,12 +104,12 @@ export const RecipeItem = memo<RecipeItemProps>(
     );
 
     const handleEditToggle = useCallback(() => {
-      if (inputPanelId === ingredientItem.id) {
+      if (isSpiceInInput) {
         setEditingId(null);
         return;
       }
-      setEditingId(editingId === ingredientItem.id ? null : ingredientItem.id);
-    }, [inputPanelId, ingredientItem.id, setEditingId, editingId]);
+      setEditingId(isEditingItem ? null : ingredientItem.id);
+    }, [isSpiceInInput, isEditingItem, ingredientItem.id, setEditingId]);
 
     const handleSpiceChange = useCallback(
       (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => {

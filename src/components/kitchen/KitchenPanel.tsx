@@ -11,7 +11,7 @@ import { SectionLayout } from '../shared/layout/SectionLayout';
 import { SpiceLayout } from '../shared/layout/SpiceLayout';
 
 import type { ChangeEvent, JSX, RefObject } from 'react';
-import type { InputPanelConfig, OutputPanelConfig, SpiceDefinition, SpiceValue } from '../../core/IngredientRegistry';
+import type { IngredientItem, InputPanelConfig, OutputPanelConfig, SpiceDefinition, SpiceValue } from '../../core/IngredientRegistry';
 
 interface KitchenPanelProps {
   readonly type: 'input' | 'output';
@@ -30,8 +30,8 @@ interface OutputActionsProps {
 }
 
 interface SpiceContentProps {
-  readonly config: Extract<InputPanelConfig, { mode: 'spiceEditor' }>;
   readonly onSpiceChange: (ingredientId: string, spiceId: string, rawValue: SpiceValue, spice: SpiceDefinition) => void;
+  readonly targetIngredient: IngredientItem;
 }
 
 interface DefaultContentProps {
@@ -92,22 +92,15 @@ const OutputActions = memo<OutputActionsProps>(({ data, onDownload }) => (
   </>
 ));
 
-const SpiceContent = memo<SpiceContentProps>(({ config, onSpiceChange }) => {
-  const ingredients = useRecipeStore((state) => state.ingredients);
-  const targetIngredient = ingredients.find((ing) => ing.id === config.targetIngredientId);
-
+const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient }) => {
   const handleSpiceChange = useCallback(
     (spiceId: string, rawValue: SpiceValue, spice: SpiceDefinition) => {
-      onSpiceChange(config.targetIngredientId, spiceId, rawValue, spice);
+      onSpiceChange(targetIngredient.id, spiceId, rawValue, spice);
     },
-    [onSpiceChange, config.targetIngredientId],
+    [onSpiceChange, targetIngredient.id],
   );
 
-  if (!targetIngredient) {
-    return null;
-  }
-
-  const definition = ingredientRegistry.getIngredient(targetIngredient.name);
+  const definition = ingredientRegistry.getIngredient(targetIngredient.ingredientId);
   errorHandler.assert(definition, 'Could not find definition for target ingredient in spice editor.');
 
   return (
@@ -156,8 +149,20 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const outputData = useKitchenStore((state) => state.outputData);
   const updateSpice = useRecipeStore((state) => state.updateSpice);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const importOperationRef = useRef<number>(0);
+
+  const targetIngredient = useRecipeStore(
+    useCallback(
+      (state) => {
+        if (inputPanelConfig?.mode === 'spiceEditor') {
+          return state.ingredients.find((ing) => ing.id === inputPanelConfig.targetIngredientId);
+        }
+        return undefined;
+      },
+      [inputPanelConfig],
+    ),
+  );
 
   const isInput = type === 'input';
   const data = isInput ? inputData : outputData;
@@ -204,8 +209,8 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
     if (!isInput) {
       return <OutputContent config={outputPanelConfig} data={outputData} />;
     }
-    if (inputPanelConfig?.mode === 'spiceEditor') {
-      return <SpiceContent config={inputPanelConfig} onSpiceChange={updateSpice} />;
+    if (inputPanelConfig?.mode === 'spiceEditor' && targetIngredient) {
+      return <SpiceContent targetIngredient={targetIngredient} onSpiceChange={updateSpice} />;
     }
     return <DefaultContent config={inputPanelConfig} data={inputData} fileInputRef={fileInputRef} onFileSelect={handleFileSelect} />;
   };

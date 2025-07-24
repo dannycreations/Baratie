@@ -86,7 +86,7 @@ export function saveAllRecipes(recipes: ReadonlyArray<RecipeBookItem>): boolean 
 export function sanitizeIngredient(rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientItem | null {
   const definition = rawIngredient.ingredientId
     ? ingredientRegistry.getIngredient(rawIngredient.ingredientId)
-    : ingredientRegistry.getAllIngredients().find((i) => i.name === rawIngredient.name);
+    : ingredientRegistry.getIngredientByName(rawIngredient.name);
 
   if (!definition) {
     logger.warn(`Skipping unknown ingredient '${rawIngredient.name}' from ${source} for recipe '${recipeName}'. Its definition could not be found.`);

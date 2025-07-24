@@ -2,16 +2,6 @@ import type { IngredientProps } from '../core/IngredientRegistry';
 
 const categorySortFn = ([catA]: readonly [string, unknown], [catB]: readonly [string, unknown]): number => catA.localeCompare(catB);
 
-export function toggleSetItem<T>(set: ReadonlySet<T>, item: T): Set<T> {
-  const newSet = new Set(set);
-  if (newSet.has(item)) {
-    newSet.delete(item);
-  } else {
-    newSet.add(item);
-  }
-  return newSet;
-}
-
 export function groupAndSortIngredients(ingredients: ReadonlyArray<IngredientProps>): ReadonlyMap<string, ReadonlyArray<IngredientProps>> {
   const grouped = new Map<string, Array<IngredientProps>>();
   for (const ingredient of ingredients) {
