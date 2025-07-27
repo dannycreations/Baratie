@@ -4,6 +4,7 @@ import { logger } from '../../../app/container';
 import { getVisibleSpices } from '../../../helpers/spiceHelper';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { BooleanInput } from '../input/BooleanInput';
+import { NumberInput } from '../input/NumberInput';
 import { SelectInput } from '../input/SelectInput';
 import { StringInput } from '../input/StringInput';
 import { FormLayout } from './FormLayout';
@@ -41,6 +42,13 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
     [onSpiceChange, spice],
   );
 
+  const handleNumberChange = useCallback(
+    (newValue: number) => {
+      onSpiceChange(spice.id, newValue, spice);
+    },
+    [onSpiceChange, spice],
+  );
+
   const handleSelectChange = useCallback(
     (newValue: SpiceValue) => {
       onSpiceChange(spice.id, newValue, spice);
@@ -57,15 +65,14 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
       case 'number': {
         const value = typeof rawValue === 'number' ? rawValue : spice.value;
         return (
-          <StringInput
+          <NumberInput
             id={id}
-            type="number"
             max={spice.max}
             min={spice.min}
             placeholder={spice.placeholder}
             step={spice.step || 1}
-            value={String(value)}
-            onChange={handleValueChange}
+            value={value}
+            onChange={handleNumberChange}
           />
         );
       }

@@ -72,6 +72,11 @@ export const CheckIcon = createIcon({
   path: <polyline points="20 6 9 17 4 12" />,
 });
 
+export const ChevronUpIcon = createIcon({
+  iconName: 'chevron-up',
+  path: <polyline points="18 15 12 9 6 15" />,
+});
+
 export const ChevronDownIcon = createIcon({
   iconName: 'chevron-down',
   path: <polyline points="6 9 12 15 18 9" />,

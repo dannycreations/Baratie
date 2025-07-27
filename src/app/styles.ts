@@ -202,4 +202,13 @@ body.grabbing * {
   animation: recipeSpicesEnter 0.3s ease-out forwards;
   overflow: hidden;
 }
+
+.number-input-no-spinner::-webkit-outer-spin-button,
+.number-input-no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.number-input-no-spinner {
+  -moz-appearance: textfield;
+}
 `;

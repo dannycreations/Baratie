@@ -37,11 +37,13 @@ interface CopyButtonProps {
   readonly tooltipPosition?: TooltipProps['position'];
 }
 
-interface ConfirmButtonProps extends Pick<TooltipButtonProps, 'className' | 'tooltipPosition'> {
+interface ConfirmButtonProps {
   readonly onConfirm: () => void;
   readonly itemName: string;
   readonly itemType: string;
   readonly actionName?: string;
+  readonly className?: string;
+  readonly tooltipPosition?: TooltipProps['position'];
 }
 
 const ICON_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {

@@ -145,10 +145,7 @@ export function validateSpices(
         validatedSpices[spice.id] = isValidOption ? prepareSelectValue(selectedValue as SpiceValue, spice) : spice.value;
         break;
       }
-      case 'string': {
-        validatedSpices[spice.id] = input.cast('string', { value: spice.value }).getValue().trim();
-        break;
-      }
+      case 'string':
       case 'textarea': {
         validatedSpices[spice.id] = input.cast('string', { value: spice.value }).getValue();
         break;
