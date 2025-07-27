@@ -1,31 +1,31 @@
-import { safeParse } from 'valibot';
-import * as v from 'valibot';
+import { array, boolean, nonEmpty, number, object, optional, pipe, record, safeParse, string, union } from 'valibot';
 
 import { ingredientRegistry, logger, storage } from '../app/container';
 import { getSortedSpices, validateSpices } from './spiceHelper';
 
+import type { InferInput } from 'valibot';
 import type { IngredientItem, RecipebookItem } from '../core/IngredientRegistry';
 
-const SpiceValueSchema = v.union([v.string(), v.number(), v.boolean()]);
+const SpiceValueSchema = union([string(), number(), boolean()]);
 
-const RawIngredientSchema = v.object({
-  id: v.pipe(v.string(), v.nonEmpty('Ingredient ID cannot be empty.')),
-  ingredientId: v.optional(v.string()),
-  name: v.pipe(v.string(), v.nonEmpty('Ingredient name cannot be empty.')),
-  spices: v.record(v.string(), v.optional(SpiceValueSchema)),
+const RawIngredientSchema = object({
+  id: pipe(string(), nonEmpty('Ingredient ID cannot be empty.')),
+  ingredientId: optional(string()),
+  name: pipe(string(), nonEmpty('Ingredient name cannot be empty.')),
+  spices: record(string(), optional(SpiceValueSchema)),
 });
 
-type RawIngredient = v.InferInput<typeof RawIngredientSchema>;
+type RawIngredient = InferInput<typeof RawIngredientSchema>;
 
-const RecipeBookItemSchema = v.object({
-  id: v.pipe(v.string(), v.nonEmpty()),
-  name: v.pipe(v.string(), v.nonEmpty()),
-  ingredients: v.array(RawIngredientSchema),
-  createdAt: v.number(),
-  updatedAt: v.number(),
+const RecipeBookItemSchema = object({
+  id: pipe(string(), nonEmpty()),
+  name: pipe(string(), nonEmpty()),
+  ingredients: array(RawIngredientSchema),
+  createdAt: number(),
+  updatedAt: number(),
 });
 
-type RawRecipeBookItem = v.InferInput<typeof RecipeBookItemSchema>;
+type RawRecipeBookItem = InferInput<typeof RecipeBookItemSchema>;
 
 interface SanitizationResult {
   readonly recipe: RecipebookItem | null;

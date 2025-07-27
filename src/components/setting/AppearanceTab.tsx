@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 
 import { APP_THEMES } from '../../app/themes';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -41,6 +41,11 @@ export const AppearanceTab = memo((): JSX.Element => {
   const id = useThemeStore((state) => state.id);
   const theme = useThemeStore((state) => state.theme);
   const setTheme = useThemeStore((state) => state.setTheme);
+  const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
+
+  useEffect(() => {
+    itemRefs.current = itemRefs.current.slice(0, APP_THEMES.length);
+  }, []);
 
   const handleSelectTheme = useCallback(
     (themeId: ThemeId) => {
@@ -58,7 +63,7 @@ export const AppearanceTab = memo((): JSX.Element => {
         Select a color theme for the application.
       </p>
       <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-        {APP_THEMES.map((item) => {
+        {APP_THEMES.map((item, index) => {
           const isChecked = id === item.id;
           const leftContent = (
             <div className="flex flex-col justify-center gap-1">
@@ -87,10 +92,13 @@ export const AppearanceTab = memo((): JSX.Element => {
           return (
             <li
               key={item.id}
+              ref={(el) => {
+                itemRefs.current[index] = el;
+              }}
               role="radio"
               aria-checked={isChecked}
               className={liClass}
-              tabIndex={0}
+              tabIndex={isChecked ? 0 : -1}
               onClick={() => {
                 handleSelectTheme(item.id);
               }}

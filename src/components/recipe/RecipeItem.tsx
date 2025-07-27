@@ -149,7 +149,14 @@ export const RecipeItem = memo<RecipeItemProps>(
     const leftColumn = (
       <>
         <Tooltip content="Drag to reorder" position="top">
-          <span aria-label="Drag handle" className={grabHandleClass} draggable={true} onDragEnd={onDragEnd} onDragStart={handleDragStart}>
+          <span
+            aria-label="Drag handle"
+            aria-roledescription="draggable item"
+            className={grabHandleClass}
+            draggable={true}
+            onDragEnd={onDragEnd}
+            onDragStart={handleDragStart}
+          >
             <GrabIcon size={20} />
           </span>
         </Tooltip>

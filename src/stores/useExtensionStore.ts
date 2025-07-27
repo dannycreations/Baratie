@@ -1,4 +1,4 @@
-import * as v from 'valibot';
+import { safeParse } from 'valibot';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
@@ -97,7 +97,7 @@ export const useExtensionStore = create<ExtensionState>()(
       let hadCorruption = false;
 
       for (const rawExt of rawExtensions) {
-        const { success, output } = v.safeParse(StorableExtensionSchema, rawExt);
+        const { success, output } = safeParse(StorableExtensionSchema, rawExt);
         if (success) {
           validStoredExtensions.push(output);
         } else {
@@ -186,7 +186,7 @@ export const useExtensionStore = create<ExtensionState>()(
         }
         const manifestJson: unknown = await response.json();
 
-        const validationResult = v.safeParse(ExtensionManifestSchema, manifestJson);
+        const validationResult = safeParse(ExtensionManifestSchema, manifestJson);
         if (!validationResult.success) {
           throw new Error(`Invalid manifest file: ${validationResult.issues[0].message}`);
         }

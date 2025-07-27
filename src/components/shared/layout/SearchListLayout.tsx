@@ -48,6 +48,13 @@ export const SearchListLayout = memo<SearchListLayoutProps>((props): JSX.Element
         )
       : undefined;
 
+  const handleClear =
+    props.showSearch !== false
+      ? useCallback(() => {
+          props.search.onQueryChange('');
+        }, [props.search])
+      : undefined;
+
   return (
     <div className={containerClasses}>
       {props.showSearch !== false && (
@@ -61,6 +68,8 @@ export const SearchListLayout = memo<SearchListLayoutProps>((props): JSX.Element
             placeholder={props.search.placeholder}
             value={props.search.query}
             onChange={handleChange!}
+            showClearButton={true}
+            onClear={handleClear}
           />
         </div>
       )}

@@ -1,6 +1,7 @@
 import { memo, useId } from 'react';
 
 import { useThemeStore } from '../../stores/useThemeStore';
+import { SaveIcon } from '../shared/Icon';
 import { SearchListLayout } from '../shared/layout/SearchListLayout';
 import { EmptyView } from '../shared/View';
 import { CookbookItem } from './CookbookItem';
@@ -35,8 +36,12 @@ export const CookbookLoad = memo<CookbookLoadProps>(
                 ))}
               </ul>
             ) : (
-              <EmptyView className="flex h-full w-full grow flex-col items-center justify-center p-4">
-                {totalRecipes === 0 ? 'You have not saved any recipes yet.' : `No recipes found for "${query}".`}
+              <EmptyView
+                className="flex h-full w-full grow flex-col items-center justify-center p-4"
+                icon={totalRecipes === 0 ? <SaveIcon size={48} /> : undefined}
+                title={totalRecipes > 0 ? 'No Matches Found' : 'Cookbook is Empty'}
+              >
+                {totalRecipes === 0 ? 'Build a recipe and save it to your cookbook!' : `No recipes found for "${query}".`}
               </EmptyView>
             )
           }

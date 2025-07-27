@@ -32,7 +32,7 @@ export const SectionLayout = memo<SectionLayoutProps>(
           <h2 id={titleId} className="truncate pr-2 text-lg font-semibold">
             {headerLeft}
           </h2>
-          {headerRight && <div className="flex shrink-0 items-center space-x-1.5">{headerRight}</div>}
+          {headerRight && <div className="flex shrink-0 items-center gap-1.5">{headerRight}</div>}
         </div>
         <div ref={contentRef} className={contentClass}>
           {children}

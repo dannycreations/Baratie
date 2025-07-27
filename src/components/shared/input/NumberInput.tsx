@@ -23,7 +23,8 @@ export const NumberInput = memo<NumberInputProps>(
     const [internalValue, setInternalValue] = useState(String(value));
 
     useEffect(() => {
-      if (parseFloat(internalValue) !== value) {
+      const numericInternal = Number(internalValue);
+      if (isNaN(numericInternal) || numericInternal !== value) {
         setInternalValue(String(value));
       }
     }, [value, internalValue]);
@@ -55,8 +56,13 @@ export const NumberInput = memo<NumberInputProps>(
 
     const handleBlur = useCallback(
       (_event: FocusEvent<HTMLInputElement>) => {
-        const numericValue = parseFloat(internalValue);
-        if (!isNaN(numericValue)) {
+        const trimmedValue = internalValue.trim();
+        if (trimmedValue === '') {
+          setInternalValue(String(value));
+          return;
+        }
+        const numericValue = Number(trimmedValue);
+        if (!isNaN(numericValue) && isFinite(numericValue)) {
           handleValueChange(numericValue);
         } else {
           setInternalValue(String(value));
@@ -67,7 +73,7 @@ export const NumberInput = memo<NumberInputProps>(
 
     const handleStep = useCallback(
       (direction: 'up' | 'down') => {
-        const currentValue = parseFloat(internalValue);
+        const currentValue = Number(internalValue);
         const numericValue = isNaN(currentValue) ? value : currentValue;
         const change = direction === 'up' ? step : -step;
         handleValueChange(numericValue + change);
@@ -83,9 +89,11 @@ export const NumberInput = memo<NumberInputProps>(
         } else if (event.key === 'ArrowDown') {
           event.preventDefault();
           handleStep('down');
+        } else if (event.key === 'Enter') {
+          handleBlur(event as unknown as FocusEvent<HTMLInputElement>);
         }
       },
-      [handleStep],
+      [handleStep, handleBlur],
     );
 
     const standardInputStyle = `

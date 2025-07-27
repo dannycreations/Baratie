@@ -13,6 +13,8 @@ import type {
   InputPanelConfig,
   OutputPanelConfig,
   PanelControlConfig,
+  PanelControlSignal,
+  ResultType,
 } from './IngredientRegistry';
 
 export type CookingStatusType = 'idle' | 'error' | 'success' | 'warning';
@@ -38,6 +40,10 @@ interface IngredientRunResult {
   readonly nextData: string;
   readonly panelInstruction?: PanelControlConfig;
   readonly status: CookingStatusType;
+}
+
+function isPanelControlSignal(value: ResultType): value is PanelControlSignal {
+  return typeof value === 'object' && value !== null && 'output' in value && value.output instanceof InputType;
 }
 
 export class Kitchen {
@@ -228,9 +234,8 @@ export class Kitchen {
       return { hasError: false, nextData: currentData, status: 'warning' };
     }
 
-    const isPanelControlSignal = 'output' in result;
-    const output = isPanelControlSignal ? result.output : result;
-    const panelInstruction = isPanelControlSignal ? result.panelControl : undefined;
+    const output = isPanelControlSignal(result) ? result.output : result;
+    const panelInstruction = isPanelControlSignal(result) ? result.panelControl : undefined;
     errorHandler.assert(output instanceof InputType, `Ingredient '${definition.name}' returned an invalid result type.`);
 
     const nextData = output.cast('string').getValue();

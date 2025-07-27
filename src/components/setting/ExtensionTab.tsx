@@ -109,7 +109,7 @@ const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status, error
   );
 
   const rightContent = (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5">
       <ExtensionItemStatus errors={errors} status={status} />
       <TooltipButton
         aria-label={`Refresh extension: ${displayName}`}
@@ -184,7 +184,7 @@ export const ExtensionTab = memo((): JSX.Element => {
         </p>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <StringInput
           id="extension-url-input"
           aria-label="GitHub Repository URL"

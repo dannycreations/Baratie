@@ -1,47 +1,48 @@
-import * as v from 'valibot';
+import { array, intersect, nonEmpty, number, object, optional, pipe, record, string, union } from 'valibot';
 
 import { ingredientRegistry, logger } from '../app/container';
 
+import type { InferInput } from 'valibot';
 import type { IngredientDefinition, IngredientRegistry } from '../core/IngredientRegistry';
 import type { LoadExtensionDependencies } from '../stores/useExtensionStore';
 
-const NonEmptyString = v.pipe(v.string(), v.nonEmpty());
+const NonEmptyString = pipe(string(), nonEmpty());
 
-export const ManifestModuleSchema = v.object({
+export const ManifestModuleSchema = object({
   name: NonEmptyString,
   category: NonEmptyString,
   description: NonEmptyString,
   entry: NonEmptyString,
 });
 
-export type ManifestModule = v.InferInput<typeof ManifestModuleSchema>;
+export type ManifestModule = InferInput<typeof ManifestModuleSchema>;
 
-const EntrySchema = v.union([NonEmptyString, v.pipe(v.array(NonEmptyString), v.nonEmpty()), v.pipe(v.array(ManifestModuleSchema), v.nonEmpty())]);
+const EntrySchema = union([NonEmptyString, pipe(array(NonEmptyString), nonEmpty()), pipe(array(ManifestModuleSchema), nonEmpty())]);
 
-export const ExtensionManifestSchema = v.object({
+export const ExtensionManifestSchema = object({
   name: NonEmptyString,
   entry: EntrySchema,
 });
 
-export type ExtensionManifest = v.InferInput<typeof ExtensionManifestSchema>;
+export type ExtensionManifest = InferInput<typeof ExtensionManifestSchema>;
 
-const BaseExtensionSchema = v.object({
-  id: v.pipe(v.string(), v.nonEmpty()),
-  name: v.pipe(v.string(), v.nonEmpty()),
-  entry: v.optional(EntrySchema),
+const BaseExtensionSchema = object({
+  id: pipe(string(), nonEmpty()),
+  name: pipe(string(), nonEmpty()),
+  entry: optional(EntrySchema),
 });
 
-type BaseExtension = v.InferInput<typeof BaseExtensionSchema>;
+type BaseExtension = InferInput<typeof BaseExtensionSchema>;
 
-export const StorableExtensionSchema = v.intersect([
+export const StorableExtensionSchema = intersect([
   BaseExtensionSchema,
-  v.object({
-    fetchedAt: v.number(),
-    scripts: v.record(v.string(), v.pipe(v.string(), v.nonEmpty())),
+  object({
+    fetchedAt: number(),
+    scripts: record(string(), pipe(string(), nonEmpty())),
   }),
 ]);
 
-export type StorableExtension = v.InferInput<typeof StorableExtensionSchema>;
+export type StorableExtension = InferInput<typeof StorableExtensionSchema>;
 
 type StoredExtensionData = Pick<StorableExtension, 'fetchedAt' | 'scripts'>;
 

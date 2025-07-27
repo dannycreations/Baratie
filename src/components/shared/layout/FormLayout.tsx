@@ -11,7 +11,7 @@ interface FormLayoutProps {
   readonly fieldSetClasses?: string;
   readonly inputId: string;
   readonly inputWrapperClasses?: string;
-  readonly label: string;
+  readonly label?: string;
   readonly labelClasses?: string;
   readonly labelWrapperClasses?: string;
 }
@@ -25,7 +25,7 @@ export const FormLayout = memo<FormLayoutProps>(
     const labelWrapClass = labelWrapperClasses ?? '';
     const inputWrapClass = inputWrapperClasses ?? '';
 
-    const labelElement = <label className={labelClass}>{label}:</label>;
+    const labelElement = label ? <label className={labelClass}>{label}:</label> : null;
 
     const labelContent = description ? (
       <Tooltip className={labelWrapClass.trim()} content={description} disabled={!description} position="top" tooltipClasses="max-w-[250px]">
@@ -37,7 +37,7 @@ export const FormLayout = memo<FormLayoutProps>(
 
     return (
       <div className={fieldSetClass}>
-        {labelContent}
+        {label && labelContent}
         <div className={inputWrapClass}>{children(inputId)}</div>
       </div>
     );

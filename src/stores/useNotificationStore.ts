@@ -76,12 +76,13 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
     });
   },
 
-  show: (message, type = 'info', title, duration) => {
+  show: (message, type, title, duration) => {
     const { add, update, dedupeMap } = get();
+    const finalType: NotificationType = type ?? 'info';
     const details = {
-      message: message,
-      title: title,
-      type: type,
+      message,
+      title,
+      type: finalType,
     };
     const existingId = dedupeMap.get(getDedupeKey(details));
 

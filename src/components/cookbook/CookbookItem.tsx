@@ -75,7 +75,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
             <ConfirmButton actionName="Delete" itemName={recipe.name} itemType="Recipe" tooltipPosition="left" onConfirm={handleConfirmDelete} />
           </>
         }
-        rightClasses="flex shrink-0 items-center space-x-2"
+        rightClasses="flex shrink-0 items-center gap-1.5"
       />
     </li>
   );

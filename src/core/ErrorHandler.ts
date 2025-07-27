@@ -107,7 +107,7 @@ export class ErrorHandler {
   private buildError(error: unknown, callerContext?: string, defaultMessage?: string, genericMessage?: string): AppError {
     if (error instanceof AppError) {
       const finalContext = callerContext ?? error.context;
-      const finalUserMessage = genericMessage ?? error.userMessage ?? defaultMessage;
+      const finalUserMessage = error.userMessage ?? genericMessage ?? defaultMessage;
       return new AppError(error.message, finalContext, finalUserMessage, error);
     }
 

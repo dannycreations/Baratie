@@ -11,12 +11,22 @@ import type { JSX } from 'react';
 import type { SettingTab } from '../../stores/useSettingStore';
 
 interface TabButtonProps {
+  readonly id: string;
   readonly children: string;
   readonly isActive: boolean;
   readonly onClick: () => void;
 }
 
-const TabButton = memo<TabButtonProps>(({ children, isActive, onClick }): JSX.Element => {
+const TABS: ReadonlyArray<{
+  readonly id: SettingTab;
+  readonly label: string;
+  readonly component: JSX.Element;
+}> = [
+  { id: 'appearance', label: 'Appearance', component: <AppearanceTab /> },
+  { id: 'extensions', label: 'Extensions', component: <ExtensionTab /> },
+];
+
+const TabButton = memo<TabButtonProps>(({ children, id, isActive, onClick }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
   const tabClass = `
@@ -26,7 +36,7 @@ const TabButton = memo<TabButtonProps>(({ children, isActive, onClick }): JSX.El
   `;
 
   return (
-    <button role="tab" aria-selected={isActive} className={tabClass} onClick={onClick}>
+    <button id={id} role="tab" aria-controls={`${id}-panel`} aria-selected={isActive} className={tabClass} onClick={onClick}>
       {children}
     </button>
   );
@@ -38,6 +48,7 @@ export const SettingPanel = memo((): JSX.Element => {
   const activeTab = useSettingStore((state) => state.activeTab);
   const setActiveTab = useSettingStore((state) => state.setActiveTab);
   const theme = useThemeStore((state) => state.theme);
+  const tabIdPrefix = 'setting-tab';
 
   const handleTabSelect = useCallback(
     (tab: SettingTab) => {
@@ -47,37 +58,28 @@ export const SettingPanel = memo((): JSX.Element => {
   );
 
   const bodyContent = useMemo<JSX.Element | null>(() => {
-    switch (activeTab) {
-      case 'appearance':
-        return <AppearanceTab />;
-      case 'extensions':
-        return <ExtensionTab />;
-      default:
-        return null;
-    }
+    return TABS.find((tab) => tab.id === activeTab)?.component ?? null;
   }, [activeTab]);
 
   return (
     <Modal bodyClasses="p-0" contentClasses="flex max-h-[80vh] flex-col" isOpen={isModalOpen} size="xl" title="Settings" onClose={closeModal}>
       <div role="tablist" aria-label="Settings categories" className={`flex border-b border-${theme.borderPrimary} px-3`}>
-        <TabButton
-          isActive={activeTab === 'appearance'}
-          onClick={() => {
-            handleTabSelect('appearance');
-          }}
-        >
-          Appearance
-        </TabButton>
-        <TabButton
-          isActive={activeTab === 'extensions'}
-          onClick={() => {
-            handleTabSelect('extensions');
-          }}
-        >
-          Extensions
-        </TabButton>
+        {TABS.map((tab) => (
+          <TabButton
+            key={tab.id}
+            id={`${tabIdPrefix}-${tab.id}`}
+            isActive={activeTab === tab.id}
+            onClick={() => {
+              handleTabSelect(tab.id);
+            }}
+          >
+            {tab.label}
+          </TabButton>
+        ))}
       </div>
-      <div className="overflow-y-auto p-3">{bodyContent}</div>
+      <div id={`${tabIdPrefix}-${activeTab}-panel`} role="tabpanel" aria-labelledby={`${tabIdPrefix}-${activeTab}`} className="overflow-y-auto p-3">
+        {bodyContent}
+      </div>
     </Modal>
   );
 });

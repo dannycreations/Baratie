@@ -7,8 +7,8 @@ import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { TooltipButton } from '../shared/Button';
-import { FolderOpenIcon, PauseIcon, PlayIcon, SaveIcon, Trash2Icon } from '../shared/Icon';
+import { ConfirmButton, TooltipButton } from '../shared/Button';
+import { FolderOpenIcon, PauseIcon, PlayIcon, SaveIcon } from '../shared/Icon';
 import { DropzoneLayout } from '../shared/layout/DropzoneLayout';
 import { SearchListLayout } from '../shared/layout/SearchListLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
@@ -128,15 +128,13 @@ export const RecipePanel = memo((): JSX.Element => {
           variant="stealth"
           onClick={kitchen.toggleAutoCook}
         />
-        <TooltipButton
-          aria-label="Clear all ingredients from the recipe"
+        <ConfirmButton
+          actionName="Clear"
           disabled={ingredients.length === 0}
-          icon={<Trash2Icon size={18} />}
-          size="sm"
-          tooltipContent="Clear Recipe"
+          itemName="the current recipe"
+          itemType="Recipe"
           tooltipPosition="bottom"
-          variant="danger"
-          onClick={clearRecipe}
+          onConfirm={clearRecipe}
         />
       </>
     );

@@ -132,25 +132,27 @@ export const IngredientList = memo(
             <div key={category} className={containerClass}>
               {header}
               {isExpanded && (
-                <div
-                  id={panelId}
-                  role="region"
-                  aria-hidden={!isExpanded}
-                  aria-labelledby={buttonId}
-                  className={`max-h-64 overflow-y-auto bg-${theme.surfaceMuted} p-3`}
-                >
-                  <ul aria-labelledby={buttonId} className="space-y-1.5">
-                    {items.map((item) => (
-                      <IngredientListItem
-                        key={item.id}
-                        item={item}
-                        isItemDisabled={isItemDisabled}
-                        renderItemActions={renderItemActions}
-                        renderItemPrefix={renderItemPrefix}
-                        onItemDragStart={onItemDragStart}
-                      />
-                    ))}
-                  </ul>
+                <div className="recipe-item-spices-enter-active">
+                  <div
+                    id={panelId}
+                    role="region"
+                    aria-hidden={!isExpanded}
+                    aria-labelledby={buttonId}
+                    className={`max-h-64 overflow-y-auto bg-${theme.surfaceMuted} p-3 md:max-h-96`}
+                  >
+                    <ul aria-labelledby={buttonId} className="space-y-1.5">
+                      {items.map((item) => (
+                        <IngredientListItem
+                          key={item.id}
+                          item={item}
+                          isItemDisabled={isItemDisabled}
+                          renderItemActions={renderItemActions}
+                          renderItemPrefix={renderItemPrefix}
+                          onItemDragStart={onItemDragStart}
+                        />
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               )}
             </div>

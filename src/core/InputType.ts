@@ -275,9 +275,7 @@ export class InputType<T = unknown> {
     if (isObjectLike(this.value)) {
       try {
         return new InputType(JSON.stringify(this.value));
-      } catch {
-        // Fallback to default String conversion
-      }
+      } catch {}
     }
     return new InputType(String(this.value ?? ''));
   }

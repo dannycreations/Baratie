@@ -44,6 +44,7 @@ interface ConfirmButtonProps {
   readonly actionName?: string;
   readonly className?: string;
   readonly tooltipPosition?: TooltipProps['position'];
+  readonly disabled?: boolean;
 }
 
 const ICON_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
@@ -178,12 +179,12 @@ export const TooltipButton = memo<TooltipButtonProps>(
 );
 
 export const ConfirmButton = memo<ConfirmButtonProps>(
-  ({ onConfirm, itemName, itemType, actionName = 'Delete', tooltipPosition = 'top', className = '' }): JSX.Element => {
+  ({ onConfirm, itemName, itemType, actionName = 'Delete', tooltipPosition = 'top', className = '', disabled = false }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
     const { isConfirm, trigger } = useConfirmAction(onConfirm, CONFIRM_SHOW_MS);
 
-    const tooltipContent = isConfirm ? 'Confirm Deletion' : `${actionName} ${itemType}`;
+    const tooltipContent = isConfirm ? `Confirm ${actionName}` : `${actionName} ${itemType}`;
     const ariaLabel = isConfirm ? `Confirm ${actionName.toLowerCase()} of ${itemName}` : `${actionName} ${itemType}: ${itemName}`;
     const buttonClass = `${className} ${isConfirm ? getConfirmClasses(theme) : ''}`.trim();
 
@@ -191,6 +192,7 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
       <TooltipButton
         aria-label={ariaLabel}
         className={buttonClass}
+        disabled={disabled}
         icon={isConfirm ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
         size="sm"
         tooltipContent={tooltipContent}

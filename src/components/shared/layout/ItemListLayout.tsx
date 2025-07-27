@@ -13,7 +13,7 @@ export const ItemListLayout = memo<ItemListLayoutProps>(
   ({ leftContent, rightContent, leftClasses, rightClasses, className, ...rest }): JSX.Element => {
     const containerClass = `flex w-full items-center justify-between ${className || ''}`.trim();
     const leftWrapClass = leftClasses || 'grow min-w-0';
-    const rightWrapClass = rightClasses || 'flex shrink-0 items-center space-x-1';
+    const rightWrapClass = rightClasses || 'flex shrink-0 items-center gap-1.5';
 
     return (
       <div className={containerClass} {...rest}>
