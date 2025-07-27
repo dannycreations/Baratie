@@ -153,8 +153,8 @@ export const RecipeItem = memo<RecipeItemProps>(
             <GrabIcon size={20} />
           </span>
         </Tooltip>
-        <Tooltip content={ingredientItem.name} position="top">
-          <span className={`truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default`}>{ingredientItem.name}</span>
+        <Tooltip content={ingredientItem.name} position="top" className="min-w-0 flex-1">
+          <p className={`truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default`}>{ingredientItem.name}</p>
         </Tooltip>
       </>
     );

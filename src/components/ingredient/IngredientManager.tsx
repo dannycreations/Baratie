@@ -45,11 +45,11 @@ export const IngredientManager = memo((): JSX.Element => {
       const isCategoryDisabled = disabledCategories.has(category);
 
       return (
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <BooleanInput id={`${categoryId}-toggle`} checked={!isCategoryDisabled} onChange={() => toggleCategory(category)} />
           <label
             className={`
-              cursor-pointer font-medium
+              truncate cursor-pointer font-medium
               ${isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}
             `}
           >

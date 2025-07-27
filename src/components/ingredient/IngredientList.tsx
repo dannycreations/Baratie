@@ -40,8 +40,8 @@ const IngredientListItem = memo<IngredientListItemProps>(
     const leftColumn = (
       <div className="flex min-w-0 items-center gap-3">
         {renderItemPrefix?.(item)}
-        <Tooltip content={item.description} position="top" tooltipClasses="max-w-xs">
-          <span className={nameClass}>{item.name}</span>
+        <Tooltip className="min-w-0 flex-1" content={item.description} position="top" tooltipClasses="max-w-xs">
+          <p className={nameClass}>{item.name}</p>
         </Tooltip>
       </div>
     );
@@ -114,7 +114,7 @@ export const IngredientList = memo(
               `}
               onClick={() => handleCategoryToggle(category)}
             >
-              {renderHeader ? renderHeader(category, items) : <span className="font-medium">{category}</span>}
+              {renderHeader ? renderHeader(category, items) : <p className="truncate font-medium">{category}</p>}
               <ChevronRightIcon
                 aria-hidden="true"
                 className={`transform transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`}

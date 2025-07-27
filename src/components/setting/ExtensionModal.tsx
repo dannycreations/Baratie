@@ -151,13 +151,13 @@ export const ExtensionModal = memo((): JSX.Element | null => {
 
   const renderHeader = useCallback(
     (category: string, items: ReadonlyArray<BaseListItem>): JSX.Element => {
-      const categoryId = `install-module-category-${category.replace(/\s+/g, '-').toLowerCase()}`;
+      const categoryId = `install-category-${category.replace(/\s+/g, '-').toLowerCase()}`;
       const areAllSelected = items.length > 0 && items.every((item) => selectedEntries.has(item.id));
 
       return (
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <BooleanInput id={`${categoryId}-toggle`} checked={areAllSelected} onChange={() => handleToggleCategory(items)} />
-          <label className={`cursor-pointer font-medium text-${theme.contentSecondary}`}>{category}</label>
+          <label className={`truncate cursor-pointer font-medium text-${theme.contentSecondary}`}>{category}</label>
         </div>
       );
     },

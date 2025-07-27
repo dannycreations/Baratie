@@ -20,9 +20,9 @@ export const FormLayout = memo<FormLayoutProps>(
   ({ label, inputId, children, description, fieldSetClasses, labelWrapperClasses, labelClasses, inputWrapperClasses }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
-    const fieldSetClass = fieldSetClasses ?? 'flex flex-col gap-y-1 gap-x-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start';
-    const labelClass = labelClasses ?? `text-sm font-medium text-${theme.contentSecondary}`;
-    const labelWrapClass = labelWrapperClasses ?? 'sm:shrink-0';
+    const fieldSetClass = fieldSetClasses ?? 'flex flex-col gap-1.5';
+    const labelClass = labelClasses ?? `truncate text-sm font-medium text-${theme.contentSecondary}`;
+    const labelWrapClass = labelWrapperClasses ?? '';
     const inputWrapClass = inputWrapperClasses ?? '';
 
     const labelElement = <label className={labelClass}>{label}:</label>;

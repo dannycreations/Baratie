@@ -106,10 +106,10 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
   };
 
   const isBoolean = spice.type === 'boolean';
-  const fieldSetClass = isBoolean
-    ? 'flex items-center justify-start gap-x-3'
-    : 'flex flex-col gap-y-1 gap-x-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start';
-  const inputWrapperClass = isBoolean ? 'flex h-8 items-center' : 'w-full sm:w-auto sm:min-w-44 sm:grow';
+  const fieldSetClass = isBoolean ? 'flex items-center justify-start gap-x-3' : 'flex flex-col gap-1.5';
+  const inputWrapperClass = isBoolean ? 'flex h-8 shrink-0 items-center' : 'w-full';
+  const labelWrapperClass = isBoolean ? 'min-w-0' : '';
+  const labelClass = isBoolean ? `truncate text-sm font-medium text-${theme.contentSecondary}` : undefined;
 
   return (
     <FormLayout
@@ -118,6 +118,8 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
       inputId={`spice-${spice.id}`}
       inputWrapperClasses={inputWrapperClass}
       label={spice.label}
+      labelClasses={labelClass}
+      labelWrapperClasses={labelWrapperClass}
     >
       {(id) => renderInput(id)}
     </FormLayout>
