@@ -1,6 +1,7 @@
-import { memo, useCallback, useDeferredValue, useId, useMemo, useState } from 'react';
+import { memo, useCallback, useId, useMemo, useState } from 'react';
 
 import { errorHandler, ingredientRegistry } from '../../app/container';
+import { useDropZone } from '../../hooks/useDropZone';
 import { useSearchIngredients } from '../../hooks/useSearch';
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useFavoriteStore } from '../../stores/useFavoriteStore';
@@ -11,7 +12,7 @@ import { useSettingStore } from '../../stores/useSettingStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
 import { PlusIcon, PreferencesIcon, SettingsIcon, StarIcon } from '../shared/Icon';
-import { DropzoneLayout } from '../shared/layout/DropzoneLayout';
+import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
 import { SearchListLayout } from '../shared/layout/SearchListLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
 import { IngredientList } from './IngredientList';
@@ -39,55 +40,31 @@ export const IngredientPanel = memo((): JSX.Element => {
   const isSettingOpen = activeModal === 'settings';
 
   const [query, setQuery] = useState<string>('');
-  const [isDragOverRecipe, setDragOverRecipe] = useState(false);
-  const deferredQuery = useDeferredValue(query);
   const listId = useId();
+
+  const handleDropRecipe = useCallback(
+    (id: string) => {
+      if (id) {
+        removeIngredient(id);
+      }
+      setDraggedItemId(null);
+    },
+    [removeIngredient, setDraggedItemId],
+  );
+
+  const { isDragOver: isDragOverRecipe, dropZoneProps: recipeDropZoneProps } = useDropZone<string, HTMLDivElement>({
+    effect: 'move',
+    onValidate: (dt) => dt.types.includes('application/x-baratie-recipe-item-id'),
+    onExtract: (dt) => dt.getData('application/x-baratie-recipe-item-id'),
+    onDrop: handleDropRecipe,
+  });
 
   const allIngredients = useMemo<ReadonlyArray<IngredientProps>>(() => {
     return ingredientRegistry.getAllIngredients();
   }, [registryVersion]);
 
-  const { filteredIngredients, visibleIngredients } = useSearchIngredients(
-    allIngredients,
-    deferredQuery,
-    favorites,
-    disabledCategories,
-    disabledIngredients,
-  );
+  const { filteredIngredients, visibleIngredients } = useSearchIngredients(allIngredients, query, favorites, disabledCategories, disabledIngredients);
   const totalIngredients = allIngredients.length;
-
-  const handleDragEnterRecipe = useCallback((event: DragEvent<HTMLDivElement>) => {
-    if (event.dataTransfer.types.includes('application/x-baratie-recipe-item-id')) {
-      setDragOverRecipe(true);
-    }
-  }, []);
-
-  const handleDragLeaveRecipe = useCallback((event: DragEvent<HTMLDivElement>) => {
-    if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) {
-      return;
-    }
-    setDragOverRecipe(false);
-  }, []);
-
-  const handleDragOverRecipe = useCallback((event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    if (event.dataTransfer.types.includes('application/x-baratie-recipe-item-id')) {
-      event.dataTransfer.dropEffect = 'move';
-    }
-  }, []);
-
-  const handleDropRecipe = useCallback(
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      const id = event.dataTransfer.getData('application/x-baratie-recipe-item-id');
-      if (id) {
-        removeIngredient(id);
-      }
-      setDragOverRecipe(false);
-      setDraggedItemId(null);
-    },
-    [removeIngredient, setDraggedItemId],
-  );
 
   const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: BaseListItem) => {
     errorHandler.assert(item.id, 'Ingredient unique name not found on dragged element.', 'Ingredient Drag');
@@ -166,18 +143,12 @@ export const IngredientPanel = memo((): JSX.Element => {
       headerRight={headerActions}
       panelClasses="h-[50vh] min-h-0 md:h-auto md:flex-1"
     >
-      <div
-        className="flex h-full flex-col"
-        onDragEnter={handleDragEnterRecipe}
-        onDragLeave={handleDragLeaveRecipe}
-        onDragOver={handleDragOverRecipe}
-        onDrop={handleDropRecipe}
-      >
-        {isDragOverRecipe && <DropzoneLayout mode="overlay" text="Drop to Remove from Recipe" variant="remove" />}
+      <div className="flex h-full flex-col" {...recipeDropZoneProps}>
+        {isDragOverRecipe && <DropZoneLayout mode="overlay" text="Drop to Remove from Recipe" variant="remove" />}
         <SearchListLayout
           listContent={
             <IngredientList
-              query={deferredQuery}
+              query={query}
               itemsByCategory={filteredIngredients}
               renderItemActions={renderItemActions}
               onItemDragStart={handleItemDragStart}

@@ -1,7 +1,8 @@
-import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useId, useMemo, useRef } from 'react';
 
 import { ingredientRegistry, kitchen } from '../../app/container';
 import { useDragMove } from '../../hooks/useDragMove';
+import { useDropZone } from '../../hooks/useDropZone';
 import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useModalStore } from '../../stores/useModalStore';
@@ -9,7 +10,7 @@ import { useRecipeStore } from '../../stores/useRecipeStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
 import { FolderOpenIcon, PauseIcon, PlayIcon, SaveIcon } from '../shared/Icon';
-import { DropzoneLayout } from '../shared/layout/DropzoneLayout';
+import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
 import { SearchListLayout } from '../shared/layout/SearchListLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
 import { EmptyView } from '../shared/View';
@@ -25,9 +26,20 @@ export const RecipePanel = memo((): JSX.Element => {
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
   const theme = useThemeStore((state) => state.theme);
 
-  const [isDraggingIngredient, setIsDraggingIngredient] = useState(false);
   const prevIngredientsCount = useRef(ingredients.length);
   const listId = useId();
+
+  const handleDropIngredient = useCallback((typeString: string) => {
+    if (typeString && ingredientRegistry.getIngredient(typeString)) {
+      useRecipeStore.getState().addIngredient(typeString);
+    }
+  }, []);
+
+  const { isDragOver: isDraggingIngredient, dropZoneProps } = useDropZone<string, HTMLDivElement>({
+    onValidate: (dt) => dt.types.includes('application/x-baratie-ingredient-type'),
+    onExtract: (dt) => dt.getData('application/x-baratie-ingredient-type'),
+    onDrop: handleDropIngredient,
+  });
 
   useEffect(() => {
     if (ingredients.length > prevIngredientsCount.current) {
@@ -56,40 +68,6 @@ export const RecipePanel = memo((): JSX.Element => {
     },
     [onMoveStart],
   );
-
-  const handleDragEnter = useCallback((event: DragEvent<HTMLDivElement>) => {
-    if (event.dataTransfer.types.includes('application/x-baratie-ingredient-type')) {
-      setIsDraggingIngredient(true);
-    }
-  }, []);
-
-  const handleDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => {
-    if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) {
-      return;
-    }
-    setIsDraggingIngredient(false);
-  }, []);
-
-  const handleDragOver = useCallback(
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      if (event.dataTransfer.types.includes('application/x-baratie-ingredient-type')) {
-        event.dataTransfer.dropEffect = 'copy';
-      } else {
-        onMoveOver(event);
-      }
-    },
-    [onMoveOver],
-  );
-
-  const handleDrop = useCallback((event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDraggingIngredient(false);
-    const typeString = event.dataTransfer.getData('application/x-baratie-ingredient-type');
-    if (typeString && ingredientRegistry.getIngredient(typeString)) {
-      useRecipeStore.getState().addIngredient(typeString);
-    }
-  }, []);
 
   const openCookbook = useCallback((args: { readonly mode: 'save' | 'load' }) => {
     const { ingredients, activeRecipeId } = useRecipeStore.getState();
@@ -161,7 +139,7 @@ export const RecipePanel = memo((): JSX.Element => {
   let content: JSX.Element;
   if (ingredients.length === 0) {
     if (isDraggingIngredient) {
-      content = <DropzoneLayout mode="full" text="Drop to add ingredient" variant="add" />;
+      content = <DropZoneLayout mode="full" text="Drop to add ingredient" variant="add" />;
     } else {
       content = (
         <EmptyView className="flex h-full grow flex-col items-center justify-center p-3">
@@ -193,7 +171,7 @@ export const RecipePanel = memo((): JSX.Element => {
             />
           );
         })}
-        {isDraggingIngredient && <DropzoneLayout mode="placeholder" text="Drop to add ingredient" variant="add" />}
+        {isDraggingIngredient && <DropZoneLayout mode="placeholder" text="Drop to add ingredient" variant="add" />}
       </div>
     );
   }
@@ -210,13 +188,7 @@ export const RecipePanel = memo((): JSX.Element => {
       headerRight={headerActions}
       panelClasses="h-[50vh] min-h-0 md:h-auto md:flex-1"
     >
-      <div
-        className="flex h-full flex-col"
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-      >
+      <div className="flex h-full flex-col" {...dropZoneProps}>
         <SearchListLayout listContent={content} listId={listId} listWrapperClasses={listClass} showSearch={false} />
       </div>
     </SectionLayout>

@@ -1,8 +1,6 @@
 import { memo, useCallback, useState } from 'react';
 
-import { COPY_SHOW_MS } from '../../app/constants';
-import { errorHandler } from '../../app/container';
-import { useControlTimer } from '../../hooks/useControlTimer';
+import { useCopyAction } from '../../hooks/useCopyAction';
 import { useExtensionStore } from '../../stores/useExtensionStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { Button, ConfirmButton, TooltipButton } from '../shared/Button';
@@ -61,25 +59,11 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
 
 const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status, errors, isLoading, onRefresh, onRemove }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
-  const [isCopied, setIsCopied] = useState(false);
-
-  const resetCopied = useCallback(() => {
-    setIsCopied(false);
-  }, []);
-
-  useControlTimer({
-    callback: resetCopied,
-    duration: COPY_SHOW_MS,
-    reset: isCopied,
-    state: isCopied,
-  });
+  const { isCopied, copy } = useCopyAction();
 
   const handleCopyId = useCallback(async (): Promise<void> => {
-    const { error } = await errorHandler.attemptAsync(() => navigator.clipboard.writeText(id), 'Clipboard Copy');
-    if (!error) {
-      setIsCopied(true);
-    }
-  }, [id]);
+    await copy(id);
+  }, [copy, id]);
 
   const handleConfirmDelete = useCallback(() => {
     onRemove(id);

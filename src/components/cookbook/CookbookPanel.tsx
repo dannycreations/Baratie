@@ -1,16 +1,18 @@
-import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef } from 'react';
+import { memo, useCallback, useMemo, useRef } from 'react';
 
-import { MODAL_SHOW_MS } from '../../app/constants';
+import { useAutoFocus } from '../../hooks/useAutoFocus';
+import { useSearchItems } from '../../hooks/useSearch';
 import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { TooltipButton } from '../shared/Button';
 import { DownloadCloudIcon, SaveIcon, UploadCloudIcon } from '../shared/Icon';
+import { FilePicker } from '../shared/input/FilePicker';
 import { Modal } from '../shared/Modal';
 import { CookbookLoad } from './CookbookLoad';
 import { CookbookSave } from './CookbookSave';
 
-import type { ChangeEvent, JSX } from 'react';
+import type { JSX } from 'react';
 import type { RecipebookItem } from '../../core/IngredientRegistry';
 import type { CookbookModalProps } from '../../stores/useCookbookStore';
 
@@ -22,7 +24,7 @@ interface SaveHeaderActionsProps {
 
 interface LoadHeaderActionsProps {
   readonly isExportDisabled: boolean;
-  readonly onTriggerImport: () => void;
+  readonly onFileImport: (file: File) => void;
   readonly onExportAll: () => void;
 }
 
@@ -49,15 +51,19 @@ const SaveHeaderActions = memo<SaveHeaderActionsProps>(({ isSaveDisabled, onExpo
   </>
 ));
 
-const LoadHeaderActions = memo<LoadHeaderActionsProps>(({ isExportDisabled, onTriggerImport, onExportAll }) => (
+const LoadHeaderActions = memo<LoadHeaderActionsProps>(({ isExportDisabled, onFileImport, onExportAll }) => (
   <>
-    <TooltipButton
-      aria-label="Import recipes from a JSON file"
-      icon={<UploadCloudIcon size={20} />}
-      tooltipContent="Import from JSON File"
-      variant="stealth"
-      onClick={onTriggerImport}
-    />
+    <FilePicker accept=".json" onFileSelect={onFileImport}>
+      {({ trigger }) => (
+        <TooltipButton
+          aria-label="Import recipes from a JSON file"
+          icon={<UploadCloudIcon size={20} />}
+          tooltipContent="Import from JSON File"
+          variant="stealth"
+          onClick={trigger}
+        />
+      )}
+    </FilePicker>
     <TooltipButton
       aria-label="Export all saved recipes to a file"
       disabled={isExportDisabled}
@@ -99,26 +105,16 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const ingredients = useRecipeStore((state) => state.ingredients);
 
   const nameRef = useRef<HTMLInputElement>(null);
-  const importRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  const focusRef = persistedModalMode === 'save' ? nameRef : searchRef;
+  useAutoFocus(focusRef, isModalOpen);
 
   const isRecipeEmpty = ingredients.length === 0;
   const isSaveDisabled = !nameInput.trim() || isRecipeEmpty;
 
-  const deferredQuery = useDeferredValue(query);
-
-  useEffect(() => {
-    if (isModalOpen) {
-      const timer = setTimeout(() => {
-        if (persistedModalMode === 'save') {
-          nameRef.current?.focus();
-        } else if (persistedModalMode === 'load') {
-          searchRef.current?.focus();
-        }
-      }, MODAL_SHOW_MS);
-      return () => clearTimeout(timer);
-    }
-  }, [isModalOpen, persistedModalMode]);
+  const searchKeys = useMemo<Array<keyof RecipebookItem>>(() => ['name'], []);
+  const filteredRecipes = useSearchItems<RecipebookItem>(recipes, query, searchKeys);
 
   const handleSave = useCallback(() => {
     upsert();
@@ -133,29 +129,12 @@ export const CookbookPanel = memo((): JSX.Element | null => {
     [load, closeModal],
   );
 
-  const handleTriggerImport = useCallback(() => {
-    importRef.current?.click();
-  }, []);
-
   const handleFileImport = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      event.target.value = '';
-      if (!file) {
-        return;
-      }
+    async (file: File) => {
       await importFromFile(file);
     },
     [importFromFile],
   );
-
-  const filtered = useMemo<ReadonlyArray<RecipebookItem>>(() => {
-    const lowerQuery = deferredQuery.toLowerCase().trim();
-    if (!lowerQuery) {
-      return recipes;
-    }
-    return recipes.filter((recipe) => recipe.name.toLowerCase().includes(lowerQuery));
-  }, [recipes, deferredQuery]);
 
   const title = persistedModalMode === 'save' ? 'Add to Cookbook' : 'Open from Cookbook';
 
@@ -163,7 +142,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
     persistedModalMode === 'save' ? (
       <SaveHeaderActions isSaveDisabled={isSaveDisabled} onExportCurrent={exportCurrent} onSave={handleSave} />
     ) : (
-      <LoadHeaderActions isExportDisabled={recipes.length === 0} onExportAll={exportAll} onTriggerImport={handleTriggerImport} />
+      <LoadHeaderActions isExportDisabled={recipes.length === 0} onExportAll={exportAll} onFileImport={handleFileImport} />
     );
 
   const bodyContent =
@@ -171,13 +150,11 @@ export const CookbookPanel = memo((): JSX.Element | null => {
       <CookbookSave isRecipeEmpty={isRecipeEmpty} nameRef={nameRef} nameInput={nameInput} onNameChange={setName} onSave={handleSave} />
     ) : (
       <CookbookLoad
-        importRef={importRef}
         query={query}
-        recipes={filtered}
+        recipes={filteredRecipes}
         searchRef={searchRef}
         totalRecipes={recipes.length}
         onDelete={deleteRecipe}
-        onImport={handleFileImport}
         onLoad={handleLoad}
         onQueryChange={setQuery}
       />

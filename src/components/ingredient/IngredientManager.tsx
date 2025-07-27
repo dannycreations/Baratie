@@ -1,7 +1,8 @@
-import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useId, useMemo, useRef, useState } from 'react';
 
 import { ingredientRegistry } from '../../app/container';
 import { groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
+import { useAutoFocus } from '../../hooks/useAutoFocus';
 import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -28,12 +29,7 @@ export const IngredientManager = memo((): JSX.Element => {
   const listId = useId();
   const searchRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (isModalOpen) {
-      const timer = setTimeout(() => searchRef.current?.focus(), 150);
-      return () => clearTimeout(timer);
-    }
-  }, [isModalOpen]);
+  useAutoFocus(searchRef, isModalOpen);
 
   const allIngredients = useMemo<ReadonlyArray<IngredientProps>>(() => {
     return ingredientRegistry.getAllIngredients();

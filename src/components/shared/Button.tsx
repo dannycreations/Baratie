@@ -1,9 +1,8 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback } from 'react';
 
-import { CONFIRM_SHOW_MS, COPY_SHOW_MS } from '../../app/constants';
-import { errorHandler } from '../../app/container';
+import { CONFIRM_SHOW_MS } from '../../app/constants';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
-import { useControlTimer } from '../../hooks/useControlTimer';
+import { useCopyAction } from '../../hooks/useCopyAction';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { AlertTriangleIcon, CheckIcon, CopyIcon, Loader2Icon, Trash2Icon } from './Icon';
 import { Tooltip } from './Tooltip';
@@ -129,29 +128,12 @@ export const Button = memo<ButtonProps>(
 );
 
 export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition = 'top' }): JSX.Element => {
-  const [isCopied, setIsCopied] = useState(false);
+  const { isCopied, copy } = useCopyAction();
   const theme = useThemeStore((state) => state.theme);
 
-  const resetCopied = useCallback(() => {
-    setIsCopied(false);
-  }, []);
-
-  useControlTimer({
-    callback: resetCopied,
-    duration: COPY_SHOW_MS,
-    reset: isCopied,
-    state: isCopied,
-  });
-
   const handleCopy = useCallback(async (): Promise<void> => {
-    if (!textToCopy) {
-      return;
-    }
-    const { error } = await errorHandler.attemptAsync(() => navigator.clipboard.writeText(textToCopy), 'Clipboard Copy');
-    if (!error) {
-      setIsCopied(true);
-    }
-  }, [textToCopy]);
+    await copy(textToCopy);
+  }, [copy, textToCopy]);
 
   return (
     <TooltipButton

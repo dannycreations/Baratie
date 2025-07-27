@@ -1,6 +1,6 @@
 import { memo, useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react';
 
-import { MODAL_SHOW_MS } from '../../app/constants';
+import { useAutoFocus } from '../../hooks/useAutoFocus';
 import { useExtensionStore } from '../../stores/useExtensionStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -55,12 +55,7 @@ export const ExtensionModal = memo((): JSX.Element | null => {
   const searchRef = useRef<HTMLInputElement>(null);
   const deferredQuery = useDeferredValue(query);
 
-  useEffect(() => {
-    if (isModalOpen) {
-      const timer = setTimeout(() => searchRef.current?.focus(), MODAL_SHOW_MS);
-      return () => clearTimeout(timer);
-    }
-  }, [isModalOpen]);
+  useAutoFocus(searchRef, isModalOpen);
 
   const manifestModules = useMemo(() => {
     const entry = pendingSelection?.manifest.entry;

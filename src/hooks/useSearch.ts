@@ -1,74 +1,77 @@
-import { useMemo } from 'react';
+import { useDeferredValue, useMemo } from 'react';
 
 import { CATEGORY_FAVORITES } from '../app/constants';
 import { createIngredientSearchPredicate, groupAndSortIngredients, searchGroupedIngredients } from '../helpers/ingredientHelper';
 
 import type { IngredientProps } from '../core/IngredientRegistry';
 
-export interface SearchedIngredientsResult {
-  readonly filteredIngredients: ReadonlyArray<readonly [string, ReadonlyArray<IngredientProps>]>;
-  readonly visibleIngredients: number;
+export function useSearchItems<T extends object>(items: ReadonlyArray<T>, query: string, searchKeys: ReadonlyArray<keyof T>): ReadonlyArray<T> {
+  const deferredQuery = useDeferredValue(query);
+
+  const filteredItems = useMemo(() => {
+    const lowerQuery = deferredQuery.toLowerCase().trim();
+    if (!lowerQuery) {
+      return items;
+    }
+
+    return items.filter((item) => {
+      return searchKeys.some((key) => {
+        const value = item[key];
+        return typeof value === 'string' && value.toLowerCase().includes(lowerQuery);
+      });
+    });
+  }, [items, deferredQuery, searchKeys]);
+
+  return filteredItems;
 }
 
 export function useSearchIngredients(
   allIngredients: ReadonlyArray<IngredientProps>,
   query: string,
-  favoriteIngredients: ReadonlySet<string>,
+  favorites: ReadonlySet<string>,
   disabledCategories: ReadonlySet<string>,
   disabledIngredients: ReadonlySet<string>,
-): SearchedIngredientsResult {
-  const visibleIngredients = useMemo(() => {
-    return allIngredients.filter((ingredient) => {
-      return !disabledCategories.has(ingredient.category) && !disabledIngredients.has(ingredient.id);
-    });
+) {
+  const deferredQuery = useDeferredValue(query);
+
+  const visibleIngredientsList = useMemo(() => {
+    return allIngredients.filter((ing) => !disabledCategories.has(ing.category) && !disabledIngredients.has(ing.id));
   }, [allIngredients, disabledCategories, disabledIngredients]);
 
-  const groupedIngredients = useMemo(() => {
-    const favoriteItems: Array<IngredientProps> = [];
-    const otherItems: Array<IngredientProps> = [];
+  const favoritesList = useMemo(() => {
+    return visibleIngredientsList.filter((ing) => favorites.has(ing.id));
+  }, [visibleIngredientsList, favorites]);
 
-    for (const ingredient of visibleIngredients) {
-      if (favoriteIngredients.has(ingredient.id)) {
-        favoriteItems.push(ingredient);
-      } else {
-        otherItems.push(ingredient);
+  const regularList = useMemo(() => {
+    return visibleIngredientsList.filter((ing) => !favorites.has(ing.id));
+  }, [visibleIngredientsList, favorites]);
+
+  const groupedRegular = useMemo(() => groupAndSortIngredients(regularList), [regularList]);
+
+  const filteredIngredients = useMemo((): Array<[string, ReadonlyArray<IngredientProps>]> => {
+    const lowerQuery = deferredQuery.toLowerCase().trim();
+    if (!lowerQuery) {
+      const allGrouped = Array.from(groupedRegular.entries());
+      if (favoritesList.length > 0) {
+        return [[CATEGORY_FAVORITES, favoritesList], ...allGrouped];
       }
+      return allGrouped;
     }
 
-    const categorized = groupAndSortIngredients(otherItems);
-
-    return {
-      favorites: favoriteItems,
-      categorized: categorized,
-    };
-  }, [visibleIngredients, favoriteIngredients]);
-
-  const filteredIngredients = useMemo(() => {
-    const { favorites, categorized } = groupedIngredients;
-    const finalResult: Array<[string, ReadonlyArray<IngredientProps>]> = [];
-
-    if (!query) {
-      if (favorites.length > 0) {
-        finalResult.push([CATEGORY_FAVORITES, favorites]);
-      }
-      finalResult.push(...categorized.entries());
-      return finalResult;
-    }
-
-    const lowerQuery = query.toLowerCase().trim();
     const searchPredicate = createIngredientSearchPredicate(lowerQuery);
+    const filteredFavorites = favoritesList.filter(searchPredicate);
+    const filteredRegular = searchGroupedIngredients(groupedRegular, deferredQuery);
 
-    const matchingFavorites = favorites.filter(searchPredicate);
-    if (matchingFavorites.length > 0) {
-      finalResult.push([CATEGORY_FAVORITES, matchingFavorites]);
+    const result: Array<[string, ReadonlyArray<IngredientProps>]> = [];
+    if (filteredFavorites.length > 0) {
+      result.push([CATEGORY_FAVORITES, filteredFavorites]);
     }
-
-    finalResult.push(...searchGroupedIngredients(categorized, query));
-    return finalResult;
-  }, [groupedIngredients, query]);
+    result.push(...filteredRegular);
+    return result;
+  }, [deferredQuery, favoritesList, groupedRegular]);
 
   return {
-    filteredIngredients: filteredIngredients,
-    visibleIngredients: visibleIngredients.length,
+    filteredIngredients,
+    visibleIngredients: visibleIngredientsList.length,
   };
 }

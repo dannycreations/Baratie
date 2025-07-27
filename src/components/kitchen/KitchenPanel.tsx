@@ -6,11 +6,12 @@ import { useRecipeStore } from '../../stores/useRecipeStore';
 import { readAsText, triggerDownload } from '../../utilities/fileUtil';
 import { CopyButton, TooltipButton } from '../shared/Button';
 import { DownloadCloudIcon, FileTextIcon, Trash2Icon } from '../shared/Icon';
+import { FilePicker } from '../shared/input/FilePicker';
 import { TextareaInput } from '../shared/input/TextareaInput';
 import { SectionLayout } from '../shared/layout/SectionLayout';
 import { SpiceLayout } from '../shared/layout/SpiceLayout';
 
-import type { ChangeEvent, JSX, RefObject } from 'react';
+import type { JSX } from 'react';
 import type { IngredientItem, InputPanelConfig, OutputPanelConfig, SpiceDefinition, SpiceValue } from '../../core/IngredientRegistry';
 
 interface KitchenPanelProps {
@@ -24,7 +25,7 @@ interface KitchenPanelSectionProps {
 interface InputActionsProps extends KitchenPanelSectionProps {
   readonly config: InputPanelConfig | null;
   readonly onClear: () => void;
-  readonly onTriggerFileSelect: () => void;
+  readonly onFileSelect: (file: File) => void;
 }
 
 interface OutputActionsProps extends KitchenPanelSectionProps {
@@ -38,8 +39,6 @@ interface SpiceContentProps {
 
 interface DefaultContentProps extends KitchenPanelSectionProps {
   readonly config: InputPanelConfig | null;
-  readonly fileInputRef: RefObject<HTMLInputElement | null>;
-  readonly onFileSelected: (event: ChangeEvent<HTMLInputElement>) => void;
   readonly onDataChange: (data: string) => void;
 }
 
@@ -47,20 +46,24 @@ interface OutputContentProps extends KitchenPanelSectionProps {
   readonly config: OutputPanelConfig | null;
 }
 
-const InputActions = memo<InputActionsProps>(({ data, config, onClear, onTriggerFileSelect }) => {
+const InputActions = memo<InputActionsProps>(({ data, config, onClear, onFileSelect }) => {
   const showClearButton = config?.mode !== 'textarea' || config.showClear;
 
   return (
     <>
-      <TooltipButton
-        aria-label="Open a text file as input"
-        icon={<FileTextIcon size={18} />}
-        size="sm"
-        tooltipContent="Open File..."
-        tooltipPosition="left"
-        variant="stealth"
-        onClick={onTriggerFileSelect}
-      />
+      <FilePicker accept="text/*" onFileSelect={onFileSelect}>
+        {({ trigger }) => (
+          <TooltipButton
+            aria-label="Open a text file as input"
+            icon={<FileTextIcon size={18} />}
+            size="sm"
+            tooltipContent="Open File..."
+            tooltipPosition="left"
+            variant="stealth"
+            onClick={trigger}
+          />
+        )}
+      </FilePicker>
       {showClearButton && (
         <TooltipButton
           aria-label="Clear data from the input panel"
@@ -111,24 +114,21 @@ const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient 
   );
 });
 
-const DefaultContent = memo<DefaultContentProps>(({ config, data, fileInputRef, onFileSelected, onDataChange }) => {
+const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange }) => {
   const isTextareaDisabled = config?.mode === 'textarea' ? !!config.disabled : false;
   const placeholder = (config?.mode === 'textarea' && config.placeholder) || 'Place Raw Ingredients Here.';
 
   return (
-    <>
-      <input ref={fileInputRef} accept="text/*" type="file" aria-hidden="true" className="hidden" onChange={onFileSelected} />
-      <TextareaInput
-        aria-label="Input Panel for Raw Data"
-        disabled={isTextareaDisabled}
-        placeholder={placeholder}
-        showLineNumbers={true}
-        textareaClasses="font-mono"
-        value={data}
-        wrapperClasses="flex-1 min-h-0"
-        onChange={onDataChange}
-      />
-    </>
+    <TextareaInput
+      aria-label="Input Panel for Raw Data"
+      disabled={isTextareaDisabled}
+      placeholder={placeholder}
+      showLineNumbers={true}
+      textareaClasses="font-mono"
+      value={data}
+      wrapperClasses="flex-1 min-h-0"
+      onChange={onDataChange}
+    />
   );
 });
 
@@ -150,7 +150,6 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const outputData = useKitchenStore((state) => state.outputData);
   const ingredients = useRecipeStore((state) => state.ingredients);
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const importOperationRef = useRef<number>(0);
 
   const targetIngredient = useMemo(() => {
@@ -167,28 +166,17 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
 
   const handleSetInputData = useCallback((data: string) => kitchen.setInputData(data), []);
 
-  const handleFileSelect = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelected = useCallback(
+    async (file: File) => {
       const operationId = ++importOperationRef.current;
-      const file = event.target.files?.[0];
 
-      if (file) {
-        const { result: text, error } = await errorHandler.attemptAsync(() => readAsText(file));
-        if (operationId === importOperationRef.current && !error && typeof text === 'string') {
-          handleSetInputData(text);
-        }
-      }
-
-      if (event.target) {
-        event.target.value = '';
+      const { result: text, error } = await errorHandler.attemptAsync(() => readAsText(file));
+      if (operationId === importOperationRef.current && !error && typeof text === 'string') {
+        handleSetInputData(text);
       }
     },
     [handleSetInputData],
   );
-
-  const handleTriggerFileSelect = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
 
   const handleClearInput = useCallback(() => {
     if (isInput) {
@@ -207,7 +195,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   }, []);
 
   const headerActions = isInput ? (
-    <InputActions config={inputPanelConfig} data={data} onClear={handleClearInput} onTriggerFileSelect={handleTriggerFileSelect} />
+    <InputActions config={inputPanelConfig} data={data} onClear={handleClearInput} onFileSelect={handleFileSelected} />
   ) : (
     <OutputActions data={data} onDownload={handleDownloadOutput} />
   );
@@ -219,15 +207,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
     if (inputPanelConfig?.mode === 'spiceEditor' && targetIngredient) {
       return <SpiceContent targetIngredient={targetIngredient} onSpiceChange={handleSpiceChange} />;
     }
-    return (
-      <DefaultContent
-        config={inputPanelConfig}
-        data={inputData}
-        fileInputRef={fileInputRef}
-        onDataChange={handleSetInputData}
-        onFileSelected={handleFileSelect}
-      />
-    );
+    return <DefaultContent config={inputPanelConfig} data={inputData} onDataChange={handleSetInputData} />;
   };
 
   return (

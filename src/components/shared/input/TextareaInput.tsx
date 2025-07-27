@@ -1,11 +1,11 @@
 import { memo, useCallback, useRef, useState } from 'react';
 
 import { errorHandler } from '../../../app/container';
-import { useDragDrop } from '../../../hooks/useDragDrop';
+import { useDropZone } from '../../../hooks/useDropZone';
 import { useLineNumber } from '../../../hooks/useLineNumber';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { readAsText } from '../../../utilities/fileUtil';
-import { DropzoneLayout } from '../layout/DropzoneLayout';
+import { DropZoneLayout } from '../layout/DropZoneLayout';
 
 import type { ChangeEvent, JSX, TextareaHTMLAttributes, UIEvent } from 'react';
 
@@ -40,7 +40,12 @@ export const TextareaInput = memo<TextareaInputProps>(
       [disabled, onChange],
     );
 
-    const { isDragOver, ...dropZoneProps } = useDragDrop({ onDragDrop: handleFileDrop, disabled });
+    const { isDragOver, dropZoneProps } = useDropZone<File, HTMLDivElement>({
+      disabled,
+      onValidate: (dt) => Array.from(dt.items).some((item) => item.kind === 'file'),
+      onExtract: (dt) => dt.files?.[0],
+      onDrop: handleFileDrop,
+    });
 
     const handleChange = useCallback(
       (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -99,7 +104,7 @@ export const TextareaInput = memo<TextareaInputProps>(
           onChange={handleChange}
           onScroll={handleScroll}
         />
-        {isDragOver && <DropzoneLayout mode="overlay" text="Drop text file" variant="add" />}
+        {isDragOver && <DropZoneLayout mode="overlay" text="Drop text file" variant="add" />}
       </div>
     );
   },
