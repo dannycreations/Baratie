@@ -1,4 +1,4 @@
-import { memo, useCallback, useId, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { ingredientRegistry, kitchen } from '../../app/container';
 import { useDragMove } from '../../hooks/useDragMove';
@@ -16,24 +16,30 @@ import { EmptyView } from '../shared/View';
 import { RecipeItem } from './RecipeItem';
 
 import type { DragEvent, JSX } from 'react';
-import type { IngredientItem } from '../../core/IngredientRegistry';
+import type { IngredientItem, SpiceDefinition, SpiceValue } from '../../core/IngredientRegistry';
 import type { RecipeItemHandlers } from './RecipeItem';
 
 export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
-  const activeRecipeId = useRecipeStore((state) => state.activeRecipeId);
-  const addIngredient = useRecipeStore((state) => state.addIngredient);
-  const removeIngredient = useRecipeStore((state) => state.removeIngredient);
-  const reorderIngredients = useRecipeStore((state) => state.reorderIngredients);
-  const updateSpice = useRecipeStore((state) => state.updateSpice);
-  const clearRecipe = useRecipeStore((state) => state.clearRecipe);
-  const openCookbook = useCookbookStore((state) => state.open);
   const isCookbookOpen = useModalStore((state) => state.activeModal === 'cookbook');
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
   const theme = useThemeStore((state) => state.theme);
 
   const [isDraggingIngredient, setIsDraggingIngredient] = useState(false);
+  const prevIngredientsCount = useRef(ingredients.length);
   const listId = useId();
+
+  useEffect(() => {
+    if (ingredients.length > prevIngredientsCount.current) {
+      const listElement = document.getElementById(listId);
+      listElement?.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+    prevIngredientsCount.current = ingredients.length;
+  }, [ingredients, listId]);
+
+  const handleReorder = useCallback((draggedId: string, targetId: string) => {
+    useRecipeStore.getState().reorderIngredients(draggedId, targetId);
+  }, []);
 
   const {
     dragId,
@@ -41,7 +47,7 @@ export const RecipePanel = memo((): JSX.Element => {
     onDragEnter: onMoveEnter,
     onDragOver: onMoveOver,
     onDragEnd: onMoveEnd,
-  } = useDragMove({ onDragMove: reorderIngredients });
+  } = useDragMove({ onDragMove: handleReorder });
 
   const handleDragStart = useCallback(
     (event: DragEvent<HTMLElement>, ingredient: IngredientItem) => {
@@ -76,17 +82,21 @@ export const RecipePanel = memo((): JSX.Element => {
     [onMoveOver],
   );
 
-  const handleDrop = useCallback(
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      setIsDraggingIngredient(false);
-      const typeString = event.dataTransfer.getData('application/x-baratie-ingredient-type');
-      if (typeString && ingredientRegistry.getIngredient(typeString)) {
-        addIngredient(typeString);
-      }
-    },
-    [addIngredient],
-  );
+  const handleDrop = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDraggingIngredient(false);
+    const typeString = event.dataTransfer.getData('application/x-baratie-ingredient-type');
+    if (typeString && ingredientRegistry.getIngredient(typeString)) {
+      useRecipeStore.getState().addIngredient(typeString);
+    }
+  }, []);
+
+  const openCookbook = useCallback((args: { readonly mode: 'save' | 'load' }) => {
+    const { ingredients, activeRecipeId } = useRecipeStore.getState();
+    useCookbookStore.getState().open({ ...args, ingredients, activeRecipeId });
+  }, []);
+
+  const handleClearRecipe = useCallback(() => useRecipeStore.getState().clearRecipe(), []);
 
   const headerActions = useMemo(() => {
     const autoCookTooltip = isAutoCookEnabled ? 'Pause Auto-Cooking' : 'Resume Auto-Cooking';
@@ -106,7 +116,7 @@ export const RecipePanel = memo((): JSX.Element => {
           tooltipDisabled={isCookbookOpen}
           tooltipPosition="bottom"
           variant="stealth"
-          onClick={() => openCookbook({ mode: 'save', ingredients, activeRecipeId })}
+          onClick={() => openCookbook({ mode: 'save' })}
         />
         <TooltipButton
           aria-label="Load a saved recipe from the cookbook"
@@ -134,11 +144,19 @@ export const RecipePanel = memo((): JSX.Element => {
           itemName="the current recipe"
           itemType="Recipe"
           tooltipPosition="bottom"
-          onConfirm={clearRecipe}
+          onConfirm={handleClearRecipe}
         />
       </>
     );
-  }, [ingredients, activeRecipeId, isCookbookOpen, isAutoCookEnabled, theme, openCookbook, clearRecipe]);
+  }, [ingredients.length, isCookbookOpen, isAutoCookEnabled, theme, openCookbook, handleClearRecipe]);
+
+  const handleRemove = useCallback((id: string) => {
+    useRecipeStore.getState().removeIngredient(id);
+  }, []);
+
+  const handleSpiceChange = useCallback((id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>) => {
+    useRecipeStore.getState().updateSpice(id, spiceId, rawValue, spice);
+  }, []);
 
   let content: JSX.Element;
   if (ingredients.length === 0) {
@@ -158,8 +176,8 @@ export const RecipePanel = memo((): JSX.Element => {
       <div role="list" aria-label="Current recipe steps" className="space-y-1.5">
         {ingredients.map((ingredient: IngredientItem) => {
           const recipeItemHandlers: RecipeItemHandlers = {
-            onRemove: removeIngredient,
-            onSpiceChange: updateSpice,
+            onRemove: handleRemove,
+            onSpiceChange: handleSpiceChange,
             onDragStart: handleDragStart,
             onDragEnter: onMoveEnter,
             onDragEnd: onMoveEnd,

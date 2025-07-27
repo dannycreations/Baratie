@@ -192,7 +192,9 @@ export const ExtensionTab = memo((): JSX.Element => {
           disabled={isLoading}
           placeholder="user/repo@branch or full GitHub URL"
           value={url}
+          showClearButton
           onChange={handleUrlChange}
+          onClear={() => setUrl('')}
           onKeyDown={handleKeyDown}
         />
         <Button icon={<GitMergeIcon size={20} />} loading={isLoading} size="md" onClick={handleAdd}>

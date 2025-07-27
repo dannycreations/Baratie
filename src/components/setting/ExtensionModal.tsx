@@ -1,5 +1,6 @@
-import { memo, useCallback, useDeferredValue, useEffect, useId, useMemo, useState } from 'react';
+import { memo, useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react';
 
+import { MODAL_SHOW_MS } from '../../app/constants';
 import { useExtensionStore } from '../../stores/useExtensionStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -51,7 +52,15 @@ export const ExtensionModal = memo((): JSX.Element | null => {
   const [selectedEntries, setSelectedEntries] = useState(new Set<string>());
   const [isLoading, setIsLoading] = useState(false);
   const listId = useId();
+  const searchRef = useRef<HTMLInputElement>(null);
   const deferredQuery = useDeferredValue(query);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      const timer = setTimeout(() => searchRef.current?.focus(), MODAL_SHOW_MS);
+      return () => clearTimeout(timer);
+    }
+  }, [isModalOpen]);
 
   const manifestModules = useMemo(() => {
     const entry = pendingSelection?.manifest.entry;
@@ -198,6 +207,7 @@ export const ExtensionModal = memo((): JSX.Element | null => {
           ariaLabel: 'Search modules to install',
           id: 'module-install-search',
           placeholder: 'Search Modules...',
+          inputRef: searchRef,
         }}
       />
     </Modal>

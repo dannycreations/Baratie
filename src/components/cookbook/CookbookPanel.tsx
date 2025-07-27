@@ -1,5 +1,6 @@
-import { memo, useCallback, useDeferredValue, useMemo, useRef } from 'react';
+import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef } from 'react';
 
+import { MODAL_SHOW_MS } from '../../app/constants';
 import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
@@ -99,11 +100,25 @@ export const CookbookPanel = memo((): JSX.Element | null => {
 
   const nameRef = useRef<HTMLInputElement>(null);
   const importRef = useRef<HTMLInputElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const isRecipeEmpty = ingredients.length === 0;
   const isSaveDisabled = !nameInput.trim() || isRecipeEmpty;
 
   const deferredQuery = useDeferredValue(query);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      const timer = setTimeout(() => {
+        if (persistedModalMode === 'save') {
+          nameRef.current?.focus();
+        } else if (persistedModalMode === 'load') {
+          searchRef.current?.focus();
+        }
+      }, MODAL_SHOW_MS);
+      return () => clearTimeout(timer);
+    }
+  }, [isModalOpen, persistedModalMode]);
 
   const handleSave = useCallback(() => {
     upsert();
@@ -159,6 +174,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
         importRef={importRef}
         query={query}
         recipes={filtered}
+        searchRef={searchRef}
         totalRecipes={recipes.length}
         onDelete={deleteRecipe}
         onImport={handleFileImport}

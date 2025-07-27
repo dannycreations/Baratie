@@ -1,4 +1,4 @@
-import { memo, useCallback, useId, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { ingredientRegistry } from '../../app/container';
 import { groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
@@ -26,6 +26,14 @@ export const IngredientManager = memo((): JSX.Element => {
 
   const [query, setQuery] = useState('');
   const listId = useId();
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      const timer = setTimeout(() => searchRef.current?.focus(), 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isModalOpen]);
 
   const allIngredients = useMemo<ReadonlyArray<IngredientProps>>(() => {
     return ingredientRegistry.getAllIngredients();
@@ -109,6 +117,7 @@ export const IngredientManager = memo((): JSX.Element => {
           ariaLabel: 'Search ingredients or categories',
           id: 'ingredient-manager-search',
           placeholder: 'Search Ingredients...',
+          inputRef: searchRef,
         }}
       />
     </Modal>

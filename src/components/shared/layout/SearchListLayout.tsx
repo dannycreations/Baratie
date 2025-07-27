@@ -3,7 +3,7 @@ import { memo, useCallback } from 'react';
 import { useOverflowScroll } from '../../../hooks/useOverflowScroll';
 import { StringInput } from '../input/StringInput';
 
-import type { ChangeEvent, JSX, ReactNode } from 'react';
+import type { ChangeEvent, JSX, ReactNode, RefObject } from 'react';
 
 interface SearchProps {
   readonly onQueryChange: (query: string) => void;
@@ -13,6 +13,7 @@ interface SearchProps {
   readonly id: string;
   readonly placeholder?: string;
   readonly wrapperClasses?: string;
+  readonly inputRef?: RefObject<HTMLInputElement | null>;
 }
 
 interface BaseSearchListProps {
@@ -67,8 +68,9 @@ export const SearchListLayout = memo<SearchListLayoutProps>((props): JSX.Element
             className={props.search.classes}
             placeholder={props.search.placeholder}
             value={props.search.query}
+            inputRef={props.search.inputRef}
             onChange={handleChange!}
-            showClearButton={true}
+            showClearButton
             onClear={handleClear}
           />
         </div>

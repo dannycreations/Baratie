@@ -1,6 +1,7 @@
 import { memo, useCallback, useState } from 'react';
 
 import { useThemeStore } from '../../stores/useThemeStore';
+import { HighlightText } from '../shared/HighlightText';
 import { ChevronRightIcon } from '../shared/Icon';
 import { ItemListLayout } from '../shared/layout/ItemListLayout';
 import { Tooltip } from '../shared/Tooltip';
@@ -25,10 +26,11 @@ export interface IngredientListProps {
 
 type IngredientListItemProps = Pick<IngredientListProps, 'isItemDisabled' | 'renderItemActions' | 'renderItemPrefix' | 'onItemDragStart'> & {
   readonly item: BaseListItem;
+  readonly query: string;
 };
 
 const IngredientListItem = memo<IngredientListItemProps>(
-  ({ item, isItemDisabled, renderItemPrefix, renderItemActions, onItemDragStart }): JSX.Element => {
+  ({ item, isItemDisabled, renderItemPrefix, renderItemActions, onItemDragStart, query }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const isDisabled = isItemDisabled?.(item) ?? false;
     const nameClass = `
@@ -40,8 +42,15 @@ const IngredientListItem = memo<IngredientListItemProps>(
     const leftColumn = (
       <div className="flex min-w-0 items-center gap-3">
         {renderItemPrefix?.(item)}
-        <Tooltip className="min-w-0 flex-1" content={item.description} position="top" tooltipClasses="max-w-xs">
-          <p className={nameClass}>{item.name}</p>
+        <Tooltip
+          className="min-w-0 flex-1"
+          content={<HighlightText highlight={query} text={item.description} />}
+          position="top"
+          tooltipClasses="max-w-xs"
+        >
+          <p className={nameClass}>
+            <HighlightText highlight={query} text={item.name} />
+          </p>
         </Tooltip>
       </div>
     );
@@ -146,6 +155,7 @@ export const IngredientList = memo(
                           key={item.id}
                           item={item}
                           isItemDisabled={isItemDisabled}
+                          query={query}
                           renderItemActions={renderItemActions}
                           renderItemPrefix={renderItemPrefix}
                           onItemDragStart={onItemDragStart}

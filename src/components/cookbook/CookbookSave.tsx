@@ -43,7 +43,9 @@ export const CookbookSave = memo<CookbookSaveProps>(({ nameInput, onNameChange, 
             placeholder="Enter Recipe Name..."
             type="text"
             value={nameInput}
+            showClearButton
             onChange={handleChange}
+            onClear={() => onNameChange('')}
             onKeyDown={handleKeyDown}
           />
         )}

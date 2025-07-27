@@ -15,12 +15,13 @@ interface CookbookLoadProps extends CookbookItemHandlers {
   readonly recipes: ReadonlyArray<RecipebookItem>;
   readonly totalRecipes: number;
   readonly query: string;
+  readonly searchRef: RefObject<HTMLInputElement | null>;
   readonly onImport: (event: ChangeEvent<HTMLInputElement>) => void;
   readonly onQueryChange: (query: string) => void;
 }
 
 export const CookbookLoad = memo<CookbookLoadProps>(
-  ({ query, onQueryChange, recipes, totalRecipes, onLoad, onDelete, importRef, onImport }): JSX.Element => {
+  ({ query, onQueryChange, recipes, totalRecipes, onLoad, onDelete, importRef, onImport, searchRef }): JSX.Element => {
     const listId = useId();
     const theme = useThemeStore((state) => state.theme);
 
@@ -54,6 +55,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(
             id: 'recipe-search',
             placeholder: 'Search Saved Recipes...',
             wrapperClasses: `border-b border-${theme.borderPrimary} pb-3`,
+            inputRef: searchRef,
           }}
         />
         <input ref={importRef} accept=".json" type="file" aria-hidden="true" className="hidden" onChange={onImport} />

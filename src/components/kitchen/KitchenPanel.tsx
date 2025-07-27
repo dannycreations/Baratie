@@ -40,6 +40,7 @@ interface DefaultContentProps extends KitchenPanelSectionProps {
   readonly config: InputPanelConfig | null;
   readonly fileInputRef: RefObject<HTMLInputElement | null>;
   readonly onFileSelected: (event: ChangeEvent<HTMLInputElement>) => void;
+  readonly onDataChange: (data: string) => void;
 }
 
 interface OutputContentProps extends KitchenPanelSectionProps {
@@ -110,7 +111,7 @@ const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient 
   );
 });
 
-const DefaultContent = memo<DefaultContentProps>(({ config, data, fileInputRef, onFileSelected }) => {
+const DefaultContent = memo<DefaultContentProps>(({ config, data, fileInputRef, onFileSelected, onDataChange }) => {
   const isTextareaDisabled = config?.mode === 'textarea' ? !!config.disabled : false;
   const placeholder = (config?.mode === 'textarea' && config.placeholder) || 'Place Raw Ingredients Here.';
 
@@ -125,7 +126,7 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, fileInputRef, 
         textareaClasses="font-mono"
         value={data}
         wrapperClasses="flex-1 min-h-0"
-        onChange={kitchen.setInputData}
+        onChange={onDataChange}
       />
     </>
   );
@@ -148,7 +149,6 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const inputData = useKitchenStore((state) => state.inputData);
   const outputData = useKitchenStore((state) => state.outputData);
   const ingredients = useRecipeStore((state) => state.ingredients);
-  const updateSpice = useRecipeStore((state) => state.updateSpice);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const importOperationRef = useRef<number>(0);
@@ -165,21 +165,26 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const config = isInput ? inputPanelConfig : outputPanelConfig;
   const title = config?.title || (isInput ? 'Input' : 'Output');
 
-  const handleFileSelect = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
-    const operationId = ++importOperationRef.current;
-    const file = event.target.files?.[0];
+  const handleSetInputData = useCallback((data: string) => kitchen.setInputData(data), []);
 
-    if (file) {
-      const { result: text, error } = await errorHandler.attemptAsync(() => readAsText(file));
-      if (operationId === importOperationRef.current && !error && typeof text === 'string') {
-        kitchen.setInputData(text);
+  const handleFileSelect = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const operationId = ++importOperationRef.current;
+      const file = event.target.files?.[0];
+
+      if (file) {
+        const { result: text, error } = await errorHandler.attemptAsync(() => readAsText(file));
+        if (operationId === importOperationRef.current && !error && typeof text === 'string') {
+          handleSetInputData(text);
+        }
       }
-    }
 
-    if (event.target) {
-      event.target.value = '';
-    }
-  }, []);
+      if (event.target) {
+        event.target.value = '';
+      }
+    },
+    [handleSetInputData],
+  );
 
   const handleTriggerFileSelect = useCallback(() => {
     fileInputRef.current?.click();
@@ -187,15 +192,19 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
 
   const handleClearInput = useCallback(() => {
     if (isInput) {
-      kitchen.setInputData('');
+      handleSetInputData('');
     }
-  }, [isInput]);
+  }, [isInput, handleSetInputData]);
 
   const handleDownloadOutput = useCallback(() => {
     const timestamp = new Date().toISOString().slice(0, 19).replace(/-/g, '').replace('T', '_').replace(/:/g, '');
     const fileName = `baratie_output_${timestamp}.txt`;
     triggerDownload(data, fileName);
   }, [data]);
+
+  const handleSpiceChange = useCallback((id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>) => {
+    useRecipeStore.getState().updateSpice(id, spiceId, rawValue, spice);
+  }, []);
 
   const headerActions = isInput ? (
     <InputActions config={inputPanelConfig} data={data} onClear={handleClearInput} onTriggerFileSelect={handleTriggerFileSelect} />
@@ -208,9 +217,17 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
       return <OutputContent config={outputPanelConfig} data={outputData} />;
     }
     if (inputPanelConfig?.mode === 'spiceEditor' && targetIngredient) {
-      return <SpiceContent targetIngredient={targetIngredient} onSpiceChange={updateSpice} />;
+      return <SpiceContent targetIngredient={targetIngredient} onSpiceChange={handleSpiceChange} />;
     }
-    return <DefaultContent config={inputPanelConfig} data={inputData} fileInputRef={fileInputRef} onFileSelected={handleFileSelect} />;
+    return (
+      <DefaultContent
+        config={inputPanelConfig}
+        data={inputData}
+        fileInputRef={fileInputRef}
+        onDataChange={handleSetInputData}
+        onFileSelected={handleFileSelect}
+      />
+    );
   };
 
   return (
