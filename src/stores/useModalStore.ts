@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 
-import type { ExtensionModalProps } from '../components/setting/ExtensionModal';
+import type { ExtensionListProps } from '../components/setting/ExtensionList';
 import type { CookbookModalProps } from './useCookbookStore';
 
 interface ModalMap {
   readonly cookbook: CookbookModalProps;
   readonly ingredientManager: undefined;
   readonly settings: undefined;
-  readonly extensionInstall: ExtensionModalProps;
+  readonly extensionInstall: ExtensionListProps;
 }
 
 type ModalType = keyof ModalMap;

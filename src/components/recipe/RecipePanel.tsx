@@ -22,8 +22,12 @@ import type { RecipeItemHandlers } from './RecipeItem';
 
 export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
+  const editingId = useRecipeStore((state) => state.editingId);
+  const setEditingId = useRecipeStore((state) => state.setEditingId);
   const isCookbookOpen = useModalStore((state) => state.activeModal === 'cookbook');
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
+  const ingredientStatuses = useKitchenStore((state) => state.ingredientStatuses);
+  const inputPanelId = useKitchenStore((state) => state.inputPanelId);
   const theme = useThemeStore((state) => state.theme);
 
   const prevIngredientsCount = useRef(ingredients.length);
@@ -153,6 +157,17 @@ export const RecipePanel = memo((): JSX.Element => {
     content = (
       <div role="list" aria-label="Current recipe steps" className="space-y-1.5">
         {ingredients.map((ingredient: IngredientItem) => {
+          const isSpiceInInput = inputPanelId === ingredient.id;
+          const isEditingItem = editingId === ingredient.id;
+
+          const handleEditToggle = (): void => {
+            if (isSpiceInInput) {
+              setEditingId(null);
+              return;
+            }
+            setEditingId(isEditingItem ? null : ingredient.id);
+          };
+
           const recipeItemHandlers: RecipeItemHandlers = {
             onRemove: handleRemove,
             onSpiceChange: handleSpiceChange,
@@ -160,6 +175,7 @@ export const RecipePanel = memo((): JSX.Element => {
             onDragEnter: onMoveEnter,
             onDragEnd: onMoveEnd,
             onDragOver: onMoveOver,
+            onEditToggle: handleEditToggle,
           };
           return (
             <RecipeItem
@@ -167,6 +183,9 @@ export const RecipePanel = memo((): JSX.Element => {
               ingredientItem={ingredient}
               isAutoCook={isAutoCookEnabled}
               isDragged={dragId === ingredient.id}
+              isEditing={!isSpiceInInput && isEditingItem}
+              isSpiceInInput={isSpiceInInput}
+              status={ingredientStatuses[ingredient.id] || 'idle'}
               {...recipeItemHandlers}
             />
           );
@@ -189,7 +208,7 @@ export const RecipePanel = memo((): JSX.Element => {
       panelClasses="h-[50vh] min-h-0 md:h-auto md:flex-1"
     >
       <div className="flex h-full flex-col" {...dropZoneProps}>
-        <SearchListLayout listContent={content} listId={listId} listWrapperClasses={listClass} showSearch={false} />
+        <SearchListLayout listContent={content} listId={listId} listWrapperClasses={listClass} />
       </div>
     </SectionLayout>
   );

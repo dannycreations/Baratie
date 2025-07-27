@@ -16,7 +16,7 @@ import type { BaseListItem } from '../ingredient/IngredientList';
 
 type ModuleIngredient = ManifestModule & { id: string };
 
-export interface ExtensionModalProps {
+export interface ExtensionListProps {
   id: string;
   manifest: ExtensionManifest;
 }
@@ -37,9 +37,9 @@ function groupModulesForDisplay(modules: ReadonlyArray<ManifestModule>): Array<[
   return [...grouped.entries()].sort(([a], [b]) => a.localeCompare(b));
 }
 
-export const ExtensionModal = memo((): JSX.Element | null => {
+export const ExtensionList = memo((): JSX.Element | null => {
   const activeModal = useModalStore((state) => state.activeModal);
-  const modalProps = useModalStore((state) => state.modalProps as ExtensionModalProps | null);
+  const modalProps = useModalStore((state) => state.modalProps as ExtensionListProps | null);
 
   const isModalOpen = activeModal === 'extensionInstall';
   const pendingSelection = isModalOpen ? modalProps : null;
@@ -184,6 +184,7 @@ export const ExtensionModal = memo((): JSX.Element | null => {
 
   return (
     <Modal
+      bodyClasses="p-3"
       contentClasses="flex max-h-[80vh] flex-col"
       headerActions={headerActions}
       isOpen={isModalOpen}

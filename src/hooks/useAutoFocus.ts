@@ -8,15 +8,15 @@ interface AutoFocusOptions {
   readonly delay?: number;
 }
 
-export function useAutoFocus<T extends HTMLElement>(elementRef: RefObject<T | null>, isModalOpen: boolean, options?: AutoFocusOptions): void {
+export function useAutoFocus<T extends HTMLElement>(elementRef: RefObject<T | null>, isActive: boolean, options?: AutoFocusOptions): void {
   const { delay = MODAL_SHOW_MS } = options || {};
 
   useEffect(() => {
-    if (isModalOpen) {
+    if (isActive) {
       const timer = setTimeout(() => {
         elementRef.current?.focus();
       }, delay);
       return () => clearTimeout(timer);
     }
-  }, [isModalOpen, delay, elementRef]);
+  }, [isActive, delay, elementRef]);
 }

@@ -153,7 +153,7 @@ export const Modal = memo<ModalProps>(
               </div>
             </header>
           )}
-          <main className={`grow overflow-y-auto p-3 ${bodyClasses}`}>{children}</main>
+          <main className={`grow overflow-y-auto ${bodyClasses}`}>{children}</main>
           {!hideFooter && footerContent && (
             <footer className={`flex shrink-0 justify-end space-x-3 border-t border-${theme.borderPrimary} p-3`}>{footerContent}</footer>
           )}

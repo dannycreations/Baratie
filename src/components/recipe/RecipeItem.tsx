@@ -1,8 +1,6 @@
 import { memo, useCallback } from 'react';
 
 import { ingredientRegistry } from '../../app/container';
-import { useKitchenStore } from '../../stores/useKitchenStore';
-import { useRecipeStore } from '../../stores/useRecipeStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
 import { AlertTriangleIcon, GrabIcon, PreferencesIcon, XIcon } from '../shared/Icon';
@@ -22,12 +20,16 @@ export interface RecipeItemHandlers {
   readonly onDragEnter: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   readonly onDragEnd: (event: DragEvent<HTMLElement>) => void;
   readonly onDragOver: (event: DragEvent<HTMLElement>) => void;
+  readonly onEditToggle: () => void;
 }
 
 interface RecipeItemProps extends RecipeItemHandlers {
   readonly ingredientItem: IngredientItem;
   readonly isAutoCook: boolean;
   readonly isDragged: boolean;
+  readonly isEditing: boolean;
+  readonly isSpiceInInput: boolean;
+  readonly status: CookingStatusType;
 }
 
 function getStatusBorder(theme: AppTheme, status: CookingStatusType): string {
@@ -41,15 +43,22 @@ function getStatusBorder(theme: AppTheme, status: CookingStatusType): string {
 }
 
 export const RecipeItem = memo<RecipeItemProps>(
-  ({ ingredientItem, isDragged, isAutoCook, onRemove, onSpiceChange, onDragStart, onDragEnd, onDragOver, onDragEnter }): JSX.Element => {
+  ({
+    ingredientItem,
+    isDragged,
+    isAutoCook,
+    onRemove,
+    onSpiceChange,
+    onDragStart,
+    onDragEnd,
+    onDragOver,
+    onDragEnter,
+    isEditing,
+    isSpiceInInput,
+    onEditToggle,
+    status,
+  }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
-    const status = useKitchenStore((state) => state.ingredientStatuses[ingredientItem.id] || 'idle');
-    const setEditingId = useRecipeStore((state) => state.setEditingId);
-
-    const isSpiceInInput = useKitchenStore((state) => state.inputPanelId === ingredientItem.id);
-    const isEditingItem = useRecipeStore((state) => state.editingId === ingredientItem.id);
-    const isEditing = !isSpiceInInput && isEditingItem;
-
     const definition = ingredientRegistry.getIngredient(ingredientItem.ingredientId);
 
     const handleRemove = useCallback(() => {
@@ -105,14 +114,6 @@ export const RecipeItem = memo<RecipeItemProps>(
       },
       [onDragEnter, ingredientItem.id],
     );
-
-    const handleEditToggle = useCallback(() => {
-      if (isSpiceInInput) {
-        setEditingId(null);
-        return;
-      }
-      setEditingId(isEditingItem ? null : ingredientItem.id);
-    }, [isSpiceInInput, isEditingItem, ingredientItem.id, setEditingId]);
 
     const handleSpiceChange = useCallback(
       (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => {
@@ -179,7 +180,7 @@ export const RecipeItem = memo<RecipeItemProps>(
             tooltipContent={settingsTooltip}
             tooltipPosition="top"
             variant={isEditorVisible ? 'primary' : 'stealth'}
-            onClick={handleEditToggle}
+            onClick={onEditToggle}
           />
         )}
         <TooltipButton
@@ -204,7 +205,7 @@ export const RecipeItem = memo<RecipeItemProps>(
         onDoubleClick={(event) => {
           if (canToggleEditor) {
             event.preventDefault();
-            handleEditToggle();
+            onEditToggle();
           }
         }}
         onDragEnter={handleDragEnter}
@@ -231,7 +232,7 @@ export const RecipeItem = memo<RecipeItemProps>(
             {isEditorVisible && (
               <div
                 id={`options-${ingredientItem.id}`}
-                className="recipe-item-spices-enter-active"
+                className="section-expand-enter-active"
                 onDoubleClick={(event) => {
                   event.stopPropagation();
                 }}

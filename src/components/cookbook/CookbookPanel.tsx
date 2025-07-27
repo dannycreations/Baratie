@@ -1,7 +1,6 @@
-import { memo, useCallback, useMemo, useRef } from 'react';
+import { memo, useCallback, useDeferredValue, useMemo, useRef } from 'react';
 
 import { useAutoFocus } from '../../hooks/useAutoFocus';
-import { useSearchItems } from '../../hooks/useSearch';
 import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
@@ -113,8 +112,21 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const isRecipeEmpty = ingredients.length === 0;
   const isSaveDisabled = !nameInput.trim() || isRecipeEmpty;
 
+  const deferredQuery = useDeferredValue(query);
   const searchKeys = useMemo<Array<keyof RecipebookItem>>(() => ['name'], []);
-  const filteredRecipes = useSearchItems<RecipebookItem>(recipes, query, searchKeys);
+  const filteredRecipes = useMemo(() => {
+    const lowerQuery = deferredQuery.toLowerCase().trim();
+    if (!lowerQuery) {
+      return recipes;
+    }
+
+    return recipes.filter((item) => {
+      return searchKeys.some((key) => {
+        const value = item[key];
+        return typeof value === 'string' && value.toLowerCase().includes(lowerQuery);
+      });
+    });
+  }, [recipes, deferredQuery, searchKeys]);
 
   const handleSave = useCallback(() => {
     upsert();
@@ -162,6 +174,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
 
   return (
     <Modal
+      bodyClasses="p-3"
       contentClasses="max-h-[80vh]"
       headerActions={headerActions}
       isOpen={isModalOpen}

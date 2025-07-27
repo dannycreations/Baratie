@@ -189,7 +189,7 @@ body.grabbing * {
   animation: scaleDown 0.2s ease-in forwards;
 }
 
-@keyframes recipeSpicesEnter {
+@keyframes sectionExpandEnter {
   from {
     opacity: 0;
     transform: translateY(-10px) scale(0.98);
@@ -202,8 +202,8 @@ body.grabbing * {
   }
 }
 
-.recipe-item-spices-enter-active {
-  animation: recipeSpicesEnter 0.3s ease-out forwards;
+.section-expand-enter-active {
+  animation: sectionExpandEnter 0.3s ease-out forwards;
   overflow: hidden;
 }
 

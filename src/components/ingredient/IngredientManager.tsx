@@ -101,7 +101,7 @@ export const IngredientManager = memo((): JSX.Element => {
   );
 
   return (
-    <Modal contentClasses="max-h-[80vh]" isOpen={isModalOpen} size="lg" title="Manage Ingredients" onClose={closeModal}>
+    <Modal bodyClasses="p-3" contentClasses="max-h-[80vh]" isOpen={isModalOpen} size="lg" title="Manage Ingredients" onClose={closeModal}>
       <SearchListLayout
         containerClasses="flex h-full flex-col"
         listContent={content}

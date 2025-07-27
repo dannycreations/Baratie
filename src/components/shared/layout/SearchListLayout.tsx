@@ -16,75 +16,63 @@ interface SearchProps {
   readonly inputRef?: RefObject<HTMLInputElement | null>;
 }
 
-interface BaseSearchListProps {
+interface SearchListLayoutProps {
   readonly containerClasses?: string;
   readonly listContent: ReactNode;
   readonly listId: string;
   readonly listWrapperClasses?: string;
+  readonly search?: SearchProps;
 }
 
-type SearchEnabledProps = {
-  readonly search: SearchProps;
-  readonly showSearch?: true;
-};
+export const SearchListLayout = memo<SearchListLayoutProps>(
+  ({ containerClasses = 'flex h-full flex-col', listContent, listId, listWrapperClasses = 'grow overflow-y-auto', search }): JSX.Element => {
+    const listScrollRef = useOverflowScroll<HTMLDivElement>({ yClasses: 'pr-1' });
 
-type SearchDisabledProps = {
-  readonly search?: never;
-  readonly showSearch: false;
-};
-
-type SearchListLayoutProps = BaseSearchListProps & (SearchEnabledProps | SearchDisabledProps);
-
-export const SearchListLayout = memo<SearchListLayoutProps>((props): JSX.Element => {
-  const { containerClasses = 'flex h-full flex-col', listContent, listId, listWrapperClasses = 'grow overflow-y-auto' } = props;
-  const listScrollRef = useOverflowScroll<HTMLDivElement>({ yClasses: 'pr-1' });
-
-  const handleChange =
-    props.showSearch !== false
+    const handleChange = search
       ? useCallback(
           (event: ChangeEvent<HTMLInputElement>) => {
-            props.search.onQueryChange(event.target.value);
+            search.onQueryChange(event.target.value);
           },
-          [props.search],
+          [search],
         )
       : undefined;
 
-  const handleClear =
-    props.showSearch !== false
+    const handleClear = search
       ? useCallback(() => {
-          props.search.onQueryChange('');
-        }, [props.search])
+          search.onQueryChange('');
+        }, [search])
       : undefined;
 
-  return (
-    <div className={containerClasses}>
-      {props.showSearch !== false && (
-        <div className={props.search.wrapperClasses}>
-          <StringInput
-            id={props.search.id}
-            type="search"
-            aria-controls={listId}
-            aria-label={props.search.ariaLabel}
-            className={props.search.classes}
-            placeholder={props.search.placeholder}
-            value={props.search.query}
-            inputRef={props.search.inputRef}
-            onChange={handleChange!}
-            showClearButton
-            onClear={handleClear}
-          />
+    return (
+      <div className={containerClasses}>
+        {search && (
+          <div className={search.wrapperClasses}>
+            <StringInput
+              id={search.id}
+              type="search"
+              aria-controls={listId}
+              aria-label={search.ariaLabel}
+              className={search.classes}
+              placeholder={search.placeholder}
+              value={search.query}
+              inputRef={search.inputRef}
+              onChange={handleChange!}
+              showClearButton
+              onClear={handleClear}
+            />
+          </div>
+        )}
+        <div
+          ref={listScrollRef}
+          id={listId}
+          role="region"
+          aria-live={search ? 'polite' : undefined}
+          aria-relevant={search ? 'all' : undefined}
+          className={listWrapperClasses}
+        >
+          {listContent}
         </div>
-      )}
-      <div
-        ref={listScrollRef}
-        id={listId}
-        role="region"
-        aria-live={props.showSearch !== false ? 'polite' : undefined}
-        aria-relevant={props.showSearch !== false ? 'all' : undefined}
-        className={listWrapperClasses}
-      >
-        {listContent}
       </div>
-    </div>
-  );
-});
+    );
+  },
+);

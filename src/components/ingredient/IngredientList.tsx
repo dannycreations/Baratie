@@ -141,7 +141,7 @@ export const IngredientList = memo(
             <div key={category} className={containerClass}>
               {header}
               {isExpanded && (
-                <div className="recipe-item-spices-enter-active">
+                <div className="section-expand-enter-active">
                   <div
                     id={panelId}
                     role="region"

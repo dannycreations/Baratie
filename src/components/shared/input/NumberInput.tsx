@@ -3,7 +3,7 @@ import { memo, useCallback, useEffect, useState } from 'react';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { ChevronDownIcon, ChevronUpIcon } from '../Icon';
 
-import type { ChangeEvent, FocusEvent, JSX, KeyboardEvent } from 'react';
+import type { ChangeEvent, JSX, KeyboardEvent } from 'react';
 
 interface NumberInputProps {
   readonly id: string;
@@ -54,22 +54,19 @@ export const NumberInput = memo<NumberInputProps>(
       setInternalValue(event.target.value);
     }, []);
 
-    const handleBlur = useCallback(
-      (_event: FocusEvent<HTMLInputElement>) => {
-        const trimmedValue = internalValue.trim();
-        if (trimmedValue === '') {
-          setInternalValue(String(value));
-          return;
-        }
-        const numericValue = Number(trimmedValue);
-        if (!isNaN(numericValue) && isFinite(numericValue)) {
-          handleValueChange(numericValue);
-        } else {
-          setInternalValue(String(value));
-        }
-      },
-      [handleValueChange, value, internalValue],
-    );
+    const handleBlur = useCallback(() => {
+      const trimmedValue = internalValue.trim();
+      if (trimmedValue === '') {
+        setInternalValue(String(value));
+        return;
+      }
+      const numericValue = Number(trimmedValue);
+      if (!isNaN(numericValue) && isFinite(numericValue)) {
+        handleValueChange(numericValue);
+      } else {
+        setInternalValue(String(value));
+      }
+    }, [handleValueChange, value, internalValue]);
 
     const handleStep = useCallback(
       (direction: 'up' | 'down') => {
@@ -90,7 +87,7 @@ export const NumberInput = memo<NumberInputProps>(
           event.preventDefault();
           handleStep('down');
         } else if (event.key === 'Enter') {
-          handleBlur(event as unknown as FocusEvent<HTMLInputElement>);
+          handleBlur();
         }
       },
       [handleStep, handleBlur],

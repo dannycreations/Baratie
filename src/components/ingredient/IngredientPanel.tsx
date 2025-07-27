@@ -1,8 +1,9 @@
-import { memo, useCallback, useId, useMemo, useState } from 'react';
+import { memo, useCallback, useDeferredValue, useId, useMemo, useState } from 'react';
 
+import { CATEGORY_FAVORITES } from '../../app/constants';
 import { errorHandler, ingredientRegistry } from '../../app/container';
+import { createIngredientSearchPredicate, groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
 import { useDropZone } from '../../hooks/useDropZone';
-import { useSearchIngredients } from '../../hooks/useSearch';
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useFavoriteStore } from '../../stores/useFavoriteStore';
 import { useIngredientStore } from '../../stores/useIngredientStore';
@@ -63,7 +64,45 @@ export const IngredientPanel = memo((): JSX.Element => {
     return ingredientRegistry.getAllIngredients();
   }, [registryVersion]);
 
-  const { filteredIngredients, visibleIngredients } = useSearchIngredients(allIngredients, query, favorites, disabledCategories, disabledIngredients);
+  const deferredQuery = useDeferredValue(query);
+
+  const visibleIngredientsList = useMemo(() => {
+    return allIngredients.filter((ing) => !disabledCategories.has(ing.category) && !disabledIngredients.has(ing.id));
+  }, [allIngredients, disabledCategories, disabledIngredients]);
+
+  const favoritesList = useMemo(() => {
+    return visibleIngredientsList.filter((ing) => favorites.has(ing.id));
+  }, [visibleIngredientsList, favorites]);
+
+  const regularList = useMemo(() => {
+    return visibleIngredientsList.filter((ing) => !favorites.has(ing.id));
+  }, [visibleIngredientsList, favorites]);
+
+  const groupedRegular = useMemo(() => groupAndSortIngredients(regularList), [regularList]);
+
+  const filteredIngredients = useMemo((): Array<[string, ReadonlyArray<IngredientProps>]> => {
+    const lowerQuery = deferredQuery.toLowerCase().trim();
+    if (!lowerQuery) {
+      const allGrouped = Array.from(groupedRegular.entries());
+      if (favoritesList.length > 0) {
+        return [[CATEGORY_FAVORITES, favoritesList], ...allGrouped];
+      }
+      return allGrouped;
+    }
+
+    const searchPredicate = createIngredientSearchPredicate(lowerQuery);
+    const filteredFavorites = favoritesList.filter(searchPredicate);
+    const filteredRegular = searchGroupedIngredients(groupedRegular, deferredQuery);
+
+    const result: Array<[string, ReadonlyArray<IngredientProps>]> = [];
+    if (filteredFavorites.length > 0) {
+      result.push([CATEGORY_FAVORITES, filteredFavorites]);
+    }
+    result.push(...filteredRegular);
+    return result;
+  }, [deferredQuery, favoritesList, groupedRegular]);
+
+  const visibleIngredients = visibleIngredientsList.length;
   const totalIngredients = allIngredients.length;
 
   const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: BaseListItem) => {

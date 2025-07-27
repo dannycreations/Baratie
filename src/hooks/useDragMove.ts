@@ -48,10 +48,6 @@ export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
           shouldNotify: false,
         },
       );
-
-      if (event.currentTarget) {
-        event.currentTarget.setAttribute('aria-grabbed', 'true');
-      }
     },
     [setDraggedItemId],
   );
@@ -80,15 +76,9 @@ export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
     [dragId],
   );
 
-  const handleDragEnd = useCallback(
-    (event: DragEvent<HTMLElement>): void => {
-      if (event.currentTarget) {
-        event.currentTarget.setAttribute('aria-grabbed', 'false');
-      }
-      setDraggedItemId(null);
-    },
-    [setDraggedItemId],
-  );
+  const handleDragEnd = useCallback((): void => {
+    setDraggedItemId(null);
+  }, [setDraggedItemId]);
 
   return {
     dragId,

@@ -17,7 +17,7 @@ import { useModalStore } from './useModalStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
 
-import type { ExtensionModalProps } from '../components/setting/ExtensionModal';
+import type { ExtensionListProps } from '../components/setting/ExtensionList';
 import type { Extension, ExtensionManifest, ManifestModule, StorableExtension } from '../helpers/extensionHelper';
 
 export interface ExtensionState {
@@ -76,7 +76,7 @@ export const useExtensionStore = create<ExtensionState>()(
         return;
       }
 
-      const { id } = modalProps as ExtensionModalProps;
+      const { id } = modalProps as ExtensionListProps;
       const extension = extensionMap.get(id);
 
       if (extension) {

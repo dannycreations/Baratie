@@ -1,6 +1,5 @@
 import { memo, useId } from 'react';
 
-import { useOverflowScroll } from '../../../hooks/useOverflowScroll';
 import { useThemeStore } from '../../../stores/useThemeStore';
 
 import type { HTMLAttributes, JSX, ReactNode } from 'react';
@@ -15,7 +14,6 @@ interface SectionLayoutProps extends HTMLAttributes<HTMLElement> {
 
 export const SectionLayout = memo<SectionLayoutProps>(
   ({ headerLeft, headerRight, children, panelClasses = '', contentClasses = '', ...rest }): JSX.Element => {
-    const contentRef = useOverflowScroll<HTMLDivElement>({ xClasses: 'pb-2', yClasses: 'pr-2' });
     const titleId = useId();
     const theme = useThemeStore((state) => state.theme);
 
@@ -24,7 +22,7 @@ export const SectionLayout = memo<SectionLayoutProps>(
       flex h-12 shrink-0 items-center justify-between border-b
       border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-3 text-${theme.contentPrimary}
     `;
-    const contentClass = `grow overflow-auto p-3 ${contentClasses}`.trim();
+    const contentClass = `grow overflow-auto ${contentClasses}`.trim();
 
     return (
       <section role="region" aria-labelledby={titleId} className={panelClass} {...rest}>
@@ -34,9 +32,7 @@ export const SectionLayout = memo<SectionLayoutProps>(
           </h2>
           {headerRight && <div className="flex shrink-0 items-center gap-1.5">{headerRight}</div>}
         </div>
-        <div ref={contentRef} className={contentClass}>
-          {children}
-        </div>
+        <div className={contentClass}>{children}</div>
       </section>
     );
   },
