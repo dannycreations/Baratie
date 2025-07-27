@@ -102,7 +102,8 @@ export const Tooltip = memo<TooltipProps>(
     useLayoutEffect(() => {
       const calculatePosition = () => {
         if (!isVisible || !triggerRef.current || !tooltipRef.current) return;
-        const triggerRect = triggerRef.current.getBoundingClientRect();
+        const triggerElement = triggerRef.current.firstElementChild || triggerRef.current;
+        const triggerRect = triggerElement.getBoundingClientRect();
         const tooltipRect = tooltipRef.current.getBoundingClientRect();
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;

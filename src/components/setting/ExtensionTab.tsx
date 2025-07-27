@@ -1,5 +1,8 @@
 import { memo, useCallback, useState } from 'react';
 
+import { COPY_SHOW_MS } from '../../app/constants';
+import { errorHandler } from '../../app/container';
+import { useControlTimer } from '../../hooks/useControlTimer';
 import { useExtensionStore } from '../../stores/useExtensionStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { Button, ConfirmButton, TooltipButton } from '../shared/Button';
@@ -58,6 +61,25 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
 
 const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status, errors, isLoading, onRefresh, onRemove }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
+  const [isCopied, setIsCopied] = useState(false);
+
+  const resetCopied = useCallback(() => {
+    setIsCopied(false);
+  }, []);
+
+  useControlTimer({
+    callback: resetCopied,
+    duration: COPY_SHOW_MS,
+    reset: isCopied,
+    state: isCopied,
+  });
+
+  const handleCopyId = useCallback(async (): Promise<void> => {
+    const { error } = await errorHandler.attemptAsync(() => navigator.clipboard.writeText(id), 'Clipboard Copy');
+    if (!error) {
+      setIsCopied(true);
+    }
+  }, [id]);
 
   const handleConfirmDelete = useCallback(() => {
     onRemove(id);
@@ -70,7 +92,19 @@ const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status, error
   const leftContent = (
     <div className="flex flex-col">
       <span className={`font-medium text-${theme.contentPrimary}`}>{displayName}</span>
-      <span className={`text-xs text-${theme.contentTertiary}`}>{id}</span>
+      <Tooltip content={isCopied ? 'Copied URL!' : 'Click to copy URL'} position="top">
+        <button
+          onClick={handleCopyId}
+          className={`
+            cursor-pointer rounded-sm p-0.5 text-left text-xs
+            text-${theme.contentTertiary} transition-colors
+            duration-150 hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}
+            focus:outline-none
+          `}
+        >
+          {id}
+        </button>
+      </Tooltip>
     </div>
   );
 
