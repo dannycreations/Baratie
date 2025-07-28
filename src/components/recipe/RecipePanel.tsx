@@ -4,6 +4,7 @@ import { ingredientRegistry, kitchen } from '../../app/container';
 import { useDragMove } from '../../hooks/useDragMove';
 import { useDropZone } from '../../hooks/useDropZone';
 import { useCookbookStore } from '../../stores/useCookbookStore';
+import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
@@ -17,9 +18,8 @@ import { EmptyView } from '../shared/View';
 import { RecipeItem } from './RecipeItem';
 
 import type { DragEvent, JSX } from 'react';
-import type { IngredientItem, SpiceDefinition, SpiceValue } from '../../core/IngredientRegistry';
+import type { IngredientItem, SpiceValue } from '../../core/IngredientRegistry';
 import type { CookbookModalProps } from '../../stores/useCookbookStore';
-import type { RecipeItemHandlers } from './RecipeItem';
 
 export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
@@ -30,8 +30,12 @@ export const RecipePanel = memo((): JSX.Element => {
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
   const ingredientStatuses = useKitchenStore((state) => state.ingredientStatuses);
   const inputPanelId = useKitchenStore((state) => state.inputPanelId);
+  const startUpdateBatch = useKitchenStore((state) => state.startUpdateBatch);
+  const endUpdateBatch = useKitchenStore((state) => state.endUpdateBatch);
   const theme = useThemeStore((state) => state.theme);
   const prepareCookbook = useCookbookStore((state) => state.prepareToOpen);
+  const dragId = useDragMoveStore((state) => state.draggedItemId);
+  const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
 
   const prevIngredientsCount = useRef(ingredients.length);
   const listId = useId();
@@ -61,12 +65,15 @@ export const RecipePanel = memo((): JSX.Element => {
   }, []);
 
   const {
-    dragId,
     onDragStart: onMoveStart,
     onDragEnter: onMoveEnter,
     onDragOver: onMoveOver,
     onDragEnd: onMoveEnd,
-  } = useDragMove({ onDragMove: handleReorder });
+  } = useDragMove({
+    dragId,
+    setDragId: setDraggedItemId,
+    onDragMove: handleReorder,
+  });
 
   const handleDragStart = useCallback(
     (event: DragEvent<HTMLElement>, ingredient: IngredientItem): void => {
@@ -145,9 +152,21 @@ export const RecipePanel = memo((): JSX.Element => {
     useRecipeStore.getState().removeIngredient(id);
   }, []);
 
-  const handleSpiceChange = useCallback((id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>): void => {
-    useRecipeStore.getState().updateSpice(id, spiceId, rawValue, spice);
+  const handleSpiceChange = useCallback((id: string, spiceId: string, rawValue: SpiceValue): void => {
+    useRecipeStore.getState().updateSpice(id, spiceId, rawValue);
   }, []);
+
+  const handleEditToggle = useCallback(
+    (id: string): void => {
+      const isSpiceInInput = useKitchenStore.getState().inputPanelId === id;
+      if (isSpiceInInput) {
+        setEditingId(null);
+        return;
+      }
+      setEditingId(editingId === id ? null : id);
+    },
+    [editingId, setEditingId],
+  );
 
   let content: JSX.Element;
   if (ingredients.length === 0) {
@@ -169,23 +188,6 @@ export const RecipePanel = memo((): JSX.Element => {
           const isSpiceInInput = inputPanelId === ingredient.id;
           const isEditingItem = editingId === ingredient.id;
 
-          const handleEditToggle = (): void => {
-            if (isSpiceInInput) {
-              setEditingId(null);
-              return;
-            }
-            setEditingId(isEditingItem ? null : ingredient.id);
-          };
-
-          const recipeItemHandlers: RecipeItemHandlers = {
-            onRemove: handleRemove,
-            onSpiceChange: handleSpiceChange,
-            onDragStart: handleDragStart,
-            onDragEnter: onMoveEnter,
-            onDragEnd: onMoveEnd,
-            onDragOver: onMoveOver,
-            onEditToggle: handleEditToggle,
-          };
           return (
             <RecipeItem
               key={ingredient.id}
@@ -195,7 +197,15 @@ export const RecipePanel = memo((): JSX.Element => {
               isEditing={!isSpiceInInput && isEditingItem}
               isSpiceInInput={isSpiceInInput}
               status={ingredientStatuses[ingredient.id] || 'idle'}
-              {...recipeItemHandlers}
+              onRemove={handleRemove}
+              onSpiceChange={handleSpiceChange}
+              onDragStart={handleDragStart}
+              onDragEnter={onMoveEnter}
+              onDragEnd={onMoveEnd}
+              onDragOver={onMoveOver}
+              onEditToggle={handleEditToggle}
+              onLongPressStart={startUpdateBatch}
+              onLongPressEnd={endUpdateBatch}
             />
           );
         })}
@@ -210,7 +220,7 @@ export const RecipePanel = memo((): JSX.Element => {
     <SectionLayout
       headerLeft="Recipe"
       headerRight={headerActions}
-      panelClasses="h-[50vh] min-h-0 md:h-auto md:flex-1"
+      className="h-[50vh] min-h-0 md:h-auto md:flex-1"
       contentClasses={`relative flex h-full flex-col text-${theme.contentTertiary}`}
     >
       <div className="flex h-full flex-col" {...dropZoneProps}>

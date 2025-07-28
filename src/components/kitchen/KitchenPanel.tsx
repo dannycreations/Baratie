@@ -12,7 +12,7 @@ import { SectionLayout } from '../shared/layout/SectionLayout';
 import { SpiceLayout } from '../shared/layout/SpiceLayout';
 
 import type { JSX } from 'react';
-import type { IngredientItem, InputPanelConfig, OutputPanelConfig, SpiceDefinition, SpiceValue } from '../../core/IngredientRegistry';
+import type { IngredientItem, InputPanelConfig, OutputPanelConfig, SpiceValue } from '../../core/IngredientRegistry';
 
 interface KitchenPanelProps {
   readonly type: 'input' | 'output';
@@ -34,7 +34,9 @@ interface OutputActionsProps extends KitchenPanelSectionProps {
 
 interface SpiceContentProps {
   readonly targetIngredient: IngredientItem;
-  readonly onSpiceChange: (ingredientId: string, spiceId: string, rawValue: SpiceValue, spice: SpiceDefinition) => void;
+  readonly onSpiceChange: (ingredientId: string, spiceId: string, rawValue: SpiceValue) => void;
+  readonly onLongPressEnd: () => void;
+  readonly onLongPressStart: () => void;
 }
 
 interface DefaultContentProps extends KitchenPanelSectionProps {
@@ -96,10 +98,10 @@ const OutputActions = memo<OutputActionsProps>(({ data, onDownload }) => (
   </>
 ));
 
-const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient }) => {
+const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient, onLongPressStart, onLongPressEnd }) => {
   const handleSpiceChange = useCallback(
-    (spiceId: string, rawValue: SpiceValue, spice: SpiceDefinition): void => {
-      onSpiceChange(targetIngredient.id, spiceId, rawValue, spice);
+    (spiceId: string, rawValue: SpiceValue): void => {
+      onSpiceChange(targetIngredient.id, spiceId, rawValue);
     },
     [onSpiceChange, targetIngredient.id],
   );
@@ -109,7 +111,14 @@ const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient 
 
   return (
     <div aria-label={`Parameters for ${definition.name}`} className="overflow-y-auto">
-      <SpiceLayout ingredient={definition} currentSpices={targetIngredient.spices} containerClasses="space-y-2" onSpiceChange={handleSpiceChange} />
+      <SpiceLayout
+        ingredient={definition}
+        currentSpices={targetIngredient.spices}
+        containerClasses="space-y-2"
+        onSpiceChange={handleSpiceChange}
+        onLongPressStart={onLongPressStart}
+        onLongPressEnd={onLongPressEnd}
+      />
     </div>
   );
 });
@@ -148,6 +157,8 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const outputPanelConfig = useKitchenStore((state) => state.outputPanelConfig);
   const inputData = useKitchenStore((state) => state.inputData);
   const outputData = useKitchenStore((state) => state.outputData);
+  const startUpdateBatch = useKitchenStore((state) => state.startUpdateBatch);
+  const endUpdateBatch = useKitchenStore((state) => state.endUpdateBatch);
   const ingredients = useRecipeStore((state) => state.ingredients);
 
   const importOperationRef = useRef<number>(0);
@@ -190,8 +201,8 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
     triggerDownload(data, fileName);
   }, [data]);
 
-  const handleSpiceChange = useCallback((id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>): void => {
-    useRecipeStore.getState().updateSpice(id, spiceId, rawValue, spice);
+  const handleSpiceChange = useCallback((id: string, spiceId: string, rawValue: SpiceValue): void => {
+    useRecipeStore.getState().updateSpice(id, spiceId, rawValue);
   }, []);
 
   const headerActions = isInput ? (
@@ -205,7 +216,14 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
       return <OutputContent config={outputPanelConfig} data={outputData} />;
     }
     if (inputPanelConfig?.mode === 'spiceEditor' && targetIngredient) {
-      return <SpiceContent targetIngredient={targetIngredient} onSpiceChange={handleSpiceChange} />;
+      return (
+        <SpiceContent
+          targetIngredient={targetIngredient}
+          onSpiceChange={handleSpiceChange}
+          onLongPressStart={startUpdateBatch}
+          onLongPressEnd={endUpdateBatch}
+        />
+      );
     }
     return <DefaultContent config={inputPanelConfig} data={inputData} onDataChange={handleSetInputData} />;
   };
@@ -214,7 +232,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
     <SectionLayout
       headerLeft={title}
       headerRight={headerActions}
-      panelClasses="h-[50vh] min-h-0 md:h-1/2"
+      className="h-[50vh] min-h-0 md:h-1/2"
       contentClasses="flex flex-col"
       aria-live={config ? 'polite' : undefined}
     >

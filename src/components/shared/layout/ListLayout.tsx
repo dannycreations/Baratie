@@ -50,19 +50,21 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
     const { ref: listScrollRef, className: overflowClasses } = useOverflowScroll<HTMLDivElement>({ yClasses: 'pr-1' });
     const finalClasses = `${listWrapperClasses} ${overflowClasses}`.trim();
 
+    const onQueryChange = search?.onQueryChange;
+
     const handleChange = search
       ? useCallback(
           (event: ChangeEvent<HTMLInputElement>): void => {
-            search.onQueryChange(event.target.value);
+            onQueryChange?.(event.target.value);
           },
-          [search?.onQueryChange],
+          [onQueryChange],
         )
       : undefined;
 
     const handleClear = search
       ? useCallback((): void => {
-          search.onQueryChange('');
-        }, [search?.onQueryChange])
+          onQueryChange?.('');
+        }, [onQueryChange])
       : undefined;
 
     return (

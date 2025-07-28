@@ -64,7 +64,7 @@ export function useLongPress(
   return {
     onMouseDown: start,
     onMouseUp: () => stop(true),
-    onMouseLeave: () => {},
+    onMouseLeave: () => stop(true),
     onTouchStart: start,
     onTouchEnd: () => stop(true),
   };

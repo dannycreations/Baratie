@@ -4,7 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { errorHandler, ingredientRegistry, logger } from '../app/container';
 import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
 
-import type { IngredientItem, SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
+import type { IngredientItem, SpiceValue } from '../core/IngredientRegistry';
 
 interface RecipeState {
   readonly activeRecipeId: string | null;
@@ -18,7 +18,7 @@ interface RecipeState {
   readonly setActiveRecipeId: (id: string | null) => void;
   readonly setEditingId: (id: string | null) => void;
   readonly setRecipe: (ingredients: ReadonlyArray<IngredientItem>, activeRecipeId: string | null) => void;
-  readonly updateSpice: (id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>) => void;
+  readonly updateSpice: (id: string, spiceId: string, rawValue: SpiceValue) => void;
 }
 
 export const useRecipeStore = create<RecipeState>()(
@@ -132,7 +132,7 @@ export const useRecipeStore = create<RecipeState>()(
       });
     },
 
-    updateSpice: (id, spiceId, rawValue, spice) => {
+    updateSpice: (id, spiceId, rawValue) => {
       set((state) => {
         const { ingredients } = state;
         const index = ingredients.findIndex((ingredient) => ingredient.id === id);
@@ -156,7 +156,7 @@ export const useRecipeStore = create<RecipeState>()(
           },
         );
 
-        const newValidSpices = updateAndValidate(ingredientDefinition, ingredientToUpdate.spices, spiceId, rawValue, spice);
+        const newValidSpices = updateAndValidate(ingredientDefinition, ingredientToUpdate.spices, spiceId, rawValue);
         const updatedIngredient = { ...ingredientToUpdate, spices: newValidSpices };
         const newIngredients = [...ingredients];
         newIngredients[index] = updatedIngredient;

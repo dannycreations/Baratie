@@ -14,14 +14,14 @@ interface NumberInputProps {
   readonly disabled?: boolean;
   readonly max?: number;
   readonly min?: number;
-  readonly onBatchEnd?: () => void;
-  readonly onBatchStart?: () => void;
+  readonly onLongPressEnd?: () => void;
+  readonly onLongPressStart?: () => void;
   readonly placeholder?: string;
   readonly step?: number;
 }
 
 export const NumberInput = memo<NumberInputProps>(
-  ({ id, value, onChange, min, max, step = 1, placeholder, disabled, className = '', onBatchStart, onBatchEnd }): JSX.Element => {
+  ({ id, value, onChange, min, max, step = 1, placeholder, disabled, className = '', onLongPressStart, onLongPressEnd }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const [internalValue, setInternalValue] = useState(String(value));
 
@@ -99,7 +99,7 @@ export const NumberInput = memo<NumberInputProps>(
     const handleIncrement = useCallback(() => handleStep('up'), [handleStep]);
     const handleDecrement = useCallback(() => handleStep('down'), [handleStep]);
 
-    const pressHandlersConfig = { onStart: onBatchStart, onEnd: onBatchEnd };
+    const pressHandlersConfig = { onStart: onLongPressStart, onEnd: onLongPressEnd };
     const incrementPressHandlers = useLongPress(handleIncrement, pressHandlersConfig);
     const decrementPressHandlers = useLongPress(handleDecrement, pressHandlersConfig);
 

@@ -102,8 +102,11 @@ export function updateAndValidate(
   currentSpices: Readonly<Record<string, SpiceValue>>,
   spiceId: string,
   rawValue: SpiceValue,
-  spice: Readonly<SpiceDefinition>,
 ): Record<string, SpiceValue> {
+  const spiceMap = getSpiceMap(ingredientDefinition);
+  const spice = spiceMap.get(spiceId);
+  errorHandler.assert(spice, `Could not find spice definition for ID: ${spiceId} in ingredient ${ingredientDefinition.name}`);
+
   const processedValue = prepareSelectValue(rawValue, spice);
   const newSpices = { ...currentSpices, [spiceId]: processedValue };
 

@@ -8,9 +8,9 @@ import type { JSX, ReactNode } from 'react';
 interface FormLayoutProps {
   readonly children: (id: string) => ReactNode;
   readonly inputId: string;
+  readonly className?: string;
   readonly description?: string;
   readonly direction?: 'col' | 'row';
-  readonly fieldSetClasses?: string;
   readonly inputWrapperClasses?: string;
   readonly label?: string;
   readonly labelClasses?: string;
@@ -18,21 +18,11 @@ interface FormLayoutProps {
 }
 
 export const FormLayout = memo<FormLayoutProps>(
-  ({
-    label,
-    inputId,
-    children,
-    description,
-    direction = 'col',
-    fieldSetClasses,
-    labelWrapperClasses,
-    labelClasses,
-    inputWrapperClasses,
-  }): JSX.Element => {
+  ({ label, inputId, children, description, direction = 'col', className, labelWrapperClasses, labelClasses, inputWrapperClasses }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const isRow = direction === 'row';
 
-    const finalFieldSetClass = fieldSetClasses ?? (isRow ? 'flex items-center justify-start gap-2' : 'flex flex-col gap-2');
+    const containerClass = className ?? (isRow ? 'flex items-center justify-start gap-2' : 'flex flex-col gap-2');
     const finalLabelWrapClass = labelWrapperClasses ?? (isRow ? 'grow min-w-0' : '');
     const finalInputWrapClass = inputWrapperClasses ?? (isRow ? 'flex h-8 shrink-0 items-center' : 'w-full');
     const finalLabelClass = labelClasses ?? `text-sm font-medium text-${theme.contentSecondary} ${isRow ? 'truncate' : ''}`;
@@ -48,7 +38,7 @@ export const FormLayout = memo<FormLayoutProps>(
     );
 
     return (
-      <div className={finalFieldSetClass}>
+      <div className={containerClass}>
         {label && labelContent}
         <div className={finalInputWrapClass}>{children(inputId)}</div>
       </div>

@@ -2,7 +2,6 @@ import { memo, useCallback, useMemo } from 'react';
 
 import { logger } from '../../../app/container';
 import { getVisibleSpices } from '../../../helpers/spiceHelper';
-import { useKitchenStore } from '../../../stores/useKitchenStore';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { BooleanInput } from '../input/BooleanInput';
 import { NumberInput } from '../input/NumberInput';
@@ -17,50 +16,52 @@ import type { IngredientDefinition, SpiceDefinition, SpiceValue } from '../../..
 interface SpiceRendererProps {
   readonly spice: SpiceDefinition;
   readonly value: SpiceValue | undefined | null;
-  readonly onSpiceChange: (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => void;
+  readonly onSpiceChange: (spiceId: string, newValue: SpiceValue) => void;
+  readonly onLongPressEnd?: () => void;
+  readonly onLongPressStart?: () => void;
 }
 
 interface SpiceLayoutProps {
   readonly ingredient: IngredientDefinition;
   readonly currentSpices: Readonly<Record<string, SpiceValue>>;
-  readonly onSpiceChange: (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => void;
+  readonly onSpiceChange: (spiceId: string, newValue: SpiceValue) => void;
+  readonly onLongPressEnd?: () => void;
+  readonly onLongPressStart?: () => void;
   readonly containerClasses?: string;
 }
 
-const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpiceChange }): JSX.Element => {
-  const { startUpdateBatch, endUpdateBatch } = useKitchenStore.getState();
-
+const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpiceChange, onLongPressStart, onLongPressEnd }): JSX.Element => {
   const handleBooleanChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>): void => {
-      onSpiceChange(spice.id, event.target.checked, spice);
+      onSpiceChange(spice.id, event.target.checked);
     },
     [onSpiceChange, spice],
   );
 
   const handleValueChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>): void => {
-      onSpiceChange(spice.id, event.target.value, spice);
+      onSpiceChange(spice.id, event.target.value);
     },
     [onSpiceChange, spice],
   );
 
   const handleTextareaChange = useCallback(
     (newValue: string): void => {
-      onSpiceChange(spice.id, newValue, spice);
+      onSpiceChange(spice.id, newValue);
     },
     [onSpiceChange, spice],
   );
 
   const handleNumberChange = useCallback(
     (newValue: number): void => {
-      onSpiceChange(spice.id, newValue, spice);
+      onSpiceChange(spice.id, newValue);
     },
     [onSpiceChange, spice],
   );
 
   const handleSelectChange = useCallback(
     (newValue: SpiceValue): void => {
-      onSpiceChange(spice.id, newValue, spice);
+      onSpiceChange(spice.id, newValue);
     },
     [onSpiceChange, spice],
   );
@@ -81,8 +82,8 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
             max={spice.max}
             step={spice.step || 1}
             placeholder={spice.placeholder}
-            onBatchEnd={endUpdateBatch}
-            onBatchStart={startUpdateBatch}
+            onLongPressEnd={onLongPressEnd}
+            onLongPressStart={onLongPressStart}
             onChange={handleNumberChange}
           />
         );
@@ -123,32 +124,43 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
   );
 });
 
-export const SpiceLayout = memo<SpiceLayoutProps>(({ ingredient, currentSpices, onSpiceChange, containerClasses }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
-  const finalContainerClass = containerClasses || 'space-y-2';
+export const SpiceLayout = memo<SpiceLayoutProps>(
+  ({ ingredient, currentSpices, onSpiceChange, containerClasses, onLongPressStart, onLongPressEnd }): JSX.Element => {
+    const theme = useThemeStore((state) => state.theme);
+    const finalContainerClass = containerClasses || 'space-y-2';
 
-  const handleSubmit = useCallback((event: FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-  }, []);
+    const handleSubmit = useCallback((event: FormEvent<HTMLFormElement>): void => {
+      event.preventDefault();
+    }, []);
 
-  const visibleSpices = useMemo(() => {
-    return getVisibleSpices(ingredient, currentSpices);
-  }, [ingredient, currentSpices]);
+    const visibleSpices = useMemo(() => {
+      return getVisibleSpices(ingredient, currentSpices);
+    }, [ingredient, currentSpices]);
 
-  if (!ingredient.spices || ingredient.spices.length === 0) {
-    return <p className={`text-sm italic text-${theme.contentTertiary}`}>This ingredient has no configurable options.</p>;
-  }
+    if (!ingredient.spices || ingredient.spices.length === 0) {
+      return <p className={`text-sm italic text-${theme.contentTertiary}`}>This ingredient has no configurable options.</p>;
+    }
 
-  if (visibleSpices.length === 0) {
-    return <p className={`text-sm italic text-${theme.contentTertiary}`}>No options are available. Adjust other values to see more.</p>;
-  }
+    if (visibleSpices.length === 0) {
+      return <p className={`text-sm italic text-${theme.contentTertiary}`}>No options are available. Adjust other values to see more.</p>;
+    }
 
-  return (
-    <form role="form" className={finalContainerClass} aria-label={`Options for ${ingredient.name}`} onSubmit={handleSubmit}>
-      {visibleSpices.map((spice) => {
-        const rawValue = currentSpices[spice.id];
-        return <SpiceRenderer key={spice.id} spice={spice} value={rawValue} onSpiceChange={onSpiceChange} />;
-      })}
-    </form>
-  );
-});
+    return (
+      <form role="form" className={finalContainerClass} aria-label={`Options for ${ingredient.name}`} onSubmit={handleSubmit}>
+        {visibleSpices.map((spice) => {
+          const rawValue = currentSpices[spice.id];
+          return (
+            <SpiceRenderer
+              key={spice.id}
+              spice={spice}
+              value={rawValue}
+              onSpiceChange={onSpiceChange}
+              onLongPressStart={onLongPressStart}
+              onLongPressEnd={onLongPressEnd}
+            />
+          );
+        })}
+      </form>
+    );
+  },
+);

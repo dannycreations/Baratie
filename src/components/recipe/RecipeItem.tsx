@@ -10,17 +10,19 @@ import { Tooltip } from '../shared/Tooltip';
 
 import type { DragEvent, JSX } from 'react';
 import type { AppTheme } from '../../app/themes';
-import type { IngredientItem, SpiceDefinition, SpiceValue } from '../../core/IngredientRegistry';
+import type { IngredientDefinition, IngredientItem, SpiceValue } from '../../core/IngredientRegistry';
 import type { CookingStatusType } from '../../core/Kitchen';
 
 export interface RecipeItemHandlers {
   readonly onRemove: (id: string) => void;
-  readonly onSpiceChange: (ingredientId: string, spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => void;
+  readonly onSpiceChange: (ingredientId: string, spiceId: string, newValue: SpiceValue) => void;
   readonly onDragStart: (event: DragEvent<HTMLElement>, ingredient: IngredientItem) => void;
   readonly onDragEnter: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   readonly onDragEnd: (event: DragEvent<HTMLElement>) => void;
   readonly onDragOver: (event: DragEvent<HTMLElement>) => void;
-  readonly onEditToggle: () => void;
+  readonly onEditToggle: (id: string) => void;
+  readonly onLongPressStart: () => void;
+  readonly onLongPressEnd: () => void;
 }
 
 interface RecipeItemProps extends RecipeItemHandlers {
@@ -31,6 +33,103 @@ interface RecipeItemProps extends RecipeItemHandlers {
   readonly isSpiceInInput: boolean;
   readonly status: CookingStatusType;
 }
+
+interface MissingRecipeItemProps {
+  readonly ingredientItem: IngredientItem;
+  readonly onRemove: (id: string) => void;
+}
+
+const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemove }): JSX.Element => {
+  const theme = useThemeStore((state) => state.theme);
+  const handleRemove = useCallback((): void => {
+    onRemove(ingredientItem.id);
+  }, [onRemove, ingredientItem.id]);
+
+  return (
+    <div
+      className={`group flex flex-col rounded-md bg-${theme.dangerBg} text-sm outline-none`}
+      role="listitem"
+      aria-label={`Error: Ingredient ${ingredientItem.name} not found.`}
+    >
+      <div className="p-2">
+        <ItemListLayout
+          leftClasses="flex grow items-center min-w-0"
+          leftContent={
+            <div className="flex items-center gap-1">
+              <AlertTriangleIcon aria-hidden="true" className={`text-${theme.dangerFg}`} size={20} />
+              <span className={`truncate pr-2 font-medium text-${theme.dangerFg}`}>{ingredientItem.name} (Missing)</span>
+            </div>
+          }
+          rightContent={
+            <TooltipButton
+              icon={<XIcon size={18} />}
+              size="sm"
+              variant="danger"
+              aria-label={`Remove missing ingredient "${ingredientItem.name}" from recipe`}
+              tooltipContent="Remove Missing Ingredient"
+              tooltipPosition="top"
+              onClick={handleRemove}
+            />
+          }
+        />
+        <p className={`mt-1 text-xs text-${theme.dangerFg}`}>
+          This ingredient could not be found. It may be from a disabled or uninstalled extension.
+        </p>
+      </div>
+    </div>
+  );
+});
+
+const SpiceInInputMessage = memo((): JSX.Element => {
+  const theme = useThemeStore((state) => state.theme);
+  return (
+    <div className={`mx-2 rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-2 text-center text-xs italic`}>
+      Options are managed in the Input panel.
+    </div>
+  );
+});
+
+interface RecipeItemSpiceEditorProps {
+  readonly ingredient: IngredientItem;
+  readonly definition: IngredientDefinition;
+  readonly onSpiceChange: (ingredientId: string, spiceId: string, newValue: SpiceValue) => void;
+  readonly onLongPressEnd: () => void;
+  readonly onLongPressStart: () => void;
+}
+
+const RecipeItemSpiceEditor = memo<RecipeItemSpiceEditorProps>(
+  ({ ingredient, definition, onSpiceChange, onLongPressStart, onLongPressEnd }): JSX.Element => {
+    const theme = useThemeStore((state) => state.theme);
+    const handleSpiceChange = useCallback(
+      (spiceId: string, newValue: SpiceValue): void => {
+        onSpiceChange(ingredient.id, spiceId, newValue);
+      },
+      [onSpiceChange, ingredient.id],
+    );
+
+    return (
+      <div
+        id={`options-${ingredient.id}`}
+        className="section-expand-enter-active"
+        onDoubleClick={(event) => {
+          event.stopPropagation();
+        }}
+      >
+        <div className="max-h-96 overflow-y-auto p-1">
+          <div className={`rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-2`}>
+            <SpiceLayout
+              ingredient={definition}
+              currentSpices={ingredient.spices}
+              onSpiceChange={handleSpiceChange}
+              onLongPressStart={onLongPressStart}
+              onLongPressEnd={onLongPressEnd}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
 
 function getStatusBorder(theme: AppTheme, status: CookingStatusType): string {
   const statusBorders: Readonly<Record<CookingStatusType, string>> = {
@@ -57,49 +156,19 @@ export const RecipeItem = memo<RecipeItemProps>(
     isSpiceInInput,
     onEditToggle,
     status,
+    onLongPressStart,
+    onLongPressEnd,
   }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const definition = ingredientRegistry.getIngredient(ingredientItem.ingredientId);
 
-    const handleRemove = useCallback((): void => {
-      onRemove(ingredientItem.id);
-    }, [onRemove, ingredientItem.id]);
-
     if (!definition) {
-      return (
-        <div
-          className={`group flex flex-col rounded-md bg-${theme.dangerBg} text-sm outline-none`}
-          role="listitem"
-          aria-label={`Error: Ingredient ${ingredientItem.name} not found.`}
-        >
-          <div className="p-2">
-            <ItemListLayout
-              leftClasses="flex grow items-center min-w-0"
-              leftContent={
-                <div className="flex items-center gap-1">
-                  <AlertTriangleIcon aria-hidden="true" className={`text-${theme.dangerFg}`} size={20} />
-                  <span className={`truncate pr-2 font-medium text-${theme.dangerFg}`}>{ingredientItem.name} (Missing)</span>
-                </div>
-              }
-              rightContent={
-                <TooltipButton
-                  icon={<XIcon size={18} />}
-                  size="sm"
-                  variant="danger"
-                  aria-label={`Remove missing ingredient "${ingredientItem.name}" from recipe`}
-                  tooltipContent="Remove Missing Ingredient"
-                  tooltipPosition="top"
-                  onClick={handleRemove}
-                />
-              }
-            />
-            <p className={`mt-1 text-xs text-${theme.dangerFg}`}>
-              This ingredient could not be found. It may be from a disabled or uninstalled extension.
-            </p>
-          </div>
-        </div>
-      );
+      return <MissingRecipeItem ingredientItem={ingredientItem} onRemove={onRemove} />;
     }
+
+    const handleEditToggleCallback = useCallback(() => {
+      onEditToggle(ingredientItem.id);
+    }, [onEditToggle, ingredientItem.id]);
 
     const handleDragStart = useCallback(
       (event: DragEvent<HTMLElement>): void => {
@@ -113,13 +182,6 @@ export const RecipeItem = memo<RecipeItemProps>(
         onDragEnter(event, ingredientItem.id);
       },
       [onDragEnter, ingredientItem.id],
-    );
-
-    const handleSpiceChange = useCallback(
-      (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition): void => {
-        onSpiceChange(ingredientItem.id, spiceId, newValue, spice);
-      },
-      [onSpiceChange, ingredientItem.id],
     );
 
     const hasSpices = !!definition.spices && definition.spices.length > 0;
@@ -180,7 +242,7 @@ export const RecipeItem = memo<RecipeItemProps>(
             aria-label={settingsTooltip}
             tooltipContent={settingsTooltip}
             tooltipPosition="top"
-            onClick={onEditToggle}
+            onClick={handleEditToggleCallback}
           />
         )}
         <TooltipButton
@@ -191,7 +253,7 @@ export const RecipeItem = memo<RecipeItemProps>(
           aria-label={`Remove ingredient "${ingredientItem.name}" from recipe`}
           tooltipContent="Remove Ingredient"
           tooltipPosition="top"
-          onClick={handleRemove}
+          onClick={() => onRemove(ingredientItem.id)}
         />
       </>
     );
@@ -199,7 +261,7 @@ export const RecipeItem = memo<RecipeItemProps>(
     const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement>): void => {
       if (canToggleEditor) {
         event.preventDefault();
-        onEditToggle();
+        handleEditToggleCallback();
       }
     };
 
@@ -221,25 +283,15 @@ export const RecipeItem = memo<RecipeItemProps>(
         />
         {hasSpices && (
           <>
-            {isSpiceInInput && (
-              <div className={`mx-2 rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-2 text-center text-xs italic`}>
-                Options are managed in the Input panel.
-              </div>
-            )}
+            {isSpiceInInput && <SpiceInInputMessage />}
             {isEditorVisible && (
-              <div
-                id={`options-${ingredientItem.id}`}
-                className="section-expand-enter-active"
-                onDoubleClick={(event) => {
-                  event.stopPropagation();
-                }}
-              >
-                <div className="max-h-96 overflow-y-auto p-1">
-                  <div className={`rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-2`}>
-                    <SpiceLayout ingredient={definition} currentSpices={ingredientItem.spices} onSpiceChange={handleSpiceChange} />
-                  </div>
-                </div>
-              </div>
+              <RecipeItemSpiceEditor
+                ingredient={ingredientItem}
+                definition={definition}
+                onSpiceChange={onSpiceChange}
+                onLongPressStart={onLongPressStart}
+                onLongPressEnd={onLongPressEnd}
+              />
             )}
           </>
         )}

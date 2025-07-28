@@ -1,26 +1,23 @@
 import { useCallback, useEffect } from 'react';
 
 import { errorHandler } from '../app/container';
-import { useDragMoveStore } from '../stores/useDragMoveStore';
 
 import type { DragEvent } from 'react';
 
-interface DragMoveProps {
+export interface DragMoveHookProps {
+  readonly dragId: string | null;
   readonly onDragMove: (draggedId: string, targetItemId: string) => void;
+  readonly setDragId: (id: string | null) => void;
 }
 
-interface DragMoveReturn {
-  readonly dragId: string | null;
+export interface DragMoveHookReturn {
   readonly onDragEnd: (event: DragEvent<HTMLElement>) => void;
   readonly onDragEnter: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   readonly onDragOver: (event: DragEvent<HTMLElement>) => void;
   readonly onDragStart: (event: DragEvent<HTMLElement>, itemId: string) => void;
 }
 
-export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
-  const dragId = useDragMoveStore((state) => state.draggedItemId);
-  const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
-
+export function useDragMove({ dragId, setDragId, onDragMove }: DragMoveHookProps): DragMoveHookReturn {
   useEffect(() => {
     if (dragId) {
       document.body.classList.add('grabbing');
@@ -34,7 +31,7 @@ export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
 
   const handleDragStart = useCallback(
     (event: DragEvent<HTMLElement>, itemId: string): void => {
-      setDraggedItemId(itemId);
+      setDragId(itemId);
       event.dataTransfer.effectAllowed = 'move';
 
       errorHandler.attempt(
@@ -49,7 +46,7 @@ export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
         },
       );
     },
-    [setDraggedItemId],
+    [setDragId],
   );
 
   const handleDragEnter = useCallback(
@@ -77,11 +74,10 @@ export function useDragMove({ onDragMove }: DragMoveProps): DragMoveReturn {
   );
 
   const handleDragEnd = useCallback((): void => {
-    setDraggedItemId(null);
-  }, [setDraggedItemId]);
+    setDragId(null);
+  }, [setDragId]);
 
   return {
-    dragId,
     onDragStart: handleDragStart,
     onDragEnter: handleDragEnter,
     onDragOver: handleDragOver,

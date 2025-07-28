@@ -54,8 +54,8 @@ const BARATIE_API = {
       clear: () => getRecipeState().clearRecipe(),
       getActiveId: () => getRecipeState().getActiveRecipeId(),
       remove: (id: string) => getRecipeState().removeIngredient(id),
-      update: (id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>) => {
-        return getRecipeState().updateSpice(id, spiceId, rawValue, spice);
+      update: (id: string, spiceId: string, rawValue: SpiceValue) => {
+        return getRecipeState().updateSpice(id, spiceId, rawValue);
       },
     },
   },
