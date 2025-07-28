@@ -85,13 +85,13 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const renderIcon = (): JSX.Element => {
     switch (notification.type) {
       case 'success':
-        return <CheckIcon className={`text-${iconColor}`} size={22} />;
+        return <CheckIcon className={`text-${iconColor}`} size={20} />;
       case 'error':
       case 'warning':
-        return <AlertTriangleIcon className={`text-${iconColor}`} size={22} />;
+        return <AlertTriangleIcon className={`text-${iconColor}`} size={20} />;
       case 'info':
       default:
-        return <InfoIcon className={`text-${iconColor}`} size={22} />;
+        return <InfoIcon className={`text-${iconColor}`} size={20} />;
     }
   };
 
@@ -99,7 +99,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
 
   const containerClass = `
-    relative w-full overflow-hidden rounded-lg border-l-4
+    relative w-full overflow-hidden rounded-lg border-l-4 shadow-lg
     bg-${theme.surfaceSecondary} border-${borderColor} ${animationClass}
     ${isPaused ? 'notification-paused' : ''}
   `.trim();
@@ -115,8 +115,8 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="flex items-start gap-2 p-2">
-        <div className="flex-shrink-0 pt-1">{renderIcon()}</div>
+      <div className="flex items-start gap-2 p-3">
+        <div className="flex-shrink-0">{renderIcon()}</div>
         <div className="flex-1">
           {notification.title && <h3 className={`text-sm font-semibold text-${theme.contentPrimary}`}>{notification.title}</h3>}
           <p className={messageClass}>{notification.message}</p>
