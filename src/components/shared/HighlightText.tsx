@@ -22,7 +22,7 @@ export const HighlightText = memo<HighlightTextProps>(({ text, highlight }): JSX
     <>
       {parts.map((part, i) =>
         regex.test(part) ? (
-          <mark key={i} className={`rounded bg-yellow-500/30 px-0.5 py-0 text-${theme.infoFg}`}>
+          <mark key={i} className={`rounded bg-yellow-500/30 px-1 text-${theme.infoFg}`}>
             {part}
           </mark>
         ) : (

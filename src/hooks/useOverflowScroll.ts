@@ -1,6 +1,58 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 
 import type { RefObject } from 'react';
+
+interface OverflowStatus {
+  readonly hasOverflowX: boolean;
+  readonly hasOverflowY: boolean;
+}
+
+const INITIAL_STATUS: OverflowStatus = {
+  hasOverflowX: false,
+  hasOverflowY: false,
+};
+
+export function useOverflowStatus<T extends HTMLElement>(elementRef: RefObject<T | null>): OverflowStatus {
+  const [status, setStatus] = useState<OverflowStatus>(INITIAL_STATUS);
+
+  useLayoutEffect(() => {
+    const element = elementRef.current;
+    if (!element) {
+      return;
+    }
+
+    const checkOverflow = (): void => {
+      const hasOverflowY = element.scrollHeight > element.clientHeight;
+      const hasOverflowX = element.scrollWidth > element.clientWidth;
+      setStatus((current) => {
+        if (current.hasOverflowX === hasOverflowX && current.hasOverflowY === hasOverflowY) {
+          return current;
+        }
+        return { hasOverflowX, hasOverflowY };
+      });
+    };
+
+    checkOverflow();
+
+    const resizeObserver = new ResizeObserver(checkOverflow);
+    resizeObserver.observe(element);
+
+    const mutationObserver = new MutationObserver(checkOverflow);
+    mutationObserver.observe(element, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+    };
+  }, [elementRef]);
+
+  return status;
+}
 
 const OVERFLOW_X_CLASSNAME = 'overflow-x-hidden';
 const OVERFLOW_Y_CLASSNAME = 'overflow-y-hidden';
@@ -10,78 +62,21 @@ interface OverflowScrollProps {
   readonly yClasses?: string;
 }
 
-export function useOverflowScroll<T extends HTMLElement>({ xClasses, yClasses }: OverflowScrollProps): RefObject<T | null> {
-  const scrollRef = useRef<T>(null);
+interface OverflowScrollReturn<T extends HTMLElement> {
+  readonly ref: RefObject<T | null>;
+  readonly className: string;
+}
 
-  const manageClasses = useCallback((): void => {
-    const element = scrollRef.current;
-    if (!element) {
-      return;
-    }
+export function useOverflowScroll<T extends HTMLElement>({ xClasses, yClasses }: OverflowScrollProps): OverflowScrollReturn<T> {
+  const ref = useRef<T>(null);
+  const { hasOverflowX, hasOverflowY } = useOverflowStatus(ref);
 
-    const hasVerticalScroll = element.scrollHeight > element.clientHeight;
-    const hasHorizontalScroll = element.scrollWidth > element.clientWidth;
+  const finalXClasses = hasOverflowX ? xClasses || '' : '';
+  const finalYClasses = hasOverflowY ? yClasses || '' : '';
+  const overflowXHidden = !!yClasses && !xClasses && hasOverflowY ? OVERFLOW_X_CLASSNAME : '';
+  const overflowYHidden = !!xClasses && !yClasses && hasOverflowX ? OVERFLOW_Y_CLASSNAME : '';
 
-    const toggleClasses = (classString: string | undefined, condition: boolean): void => {
-      if (!classString) {
-        return;
-      }
-      classString
-        .split(' ')
-        .filter(Boolean)
-        .forEach((className) => {
-          element.classList.toggle(className, condition);
-        });
-    };
+  const className = [finalXClasses, finalYClasses, overflowXHidden, overflowYHidden].filter(Boolean).join(' ');
 
-    toggleClasses(yClasses, hasVerticalScroll);
-    toggleClasses(xClasses, hasHorizontalScroll);
-
-    const manageVertical = !!yClasses;
-    const manageHorizontal = !!xClasses;
-
-    element.classList.toggle(OVERFLOW_X_CLASSNAME, manageVertical && !manageHorizontal);
-    element.classList.toggle(OVERFLOW_Y_CLASSNAME, manageHorizontal && !manageVertical);
-  }, [xClasses, yClasses]);
-
-  useEffect(() => {
-    const element = scrollRef.current;
-    if (!element) {
-      return;
-    }
-
-    manageClasses();
-    const resizeObserver = new ResizeObserver(manageClasses);
-    resizeObserver.observe(element);
-    const mutationObserver = new MutationObserver(manageClasses);
-    mutationObserver.observe(element, {
-      attributes: true,
-      characterData: true,
-      childList: true,
-      subtree: true,
-    });
-
-    return () => {
-      resizeObserver.disconnect();
-      mutationObserver.disconnect();
-      const removeClasses = (classString: string | undefined): void => {
-        if (!classString) {
-          return;
-        }
-        classString
-          .split(' ')
-          .filter(Boolean)
-          .forEach((className) => {
-            element.classList.remove(className);
-          });
-      };
-      if (element) {
-        removeClasses(yClasses);
-        removeClasses(xClasses);
-        element.classList.remove(OVERFLOW_X_CLASSNAME, OVERFLOW_Y_CLASSNAME);
-      }
-    };
-  }, [manageClasses, xClasses, yClasses]);
-
-  return scrollRef;
+  return { ref, className };
 }

@@ -12,7 +12,7 @@ import type { AppTheme } from '../../app/themes';
 import type { TooltipProps } from './Tooltip';
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'stealth' | 'outline';
-type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
+type ButtonSize = 'xs' | 'sm' | 'lg';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   readonly children?: ReactNode;
@@ -37,27 +37,27 @@ interface CopyButtonProps {
 }
 
 interface ConfirmButtonProps {
-  readonly onConfirm: () => void;
-  readonly itemName: string;
-  readonly itemType: string;
   readonly actionName?: string;
   readonly className?: string;
-  readonly tooltipPosition?: TooltipProps['position'];
+  readonly confirmIcon?: ReactNode;
   readonly disabled?: boolean;
+  readonly icon?: ReactNode;
+  readonly itemName: string;
+  readonly itemType: string;
+  readonly onConfirm: () => void;
+  readonly tooltipPosition?: TooltipProps['position'];
 }
 
 const ICON_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
   xs: 'p-1',
-  sm: 'p-1.5',
-  md: 'p-2',
-  lg: 'p-2.5',
+  sm: 'p-2',
+  lg: 'p-3',
 };
 
 const TEXT_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
   xs: 'px-2 py-1 text-xs',
-  sm: 'px-2.5 py-1.5 text-sm',
-  md: 'px-3.5 py-2 text-sm',
-  lg: 'px-4 py-2.5 text-base',
+  sm: 'px-2 py-2 text-sm',
+  lg: 'px-3 py-3 text-base',
 };
 
 const getVariantClasses = (variant: ButtonVariant, theme: AppTheme): string => {
@@ -85,7 +85,7 @@ export const Button = memo<ButtonProps>(
     iconPosition = 'left',
     loading = false,
     onClick,
-    size = 'md',
+    size = 'sm',
     type = 'button',
     variant,
     ...props
@@ -109,7 +109,7 @@ export const Button = memo<ButtonProps>(
       ${className}
     `.trim();
 
-    const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-1.5' : 'ml-1.5') : '';
+    const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
     const loadingSpinner = <Loader2Icon aria-hidden="true" className={`h-4 w-4 animate-spin ${iconMarginClass}`} />;
 
     const showIconLeft = iconPosition === 'left';
@@ -161,7 +161,17 @@ export const TooltipButton = memo<TooltipButtonProps>(
 );
 
 export const ConfirmButton = memo<ConfirmButtonProps>(
-  ({ onConfirm, itemName, itemType, actionName = 'Delete', tooltipPosition = 'top', className = '', disabled = false }): JSX.Element => {
+  ({
+    onConfirm,
+    itemName,
+    itemType,
+    actionName = 'Delete',
+    tooltipPosition = 'top',
+    className = '',
+    disabled = false,
+    icon,
+    confirmIcon,
+  }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
     const { isConfirm, trigger } = useConfirmAction(onConfirm, CONFIRM_SHOW_MS);
@@ -170,12 +180,15 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
     const ariaLabel = isConfirm ? `Confirm ${actionName.toLowerCase()} of ${itemName}` : `${actionName} ${itemType}: ${itemName}`;
     const buttonClass = `${className} ${isConfirm ? getConfirmClasses(theme) : ''}`.trim();
 
+    const defaultIcon = icon ?? <Trash2Icon size={18} />;
+    const defaultConfirmIcon = confirmIcon ?? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} />;
+
     return (
       <TooltipButton
         aria-label={ariaLabel}
         className={buttonClass}
         disabled={disabled}
-        icon={isConfirm ? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} /> : <Trash2Icon size={18} />}
+        icon={isConfirm ? defaultConfirmIcon : defaultIcon}
         size="sm"
         tooltipContent={tooltipContent}
         tooltipPosition={tooltipPosition}

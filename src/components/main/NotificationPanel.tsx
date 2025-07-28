@@ -98,7 +98,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
 
   const containerClass = `
-    relative my-2 w-full overflow-hidden rounded-lg border-l-4
+    relative w-full overflow-hidden rounded-lg border-l-4
     bg-${theme.surfaceSecondary} border-${borderColor} ${animationClass}
     ${isPaused ? 'notification-paused' : ''}
   `.trim();
@@ -117,16 +117,16 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="flex items-start p-4">
-        <div className="flex-shrink-0 pt-0.5">{renderIcon()}</div>
-        <div className="ml-3 flex-1">
+      <div className="flex items-start gap-2 p-2">
+        <div className="flex-shrink-0 pt-1">{renderIcon()}</div>
+        <div className="flex-1">
           {notification.title && <h3 className={`text-sm font-semibold text-${theme.contentPrimary}`}>{notification.title}</h3>}
           <p className={messageClass}>{notification.message}</p>
         </div>
-        <div className="ml-4 flex-shrink-0">
+        <div className="flex-shrink-0">
           <Button
             aria-label="Close notification"
-            className={`-mt-1 -mr-1 text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`}
+            className={`text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`}
             icon={<XIcon size={20} />}
             size="sm"
             title="Close"
@@ -163,7 +163,7 @@ export const NotificationPanel = memo((): JSX.Element | null => {
   }
 
   return (
-    <div aria-live="polite" aria-relevant="additions" className="fixed inset-x-4 top-4 z-[700] space-y-1.5 sm:left-auto sm:w-full sm:max-w-sm">
+    <div aria-live="polite" aria-relevant="additions" className="fixed inset-x-3 top-3 z-[700] space-y-2 sm:left-auto sm:w-full sm:max-w-sm">
       {messages.map((notification) => (
         <NotificationItem key={notification.id} notification={notification} />
       ))}

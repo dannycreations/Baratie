@@ -39,6 +39,7 @@ function groupModulesForDisplay(modules: ReadonlyArray<ManifestModule>): Array<[
 
 export const ExtensionList = memo((): JSX.Element | null => {
   const activeModal = useModalStore((state) => state.activeModal);
+  const closeModal = useModalStore((state) => state.closeModal);
   const modalProps = useModalStore((state) => state.modalProps as ExtensionListProps | null);
 
   const isModalOpen = activeModal === 'extensionInstall';
@@ -134,11 +135,18 @@ export const ExtensionList = memo((): JSX.Element | null => {
     const modulesToInstall = manifestModules.filter((m) => selectedEntries.has(m.entry));
     await installSelectedModules(pendingSelection.id, modulesToInstall);
     setIsLoading(false);
-  }, [pendingSelection, selectedEntries, manifestModules, installSelectedModules]);
+    closeModal();
+  }, [pendingSelection, selectedEntries, manifestModules, installSelectedModules, closeModal]);
 
   const handleClose = useCallback(() => {
     cancelPendingInstall();
-  }, [cancelPendingInstall]);
+    closeModal();
+  }, [cancelPendingInstall, closeModal]);
+
+  const resetState = useCallback(() => {
+    setQuery('');
+    setIsLoading(false);
+  }, []);
 
   const renderItemPrefix = useCallback(
     (item: BaseListItem): JSX.Element => (
@@ -159,7 +167,7 @@ export const ExtensionList = memo((): JSX.Element | null => {
       const areAllSelected = items.length > 0 && items.every((item) => selectedEntries.has(item.id));
 
       return (
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2">
           <BooleanInput id={`${categoryId}-toggle`} checked={areAllSelected} onChange={() => handleToggleCategory(items)} />
           <label className={`truncate cursor-pointer font-medium text-${theme.contentSecondary}`}>{category}</label>
         </div>
@@ -191,12 +199,11 @@ export const ExtensionList = memo((): JSX.Element | null => {
       size="xl"
       title={pendingSelection?.manifest.name || 'Install Extension'}
       onClose={handleClose}
+      onExited={resetState}
     >
       <SearchListLayout
-        containerClasses="flex h-full flex-col"
         listContent={content}
         listId={listId}
-        listWrapperClasses="grow mt-2 overflow-y-auto"
         search={{
           query,
           onQueryChange: setQuery,

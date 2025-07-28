@@ -4,7 +4,6 @@ import { STORAGE_COOKBOOK } from '../app/constants';
 import { errorHandler, logger, storage } from '../app/container';
 import { createRecipeHash, processAndSanitizeRecipes, saveAllRecipes } from '../helpers/cookbookHelper';
 import { readAsText, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
-import { useModalStore } from './useModalStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
 
@@ -36,7 +35,7 @@ interface CookbookState {
   readonly init: () => void;
   readonly load: (id: string) => void;
   readonly merge: (recipesToImport: ReadonlyArray<RecipebookItem>) => void;
-  readonly open: (args: Readonly<CookbookModalProps>) => void;
+  readonly prepareToOpen: (args: Readonly<CookbookModalProps>) => void;
   readonly resetModal: () => void;
   readonly setName: (name: string) => void;
   readonly setQuery: (term: string) => void;
@@ -257,16 +256,12 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     }
   },
 
-  open: (args) => {
-    const { openModal } = useModalStore.getState();
+  prepareToOpen: (args) => {
     const { computeInitialName, setName } = get();
 
     if (args.mode === 'save') {
       const initialName = args.name ?? computeInitialName(args.ingredients, args.activeRecipeId);
       setName(initialName);
-      openModal('cookbook', { ...args, name: initialName });
-    } else {
-      openModal('cookbook', args);
     }
   },
 

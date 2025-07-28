@@ -24,17 +24,16 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
 
   return (
     <SearchListLayout
-      containerClasses="flex h-full flex-col"
       listContent={
         recipes.length > 0 ? (
-          <ul aria-label="List of saved recipes" className="space-y-1.5">
+          <ul aria-label="List of saved recipes" className="space-y-2">
             {recipes.map((recipe) => (
               <CookbookItem key={recipe.id} recipe={recipe} onDelete={onDelete} onLoad={onLoad} />
             ))}
           </ul>
         ) : (
           <EmptyView
-            className="flex h-full w-full grow flex-col items-center justify-center p-4"
+            className="flex h-full w-full grow flex-col items-center justify-center p-3"
             icon={totalRecipes === 0 ? <SaveIcon size={48} /> : undefined}
             title={totalRecipes > 0 ? 'No Matches Found' : 'Cookbook is Empty'}
           >
@@ -43,14 +42,13 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
         )
       }
       listId={listId}
-      listWrapperClasses="grow overflow-y-auto pt-3"
       search={{
         query,
         onQueryChange,
         ariaLabel: 'Search saved recipes',
         id: 'recipe-search',
         placeholder: 'Search Saved Recipes...',
-        wrapperClasses: `border-b border-${theme.borderPrimary} pb-3`,
+        wrapperClasses: `border-b border-${theme.borderPrimary} pb-2`,
         inputRef: searchRef,
       }}
     />

@@ -48,9 +48,10 @@ type StoredExtensionData = Pick<StorableExtension, 'fetchedAt' | 'scripts'>;
 
 export type Extension = BaseExtension &
   Partial<StoredExtensionData> & {
-    readonly status: 'loading' | 'loaded' | 'error' | 'partial';
+    readonly status: 'loading' | 'loaded' | 'error' | 'partial' | 'awaiting';
     readonly errors?: ReadonlyArray<string>;
     readonly ingredients?: ReadonlyArray<string>;
+    readonly manifest?: ExtensionManifest;
   };
 
 const EXTENSION_CACHE_MS = 86_400_000;

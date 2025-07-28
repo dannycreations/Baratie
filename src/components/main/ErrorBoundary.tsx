@@ -27,29 +27,29 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
 
   const backdropClass = `
     fixed inset-0 z-[800] flex items-center justify-center
-    bg-${theme.backdrop} p-4 backdrop-blur-sm
+    bg-${theme.backdrop} p-3 backdrop-blur-sm
   `;
   const dialogClass = `
     w-full max-w-md rounded-lg border border-${theme.dangerBorder}
-    bg-${theme.surfaceSecondary} p-6 text-center sm:max-w-lg md:max-w-2xl md:p-8
+    bg-${theme.surfaceSecondary} p-3 text-center sm:max-w-lg md:max-w-2xl
   `;
 
   return (
     <div role="alertdialog" aria-modal="true" aria-labelledby="error-dialog-title" aria-describedby={ERROR_DESCRIPTION_ID} className={backdropClass}>
       <div className={dialogClass}>
-        <div role="img" aria-label="Warning" className={`mb-4 text-5xl text-${theme.dangerFg}`}>
+        <div role="img" aria-label="Warning" className={`mb-3 text-5xl text-${theme.dangerFg}`}>
           ⚠️
         </div>
-        <h2 id="error-dialog-title" className={`mb-3 text-2xl font-bold text-${theme.dangerFg}`}>
+        <h2 id="error-dialog-title" className={`mb-2 text-2xl font-bold text-${theme.dangerFg}`}>
           A Kitchen Catastrophe!
         </h2>
-        <p id={ERROR_DESCRIPTION_ID} className={`mb-6 text-${theme.contentSecondary}`}>
+        <p id={ERROR_DESCRIPTION_ID} className={`mb-3 text-${theme.contentSecondary}`}>
           A sudden squall has hit the galley! Reloading might calm the seas.
         </p>
         <Button
           aria-label="Reload the application to try again"
           icon={<RefreshCwIcon size={20} />}
-          size="md"
+          size="sm"
           variant="primary"
           onClick={() => window.location.reload()}
         >

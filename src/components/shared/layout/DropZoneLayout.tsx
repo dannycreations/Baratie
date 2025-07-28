@@ -16,8 +16,8 @@ interface DropZoneProps {
 
 const DROPZONE_MODE_MAP: Readonly<Record<DropZoneMode, string>> = {
   full: 'h-full w-full grow p-3',
-  overlay: 'pointer-events-none absolute inset-0 z-10 p-4',
-  placeholder: 'mt-1.5 h-14 text-sm',
+  overlay: 'pointer-events-none absolute inset-0 z-10 p-3',
+  placeholder: 'mt-2 h-14 text-sm',
 };
 
 export const DropZoneLayout = memo<DropZoneProps>(({ text, variant = 'add', mode = 'placeholder', className = '' }): JSX.Element => {

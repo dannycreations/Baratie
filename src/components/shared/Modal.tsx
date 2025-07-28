@@ -114,7 +114,7 @@ export const Modal = memo<ModalProps>(
     const contentAnimation = isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active';
     const backdropClass = `
       fixed inset-0 z-[500] flex items-center justify-center
-      bg-${theme.backdrop} p-4 backdrop-blur-sm ${backdropAnimation}
+      bg-${theme.backdrop} p-3 backdrop-blur-sm ${backdropAnimation}
     `;
     const modalClass = `
       flex w-full flex-col rounded-lg border border-${theme.borderPrimary}
@@ -136,26 +136,19 @@ export const Modal = memo<ModalProps>(
           tabIndex={-1}
         >
           {!hideHeader && (
-            <header className={`flex h-12 shrink-0 items-center justify-between border-b border-${theme.borderPrimary} p-3`}>
+            <header className={`flex h-12 shrink-0 items-center justify-between border-b border-${theme.borderPrimary} p-2`}>
               <h2 id={titleId} className={`grow truncate pr-2 text-xl font-semibold text-${theme.contentPrimary}`}>
                 {title}
               </h2>
-              <div className="flex shrink-0 items-center">
-                {headerActions && <div className="flex shrink-0 items-center space-x-2">{headerActions}</div>}
-                <Button
-                  aria-label={`Close ${title || 'modal'}`}
-                  className={headerActions ? 'ml-2' : ''}
-                  icon={<XIcon size={20} />}
-                  size="sm"
-                  variant="stealth"
-                  onClick={onClose}
-                />
+              <div className="flex shrink-0 items-center gap-2">
+                {headerActions && <div className="flex shrink-0 items-center gap-1">{headerActions}</div>}
+                <Button aria-label={`Close ${title || 'modal'}`} icon={<XIcon size={20} />} size="sm" variant="stealth" onClick={onClose} />
               </div>
             </header>
           )}
           <main className={`grow overflow-y-auto ${bodyClasses}`}>{children}</main>
           {!hideFooter && footerContent && (
-            <footer className={`flex shrink-0 justify-end space-x-3 border-t border-${theme.borderPrimary} p-3`}>{footerContent}</footer>
+            <footer className={`flex shrink-0 justify-end gap-2 border-t border-${theme.borderPrimary} p-2`}>{footerContent}</footer>
           )}
         </div>
       </div>,

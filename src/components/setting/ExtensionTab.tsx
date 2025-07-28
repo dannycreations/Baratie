@@ -1,7 +1,8 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 
 import { useCopyAction } from '../../hooks/useCopyAction';
 import { useExtensionStore } from '../../stores/useExtensionStore';
+import { useModalStore } from '../../stores/useModalStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { Button, ConfirmButton, TooltipButton } from '../shared/Button';
 import { AlertTriangleIcon, CheckIcon, GitMergeIcon, Loader2Icon, RefreshCwIcon } from '../shared/Icon';
@@ -34,11 +35,12 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
     loaded: { icon: <CheckIcon size={16} />, text: 'Loaded', color: theme.successFg },
     error: { icon: <AlertTriangleIcon size={16} />, text: 'Error', color: theme.dangerFg },
     partial: { icon: <AlertTriangleIcon size={16} />, text: 'Partial', color: theme.warningFg },
+    awaiting: { icon: <Loader2Icon className="animate-spin" size={16} />, text: 'Awaiting Install...', color: theme.infoFg },
   };
 
   const current = statusMap[status] || statusMap.error;
   const content = (
-    <div className={`flex items-center gap-1.5 text-xs font-medium text-${current.color}`}>
+    <div className={`flex items-center gap-2 text-xs font-medium text-${current.color}`}>
       {current.icon}
       <span>{current.text}</span>
     </div>
@@ -80,7 +82,7 @@ const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status, error
         <button
           onClick={handleCopyId}
           className={`
-            cursor-pointer rounded-sm p-0.5 text-left text-xs
+            cursor-pointer rounded-sm p-1 text-left text-xs
             text-${theme.contentTertiary} transition-colors
             duration-150 hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}
             focus:outline-none
@@ -93,7 +95,7 @@ const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status, error
   );
 
   const rightContent = (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-2">
       <ExtensionItemStatus errors={errors} status={status} />
       <TooltipButton
         aria-label={`Refresh extension: ${displayName}`}
@@ -111,10 +113,7 @@ const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status, error
   return (
     <li className="list-none">
       <ItemListLayout
-        className={`
-          h-16 rounded-md bg-${theme.surfaceTertiary} p-3 text-sm
-          transition-colors duration-150 hover:bg-${theme.surfaceMuted}
-        `}
+        className={`h-16 rounded-md bg-${theme.surfaceTertiary} p-2 text-sm transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
         leftContent={leftContent}
         leftClasses="grow min-w-0 mr-2"
         rightContent={rightContent}
@@ -130,8 +129,16 @@ export const ExtensionTab = memo((): JSX.Element => {
   const addExtension = useExtensionStore((state) => state.add);
   const removeExtension = useExtensionStore((state) => state.remove);
   const refreshExtension = useExtensionStore((state) => state.refresh);
+  const openModal = useModalStore((state) => state.openModal);
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const pendingInstall = extensions.find((ext) => ext.status === 'awaiting');
+    if (pendingInstall && pendingInstall.manifest) {
+      openModal('extensionInstall', { id: pendingInstall.id, manifest: pendingInstall.manifest });
+    }
+  }, [extensions, openModal]);
 
   const handleAdd = useCallback(async () => {
     if (!url.trim() || isLoading) {
@@ -160,7 +167,7 @@ export const ExtensionTab = memo((): JSX.Element => {
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div>
         <p className={`text-sm text-${theme.contentTertiary}`}>
           Add external ingredients by providing a link to a public GitHub repository. The repository must contain a{' '}
@@ -168,7 +175,7 @@ export const ExtensionTab = memo((): JSX.Element => {
         </p>
       </div>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1">
         <StringInput
           id="extension-url-input"
           aria-label="GitHub Repository URL"
@@ -181,17 +188,17 @@ export const ExtensionTab = memo((): JSX.Element => {
           onClear={() => setUrl('')}
           onKeyDown={handleKeyDown}
         />
-        <Button icon={<GitMergeIcon size={20} />} loading={isLoading} size="md" onClick={handleAdd}>
+        <Button icon={<GitMergeIcon size={20} />} loading={isLoading} size="sm" onClick={handleAdd}>
           Add
         </Button>
       </div>
 
       <div>
-        <h4 className={`mb-2 text-base font-medium text-${theme.contentSecondary}`}>Installed Extensions</h4>
+        <h4 className={`mb-3 text-base font-medium text-${theme.contentSecondary}`}>Installed Extensions</h4>
         {extensions.length === 0 ? (
           <EmptyView>No extensions have been installed yet.</EmptyView>
         ) : (
-          <ul className="space-y-1.5">
+          <ul className="space-y-2">
             {extensions.map((extension) => (
               <ExtensionItem
                 key={extension.id}

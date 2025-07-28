@@ -13,11 +13,9 @@ import {
   updateStateWithExtensions,
 } from '../helpers/extensionHelper';
 import { useFavoriteStore } from './useFavoriteStore';
-import { useModalStore } from './useModalStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
 
-import type { ExtensionListProps } from '../components/setting/ExtensionList';
 import type { Extension, ExtensionManifest, ManifestModule, StorableExtension } from '../helpers/extensionHelper';
 
 export interface ExtensionState {
@@ -69,26 +67,17 @@ export const useExtensionStore = create<ExtensionState>()(
     },
 
     cancelPendingInstall: () => {
-      const { setExtensions, extensions, extensionMap } = get();
-      const { activeModal, modalProps, closeModal } = useModalStore.getState();
+      const { setExtensions, extensions } = get();
+      const pendingExtension = extensions.find((e) => e.status === 'awaiting');
 
-      if (activeModal !== 'extensionInstall') {
-        return;
-      }
-
-      const { id } = modalProps as ExtensionListProps;
-      const extension = extensionMap.get(id);
-
-      if (extension) {
-        const displayName = extension.name || id;
+      if (pendingExtension) {
+        const displayName = pendingExtension.name || pendingExtension.id;
         logger.info(`Installation cancelled for extension '${displayName}'. Removing from store.`);
-        const newExtensions = extensions.filter((ext) => ext.id !== id);
+        const newExtensions = extensions.filter((ext) => ext.id !== pendingExtension.id);
         setExtensions(newExtensions);
       } else {
-        logger.warn(`Attempted to cancel non-existent pending extension with id: ${id}`);
+        logger.warn(`Attempted to cancel non-existent pending extension.`);
       }
-
-      closeModal();
     },
 
     init: async () => {
@@ -149,7 +138,7 @@ export const useExtensionStore = create<ExtensionState>()(
         setIngredients(id, []);
       }
 
-      const updatedExtension: Extension = { ...extension, entry: [...selectedModules] };
+      const updatedExtension: Extension = { ...extension, status: 'loading', entry: [...selectedModules] };
       upsert(updatedExtension);
 
       await loadAndExecuteExtension(updatedExtension, {
@@ -158,8 +147,6 @@ export const useExtensionStore = create<ExtensionState>()(
         setIngredients: setIngredients,
         upsert: upsert,
       });
-
-      useModalStore.getState().closeModal();
     },
 
     refresh: async (id) => {
@@ -193,8 +180,7 @@ export const useExtensionStore = create<ExtensionState>()(
         const manifest: ExtensionManifest = validationResult.output;
 
         if (Array.isArray(manifest.entry) && typeof manifest.entry[0] === 'object') {
-          upsert({ id: id, ...manifest, status: 'loading', scripts: {} });
-          useModalStore.getState().openModal('extensionInstall', { id: id, manifest: manifest });
+          upsert({ id: id, name: manifest.name, status: 'awaiting', manifest: manifest, scripts: {} });
         } else {
           if (storeExtension?.ingredients) {
             ingredientRegistry.unregisterIngredients(storeExtension.ingredients);

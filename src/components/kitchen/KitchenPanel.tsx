@@ -109,7 +109,7 @@ const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient 
 
   return (
     <div aria-label={`Parameters for ${definition.name}`} className="overflow-y-auto">
-      <SpiceLayout containerClasses="space-y-3" currentSpices={targetIngredient.spices} ingredient={definition} onSpiceChange={handleSpiceChange} />
+      <SpiceLayout containerClasses="space-y-2" currentSpices={targetIngredient.spices} ingredient={definition} onSpiceChange={handleSpiceChange} />
     </div>
   );
 });
@@ -213,7 +213,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   return (
     <SectionLayout
       aria-live={config ? 'polite' : undefined}
-      contentClasses="flex flex-col p-3"
+      contentClasses="flex flex-col"
       headerLeft={title}
       headerRight={headerActions}
       panelClasses="h-[50vh] min-h-0 md:h-1/2"

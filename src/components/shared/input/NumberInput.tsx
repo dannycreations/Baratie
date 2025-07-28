@@ -102,7 +102,7 @@ export const NumberInput = memo<NumberInputProps>(
 
     const containerClass = `relative flex items-center ${className}`;
     const buttonGroupClass = `
-      absolute right-0.5 top-0.5 flex h-[calc(100%-4px)] w-6 flex-col
+      absolute right-1 top-1 flex h-[calc(100%-8px)] w-6 flex-col
       rounded-r-md border-l border-${theme.borderPrimary}
       bg-${theme.surfaceTertiary}
     `;

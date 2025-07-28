@@ -18,17 +18,20 @@ import { RecipeItem } from './RecipeItem';
 
 import type { DragEvent, JSX } from 'react';
 import type { IngredientItem, SpiceDefinition, SpiceValue } from '../../core/IngredientRegistry';
+import type { CookbookModalProps } from '../../stores/useCookbookStore';
 import type { RecipeItemHandlers } from './RecipeItem';
 
 export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
   const editingId = useRecipeStore((state) => state.editingId);
   const setEditingId = useRecipeStore((state) => state.setEditingId);
+  const openModal = useModalStore((state) => state.openModal);
   const isCookbookOpen = useModalStore((state) => state.activeModal === 'cookbook');
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
   const ingredientStatuses = useKitchenStore((state) => state.ingredientStatuses);
   const inputPanelId = useKitchenStore((state) => state.inputPanelId);
   const theme = useThemeStore((state) => state.theme);
+  const prepareCookbook = useCookbookStore((state) => state.prepareToOpen);
 
   const prevIngredientsCount = useRef(ingredients.length);
   const listId = useId();
@@ -73,10 +76,16 @@ export const RecipePanel = memo((): JSX.Element => {
     [onMoveStart],
   );
 
-  const openCookbook = useCallback((args: { readonly mode: 'save' | 'load' }) => {
-    const { ingredients, activeRecipeId } = useRecipeStore.getState();
-    useCookbookStore.getState().open({ ...args, ingredients, activeRecipeId });
-  }, []);
+  const openCookbook = useCallback(
+    (args: { readonly mode: 'save' | 'load' }) => {
+      const { ingredients, activeRecipeId } = useRecipeStore.getState();
+      const props: CookbookModalProps = args.mode === 'save' ? { mode: 'save', ingredients, activeRecipeId } : { mode: 'load' };
+
+      prepareCookbook(props);
+      openModal('cookbook', props);
+    },
+    [openModal, prepareCookbook],
+  );
 
   const handleClearRecipe = useCallback(() => useRecipeStore.getState().clearRecipe(), []);
 
@@ -155,7 +164,7 @@ export const RecipePanel = memo((): JSX.Element => {
     }
   } else {
     content = (
-      <div role="list" aria-label="Current recipe steps" className="space-y-1.5">
+      <div role="list" aria-label="Current recipe steps" className="space-y-2">
         {ingredients.map((ingredient: IngredientItem) => {
           const isSpiceInInput = inputPanelId === ingredient.id;
           const isEditingItem = editingId === ingredient.id;
@@ -202,7 +211,7 @@ export const RecipePanel = memo((): JSX.Element => {
 
   return (
     <SectionLayout
-      contentClasses={`relative flex h-full flex-col p-2 text-${theme.contentTertiary}`}
+      contentClasses={`relative flex h-full flex-col text-${theme.contentTertiary}`}
       headerLeft="Recipe"
       headerRight={headerActions}
       panelClasses="h-[50vh] min-h-0 md:h-auto md:flex-1"

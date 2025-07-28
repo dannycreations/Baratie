@@ -24,7 +24,7 @@ const PalettePreview = memo<PalettePreviewProps>(({ theme }): JSX.Element => {
   ];
 
   return (
-    <div aria-label="Theme color palette preview" className="flex items-center space-x-1.5">
+    <div aria-label="Theme color palette preview" className="flex items-center space-x-1">
       {swatchColors.map(({ color, title }, index) => (
         <div
           key={`${title}-${index}`}
@@ -57,7 +57,7 @@ export const AppearanceTab = memo((): JSX.Element => {
       <p id="theme-group-label" className={`mb-3 text-sm text-${theme.contentTertiary}`}>
         Select a color theme for the application.
       </p>
-      <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+      <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {APP_THEMES.map((item) => {
           const isChecked = id === item.id;
           const leftContent = (
@@ -73,14 +73,11 @@ export const AppearanceTab = memo((): JSX.Element => {
             </div>
           ) : null;
 
-          const itemLayoutClass = `
-            h-16 rounded-md border-2 p-3 transition-all duration-150
-            ${
-              isChecked
-                ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
-                : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`
-            }
-          `;
+          const itemLayoutClass = `h-16 rounded-md border-2 p-2 transition-all duration-150 ${
+            isChecked
+              ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
+              : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`
+          }`;
 
           const liClass = `list-none cursor-pointer rounded-md outline-none focus:ring-2 focus:ring-${theme.ring}`;
 

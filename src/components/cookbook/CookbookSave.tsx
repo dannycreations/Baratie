@@ -1,6 +1,5 @@
 import { memo, useCallback } from 'react';
 
-import { useThemeStore } from '../../stores/useThemeStore';
 import { StringInput } from '../shared/input/StringInput';
 import { FormLayout } from '../shared/layout/FormLayout';
 
@@ -15,8 +14,6 @@ interface CookbookSaveProps {
 }
 
 export const CookbookSave = memo<CookbookSaveProps>(({ nameInput, onNameChange, onSave, isRecipeEmpty, nameRef }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
-
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
       if (event.key === 'Enter' && nameInput.trim() && !isRecipeEmpty) {
@@ -50,7 +47,6 @@ export const CookbookSave = memo<CookbookSaveProps>(({ nameInput, onNameChange, 
           />
         )}
       </FormLayout>
-      {isRecipeEmpty && <p className={`mt-2 text-sm text-${theme.warningFg}`}>The current recipe is empty. Add ingredients to save or export.</p>}
     </>
   );
 });

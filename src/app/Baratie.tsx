@@ -43,14 +43,14 @@ const BaratieView = memo((): JSX.Element => {
       <div className={mainContentClass} aria-hidden={!isAppReady}>
         <main
           aria-label="Main Application Workspace"
-          className="flex h-full w-full flex-col gap-4 overflow-y-auto p-4 md:flex-row md:overflow-hidden"
+          className="flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden"
           role="main"
         >
-          <section aria-label="Ingredient and Recipe Management" className="flex w-full flex-col gap-4 md:flex-1 md:flex-row md:overflow-hidden">
+          <section aria-label="Ingredient and Recipe Management" className="flex w-full flex-col gap-3 md:flex-1 md:flex-row md:overflow-hidden">
             <IngredientPanel />
             <RecipePanel />
           </section>
-          <section aria-label="Input and Output Panels" className="flex w-full flex-col gap-4 md:flex-1 md:overflow-hidden">
+          <section aria-label="Input and Output Panels" className="flex w-full flex-col gap-3 md:flex-1 md:overflow-hidden">
             <KitchenPanel type="input" />
             <KitchenPanel type="output" />
           </section>

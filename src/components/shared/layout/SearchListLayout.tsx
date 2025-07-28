@@ -9,7 +9,6 @@ interface SearchProps {
   readonly onQueryChange: (query: string) => void;
   readonly query: string;
   readonly ariaLabel: string;
-  readonly classes?: string;
   readonly id: string;
   readonly placeholder?: string;
   readonly wrapperClasses?: string;
@@ -18,29 +17,30 @@ interface SearchProps {
 
 interface SearchListLayoutProps {
   readonly containerClasses?: string;
+  readonly listWrapperClasses?: string;
   readonly listContent: ReactNode;
   readonly listId: string;
-  readonly listWrapperClasses?: string;
   readonly search?: SearchProps;
 }
 
 export const SearchListLayout = memo<SearchListLayoutProps>(
-  ({ containerClasses = 'flex h-full flex-col', listContent, listId, listWrapperClasses = 'grow overflow-y-auto', search }): JSX.Element => {
-    const listScrollRef = useOverflowScroll<HTMLDivElement>({ yClasses: 'pr-1' });
+  ({ containerClasses = 'flex h-full flex-col gap-2', listWrapperClasses = 'grow overflow-y-auto', listContent, listId, search }): JSX.Element => {
+    const { ref: listScrollRef, className: overflowClasses } = useOverflowScroll<HTMLDivElement>({ yClasses: 'pr-1' });
+    const finalClasses = `${listWrapperClasses} ${overflowClasses}`.trim();
 
     const handleChange = search
       ? useCallback(
           (event: ChangeEvent<HTMLInputElement>) => {
             search.onQueryChange(event.target.value);
           },
-          [search],
+          [search?.onQueryChange],
         )
       : undefined;
 
     const handleClear = search
       ? useCallback(() => {
           search.onQueryChange('');
-        }, [search])
+        }, [search?.onQueryChange])
       : undefined;
 
     return (
@@ -52,7 +52,6 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
               type="search"
               aria-controls={listId}
               aria-label={search.ariaLabel}
-              className={search.classes}
               placeholder={search.placeholder}
               value={search.query}
               inputRef={search.inputRef}
@@ -68,7 +67,7 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
           role="region"
           aria-live={search ? 'polite' : undefined}
           aria-relevant={search ? 'all' : undefined}
-          className={listWrapperClasses}
+          className={finalClasses}
         >
           {listContent}
         </div>

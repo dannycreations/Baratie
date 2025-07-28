@@ -109,7 +109,7 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
   };
 
   const isBoolean = spice.type === 'boolean';
-  const fieldSetClass = isBoolean ? 'flex items-center justify-start gap-x-3' : 'flex flex-col gap-1.5';
+  const fieldSetClass = isBoolean ? 'flex items-center justify-start gap-x-2' : 'flex flex-col gap-2';
   const inputWrapperClass = isBoolean ? 'flex h-8 shrink-0 items-center' : 'w-full';
   const labelWrapperClass = isBoolean ? 'min-w-0' : '';
   const labelClass = isBoolean ? `truncate text-sm font-medium text-${theme.contentSecondary}` : undefined;
@@ -131,7 +131,7 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
 
 export const SpiceLayout = memo<SpiceLayoutProps>(({ ingredient, currentSpices, onSpiceChange, containerClasses }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
-  const finalContainerClass = containerClasses || 'space-y-3';
+  const finalContainerClass = containerClasses || 'space-y-2';
 
   const handleSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

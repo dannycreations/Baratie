@@ -43,7 +43,7 @@ export const StringInput = memo<StringInputProps>(
             type="button"
             aria-label="Clear input"
             className={`
-            absolute right-1.5 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full
+            absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full
             text-${theme.contentTertiary} transition-colors hover:bg-${theme.surfaceMuted} hover:text-${theme.contentPrimary}
             focus:outline-none focus:ring-2 focus:ring-${theme.ring}
           `}

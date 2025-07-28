@@ -44,10 +44,8 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
   return (
     <li className="list-none">
       <ItemListLayout
-        className={`
-          h-16 rounded-md bg-${theme.surfaceTertiary} p-3
-          transition-colors duration-150 hover:bg-${theme.surfaceHover}
-        `}
+        className={`h-16 rounded-md bg-${theme.surfaceTertiary} p-2 transition-colors duration-150 hover:bg-${theme.surfaceHover}
+          `}
         leftContent={
           <>
             <Tooltip content={recipe.name} position="top">
@@ -75,7 +73,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
             <ConfirmButton actionName="Delete" itemName={recipe.name} itemType="Recipe" tooltipPosition="left" onConfirm={handleConfirmDelete} />
           </>
         }
-        rightClasses="flex shrink-0 items-center gap-1.5"
+        rightClasses="flex shrink-0 items-center gap-1"
       />
     </li>
   );

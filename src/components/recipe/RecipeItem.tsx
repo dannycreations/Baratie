@@ -72,10 +72,10 @@ export const RecipeItem = memo<RecipeItemProps>(
           aria-label={`Error: Ingredient ${ingredientItem.name} not found.`}
           className={`group flex flex-col rounded-md bg-${theme.dangerBg} text-sm outline-none`}
         >
-          <div className="p-3">
+          <div className="p-2">
             <ItemListLayout
               leftContent={
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <AlertTriangleIcon aria-hidden="true" className={`text-${theme.dangerFg}`} size={20} />
                   <span className={`truncate pr-2 font-medium text-${theme.dangerFg}`}>{ingredientItem.name} (Missing)</span>
                 </div>
@@ -142,7 +142,7 @@ export const RecipeItem = memo<RecipeItemProps>(
       outline-none transition-all duration-200 ease-in-out
       ${isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'}
       ${statusBorderClass}
-      ${hasSpices && isEditorVisible ? 'pb-1' : ''}
+      ${isSpiceInInput ? 'pb-2' : ''}
     `.trim();
 
     const grabHandleClass = `mr-2 cursor-grab text-${theme.contentTertiary} transition-colors group-hover:text-${theme.contentSecondary}`;
@@ -212,7 +212,7 @@ export const RecipeItem = memo<RecipeItemProps>(
         onDragOver={onDragOver}
       >
         <ItemListLayout
-          className="h-12 cursor-default p-3"
+          className="h-12 cursor-default p-2"
           leftContent={leftColumn}
           leftClasses="flex grow items-center min-w-0"
           rightContent={rightColumn}
@@ -222,8 +222,8 @@ export const RecipeItem = memo<RecipeItemProps>(
             {isSpiceInInput && (
               <div
                 className={`
-                  mx-1 mb-1 rounded-md border border-${theme.borderSecondary}
-                  bg-${theme.surfaceHover} py-2 text-center text-xs italic
+                  mx-2 rounded-md border border-${theme.borderSecondary}
+                  bg-${theme.surfaceHover} p-2 text-center text-xs italic
                 `}
               >
                 Options are managed in the Input panel.
@@ -237,8 +237,8 @@ export const RecipeItem = memo<RecipeItemProps>(
                   event.stopPropagation();
                 }}
               >
-                <div className="max-h-96 overflow-y-auto px-1">
-                  <div className={`rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-3`}>
+                <div className="max-h-96 overflow-y-auto p-1">
+                  <div className={`rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-2`}>
                     <SpiceLayout currentSpices={ingredientItem.spices} ingredient={definition} onSpiceChange={handleSpiceChange} />
                   </div>
                 </div>

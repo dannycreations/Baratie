@@ -49,7 +49,7 @@ export const IngredientManager = memo((): JSX.Element => {
       const isCategoryDisabled = disabledCategories.has(category);
 
       return (
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2">
           <BooleanInput id={`${categoryId}-toggle`} checked={!isCategoryDisabled} onChange={() => toggleCategory(category)} />
           <label
             className={`
@@ -103,10 +103,8 @@ export const IngredientManager = memo((): JSX.Element => {
   return (
     <Modal bodyClasses="p-3" contentClasses="max-h-[80vh]" isOpen={isModalOpen} size="lg" title="Manage Ingredients" onClose={closeModal}>
       <SearchListLayout
-        containerClasses="flex h-full flex-col"
         listContent={content}
         listId={listId}
-        listWrapperClasses="grow mt-2 overflow-y-auto"
         search={{
           query,
           onQueryChange: setQuery,

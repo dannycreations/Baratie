@@ -70,12 +70,12 @@ export const TextareaInput = memo<TextareaInputProps>(
 
     const gutterClass = `
       shrink-0 select-none overflow-y-hidden border-r
-      border-${theme.borderPrimary} bg-${theme.surfaceSecondary} py-2.5 pl-2.5 pr-2
+      border-${theme.borderPrimary} bg-${theme.surfaceSecondary} p-2
       text-right text-${theme.contentTertiary}
     `;
 
     const commonStyles = `
-      h-full w-full resize-none p-2.5 text-${theme.contentPrimary} outline-none
+      h-full w-full resize-none p-2 text-${theme.contentPrimary} outline-none
       allow-text-selection placeholder:text-${theme.contentTertiary} font-mono
     `;
     const textareaClass = `${commonStyles} bg-transparent ${textareaClasses}`;

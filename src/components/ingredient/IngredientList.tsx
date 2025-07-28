@@ -40,7 +40,7 @@ const IngredientListItem = memo<IngredientListItemProps>(
     `;
 
     const leftColumn = (
-      <div className="flex min-w-0 items-center gap-3">
+      <div className="flex min-w-0 items-center gap-2">
         {renderItemPrefix?.(item)}
         <Tooltip
           className="min-w-0 flex-1"
@@ -60,14 +60,17 @@ const IngredientListItem = memo<IngredientListItemProps>(
     return (
       <li
         data-ingredient-id={item.id}
-        draggable={!!onItemDragStart}
+        draggable={!isDisabled && !!onItemDragStart}
         onDragStart={(event) => {
+          if (isDisabled) {
+            return;
+          }
           onItemDragStart?.(event, item);
         }}
       >
         <ItemListLayout
           className={`
-            group h-11 rounded-md bg-${theme.surfaceTertiary} px-2 py-1.5
+            group h-12 rounded-md bg-${theme.surfaceTertiary} p-2
             transition-colors duration-150 hover:bg-${theme.surfaceMuted}
           `}
           leftContent={leftColumn}
@@ -100,7 +103,7 @@ export const IngredientList = memo(
 
     if (itemsByCategory.length === 0) {
       return (
-        <EmptyView className="flex grow flex-col items-center justify-center py-4">{query.trim() ? noResultsMessage(query) : emptyMessage}</EmptyView>
+        <EmptyView className="flex grow flex-col items-center justify-center py-3">{query.trim() ? noResultsMessage(query) : emptyMessage}</EmptyView>
       );
     }
 
@@ -118,7 +121,7 @@ export const IngredientList = memo(
               aria-controls={panelId}
               aria-expanded={isExpanded}
               className={`
-                flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-3
+                flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-2
                 text-left text-${theme.contentSecondary} outline-none hover:bg-${theme.surfaceHover}
               `}
               onClick={() => handleCategoryToggle(category)}
@@ -147,9 +150,9 @@ export const IngredientList = memo(
                     role="region"
                     aria-hidden={!isExpanded}
                     aria-labelledby={buttonId}
-                    className={`max-h-64 overflow-y-auto bg-${theme.surfaceMuted} p-3 md:max-h-96`}
+                    className={`max-h-64 overflow-y-auto bg-${theme.surfaceMuted} p-2 md:max-h-96`}
                   >
-                    <ul aria-labelledby={buttonId} className="space-y-1.5">
+                    <ul aria-labelledby={buttonId} className="space-y-2">
                       {items.map((item) => (
                         <IngredientListItem
                           key={item.id}
