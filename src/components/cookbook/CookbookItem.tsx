@@ -3,7 +3,7 @@ import { memo, useCallback } from 'react';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
 import { UploadCloudIcon } from '../shared/Icon';
-import { ItemListLayout } from '../shared/layout/ItemListLayout';
+import { ItemListLayout } from '../shared/layout/ListLayout';
 import { Tooltip } from '../shared/Tooltip';
 
 import type { JSX } from 'react';

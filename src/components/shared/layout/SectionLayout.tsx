@@ -27,7 +27,7 @@ export const SectionLayout = memo<SectionLayoutProps>(
     return (
       <section role="region" aria-labelledby={titleId} className={panelClass} {...rest}>
         <div className={headerClass}>
-          <h2 id={titleId} className="truncate pr-2 text-lg font-semibold">
+          <h2 id={titleId} className="min-w-0 truncate pr-2 text-lg font-semibold">
             {headerLeft}
           </h2>
           {headerRight && <div className="flex shrink-0 items-center gap-1">{headerRight}</div>}

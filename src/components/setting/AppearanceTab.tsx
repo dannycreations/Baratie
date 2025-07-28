@@ -3,7 +3,7 @@ import { memo, useCallback } from 'react';
 import { APP_THEMES } from '../../app/themes';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { CheckIcon } from '../shared/Icon';
-import { ItemListLayout } from '../shared/layout/ItemListLayout';
+import { ItemListLayout } from '../shared/layout/ListLayout';
 
 import type { JSX } from 'react';
 import type { AppTheme } from '../../app/themes';

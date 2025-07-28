@@ -47,7 +47,7 @@ interface OutputContentProps extends KitchenPanelSectionProps {
 }
 
 const InputActions = memo<InputActionsProps>(({ data, config, onClear, onFileSelect }) => {
-  const showClearButton = config?.mode !== 'textarea' || config.showClear;
+  const showClearButton = config?.mode === 'textarea' && config.showClear;
 
   return (
     <>

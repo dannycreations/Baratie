@@ -4,7 +4,7 @@ import { ingredientRegistry } from '../../app/container';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
 import { AlertTriangleIcon, GrabIcon, PreferencesIcon, XIcon } from '../shared/Icon';
-import { ItemListLayout } from '../shared/layout/ItemListLayout';
+import { ItemListLayout } from '../shared/layout/ListLayout';
 import { SpiceLayout } from '../shared/layout/SpiceLayout';
 import { Tooltip } from '../shared/Tooltip';
 

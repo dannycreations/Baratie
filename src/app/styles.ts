@@ -4,6 +4,8 @@ html {
   height: 100%;
   margin: 0;
   padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
 body {

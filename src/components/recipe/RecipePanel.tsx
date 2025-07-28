@@ -11,7 +11,7 @@ import { useThemeStore } from '../../stores/useThemeStore';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
 import { FolderOpenIcon, PauseIcon, PlayIcon, SaveIcon } from '../shared/Icon';
 import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
-import { SearchListLayout } from '../shared/layout/SearchListLayout';
+import { SearchListLayout } from '../shared/layout/ListLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
 import { EmptyView } from '../shared/View';
 import { RecipeItem } from './RecipeItem';

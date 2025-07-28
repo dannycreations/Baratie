@@ -7,7 +7,7 @@ import { useThemeStore } from '../../stores/useThemeStore';
 import { IngredientList } from '../ingredient/IngredientList';
 import { Button } from '../shared/Button';
 import { BooleanInput } from '../shared/input/BooleanInput';
-import { SearchListLayout } from '../shared/layout/SearchListLayout';
+import { SearchListLayout } from '../shared/layout/ListLayout';
 import { Modal } from '../shared/Modal';
 
 import type { JSX } from 'react';

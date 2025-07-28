@@ -12,7 +12,7 @@ import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
 import { PlusIcon, PreferencesIcon, SettingsIcon, StarIcon } from '../shared/Icon';
 import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
-import { SearchListLayout } from '../shared/layout/SearchListLayout';
+import { SearchListLayout } from '../shared/layout/ListLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
 import { IngredientList } from './IngredientList';
 import { IngredientManager } from './IngredientManager';

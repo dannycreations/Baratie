@@ -2,7 +2,7 @@ import { memo, useId } from 'react';
 
 import { useThemeStore } from '../../stores/useThemeStore';
 import { SaveIcon } from '../shared/Icon';
-import { SearchListLayout } from '../shared/layout/SearchListLayout';
+import { SearchListLayout } from '../shared/layout/ListLayout';
 import { EmptyView } from '../shared/View';
 import { CookbookItem } from './CookbookItem';
 

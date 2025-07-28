@@ -7,7 +7,7 @@ import { useThemeStore } from '../../stores/useThemeStore';
 import { Button, ConfirmButton, TooltipButton } from '../shared/Button';
 import { AlertTriangleIcon, CheckIcon, GitMergeIcon, Loader2Icon, RefreshCwIcon } from '../shared/Icon';
 import { StringInput } from '../shared/input/StringInput';
-import { ItemListLayout } from '../shared/layout/ItemListLayout';
+import { ItemListLayout } from '../shared/layout/ListLayout';
 import { Tooltip } from '../shared/Tooltip';
 import { EmptyView } from '../shared/View';
 

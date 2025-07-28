@@ -3,7 +3,7 @@ import { memo, useCallback, useState } from 'react';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { HighlightText } from '../shared/HighlightText';
 import { ChevronRightIcon } from '../shared/Icon';
-import { ItemListLayout } from '../shared/layout/ItemListLayout';
+import { ItemListLayout } from '../shared/layout/ListLayout';
 import { Tooltip } from '../shared/Tooltip';
 import { EmptyView } from '../shared/View';
 

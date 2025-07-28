@@ -33,6 +33,8 @@ export interface AppTheme {
   readonly scrollbarThumbHover: string;
   readonly favoriteFg: string;
   readonly favoriteFgHover: string;
+  readonly highlightBg: string;
+  readonly highlightFg: string;
 }
 
 const DARK_THEME: AppTheme = {
@@ -70,6 +72,8 @@ const DARK_THEME: AppTheme = {
   scrollbarThumbHover: '#64748b',
   favoriteFg: 'yellow-400',
   favoriteFgHover: 'yellow-300',
+  highlightBg: 'yellow-500/30',
+  highlightFg: 'yellow-200',
 };
 
 const LIGHT_THEME: AppTheme = {
@@ -107,6 +111,8 @@ const LIGHT_THEME: AppTheme = {
   scrollbarThumbHover: '#FDBA74',
   favoriteFg: 'yellow-600',
   favoriteFgHover: 'yellow-700',
+  highlightBg: 'amber-400/40',
+  highlightFg: 'amber-950',
 };
 
 export const APP_THEMES = [
