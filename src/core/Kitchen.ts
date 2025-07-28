@@ -55,18 +55,25 @@ export class Kitchen {
   public initAutoCook(): () => void {
     const handleStateChange = (): void => {
       if (useKitchenStore.getState().isAutoCookEnabled) {
-        this.triggerCook();
+        this.cook();
       }
     };
+
     const unsubscribeKitchen = useKitchenStore.subscribe((state) => state.inputData, handleStateChange);
     const unsubscribeRecipe = useRecipeStore.subscribe((state) => state.ingredients, handleStateChange);
+    const unsubscribeBatching = useKitchenStore.subscribe((state) => state.isBatchingUpdates, handleStateChange);
+
     return () => {
       unsubscribeKitchen();
       unsubscribeRecipe();
+      unsubscribeBatching();
     };
   }
 
   public async cook(): Promise<void> {
+    if (useKitchenStore.getState().isBatchingUpdates) {
+      return;
+    }
     if (this.isCooking) {
       logger.info('Cook request queued; another cook is in progress.');
       this.hasPendingCook = true;
@@ -96,11 +103,11 @@ export class Kitchen {
       this.scheduleNextCook();
     } catch (error) {
       this.scheduleNextCook();
-      throw error;
+      logger.error('Error during automatic cook execution:', error);
     } finally {
       this.isCooking = false;
       if (this.hasPendingCook) {
-        this.triggerCook();
+        this.cook();
       }
     }
   }
@@ -125,7 +132,7 @@ export class Kitchen {
     useKitchenStore.getState().toggleAutoCookState();
 
     if (!wasEnabled) {
-      this.triggerCook();
+      this.cook();
     } else {
       if (this.timeoutId) {
         clearTimeout(this.timeoutId);
@@ -254,15 +261,9 @@ export class Kitchen {
     }
     if (this.intervalMs > 0 && useKitchenStore.getState().isAutoCookEnabled) {
       this.timeoutId = window.setTimeout(() => {
-        this.triggerCook();
+        this.cook();
       }, this.intervalMs);
       logger.info(`Next cook scheduled in ${this.intervalMs}ms.`);
     }
-  }
-
-  private triggerCook(): void {
-    this.cook().catch((error) => {
-      logger.error('Error during automatic cook execution:', error);
-    });
   }
 }

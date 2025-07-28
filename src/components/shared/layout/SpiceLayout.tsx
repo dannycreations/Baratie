@@ -2,6 +2,7 @@ import { memo, useCallback, useMemo } from 'react';
 
 import { logger } from '../../../app/container';
 import { getVisibleSpices } from '../../../helpers/spiceHelper';
+import { useKitchenStore } from '../../../stores/useKitchenStore';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { BooleanInput } from '../input/BooleanInput';
 import { NumberInput } from '../input/NumberInput';
@@ -27,7 +28,7 @@ interface SpiceLayoutProps {
 }
 
 const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpiceChange }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
+  const { startUpdateBatch, endUpdateBatch } = useKitchenStore.getState();
 
   const handleBooleanChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>): void => {
@@ -80,6 +81,8 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
             max={spice.max}
             step={spice.step || 1}
             placeholder={spice.placeholder}
+            onBatchEnd={endUpdateBatch}
+            onBatchStart={startUpdateBatch}
             onChange={handleNumberChange}
           />
         );
@@ -108,21 +111,12 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
     }
   };
 
-  const isBoolean = spice.type === 'boolean';
-  const fieldSetClass = isBoolean ? 'flex items-center justify-start gap-x-2' : 'flex flex-col gap-2';
-  const inputWrapperClass = isBoolean ? 'flex h-8 shrink-0 items-center' : 'w-full';
-  const labelWrapperClass = isBoolean ? 'min-w-0' : '';
-  const labelClass = isBoolean ? `truncate text-sm font-medium text-${theme.contentSecondary}` : undefined;
-
   return (
     <FormLayout
       inputId={`spice-${spice.id}`}
       label={spice.label}
       description={spice.description}
-      fieldSetClasses={fieldSetClass}
-      inputWrapperClasses={inputWrapperClass}
-      labelClasses={labelClass}
-      labelWrapperClasses={labelWrapperClass}
+      direction={spice.type === 'boolean' ? 'row' : 'col'}
     >
       {(id) => renderInput(id)}
     </FormLayout>

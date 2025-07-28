@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useState } from 'react';
 
+import { useLongPress } from '../../../hooks/useLongPress';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { ChevronDownIcon, ChevronUpIcon } from '../Icon';
 
@@ -13,12 +14,14 @@ interface NumberInputProps {
   readonly disabled?: boolean;
   readonly max?: number;
   readonly min?: number;
+  readonly onBatchEnd?: () => void;
+  readonly onBatchStart?: () => void;
   readonly placeholder?: string;
   readonly step?: number;
 }
 
 export const NumberInput = memo<NumberInputProps>(
-  ({ id, value, onChange, min, max, step = 1, placeholder, disabled, className = '' }): JSX.Element => {
+  ({ id, value, onChange, min, max, step = 1, placeholder, disabled, className = '', onBatchStart, onBatchEnd }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const [internalValue, setInternalValue] = useState(String(value));
 
@@ -93,6 +96,13 @@ export const NumberInput = memo<NumberInputProps>(
       [handleStep, handleBlur],
     );
 
+    const handleIncrement = useCallback(() => handleStep('up'), [handleStep]);
+    const handleDecrement = useCallback(() => handleStep('down'), [handleStep]);
+
+    const pressHandlersConfig = { onStart: onBatchStart, onEnd: onBatchEnd };
+    const incrementPressHandlers = useLongPress(handleIncrement, pressHandlersConfig);
+    const decrementPressHandlers = useLongPress(handleDecrement, pressHandlersConfig);
+
     const standardInputStyle = `
       w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-2
       text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary}
@@ -134,7 +144,7 @@ export const NumberInput = memo<NumberInputProps>(
             className={`${stepButtonClass} rounded-tr-sm`}
             aria-label="Increment value"
             disabled={disabled || (max !== undefined && value >= max)}
-            onClick={() => handleStep('up')}
+            {...incrementPressHandlers}
           >
             <ChevronUpIcon size={14} />
           </button>
@@ -144,7 +154,7 @@ export const NumberInput = memo<NumberInputProps>(
             className={`${stepButtonClass} rounded-br-sm`}
             aria-label="Decrement value"
             disabled={disabled || (min !== undefined && value <= min)}
-            onClick={() => handleStep('down')}
+            {...decrementPressHandlers}
           >
             <ChevronDownIcon size={14} />
           </button>
