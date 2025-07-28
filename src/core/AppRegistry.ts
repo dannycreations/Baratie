@@ -88,6 +88,7 @@ export class AppRegistry {
             return;
           }
         }
+
         await new Promise((resolve) => {
           setTimeout(resolve, 200);
         });

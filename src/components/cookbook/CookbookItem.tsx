@@ -33,19 +33,19 @@ function formatTimestamp(timestamp: number): string {
 export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
-  const handleConfirmDelete = useCallback(() => {
+  const handleConfirmDelete = useCallback((): void => {
     onDelete(recipe.id);
   }, [onDelete, recipe.id]);
 
-  const handleLoad = useCallback(() => {
+  const handleLoad = useCallback((): void => {
     onLoad(recipe.id);
   }, [onLoad, recipe.id]);
 
   return (
     <li className="list-none">
       <ItemListLayout
-        className={`h-16 rounded-md bg-${theme.surfaceTertiary} p-2 transition-colors duration-150 hover:bg-${theme.surfaceHover}
-          `}
+        className={`h-16 rounded-md bg-${theme.surfaceTertiary} p-2 transition-colors duration-150 hover:bg-${theme.surfaceHover}`}
+        leftClasses="grow min-w-0 mr-2"
         leftContent={
           <>
             <Tooltip content={recipe.name} position="top">
@@ -56,24 +56,24 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
             </p>
           </>
         }
-        leftClasses="grow min-w-0 mr-2"
+        rightClasses="flex shrink-0 items-center gap-1"
         rightContent={
           <>
             <TooltipButton
-              aria-label={`Load the recipe: ${recipe.name}`}
               icon={<UploadCloudIcon size={18} />}
               size="sm"
+              variant="primary"
+              aria-label={`Load the recipe: ${recipe.name}`}
               tooltipContent="Load Recipe"
               tooltipPosition="left"
-              variant="primary"
               onClick={handleLoad}
             >
               Load
             </TooltipButton>
+
             <ConfirmButton actionName="Delete" itemName={recipe.name} itemType="Recipe" tooltipPosition="left" onConfirm={handleConfirmDelete} />
           </>
         }
-        rightClasses="flex shrink-0 items-center gap-1"
       />
     </li>
   );

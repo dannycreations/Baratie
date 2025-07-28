@@ -34,7 +34,7 @@ export const EmptyView = memo<EmptyViewProps>(
     const textClass = textClasses ?? `break-all text-center text-sm text-${theme.contentTertiary}`;
 
     return (
-      <div role="status" aria-live="polite" className={className}>
+      <div className={className} role="status" aria-live="polite">
         {icon && (
           <div aria-hidden="true" className={`mb-2 text-${theme.contentTertiary}`}>
             {icon}

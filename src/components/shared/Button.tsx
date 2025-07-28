@@ -25,8 +25,8 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export interface TooltipButtonProps extends ButtonProps {
-  readonly tooltipClasses?: string;
   readonly tooltipContent: ReactNode;
+  readonly tooltipClasses?: string;
   readonly tooltipDisabled?: boolean;
   readonly tooltipPosition?: TooltipProps['position'];
 }
@@ -37,14 +37,14 @@ interface CopyButtonProps {
 }
 
 interface ConfirmButtonProps {
+  readonly itemName: string;
+  readonly itemType: string;
+  readonly onConfirm: () => void;
   readonly actionName?: string;
   readonly className?: string;
   readonly confirmIcon?: ReactNode;
   readonly disabled?: boolean;
   readonly icon?: ReactNode;
-  readonly itemName: string;
-  readonly itemType: string;
-  readonly onConfirm: () => void;
   readonly tooltipPosition?: TooltipProps['position'];
 }
 
@@ -104,9 +104,7 @@ export const Button = memo<ButtonProps>(
 
     const finalClassName = `
       ${baseClass} ${shapeClass} ${variantClass} ${sizeClass}
-      ${loading ? ' opacity-60' : ''}
-      ${fullWidth ? ' w-full' : ''}
-      ${className}
+      ${loading && ' opacity-60'} ${fullWidth && ' w-full'} ${className}
     `.trim();
 
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
@@ -137,14 +135,14 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
 
   return (
     <TooltipButton
-      aria-label={isCopied ? 'Result Copied to Clipboard' : 'Copy Result to Clipboard'}
-      className={isCopied ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : ''}
-      disabled={!textToCopy || isCopied}
       icon={isCopied ? <CheckIcon size={18} /> : <CopyIcon size={18} />}
       size="sm"
+      variant="stealth"
+      className={isCopied ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : ''}
+      disabled={!textToCopy || isCopied}
+      aria-label={isCopied ? 'Result Copied to Clipboard' : 'Copy Result to Clipboard'}
       tooltipContent={isCopied ? 'Copied!' : 'Copy Result'}
       tooltipPosition={tooltipPosition}
-      variant="stealth"
       onClick={handleCopy}
     />
   );
@@ -153,7 +151,7 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
 export const TooltipButton = memo<TooltipButtonProps>(
   ({ tooltipContent, tooltipPosition, tooltipClasses, tooltipDisabled, ...buttonProps }): JSX.Element => {
     return (
-      <Tooltip content={tooltipContent} disabled={tooltipDisabled || buttonProps.disabled} position={tooltipPosition} tooltipClasses={tooltipClasses}>
+      <Tooltip content={tooltipContent} position={tooltipPosition} tooltipClasses={tooltipClasses} disabled={tooltipDisabled || buttonProps.disabled}>
         <Button {...buttonProps} />
       </Tooltip>
     );
@@ -185,14 +183,14 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
 
     return (
       <TooltipButton
-        aria-label={ariaLabel}
-        className={buttonClass}
-        disabled={disabled}
         icon={isConfirm ? defaultConfirmIcon : defaultIcon}
         size="sm"
+        variant="danger"
+        className={buttonClass}
+        disabled={disabled}
+        aria-label={ariaLabel}
         tooltipContent={tooltipContent}
         tooltipPosition={tooltipPosition}
-        variant="danger"
         onClick={trigger}
       />
     );

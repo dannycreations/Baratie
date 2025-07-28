@@ -13,76 +13,73 @@ import type { IngredientProps } from '../../core/IngredientRegistry';
 export type BaseListItem = Pick<IngredientProps, 'id' | 'name' | 'category' | 'description'>;
 
 export interface IngredientListProps {
-  readonly emptyMessage?: string;
   readonly itemsByCategory: ReadonlyArray<readonly [string, ReadonlyArray<BaseListItem>]>;
-  readonly noResultsMessage?: (query: string) => string;
   readonly query: string;
+  readonly emptyMessage?: string;
+  readonly isItemDisabled?: (item: BaseListItem) => boolean;
+  readonly noResultsMessage?: (query: string) => string;
+  readonly onItemDragStart?: (event: DragEvent<HTMLElement>, item: BaseListItem) => void;
   readonly renderHeader?: (category: string, items: ReadonlyArray<BaseListItem>) => JSX.Element;
   readonly renderItemActions?: (item: BaseListItem) => ReactNode;
   readonly renderItemPrefix?: (item: BaseListItem) => ReactNode;
-  readonly onItemDragStart?: (event: DragEvent<HTMLElement>, item: BaseListItem) => void;
-  readonly isItemDisabled?: (item: BaseListItem) => boolean;
 }
 
-type IngredientListItemProps = Pick<IngredientListProps, 'isItemDisabled' | 'renderItemActions' | 'renderItemPrefix' | 'onItemDragStart'> & {
+type IngredientListItemProps = Pick<IngredientListProps, 'isItemDisabled' | 'onItemDragStart' | 'renderItemActions' | 'renderItemPrefix'> & {
   readonly item: BaseListItem;
   readonly query: string;
 };
 
-const IngredientListItem = memo<IngredientListItemProps>(
-  ({ item, isItemDisabled, renderItemPrefix, renderItemActions, onItemDragStart, query }): JSX.Element => {
-    const theme = useThemeStore((state) => state.theme);
-    const isDisabled = isItemDisabled?.(item) ?? false;
-    const nameClass = `
+const IngredientListItem = memo<IngredientListItemProps>(({ item, isItemDisabled, renderItemPrefix, renderItemActions, onItemDragStart, query }) => {
+  const theme = useThemeStore((state) => state.theme);
+
+  const isDisabled = isItemDisabled?.(item) ?? false;
+  const nameClass = `
       truncate pr-2 text-sm transition-colors duration-150
       cursor-default group-hover:text-${theme.infoFg}
       ${isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}
     `;
 
-    const leftColumn = (
-      <div className="flex min-w-0 items-center gap-2">
-        {renderItemPrefix?.(item)}
-        <Tooltip
-          className="min-w-0 flex-1"
-          content={<HighlightText highlight={query} text={item.description} />}
-          position="top"
-          tooltipClasses="max-w-xs"
-        >
-          <p className={nameClass}>
-            <HighlightText highlight={query} text={item.name} />
-          </p>
-        </Tooltip>
-      </div>
-    );
+  const handleDragStart = (event: DragEvent<HTMLElement>): void => {
+    if (isDisabled) {
+      return;
+    }
+    onItemDragStart?.(event, item);
+  };
 
-    const rightColumn = renderItemActions?.(item);
-
-    return (
-      <li
-        data-ingredient-id={item.id}
-        draggable={!isDisabled && !!onItemDragStart}
-        onDragStart={(event) => {
-          if (isDisabled) {
-            return;
-          }
-          onItemDragStart?.(event, item);
-        }}
+  const leftColumn = (
+    <div className="flex min-w-0 items-center gap-2">
+      {renderItemPrefix?.(item)}
+      <Tooltip
+        className="min-w-0 flex-1"
+        content={<HighlightText highlight={query} text={item.description} />}
+        position="top"
+        tooltipClasses="max-w-xs"
       >
-        <ItemListLayout
-          className={`
+        <p className={nameClass}>
+          <HighlightText highlight={query} text={item.name} />
+        </p>
+      </Tooltip>
+    </div>
+  );
+
+  const rightColumn = renderItemActions?.(item);
+
+  return (
+    <li data-ingredient-id={item.id} draggable={!isDisabled && !!onItemDragStart} onDragStart={handleDragStart}>
+      <ItemListLayout
+        className={`
             group h-12 rounded-md bg-${theme.surfaceTertiary} p-2
             transition-colors duration-150 hover:bg-${theme.surfaceMuted}
           `}
-          leftContent={leftColumn}
-          leftClasses="grow min-w-0"
-          rightContent={rightColumn}
-        />
-      </li>
-    );
-  },
-);
+        leftContent={leftColumn}
+        leftClasses="grow min-w-0"
+        rightContent={rightColumn}
+      />
+    </li>
+  );
+});
 
-export const IngredientList = memo(
+export const IngredientList = memo<IngredientListProps>(
   ({
     itemsByCategory,
     query,
@@ -93,11 +90,12 @@ export const IngredientList = memo(
     renderItemPrefix,
     onItemDragStart,
     isItemDisabled,
-  }: IngredientListProps): JSX.Element => {
+  }): JSX.Element => {
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+
     const theme = useThemeStore((state) => state.theme);
 
-    const handleCategoryToggle = useCallback((category: string) => {
+    const handleCategoryToggle = useCallback((category: string): void => {
       setExpandedCategory((current) => (current === category ? null : category));
     }, []);
 
@@ -118,12 +116,12 @@ export const IngredientList = memo(
           const header = (
             <button
               id={buttonId}
-              aria-controls={panelId}
-              aria-expanded={isExpanded}
               className={`
                 flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-2
                 text-left text-${theme.contentSecondary} outline-none hover:bg-${theme.surfaceHover}
               `}
+              aria-controls={panelId}
+              aria-expanded={isExpanded}
               onClick={() => handleCategoryToggle(category)}
             >
               {renderHeader ? renderHeader(category, items) : <p className="truncate font-medium">{category}</p>}
@@ -135,10 +133,7 @@ export const IngredientList = memo(
             </button>
           );
 
-          const containerClass = `
-            overflow-hidden rounded-md
-            ${!isExpanded && index < itemsByCategory.length - 1 ? 'mb-2' : ''}
-          `.trim();
+          const containerClass = `overflow-hidden rounded-md ${!isExpanded && index < itemsByCategory.length - 1 ? 'mb-2' : ''}`.trim();
 
           return (
             <div key={category} className={containerClass}>
@@ -147,18 +142,18 @@ export const IngredientList = memo(
                 <div className="section-expand-enter-active">
                   <div
                     id={panelId}
+                    className={`max-h-64 overflow-y-auto bg-${theme.surfaceMuted} p-2 md:max-h-96`}
                     role="region"
                     aria-hidden={!isExpanded}
                     aria-labelledby={buttonId}
-                    className={`max-h-64 overflow-y-auto bg-${theme.surfaceMuted} p-2 md:max-h-96`}
                   >
                     <ul aria-labelledby={buttonId} className="space-y-2">
                       {items.map((item) => (
                         <IngredientListItem
                           key={item.id}
                           item={item}
-                          isItemDisabled={isItemDisabled}
                           query={query}
+                          isItemDisabled={isItemDisabled}
                           renderItemActions={renderItemActions}
                           renderItemPrefix={renderItemPrefix}
                           onItemDragStart={onItemDragStart}

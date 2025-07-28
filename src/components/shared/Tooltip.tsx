@@ -10,8 +10,8 @@ type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
 
 export interface TooltipProps {
   readonly children: ReactNode;
-  readonly className?: string;
   readonly content: ReactNode;
+  readonly className?: string;
   readonly delay?: number;
   readonly disabled?: boolean;
   readonly position?: TooltipPosition;
@@ -19,11 +19,11 @@ export interface TooltipProps {
 }
 
 interface TooltipPositionStyle {
+  readonly left: number;
+  readonly top: number;
   readonly arrowLeft?: number;
   readonly arrowTop?: number;
   readonly isPositioned: boolean;
-  readonly left: number;
-  readonly top: number;
 }
 
 const ARROW_SIZE_PX = 5;
@@ -40,6 +40,7 @@ export const Tooltip = memo<TooltipProps>(
     const theme = useThemeStore((state) => state.theme);
 
     const [style, setStyle] = useState<TooltipPositionStyle>(INITIAL_TOOLTIP_STYLE);
+
     const timeoutRef = useRef<number | null>(null);
     const triggerRef = useRef<HTMLDivElement>(null);
     const tooltipRef = useRef<HTMLDivElement>(null);
@@ -47,14 +48,14 @@ export const Tooltip = memo<TooltipProps>(
 
     const isVisible = activeId === tooltipId;
 
-    const clearTimer = useCallback(() => {
+    const clearTimer = useCallback((): void => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
     }, []);
 
-    const handleMouseEnter = useCallback(() => {
+    const handleMouseEnter = useCallback((): void => {
       if (disabled || !content) {
         return;
       }
@@ -64,7 +65,7 @@ export const Tooltip = memo<TooltipProps>(
       }, delay);
     }, [disabled, content, clearTimer, delay, tooltipId, setActiveId]);
 
-    const handleMouseLeave = useCallback(() => {
+    const handleMouseLeave = useCallback((): void => {
       clearTimer();
       if (activeId === tooltipId) {
         setActiveId(null);
@@ -73,10 +74,10 @@ export const Tooltip = memo<TooltipProps>(
 
     const tooltipArrows: Readonly<Record<TooltipPosition, string>> = useMemo(
       () => ({
+        top: `absolute top-full h-0 w-0 border-x-transparent border-b-transparent border-t-${theme.backdrop}`,
         bottom: `absolute bottom-full h-0 w-0 border-x-transparent border-t-transparent border-b-${theme.backdrop}`,
         left: `absolute left-full h-0 w-0 border-y-transparent border-r-transparent border-l-${theme.backdrop}`,
         right: `absolute right-full h-0 w-0 border-y-transparent border-l-transparent border-r-${theme.backdrop}`,
-        top: `absolute top-full h-0 w-0 border-x-transparent border-b-transparent border-t-${theme.backdrop}`,
       }),
       [theme.backdrop],
     );
@@ -100,8 +101,11 @@ export const Tooltip = memo<TooltipProps>(
     }, [isVisible]);
 
     useLayoutEffect(() => {
-      const calculatePosition = () => {
-        if (!isVisible || !triggerRef.current || !tooltipRef.current) return;
+      const calculatePosition = (): void => {
+        if (!isVisible || !triggerRef.current || !tooltipRef.current) {
+          return;
+        }
+
         const triggerElement = triggerRef.current.firstElementChild || triggerRef.current;
         const triggerRect = triggerElement.getBoundingClientRect();
         const tooltipRect = tooltipRef.current.getBoundingClientRect();
@@ -161,6 +165,7 @@ export const Tooltip = memo<TooltipProps>(
           isPositioned: true,
         });
       };
+
       if (isVisible) {
         calculatePosition();
         window.addEventListener('resize', calculatePosition);
@@ -180,14 +185,15 @@ export const Tooltip = memo<TooltipProps>(
       shadow-lg transition-opacity duration-150 ${visibilityClass} ${tooltipClasses}
     `.trim();
     const triggerClass = `relative inline-flex ${className}`.trim();
+
     const triggerElement = (
       <div
         ref={triggerRef}
-        aria-describedby={isVisible && !disabled && content ? tooltipId : undefined}
         className={triggerClass}
-        onDragStart={handleMouseLeave}
+        aria-describedby={isVisible && !disabled && content ? tooltipId : undefined}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onDragStart={handleMouseLeave}
       >
         {children}
       </div>
@@ -202,12 +208,12 @@ export const Tooltip = memo<TooltipProps>(
           <div
             ref={tooltipRef}
             id={tooltipId}
-            role="tooltip"
             className={tooltipClass}
+            role="tooltip"
             style={{
-              left: `${style.left}px`,
               position: 'fixed',
               top: `${style.top}px`,
+              left: `${style.left}px`,
             }}
           >
             {content}
@@ -215,8 +221,8 @@ export const Tooltip = memo<TooltipProps>(
               className={arrowClass}
               style={{
                 borderWidth: `${ARROW_SIZE_PX}px`,
-                left: style.arrowLeft !== undefined ? `${style.arrowLeft}px` : undefined,
                 top: style.arrowTop !== undefined ? `${style.arrowTop}px` : undefined,
+                left: style.arrowLeft !== undefined ? `${style.arrowLeft}px` : undefined,
               }}
             />
           </div>,

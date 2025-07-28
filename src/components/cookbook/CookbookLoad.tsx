@@ -24,6 +24,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
 
   return (
     <SearchListLayout
+      listId={listId}
       listContent={
         recipes.length > 0 ? (
           <ul aria-label="List of saved recipes" className="space-y-2">
@@ -41,15 +42,14 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
           </EmptyView>
         )
       }
-      listId={listId}
       search={{
         query,
         onQueryChange,
-        ariaLabel: 'Search saved recipes',
         id: 'recipe-search',
+        inputRef: searchRef,
+        ariaLabel: 'Search saved recipes',
         placeholder: 'Search Saved Recipes...',
         wrapperClasses: `border-b border-${theme.borderPrimary} pb-2`,
-        inputRef: searchRef,
       }}
     />
   );

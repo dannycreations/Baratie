@@ -13,20 +13,20 @@ import type { JSX, MouseEvent, ReactNode } from 'react';
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'full';
 
 interface ModalProps {
-  readonly bodyClasses?: string;
   readonly children: ReactNode;
+  readonly isOpen: boolean;
+  readonly title: string;
+  readonly onClose: () => void;
+  readonly bodyClasses?: string;
   readonly contentClasses?: string;
   readonly footerContent?: ReactNode;
   readonly headerActions?: ReactNode;
   readonly hideFooter?: boolean;
   readonly hideHeader?: boolean;
-  readonly isOpen: boolean;
   readonly modalId?: string;
-  readonly size?: ModalSize;
-  readonly title: string;
-  readonly titleId?: string;
-  readonly onClose: () => void;
   readonly onExited?: () => void;
+  readonly size?: ModalSize;
+  readonly titleId?: string;
 }
 
 const MODAL_SIZE_MAP: Readonly<Record<ModalSize, string>> = {
@@ -56,14 +56,16 @@ export const Modal = memo<ModalProps>(
     bodyClasses = '',
   }): JSX.Element | null => {
     const [isRendered, setIsRendered] = useState(false);
+
     const theme = useThemeStore((state) => state.theme);
+
     const backdropRef = useRef<HTMLDivElement>(null);
     const modalContentRef = useRef<HTMLDivElement>(null);
 
     useFocusTrap({ elementRef: modalContentRef, isActive: isOpen });
 
     const handleBackdropClick = useCallback(
-      (event: MouseEvent<HTMLDivElement>) => {
+      (event: MouseEvent<HTMLDivElement>): void => {
         if (event.target === backdropRef.current) {
           onClose();
         }
@@ -72,7 +74,7 @@ export const Modal = memo<ModalProps>(
     );
 
     const handleEscapeKey = useCallback(
-      (event: KeyboardEvent) => {
+      (event: KeyboardEvent): void => {
         if (event.key === 'Escape') {
           onClose();
         }
@@ -128,12 +130,12 @@ export const Modal = memo<ModalProps>(
         <div
           ref={modalContentRef}
           id={modalId}
-          role="dialog"
-          aria-busy={!isOpen}
-          aria-labelledby={!hideHeader && title ? titleId : undefined}
-          aria-modal="true"
           className={modalClass}
+          role="dialog"
           tabIndex={-1}
+          aria-busy={!isOpen}
+          aria-modal="true"
+          aria-labelledby={!hideHeader && title ? titleId : undefined}
         >
           {!hideHeader && (
             <header className={`flex h-12 shrink-0 items-center justify-between border-b border-${theme.borderPrimary} p-2`}>
@@ -142,7 +144,7 @@ export const Modal = memo<ModalProps>(
               </h2>
               <div className="flex shrink-0 items-center gap-2">
                 {headerActions && <div className="flex shrink-0 items-center gap-1">{headerActions}</div>}
-                <Button aria-label={`Close ${title || 'modal'}`} icon={<XIcon size={20} />} size="sm" variant="stealth" onClick={onClose} />
+                <Button icon={<XIcon size={20} />} size="sm" variant="stealth" aria-label={`Close ${title || 'modal'}`} onClick={onClose} />
               </div>
             </header>
           )}

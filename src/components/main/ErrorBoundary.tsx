@@ -25,17 +25,14 @@ type ErrorDisplayProps = Omit<ErrorBoundaryState, 'hasError'>;
 function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);
 
-  const backdropClass = `
-    fixed inset-0 z-[800] flex items-center justify-center
-    bg-${theme.backdrop} p-3 backdrop-blur-sm
-  `;
+  const backdropClass = `fixed inset-0 z-[800] flex items-center justify-center bg-${theme.backdrop} p-3 backdrop-blur-sm`;
   const dialogClass = `
     w-full max-w-md rounded-lg border border-${theme.dangerBorder}
     bg-${theme.surfaceSecondary} p-3 text-center sm:max-w-lg md:max-w-2xl
   `;
 
   return (
-    <div role="alertdialog" aria-modal="true" aria-labelledby="error-dialog-title" aria-describedby={ERROR_DESCRIPTION_ID} className={backdropClass}>
+    <div className={backdropClass} role="alertdialog" aria-modal="true" aria-labelledby="error-dialog-title" aria-describedby={ERROR_DESCRIPTION_ID}>
       <div className={dialogClass}>
         <div role="img" aria-label="Warning" className={`mb-3 text-5xl text-${theme.dangerFg}`}>
           ⚠️
@@ -47,10 +44,10 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
           A sudden squall has hit the galley! Reloading might calm the seas.
         </p>
         <Button
-          aria-label="Reload the application to try again"
           icon={<RefreshCwIcon size={20} />}
           size="sm"
           variant="primary"
+          aria-label="Reload the application to try again"
           onClick={() => window.location.reload()}
         >
           Batten Down the Hatches!

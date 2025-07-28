@@ -41,10 +41,6 @@ export const ExtensionList = memo((): JSX.Element | null => {
   const activeModal = useModalStore((state) => state.activeModal);
   const closeModal = useModalStore((state) => state.closeModal);
   const modalProps = useModalStore((state) => state.modalProps as ExtensionListProps | null);
-
-  const isModalOpen = activeModal === 'extensionInstall';
-  const pendingSelection = isModalOpen ? modalProps : null;
-
   const installSelectedModules = useExtensionStore((state) => state.installSelectedModules);
   const cancelPendingInstall = useExtensionStore((state) => state.cancelPendingInstall);
   const theme = useThemeStore((state) => state.theme);
@@ -52,9 +48,13 @@ export const ExtensionList = memo((): JSX.Element | null => {
   const [query, setQuery] = useState('');
   const [selectedEntries, setSelectedEntries] = useState(new Set<string>());
   const [isLoading, setIsLoading] = useState(false);
+
   const listId = useId();
   const searchRef = useRef<HTMLInputElement>(null);
   const deferredQuery = useDeferredValue(query);
+
+  const isModalOpen = activeModal === 'extensionInstall';
+  const pendingSelection = isModalOpen ? modalProps : null;
 
   useAutoFocus(searchRef, isModalOpen);
 
@@ -97,7 +97,7 @@ export const ExtensionList = memo((): JSX.Element | null => {
     return result;
   }, [groupedModules, deferredQuery]);
 
-  const handleToggleModule = useCallback((entry: string) => {
+  const handleToggleModule = useCallback((entry: string): void => {
     setSelectedEntries((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(entry)) {
@@ -109,7 +109,7 @@ export const ExtensionList = memo((): JSX.Element | null => {
     });
   }, []);
 
-  const handleToggleCategory = useCallback((modules: ReadonlyArray<BaseListItem>) => {
+  const handleToggleCategory = useCallback((modules: ReadonlyArray<BaseListItem>): void => {
     const moduleEntries = modules.map((m) => m.id);
     setSelectedEntries((prev) => {
       const newSet = new Set(prev);
@@ -127,7 +127,7 @@ export const ExtensionList = memo((): JSX.Element | null => {
     });
   }, []);
 
-  const handleInstall = useCallback(async () => {
+  const handleInstall = useCallback(async (): Promise<void> => {
     if (!pendingSelection) {
       return;
     }
@@ -138,12 +138,12 @@ export const ExtensionList = memo((): JSX.Element | null => {
     closeModal();
   }, [pendingSelection, selectedEntries, manifestModules, installSelectedModules, closeModal]);
 
-  const handleClose = useCallback(() => {
+  const handleClose = useCallback((): void => {
     cancelPendingInstall();
     closeModal();
   }, [cancelPendingInstall, closeModal]);
 
-  const resetState = useCallback(() => {
+  const resetState = useCallback((): void => {
     setQuery('');
     setIsLoading(false);
   }, []);
@@ -176,15 +176,15 @@ export const ExtensionList = memo((): JSX.Element | null => {
     [selectedEntries, handleToggleCategory, theme],
   );
 
+  if (!isModalOpen) {
+    return null;
+  }
+
   const headerActions = (
     <Button loading={isLoading} disabled={selectedEntries.size === 0 || isLoading} onClick={handleInstall}>
       Install ({selectedEntries.size})
     </Button>
   );
-
-  if (!isModalOpen) {
-    return null;
-  }
 
   const content = (
     <IngredientList itemsByCategory={filteredGroupedModules} query={deferredQuery} renderHeader={renderHeader} renderItemPrefix={renderItemPrefix} />
@@ -192,25 +192,25 @@ export const ExtensionList = memo((): JSX.Element | null => {
 
   return (
     <Modal
-      bodyClasses="p-3"
-      contentClasses="flex max-h-[80vh] flex-col"
-      headerActions={headerActions}
       isOpen={isModalOpen}
       size="xl"
       title={pendingSelection?.manifest.name || 'Install Extension'}
+      bodyClasses="p-3"
+      contentClasses="flex max-h-[80vh] flex-col"
+      headerActions={headerActions}
       onClose={handleClose}
       onExited={resetState}
     >
       <SearchListLayout
-        listContent={content}
         listId={listId}
+        listContent={content}
         search={{
           query,
           onQueryChange: setQuery,
-          ariaLabel: 'Search modules to install',
           id: 'module-install-search',
-          placeholder: 'Search Modules...',
           inputRef: searchRef,
+          ariaLabel: 'Search modules to install',
+          placeholder: 'Search Modules...',
         }}
       />
     </Modal>

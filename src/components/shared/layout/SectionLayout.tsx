@@ -6,8 +6,8 @@ import type { HTMLAttributes, JSX, ReactNode } from 'react';
 
 interface SectionLayoutProps extends HTMLAttributes<HTMLElement> {
   readonly children: ReactNode;
-  readonly contentClasses?: string;
   readonly headerLeft: ReactNode;
+  readonly contentClasses?: string;
   readonly headerRight?: ReactNode;
   readonly panelClasses?: string;
 }
@@ -25,7 +25,7 @@ export const SectionLayout = memo<SectionLayoutProps>(
     const contentClass = `grow overflow-auto p-3 ${contentClasses}`.trim();
 
     return (
-      <section role="region" aria-labelledby={titleId} className={panelClass} {...rest}>
+      <section role="region" className={panelClass} aria-labelledby={titleId} {...rest}>
         <div className={headerClass}>
           <h2 id={titleId} className="min-w-0 truncate pr-2 text-lg font-semibold">
             {headerLeft}

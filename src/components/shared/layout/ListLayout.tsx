@@ -28,20 +28,20 @@ export const ItemListLayout = memo<ItemListLayoutProps>(
 );
 
 interface SearchProps {
-  readonly onQueryChange: (query: string) => void;
   readonly query: string;
-  readonly ariaLabel: string;
+  readonly onQueryChange: (query: string) => void;
   readonly id: string;
+  readonly ariaLabel: string;
+  readonly inputRef?: RefObject<HTMLInputElement | null>;
   readonly placeholder?: string;
   readonly wrapperClasses?: string;
-  readonly inputRef?: RefObject<HTMLInputElement | null>;
 }
 
 interface SearchListLayoutProps {
-  readonly containerClasses?: string;
-  readonly listWrapperClasses?: string;
   readonly listContent: ReactNode;
   readonly listId: string;
+  readonly containerClasses?: string;
+  readonly listWrapperClasses?: string;
   readonly search?: SearchProps;
 }
 
@@ -52,7 +52,7 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
 
     const handleChange = search
       ? useCallback(
-          (event: ChangeEvent<HTMLInputElement>) => {
+          (event: ChangeEvent<HTMLInputElement>): void => {
             search.onQueryChange(event.target.value);
           },
           [search?.onQueryChange],
@@ -60,7 +60,7 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
       : undefined;
 
     const handleClear = search
-      ? useCallback(() => {
+      ? useCallback((): void => {
           search.onQueryChange('');
         }, [search?.onQueryChange])
       : undefined;
@@ -72,13 +72,13 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
             <StringInput
               id={search.id}
               type="search"
+              value={search.query}
+              inputRef={search.inputRef}
               aria-controls={listId}
               aria-label={search.ariaLabel}
               placeholder={search.placeholder}
-              value={search.query}
-              inputRef={search.inputRef}
-              onChange={handleChange!}
               showClearButton
+              onChange={handleChange!}
               onClear={handleClear}
             />
           </div>
@@ -86,10 +86,10 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
         <div
           ref={listScrollRef}
           id={listId}
+          className={finalClasses}
           role="region"
           aria-live={search ? 'polite' : undefined}
           aria-relevant={search ? 'all' : undefined}
-          className={finalClasses}
         >
           {listContent}
         </div>

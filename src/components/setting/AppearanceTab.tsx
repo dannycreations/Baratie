@@ -28,9 +28,9 @@ const PalettePreview = memo<PalettePreviewProps>(({ theme }): JSX.Element => {
       {swatchColors.map(({ color, title }, index) => (
         <div
           key={`${title}-${index}`}
-          aria-label={title}
           className={`h-4 w-4 rounded-full border border-${theme.borderPrimary} bg-${color}`}
           title={title}
+          aria-label={title}
         />
       ))}
     </div>
@@ -43,7 +43,7 @@ export const AppearanceTab = memo((): JSX.Element => {
   const setTheme = useThemeStore((state) => state.setTheme);
 
   const handleSelectTheme = useCallback(
-    (themeId: ThemeId) => {
+    (themeId: ThemeId): void => {
       const themeToSet = APP_THEMES.find((theme) => theme.id === themeId);
       if (themeToSet) {
         setTheme(themeToSet.id);
@@ -60,6 +60,7 @@ export const AppearanceTab = memo((): JSX.Element => {
       <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {APP_THEMES.map((item) => {
           const isChecked = id === item.id;
+
           const leftContent = (
             <div className="flex flex-col justify-center gap-1">
               <span className={`text-sm font-medium ${isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`}`}>{item.name}</span>
@@ -73,31 +74,30 @@ export const AppearanceTab = memo((): JSX.Element => {
             </div>
           ) : null;
 
-          const itemLayoutClass = `h-16 rounded-md border-2 p-2 transition-all duration-150 ${
-            isChecked
-              ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
-              : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`
-          }`;
+          const itemLayoutClass = `
+            h-16 rounded-md border-2 p-2 transition-all duration-150
+            ${isChecked ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}` : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`}
+          `;
 
           const liClass = `list-none cursor-pointer rounded-md outline-none focus:ring-2 focus:ring-${theme.ring}`;
 
           return (
             <li
               key={item.id}
-              role="radio"
-              aria-checked={isChecked}
               className={liClass}
+              role="radio"
               tabIndex={isChecked ? 0 : -1}
+              aria-checked={isChecked}
               onClick={() => {
                 handleSelectTheme(item.id);
               }}
             >
               <ItemListLayout
                 className={itemLayoutClass}
-                leftContent={leftContent}
                 leftClasses="grow min-w-0"
-                rightContent={rightContent}
+                leftContent={leftContent}
                 rightClasses="flex shrink-0 items-center"
+                rightContent={rightContent}
               />
             </li>
           );

@@ -32,29 +32,29 @@ const BaratieView = memo((): JSX.Element => {
     }
   }, [isAppReady]);
 
-  const mainContentClass = `
-    h-screen w-screen overflow-hidden transition-opacity
-    duration-300 ${isAppReady ? 'opacity-100' : 'opacity-0'}
-  `;
+  const mainContentClass = `h-screen w-screen overflow-hidden transition-opacity duration-300 ${isAppReady ? 'opacity-100' : 'opacity-0'}`;
 
   return (
     <>
       <LoadingScreen />
+
       <div className={mainContentClass} aria-hidden={!isAppReady}>
         <main
-          aria-label="Main Application Workspace"
           className="flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden"
           role="main"
+          aria-label="Main Application Workspace"
         >
-          <section aria-label="Ingredient and Recipe Management" className="flex w-full flex-col gap-3 md:flex-1 md:flex-row md:overflow-hidden">
+          <section className="flex w-full flex-col gap-3 md:flex-1 md:flex-row md:overflow-hidden" aria-label="Ingredient and Recipe Management">
             <IngredientPanel />
             <RecipePanel />
           </section>
-          <section aria-label="Input and Output Panels" className="flex w-full flex-col gap-3 md:flex-1 md:overflow-hidden">
+
+          <section className="flex w-full flex-col gap-3 md:flex-1 md:overflow-hidden" aria-label="Input and Output Panels">
             <KitchenPanel type="input" />
             <KitchenPanel type="output" />
           </section>
         </main>
+
         <NotificationPanel />
         <CookbookPanel />
         <SettingPanel />

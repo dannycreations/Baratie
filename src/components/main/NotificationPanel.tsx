@@ -44,10 +44,11 @@ function getNotificationTheme(theme: AppTheme, type: NotificationType): Notifica
 const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Element => {
   const [isExiting, setExiting] = useState(false);
   const [isPaused, setPaused] = useState(false);
+
   const theme = useThemeStore((state) => state.theme);
   const removeNotification = useNotificationStore((state) => state.remove);
 
-  const handleExit = useCallback(() => {
+  const handleExit = useCallback((): void => {
     setExiting(true);
   }, []);
 
@@ -103,17 +104,14 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
     ${isPaused ? 'notification-paused' : ''}
   `.trim();
 
-  const messageClass = `
-    allow-text-selection text-sm text-${theme.contentSecondary}
-    ${notification.title ? 'mt-1' : ''}
-  `.trim();
+  const messageClass = `allow-text-selection text-sm text-${theme.contentSecondary} ${notification.title ? 'mt-1' : ''}`.trim();
 
   return (
     <div
+      className={containerClass}
       role="alert"
       aria-live="assertive"
       aria-atomic="true"
-      className={containerClass}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -125,12 +123,12 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
         </div>
         <div className="flex-shrink-0">
           <Button
-            aria-label="Close notification"
-            className={`text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`}
             icon={<XIcon size={20} />}
             size="sm"
-            title="Close"
             variant="stealth"
+            title="Close"
+            className={`text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`}
+            aria-label="Close notification"
             onClick={handleExit}
           />
         </div>
@@ -163,7 +161,7 @@ export const NotificationPanel = memo((): JSX.Element | null => {
   }
 
   return (
-    <div aria-live="polite" aria-relevant="additions" className="fixed inset-x-3 top-3 z-[700] space-y-2 sm:left-auto sm:w-full sm:max-w-sm">
+    <div className="fixed inset-x-3 top-3 z-[700] space-y-2 sm:left-auto sm:w-full sm:max-w-sm" aria-live="polite" aria-relevant="additions">
       {messages.map((notification) => (
         <NotificationItem key={notification.id} notification={notification} />
       ))}

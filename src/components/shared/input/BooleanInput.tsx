@@ -5,10 +5,10 @@ import { useThemeStore } from '../../../stores/useThemeStore';
 import type { ChangeEvent, InputHTMLAttributes, JSX } from 'react';
 
 interface BooleanInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'checked' | 'id' | 'className'> {
-  readonly checked: boolean;
-  readonly className?: string;
   readonly id: string;
+  readonly checked: boolean;
   readonly onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  readonly className?: string;
 }
 
 export const BooleanInput = memo<BooleanInputProps>(({ id, checked, onChange, className = '', disabled = false, ...rest }): JSX.Element => {

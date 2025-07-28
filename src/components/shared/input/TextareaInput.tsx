@@ -11,24 +11,26 @@ import type { ChangeEvent, JSX, TextareaHTMLAttributes, UIEvent } from 'react';
 
 interface TextareaInputProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'value' | 'onChange' | 'readOnly' | 'spellCheck'> {
   readonly value: string;
+  readonly onChange?: (value: string) => void;
   readonly showLineNumbers?: boolean;
   readonly textareaClasses?: string;
   readonly wrapperClasses?: string;
-  readonly onChange?: (value: string) => void;
 }
 
 export const TextareaInput = memo<TextareaInputProps>(
   ({ value, onChange, wrapperClasses = '', textareaClasses = '', showLineNumbers = false, ...rest }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
+    const { disabled, placeholder = '' } = rest;
+
     const lineNumbersRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
     const [scrollTop, setScrollTop] = useState(0);
-    const { disabled, placeholder = '' } = rest;
 
     const virtualizedLines = useLineNumber({ value, showLineNumbers, textareaRef, scrollTop });
 
     const handleFileDrop = useCallback(
-      async (file: File) => {
+      async (file: File): Promise<void> => {
         if (disabled || !onChange) {
           return;
         }
@@ -48,13 +50,13 @@ export const TextareaInput = memo<TextareaInputProps>(
     });
 
     const handleChange = useCallback(
-      (event: ChangeEvent<HTMLTextAreaElement>) => {
+      (event: ChangeEvent<HTMLTextAreaElement>): void => {
         onChange?.(event.target.value);
       },
       [onChange],
     );
 
-    const handleScroll = useCallback((event: UIEvent<HTMLTextAreaElement>) => {
+    const handleScroll = useCallback((event: UIEvent<HTMLTextAreaElement>): void => {
       const newScrollTop = event.currentTarget.scrollTop;
       if (lineNumbersRef.current) {
         lineNumbersRef.current.scrollTop = newScrollTop;
@@ -83,7 +85,7 @@ export const TextareaInput = memo<TextareaInputProps>(
     return (
       <div className={containerClass} {...dropZoneProps}>
         {showLineNumbers && (
-          <div ref={lineNumbersRef} aria-hidden="true" className={gutterClass}>
+          <div ref={lineNumbersRef} className={gutterClass} aria-hidden="true">
             <div style={{ paddingTop: `${virtualizedLines.paddingTop}px`, paddingBottom: `${virtualizedLines.paddingBottom}px` }}>
               {virtualizedLines.visibleItems.map(({ key, number }) => (
                 <div key={key} style={{ height: virtualizedLines.lineHeight }}>
@@ -96,11 +98,11 @@ export const TextareaInput = memo<TextareaInputProps>(
         <textarea
           ref={textareaRef}
           value={value}
+          className={textareaClass}
           disabled={disabled}
           placeholder={placeholder}
           spellCheck={false}
           {...rest}
-          className={textareaClass}
           onChange={handleChange}
           onScroll={handleScroll}
         />

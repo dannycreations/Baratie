@@ -17,7 +17,7 @@ export const FilePicker = memo<FilePickerProps>(({ children, onFileSelect, accep
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
+    (event: ChangeEvent<HTMLInputElement>): void => {
       const file = event.target.files?.[0];
       if (file) {
         onFileSelect(file);
@@ -29,14 +29,14 @@ export const FilePicker = memo<FilePickerProps>(({ children, onFileSelect, accep
     [onFileSelect],
   );
 
-  const trigger = useCallback(() => {
+  const trigger = useCallback((): void => {
     inputRef.current?.click();
   }, []);
 
   return (
     <>
       {children({ trigger })}
-      <input id={inputId} ref={inputRef} type="file" accept={accept} className="hidden" aria-hidden="true" onChange={handleFileChange} />
+      <input ref={inputRef} id={inputId} type="file" className="hidden" accept={accept} aria-hidden="true" onChange={handleFileChange} />
     </>
   );
 });

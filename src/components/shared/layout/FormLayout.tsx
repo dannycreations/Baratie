@@ -7,9 +7,9 @@ import type { JSX, ReactNode } from 'react';
 
 interface FormLayoutProps {
   readonly children: (id: string) => ReactNode;
+  readonly inputId: string;
   readonly description?: string;
   readonly fieldSetClasses?: string;
-  readonly inputId: string;
   readonly inputWrapperClasses?: string;
   readonly label?: string;
   readonly labelClasses?: string;

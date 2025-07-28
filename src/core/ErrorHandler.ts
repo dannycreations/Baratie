@@ -26,8 +26,8 @@ interface ErrorOptions {
 interface AttemptOptions extends Partial<ErrorOptions> {}
 
 interface AttemptResult<T> {
-  readonly error: AppError | null;
   readonly result: T | null;
+  readonly error: AppError | null;
 }
 
 export class ErrorHandler {

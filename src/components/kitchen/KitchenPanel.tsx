@@ -33,8 +33,8 @@ interface OutputActionsProps extends KitchenPanelSectionProps {
 }
 
 interface SpiceContentProps {
-  readonly onSpiceChange: (ingredientId: string, spiceId: string, rawValue: SpiceValue, spice: SpiceDefinition) => void;
   readonly targetIngredient: IngredientItem;
+  readonly onSpiceChange: (ingredientId: string, spiceId: string, rawValue: SpiceValue, spice: SpiceDefinition) => void;
 }
 
 interface DefaultContentProps extends KitchenPanelSectionProps {
@@ -47,32 +47,32 @@ interface OutputContentProps extends KitchenPanelSectionProps {
 }
 
 const InputActions = memo<InputActionsProps>(({ data, config, onClear, onFileSelect }) => {
-  const showClearButton = config?.mode === 'textarea' && config.showClear;
+  const showClearButton = !config || (config.mode === 'textarea' && config.showClear);
 
   return (
     <>
       <FilePicker accept="text/*" onFileSelect={onFileSelect}>
         {({ trigger }) => (
           <TooltipButton
-            aria-label="Open a text file as input"
             icon={<FileTextIcon size={18} />}
             size="sm"
+            variant="stealth"
+            aria-label="Open a text file as input"
             tooltipContent="Open File..."
             tooltipPosition="left"
-            variant="stealth"
             onClick={trigger}
           />
         )}
       </FilePicker>
       {showClearButton && (
         <TooltipButton
-          aria-label="Clear data from the input panel"
-          disabled={data.length === 0}
           icon={<Trash2Icon size={18} />}
           size="sm"
+          variant="danger"
+          disabled={data.length === 0}
+          aria-label="Clear data from the input panel"
           tooltipContent="Clear Input Panel"
           tooltipPosition="left"
-          variant="danger"
           onClick={onClear}
         />
       )}
@@ -83,13 +83,13 @@ const InputActions = memo<InputActionsProps>(({ data, config, onClear, onFileSel
 const OutputActions = memo<OutputActionsProps>(({ data, onDownload }) => (
   <>
     <TooltipButton
-      aria-label="Save output to a file"
-      disabled={data.length === 0}
       icon={<DownloadCloudIcon size={18} />}
       size="sm"
+      variant="stealth"
+      disabled={data.length === 0}
+      aria-label="Save output to a file"
       tooltipContent="Save Output"
       tooltipPosition="left"
-      variant="stealth"
       onClick={onDownload}
     />
     <CopyButton textToCopy={data} tooltipPosition="left" />
@@ -98,7 +98,7 @@ const OutputActions = memo<OutputActionsProps>(({ data, onDownload }) => (
 
 const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient }) => {
   const handleSpiceChange = useCallback(
-    (spiceId: string, rawValue: SpiceValue, spice: SpiceDefinition) => {
+    (spiceId: string, rawValue: SpiceValue, spice: SpiceDefinition): void => {
       onSpiceChange(targetIngredient.id, spiceId, rawValue, spice);
     },
     [onSpiceChange, targetIngredient.id],
@@ -109,7 +109,7 @@ const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient 
 
   return (
     <div aria-label={`Parameters for ${definition.name}`} className="overflow-y-auto">
-      <SpiceLayout containerClasses="space-y-2" currentSpices={targetIngredient.spices} ingredient={definition} onSpiceChange={handleSpiceChange} />
+      <SpiceLayout ingredient={definition} currentSpices={targetIngredient.spices} containerClasses="space-y-2" onSpiceChange={handleSpiceChange} />
     </div>
   );
 });
@@ -120,12 +120,12 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange }
 
   return (
     <TextareaInput
+      value={data}
       aria-label="Input Panel for Raw Data"
       disabled={isTextareaDisabled}
       placeholder={placeholder}
       showLineNumbers={true}
       textareaClasses="font-mono"
-      value={data}
       wrapperClasses="flex-1 min-h-0"
       onChange={onDataChange}
     />
@@ -134,11 +134,11 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange }
 
 const OutputContent = memo<OutputContentProps>(({ config, data }) => (
   <TextareaInput
+    value={data}
     aria-label="Result from Recipe Cooking Action"
     placeholder={config?.placeholder || 'Your Results Will Be Presented Here.'}
     showLineNumbers={true}
     textareaClasses="font-mono"
-    value={data}
     wrapperClasses="flex-1 min-h-0"
   />
 ));
@@ -152,7 +152,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
 
   const importOperationRef = useRef<number>(0);
 
-  const targetIngredient = useMemo(() => {
+  const targetIngredient = useMemo((): IngredientItem | undefined => {
     if (inputPanelConfig?.mode === 'spiceEditor') {
       return ingredients.find((ing) => ing.id === inputPanelConfig.targetIngredientId);
     }
@@ -164,10 +164,10 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const config = isInput ? inputPanelConfig : outputPanelConfig;
   const title = config?.title || (isInput ? 'Input' : 'Output');
 
-  const handleSetInputData = useCallback((data: string) => kitchen.setInputData(data), []);
+  const handleSetInputData = useCallback((data: string): void => kitchen.setInputData(data), []);
 
   const handleFileSelected = useCallback(
-    async (file: File) => {
+    async (file: File): Promise<void> => {
       const operationId = ++importOperationRef.current;
 
       const { result: text, error } = await errorHandler.attemptAsync(() => readAsText(file));
@@ -178,19 +178,19 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
     [handleSetInputData],
   );
 
-  const handleClearInput = useCallback(() => {
+  const handleClearInput = useCallback((): void => {
     if (isInput) {
       handleSetInputData('');
     }
   }, [isInput, handleSetInputData]);
 
-  const handleDownloadOutput = useCallback(() => {
+  const handleDownloadOutput = useCallback((): void => {
     const timestamp = new Date().toISOString().slice(0, 19).replace(/-/g, '').replace('T', '_').replace(/:/g, '');
     const fileName = `baratie_output_${timestamp}.txt`;
     triggerDownload(data, fileName);
   }, [data]);
 
-  const handleSpiceChange = useCallback((id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>) => {
+  const handleSpiceChange = useCallback((id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>): void => {
     useRecipeStore.getState().updateSpice(id, spiceId, rawValue, spice);
   }, []);
 
@@ -212,11 +212,11 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
 
   return (
     <SectionLayout
-      aria-live={config ? 'polite' : undefined}
-      contentClasses="flex flex-col"
       headerLeft={title}
       headerRight={headerActions}
       panelClasses="h-[50vh] min-h-0 md:h-1/2"
+      contentClasses="flex flex-col"
+      aria-live={config ? 'polite' : undefined}
     >
       {renderContent()}
     </SectionLayout>

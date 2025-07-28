@@ -30,19 +30,19 @@ interface LoadHeaderActionsProps {
 const SaveHeaderActions = memo<SaveHeaderActionsProps>(({ isSaveDisabled, onExportCurrent, onSave }) => (
   <>
     <TooltipButton
-      aria-label="Export the current recipe to a file"
-      disabled={isSaveDisabled}
       icon={<DownloadCloudIcon size={20} />}
-      tooltipContent="Export Recipe to JSON"
       variant="stealth"
+      disabled={isSaveDisabled}
+      aria-label="Export the current recipe to a file"
+      tooltipContent="Export Recipe to JSON"
       onClick={onExportCurrent}
     />
     <TooltipButton
-      aria-label="Save the current recipe to the cookbook"
-      disabled={isSaveDisabled}
       icon={<SaveIcon size={20} />}
-      tooltipContent="Save to Browser Storage"
       variant="primary"
+      disabled={isSaveDisabled}
+      aria-label="Save the current recipe to the cookbook"
+      tooltipContent="Save to Browser Storage"
       onClick={onSave}
     >
       Save
@@ -55,20 +55,20 @@ const LoadHeaderActions = memo<LoadHeaderActionsProps>(({ isExportDisabled, onFi
     <FilePicker accept=".json" onFileSelect={onFileImport}>
       {({ trigger }) => (
         <TooltipButton
-          aria-label="Import recipes from a JSON file"
           icon={<UploadCloudIcon size={20} />}
-          tooltipContent="Import from JSON File"
           variant="stealth"
+          aria-label="Import recipes from a JSON file"
+          tooltipContent="Import from JSON File"
           onClick={trigger}
         />
       )}
     </FilePicker>
     <TooltipButton
-      aria-label="Export all saved recipes to a file"
-      disabled={isExportDisabled}
       icon={<DownloadCloudIcon size={20} />}
-      tooltipContent="Export All Saved Recipes"
       variant="stealth"
+      disabled={isExportDisabled}
+      aria-label="Export all saved recipes to a file"
+      tooltipContent="Export All Saved Recipes"
       onClick={onExportAll}
     />
   </>
@@ -78,16 +78,6 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const activeModal = useModalStore((state) => state.activeModal);
   const modalProps = useModalStore((state) => state.modalProps as CookbookModalProps | null);
   const closeModal = useModalStore((state) => state.closeModal);
-
-  const isModalOpen = activeModal === 'cookbook';
-  const modalMode = isModalOpen ? modalProps?.mode : null;
-
-  const persistedModalModeRef = useRef(modalMode);
-  if (isModalOpen) {
-    persistedModalModeRef.current = modalMode;
-  }
-  const persistedModalMode = persistedModalModeRef.current;
-
   const nameInput = useCookbookStore((state) => state.nameInput);
   const query = useCookbookStore((state) => state.query);
   const recipes = useCookbookStore((state) => state.recipes);
@@ -100,20 +90,28 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const exportAll = useCookbookStore((state) => state.exportAll);
   const exportCurrent = useCookbookStore((state) => state.exportCurrent);
   const importFromFile = useCookbookStore((state) => state.importFromFile);
-
   const ingredients = useRecipeStore((state) => state.ingredients);
 
   const nameRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const focusRef = persistedModalMode === 'save' ? nameRef : searchRef;
-  useAutoFocus(focusRef, isModalOpen);
-
+  const isModalOpen = activeModal === 'cookbook';
+  const modalMode = isModalOpen ? modalProps?.mode : null;
   const isRecipeEmpty = ingredients.length === 0;
   const isSaveDisabled = !nameInput.trim() || isRecipeEmpty;
 
+  const persistedModalModeRef = useRef(modalMode);
+  if (isModalOpen) {
+    persistedModalModeRef.current = modalMode;
+  }
+  const persistedModalMode = persistedModalModeRef.current;
+
+  const focusRef = persistedModalMode === 'save' ? nameRef : searchRef;
+  useAutoFocus(focusRef, isModalOpen);
+
   const deferredQuery = useDeferredValue(query);
   const searchKeys = useMemo<Array<keyof RecipebookItem>>(() => ['name'], []);
+
   const filteredRecipes = useMemo(() => {
     const lowerQuery = deferredQuery.toLowerCase().trim();
     if (!lowerQuery) {
@@ -128,13 +126,13 @@ export const CookbookPanel = memo((): JSX.Element | null => {
     });
   }, [recipes, deferredQuery, searchKeys]);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback((): void => {
     upsert();
     closeModal();
   }, [upsert, closeModal]);
 
   const handleLoad = useCallback(
-    (id: string) => {
+    (id: string): void => {
       load(id);
       closeModal();
     },
@@ -142,7 +140,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   );
 
   const handleFileImport = useCallback(
-    async (file: File) => {
+    async (file: File): Promise<void> => {
       await importFromFile(file);
     },
     [importFromFile],
@@ -174,13 +172,13 @@ export const CookbookPanel = memo((): JSX.Element | null => {
 
   return (
     <Modal
-      bodyClasses="p-3"
-      contentClasses="max-h-[80vh]"
-      headerActions={headerActions}
       isOpen={isModalOpen}
       size="lg"
       title={title}
       titleId="cookbook-modal-title"
+      bodyClasses="p-3"
+      contentClasses="max-h-[80vh]"
+      headerActions={headerActions}
       onClose={closeModal}
       onExited={resetModal}
     >

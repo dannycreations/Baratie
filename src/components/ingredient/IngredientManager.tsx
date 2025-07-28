@@ -26,6 +26,7 @@ export const IngredientManager = memo((): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
   const [query, setQuery] = useState('');
+
   const listId = useId();
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -52,10 +53,7 @@ export const IngredientManager = memo((): JSX.Element => {
         <div className="flex min-w-0 items-center gap-2">
           <BooleanInput id={`${categoryId}-toggle`} checked={!isCategoryDisabled} onChange={() => toggleCategory(category)} />
           <label
-            className={`
-              truncate cursor-pointer font-medium
-              ${isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}
-            `}
+            className={`truncate cursor-pointer font-medium ${isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}`}
           >
             {category}
           </label>
@@ -84,7 +82,7 @@ export const IngredientManager = memo((): JSX.Element => {
   );
 
   const isItemDisabled = useCallback(
-    (ingredient: BaseListItem) => {
+    (ingredient: BaseListItem): boolean => {
       return disabledCategories.has(ingredient.category) || disabledIngredients.has(ingredient.id);
     },
     [disabledCategories, disabledIngredients],
@@ -92,26 +90,26 @@ export const IngredientManager = memo((): JSX.Element => {
 
   const content = (
     <IngredientList
-      isItemDisabled={isItemDisabled}
       itemsByCategory={filteredList}
       query={query}
+      isItemDisabled={isItemDisabled}
       renderHeader={renderHeader}
       renderItemPrefix={renderItemPrefix}
     />
   );
 
   return (
-    <Modal bodyClasses="p-3" contentClasses="max-h-[80vh]" isOpen={isModalOpen} size="lg" title="Manage Ingredients" onClose={closeModal}>
+    <Modal isOpen={isModalOpen} size="lg" title="Manage Ingredients" bodyClasses="p-3" contentClasses="max-h-[80vh]" onClose={closeModal}>
       <SearchListLayout
-        listContent={content}
         listId={listId}
+        listContent={content}
         search={{
           query,
           onQueryChange: setQuery,
-          ariaLabel: 'Search ingredients or categories',
           id: 'ingredient-manager-search',
-          placeholder: 'Search Ingredients...',
           inputRef: searchRef,
+          ariaLabel: 'Search ingredients or categories',
+          placeholder: 'Search Ingredients...',
         }}
       />
     </Modal>

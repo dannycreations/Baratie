@@ -36,7 +36,7 @@ export const RecipePanel = memo((): JSX.Element => {
   const prevIngredientsCount = useRef(ingredients.length);
   const listId = useId();
 
-  const handleDropIngredient = useCallback((typeString: string) => {
+  const handleDropIngredient = useCallback((typeString: string): void => {
     if (typeString && ingredientRegistry.getIngredient(typeString)) {
       useRecipeStore.getState().addIngredient(typeString);
     }
@@ -56,7 +56,7 @@ export const RecipePanel = memo((): JSX.Element => {
     prevIngredientsCount.current = ingredients.length;
   }, [ingredients, listId]);
 
-  const handleReorder = useCallback((draggedId: string, targetId: string) => {
+  const handleReorder = useCallback((draggedId: string, targetId: string): void => {
     useRecipeStore.getState().reorderIngredients(draggedId, targetId);
   }, []);
 
@@ -69,7 +69,7 @@ export const RecipePanel = memo((): JSX.Element => {
   } = useDragMove({ onDragMove: handleReorder });
 
   const handleDragStart = useCallback(
-    (event: DragEvent<HTMLElement>, ingredient: IngredientItem) => {
+    (event: DragEvent<HTMLElement>, ingredient: IngredientItem): void => {
       onMoveStart(event, ingredient.id);
       event.dataTransfer.setData('application/x-baratie-recipe-item-id', ingredient.id);
     },
@@ -77,7 +77,7 @@ export const RecipePanel = memo((): JSX.Element => {
   );
 
   const openCookbook = useCallback(
-    (args: { readonly mode: 'save' | 'load' }) => {
+    (args: { readonly mode: 'save' | 'load' }): void => {
       const { ingredients, activeRecipeId } = useRecipeStore.getState();
       const props: CookbookModalProps = args.mode === 'save' ? { mode: 'save', ingredients, activeRecipeId } : { mode: 'load' };
 
@@ -87,9 +87,9 @@ export const RecipePanel = memo((): JSX.Element => {
     [openModal, prepareCookbook],
   );
 
-  const handleClearRecipe = useCallback(() => useRecipeStore.getState().clearRecipe(), []);
+  const handleClearRecipe = useCallback((): void => useRecipeStore.getState().clearRecipe(), []);
 
-  const headerActions = useMemo(() => {
+  const headerActions = useMemo((): JSX.Element => {
     const autoCookTooltip = isAutoCookEnabled ? 'Pause Auto-Cooking' : 'Resume Auto-Cooking';
     const autoCookLabel = isAutoCookEnabled ? 'Pause Automatic Cooking' : 'Resume Automatic Cooking and Run';
     const autoCookClass = isAutoCookEnabled
@@ -99,41 +99,41 @@ export const RecipePanel = memo((): JSX.Element => {
     return (
       <>
         <TooltipButton
-          aria-label="Save current recipe to cookbook"
-          disabled={ingredients.length === 0}
           icon={<SaveIcon size={18} />}
           size="sm"
+          variant="stealth"
+          disabled={ingredients.length === 0}
+          aria-label="Save current recipe to cookbook"
           tooltipContent="Save to Cookbook"
           tooltipDisabled={isCookbookOpen}
           tooltipPosition="bottom"
-          variant="stealth"
           onClick={() => openCookbook({ mode: 'save' })}
         />
         <TooltipButton
-          aria-label="Load a saved recipe from the cookbook"
           icon={<FolderOpenIcon size={18} />}
           size="sm"
+          variant="stealth"
+          aria-label="Load a saved recipe from the cookbook"
           tooltipContent="Open Cookbook"
           tooltipDisabled={isCookbookOpen}
           tooltipPosition="bottom"
-          variant="stealth"
           onClick={() => openCookbook({ mode: 'load' })}
         />
         <TooltipButton
-          aria-label={autoCookLabel}
-          className={autoCookClass}
           icon={isAutoCookEnabled ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
           size="sm"
+          variant="stealth"
+          className={autoCookClass}
+          aria-label={autoCookLabel}
           tooltipContent={autoCookTooltip}
           tooltipPosition="bottom"
-          variant="stealth"
           onClick={kitchen.toggleAutoCook}
         />
         <ConfirmButton
           actionName="Clear"
-          disabled={ingredients.length === 0}
           itemName="the current recipe"
           itemType="Recipe"
+          disabled={ingredients.length === 0}
           tooltipPosition="bottom"
           onConfirm={handleClearRecipe}
         />
@@ -141,11 +141,11 @@ export const RecipePanel = memo((): JSX.Element => {
     );
   }, [ingredients.length, isCookbookOpen, isAutoCookEnabled, theme, openCookbook, handleClearRecipe]);
 
-  const handleRemove = useCallback((id: string) => {
+  const handleRemove = useCallback((id: string): void => {
     useRecipeStore.getState().removeIngredient(id);
   }, []);
 
-  const handleSpiceChange = useCallback((id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>) => {
+  const handleSpiceChange = useCallback((id: string, spiceId: string, rawValue: SpiceValue, spice: Readonly<SpiceDefinition>): void => {
     useRecipeStore.getState().updateSpice(id, spiceId, rawValue, spice);
   }, []);
 
@@ -204,20 +204,17 @@ export const RecipePanel = memo((): JSX.Element => {
     );
   }
 
-  const listClass = `
-    grow overflow-y-auto transition-colors duration-200
-    ${isDraggingIngredient ? `bg-${theme.surfaceMuted}` : ''}
-  `.trim();
+  const listClass = `grow overflow-y-auto transition-colors duration-200 ${isDraggingIngredient ? `bg-${theme.surfaceMuted}` : ''}`.trim();
 
   return (
     <SectionLayout
-      contentClasses={`relative flex h-full flex-col text-${theme.contentTertiary}`}
       headerLeft="Recipe"
       headerRight={headerActions}
       panelClasses="h-[50vh] min-h-0 md:h-auto md:flex-1"
+      contentClasses={`relative flex h-full flex-col text-${theme.contentTertiary}`}
     >
       <div className="flex h-full flex-col" {...dropZoneProps}>
-        <SearchListLayout listContent={content} listId={listId} listWrapperClasses={listClass} />
+        <SearchListLayout listId={listId} listContent={content} listWrapperClasses={listClass} />
       </div>
     </SectionLayout>
   );

@@ -36,10 +36,10 @@ interface RecipeLoopState {
 
 interface IngredientRunResult {
   readonly hasError: boolean;
-  readonly inputPanelIngId?: string | null;
   readonly nextData: string;
-  readonly panelInstruction?: PanelControlConfig;
   readonly status: CookingStatusType;
+  readonly inputPanelIngId?: string | null;
+  readonly panelInstruction?: PanelControlConfig;
 }
 
 function isPanelControlSignal(value: ResultType): value is PanelControlSignal {
@@ -47,13 +47,13 @@ function isPanelControlSignal(value: ResultType): value is PanelControlSignal {
 }
 
 export class Kitchen {
-  private hasPendingCook = false;
-  private intervalMs = 0;
   private isCooking = false;
+  private hasPendingCook = false;
   private timeoutId: number | null = null;
+  private intervalMs = 0;
 
   public initAutoCook(): () => void {
-    const handleStateChange = () => {
+    const handleStateChange = (): void => {
       if (useKitchenStore.getState().isAutoCookEnabled) {
         this.triggerCook();
       }
@@ -244,7 +244,7 @@ export class Kitchen {
       inputPanelIngId = panelInstruction.config.targetIngredientId;
     }
 
-    return { hasError: false, inputPanelIngId, nextData, panelInstruction, status: 'success' };
+    return { hasError: false, status: 'success', nextData, panelInstruction, inputPanelIngId };
   }
 
   private scheduleNextCook(): void {

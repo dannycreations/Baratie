@@ -9,12 +9,12 @@ interface NumberInputProps {
   readonly id: string;
   readonly value: number;
   readonly onChange: (value: number) => void;
-  readonly min?: number;
-  readonly max?: number;
-  readonly step?: number;
-  readonly placeholder?: string;
-  readonly disabled?: boolean;
   readonly className?: string;
+  readonly disabled?: boolean;
+  readonly max?: number;
+  readonly min?: number;
+  readonly placeholder?: string;
+  readonly step?: number;
 }
 
 export const NumberInput = memo<NumberInputProps>(
@@ -44,17 +44,17 @@ export const NumberInput = memo<NumberInputProps>(
     );
 
     const handleValueChange = useCallback(
-      (newValue: number) => {
+      (newValue: number): void => {
         onChange(clamp(newValue));
       },
       [clamp, onChange],
     );
 
-    const handleInputChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
       setInternalValue(event.target.value);
     }, []);
 
-    const handleBlur = useCallback(() => {
+    const handleBlur = useCallback((): void => {
       const trimmedValue = internalValue.trim();
       if (trimmedValue === '') {
         setInternalValue(String(value));
@@ -69,7 +69,7 @@ export const NumberInput = memo<NumberInputProps>(
     }, [handleValueChange, value, internalValue]);
 
     const handleStep = useCallback(
-      (direction: 'up' | 'down') => {
+      (direction: 'up' | 'down'): void => {
         const currentValue = Number(internalValue);
         const numericValue = isNaN(currentValue) ? value : currentValue;
         const change = direction === 'up' ? step : -step;
@@ -79,7 +79,7 @@ export const NumberInput = memo<NumberInputProps>(
     );
 
     const handleKeyDown = useCallback(
-      (event: KeyboardEvent<HTMLInputElement>) => {
+      (event: KeyboardEvent<HTMLInputElement>): void => {
         if (event.key === 'ArrowUp') {
           event.preventDefault();
           handleStep('up');
@@ -118,21 +118,21 @@ export const NumberInput = memo<NumberInputProps>(
         <input
           id={id}
           type="text"
-          inputMode="decimal"
           value={internalValue}
-          placeholder={placeholder}
-          disabled={disabled}
           className={standardInputStyle}
-          onChange={handleInputChange}
+          disabled={disabled}
+          inputMode="decimal"
+          placeholder={placeholder}
           onBlur={handleBlur}
+          onChange={handleInputChange}
           onKeyDown={handleKeyDown}
         />
         <div className={buttonGroupClass}>
           <button
             type="button"
             tabIndex={-1}
-            aria-label="Increment value"
             className={`${stepButtonClass} rounded-tr-sm`}
+            aria-label="Increment value"
             disabled={disabled || (max !== undefined && value >= max)}
             onClick={() => handleStep('up')}
           >
@@ -141,8 +141,8 @@ export const NumberInput = memo<NumberInputProps>(
           <button
             type="button"
             tabIndex={-1}
-            aria-label="Decrement value"
             className={`${stepButtonClass} rounded-br-sm`}
+            aria-label="Decrement value"
             disabled={disabled || (min !== undefined && value <= min)}
             onClick={() => handleStep('down')}
           >

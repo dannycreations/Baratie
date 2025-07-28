@@ -67,11 +67,11 @@ const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status, error
     await copy(id);
   }, [copy, id]);
 
-  const handleConfirmDelete = useCallback(() => {
+  const handleConfirmDelete = useCallback((): void => {
     onRemove(id);
   }, [onRemove, id]);
 
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = useCallback((): void => {
     onRefresh(id);
   }, [onRefresh, id]);
 
@@ -80,13 +80,13 @@ const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status, error
       <span className={`font-medium text-${theme.contentPrimary}`}>{displayName}</span>
       <Tooltip content={isCopied ? 'Copied URL!' : 'Click to copy URL'} position="top">
         <button
-          onClick={handleCopyId}
           className={`
             cursor-pointer rounded-sm p-1 text-left text-xs
             text-${theme.contentTertiary} transition-colors
             duration-150 hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}
             focus:outline-none
           `}
+          onClick={handleCopyId}
         >
           {id}
         </button>
@@ -96,14 +96,14 @@ const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status, error
 
   const rightContent = (
     <div className="flex items-center gap-2">
-      <ExtensionItemStatus errors={errors} status={status} />
+      <ExtensionItemStatus status={status} errors={errors} />
       <TooltipButton
-        aria-label={`Refresh extension: ${displayName}`}
-        disabled={isLoading}
         icon={<RefreshCwIcon size={18} />}
         size="sm"
-        tooltipContent="Refresh & Check for Updates"
         variant="stealth"
+        disabled={isLoading}
+        aria-label={`Refresh extension: ${displayName}`}
+        tooltipContent="Refresh & Check for Updates"
         onClick={handleRefresh}
       />
       <ConfirmButton actionName="Remove" itemName={displayName} itemType="Extension" onConfirm={handleConfirmDelete} />
@@ -114,10 +114,10 @@ const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status, error
     <li className="list-none">
       <ItemListLayout
         className={`h-16 rounded-md bg-${theme.surfaceTertiary} p-2 text-sm transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
-        leftContent={leftContent}
         leftClasses="grow min-w-0 mr-2"
-        rightContent={rightContent}
+        leftContent={leftContent}
         rightClasses="flex shrink-0 items-center"
+        rightContent={rightContent}
       />
     </li>
   );
@@ -130,6 +130,7 @@ export const ExtensionTab = memo((): JSX.Element => {
   const removeExtension = useExtensionStore((state) => state.remove);
   const refreshExtension = useExtensionStore((state) => state.refresh);
   const openModal = useModalStore((state) => state.openModal);
+
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -140,7 +141,7 @@ export const ExtensionTab = memo((): JSX.Element => {
     }
   }, [extensions, openModal]);
 
-  const handleAdd = useCallback(async () => {
+  const handleAdd = useCallback(async (): Promise<void> => {
     if (!url.trim() || isLoading) {
       return;
     }
@@ -153,12 +154,12 @@ export const ExtensionTab = memo((): JSX.Element => {
     }
   }, [url, isLoading, addExtension]);
 
-  const handleUrlChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+  const handleUrlChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
     setUrl(event.target.value);
   }, []);
 
   const handleKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLInputElement>) => {
+    (event: KeyboardEvent<HTMLInputElement>): void => {
       if (event.key === 'Enter') {
         handleAdd();
       }
@@ -178,17 +179,17 @@ export const ExtensionTab = memo((): JSX.Element => {
       <div className="flex items-center gap-1">
         <StringInput
           id="extension-url-input"
-          aria-label="GitHub Repository URL"
           className="grow"
+          value={url}
+          aria-label="GitHub Repository URL"
           disabled={isLoading}
           placeholder="user/repo@branch or full GitHub URL"
-          value={url}
           showClearButton
           onChange={handleUrlChange}
-          onClear={() => setUrl('')}
           onKeyDown={handleKeyDown}
+          onClear={() => setUrl('')}
         />
-        <Button icon={<GitMergeIcon size={20} />} loading={isLoading} size="sm" onClick={handleAdd}>
+        <Button icon={<GitMergeIcon size={20} />} size="sm" loading={isLoading} onClick={handleAdd}>
           Add
         </Button>
       </div>
@@ -204,9 +205,9 @@ export const ExtensionTab = memo((): JSX.Element => {
                 key={extension.id}
                 id={extension.id}
                 displayName={extension.name || extension.id}
+                status={extension.status}
                 errors={extension.errors}
                 isLoading={extension.status === 'loading'}
-                status={extension.status}
                 onRefresh={refreshExtension}
                 onRemove={removeExtension}
               />

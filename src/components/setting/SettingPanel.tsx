@@ -32,7 +32,7 @@ const TabButton = memo<TabButtonProps>(({ children, id, isActive, onClick }): JS
   `;
 
   return (
-    <button id={id} role="tab" aria-controls={`${id}-panel`} aria-selected={isActive} className={tabClass} onClick={onClick}>
+    <button id={id} className={tabClass} role="tab" aria-selected={isActive} aria-controls={`${id}-panel`} onClick={onClick}>
       {children}
     </button>
   );
@@ -41,11 +41,12 @@ const TabButton = memo<TabButtonProps>(({ children, id, isActive, onClick }): JS
 export const SettingPanel = memo((): JSX.Element => {
   const isModalOpen = useModalStore((state) => state.activeModal === 'settings');
   const closeModal = useModalStore((state) => state.closeModal);
-  const [activeTab, setActiveTab] = useState<SettingTab>('appearance');
   const theme = useThemeStore((state) => state.theme);
+
+  const [activeTab, setActiveTab] = useState<SettingTab>('appearance');
   const tabIdPrefix = 'setting-tab';
 
-  const handleTabSelect = useCallback((tab: SettingTab) => {
+  const handleTabSelect = useCallback((tab: SettingTab): void => {
     setActiveTab(tab);
   }, []);
 
@@ -54,7 +55,7 @@ export const SettingPanel = memo((): JSX.Element => {
   }, [activeTab]);
 
   return (
-    <Modal bodyClasses="p-3" contentClasses="flex max-h-[80vh] flex-col" isOpen={isModalOpen} size="xl" title="Settings" onClose={closeModal}>
+    <Modal isOpen={isModalOpen} size="xl" title="Settings" bodyClasses="p-3" contentClasses="flex max-h-[80vh] flex-col" onClose={closeModal}>
       <div role="tablist" aria-label="Settings categories" className={`flex gap-1 border-b border-${theme.borderPrimary}`}>
         {SETTING_TABS.map((tab) => (
           <TabButton
@@ -69,7 +70,7 @@ export const SettingPanel = memo((): JSX.Element => {
           </TabButton>
         ))}
       </div>
-      <div id={`${tabIdPrefix}-${activeTab}-panel`} role="tabpanel" aria-labelledby={`${tabIdPrefix}-${activeTab}`} className="grow pt-3">
+      <div id={`${tabIdPrefix}-${activeTab}-panel`} className="grow pt-3" role="tabpanel" aria-labelledby={`${tabIdPrefix}-${activeTab}`}>
         {bodyContent}
       </div>
     </Modal>

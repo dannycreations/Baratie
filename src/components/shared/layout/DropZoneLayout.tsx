@@ -8,9 +8,9 @@ type DropZoneMode = 'full' | 'overlay' | 'placeholder';
 type DropZoneVariant = 'add' | 'remove';
 
 interface DropZoneProps {
+  readonly text: string;
   readonly className?: string;
   readonly mode?: DropZoneMode;
-  readonly text: string;
   readonly variant?: DropZoneVariant;
 }
 

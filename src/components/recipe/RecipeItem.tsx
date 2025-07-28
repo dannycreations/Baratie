@@ -61,34 +61,34 @@ export const RecipeItem = memo<RecipeItemProps>(
     const theme = useThemeStore((state) => state.theme);
     const definition = ingredientRegistry.getIngredient(ingredientItem.ingredientId);
 
-    const handleRemove = useCallback(() => {
+    const handleRemove = useCallback((): void => {
       onRemove(ingredientItem.id);
     }, [onRemove, ingredientItem.id]);
 
     if (!definition) {
       return (
         <div
+          className={`group flex flex-col rounded-md bg-${theme.dangerBg} text-sm outline-none`}
           role="listitem"
           aria-label={`Error: Ingredient ${ingredientItem.name} not found.`}
-          className={`group flex flex-col rounded-md bg-${theme.dangerBg} text-sm outline-none`}
         >
           <div className="p-2">
             <ItemListLayout
+              leftClasses="flex grow items-center min-w-0"
               leftContent={
                 <div className="flex items-center gap-1">
                   <AlertTriangleIcon aria-hidden="true" className={`text-${theme.dangerFg}`} size={20} />
                   <span className={`truncate pr-2 font-medium text-${theme.dangerFg}`}>{ingredientItem.name} (Missing)</span>
                 </div>
               }
-              leftClasses="flex grow items-center min-w-0"
               rightContent={
                 <TooltipButton
-                  aria-label={`Remove missing ingredient "${ingredientItem.name}" from recipe`}
                   icon={<XIcon size={18} />}
                   size="sm"
+                  variant="danger"
+                  aria-label={`Remove missing ingredient "${ingredientItem.name}" from recipe`}
                   tooltipContent="Remove Missing Ingredient"
                   tooltipPosition="top"
-                  variant="danger"
                   onClick={handleRemove}
                 />
               }
@@ -102,21 +102,21 @@ export const RecipeItem = memo<RecipeItemProps>(
     }
 
     const handleDragStart = useCallback(
-      (event: DragEvent<HTMLElement>) => {
+      (event: DragEvent<HTMLElement>): void => {
         onDragStart(event, ingredientItem);
       },
       [onDragStart, ingredientItem],
     );
 
     const handleDragEnter = useCallback(
-      (event: DragEvent<HTMLElement>) => {
+      (event: DragEvent<HTMLElement>): void => {
         onDragEnter(event, ingredientItem.id);
       },
       [onDragEnter, ingredientItem.id],
     );
 
     const handleSpiceChange = useCallback(
-      (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition) => {
+      (spiceId: string, newValue: SpiceValue, spice: SpiceDefinition): void => {
         onSpiceChange(ingredientItem.id, spiceId, newValue, spice);
       },
       [onSpiceChange, ingredientItem.id],
@@ -151,12 +151,12 @@ export const RecipeItem = memo<RecipeItemProps>(
       <>
         <Tooltip content="Drag to reorder" position="top">
           <span
+            className={grabHandleClass}
             aria-label="Drag handle"
             aria-roledescription="draggable item"
-            className={grabHandleClass}
             draggable={true}
-            onDragEnd={onDragEnd}
             onDragStart={handleDragStart}
+            onDragEnd={onDragEnd}
           >
             <GrabIcon size={20} />
           </span>
@@ -171,61 +171,58 @@ export const RecipeItem = memo<RecipeItemProps>(
       <>
         {hasSpices && (
           <TooltipButton
+            icon={<PreferencesIcon size={18} />}
+            size="sm"
+            variant={isEditorVisible ? 'primary' : 'stealth'}
+            className={isEditorVisible ? '' : `text-${theme.contentTertiary} hover:text-${theme.infoFg}`}
             aria-controls={`options-${ingredientItem.id}`}
             aria-expanded={isEditorVisible}
             aria-label={settingsTooltip}
-            className={isEditorVisible ? '' : `text-${theme.contentTertiary} hover:text-${theme.infoFg}`}
-            icon={<PreferencesIcon size={18} />}
-            size="sm"
             tooltipContent={settingsTooltip}
             tooltipPosition="top"
-            variant={isEditorVisible ? 'primary' : 'stealth'}
             onClick={onEditToggle}
           />
         )}
         <TooltipButton
-          aria-label={`Remove ingredient "${ingredientItem.name}" from recipe`}
-          className="opacity-50 group-hover:opacity-100 hover:!opacity-100"
           icon={<XIcon size={18} />}
           size="sm"
+          variant="danger"
+          className="opacity-50 group-hover:opacity-100 hover:!opacity-100"
+          aria-label={`Remove ingredient "${ingredientItem.name}" from recipe`}
           tooltipContent="Remove Ingredient"
           tooltipPosition="top"
-          variant="danger"
           onClick={handleRemove}
         />
       </>
     );
 
+    const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement>): void => {
+      if (canToggleEditor) {
+        event.preventDefault();
+        onEditToggle();
+      }
+    };
+
     return (
       <div
-        role="listitem"
-        aria-label={ariaLabel}
         className={itemClass}
+        role="listitem"
         tabIndex={canToggleEditor ? 0 : -1}
-        onDoubleClick={(event) => {
-          if (canToggleEditor) {
-            event.preventDefault();
-            onEditToggle();
-          }
-        }}
+        aria-label={ariaLabel}
         onDragEnter={handleDragEnter}
         onDragOver={onDragOver}
+        onDoubleClick={handleDoubleClick}
       >
         <ItemListLayout
           className="h-12 cursor-default p-2"
-          leftContent={leftColumn}
           leftClasses="flex grow items-center min-w-0"
+          leftContent={leftColumn}
           rightContent={rightColumn}
         />
         {hasSpices && (
           <>
             {isSpiceInInput && (
-              <div
-                className={`
-                  mx-2 rounded-md border border-${theme.borderSecondary}
-                  bg-${theme.surfaceHover} p-2 text-center text-xs italic
-                `}
-              >
+              <div className={`mx-2 rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-2 text-center text-xs italic`}>
                 Options are managed in the Input panel.
               </div>
             )}
@@ -239,7 +236,7 @@ export const RecipeItem = memo<RecipeItemProps>(
               >
                 <div className="max-h-96 overflow-y-auto p-1">
                   <div className={`rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-2`}>
-                    <SpiceLayout currentSpices={ingredientItem.spices} ingredient={definition} onSpiceChange={handleSpiceChange} />
+                    <SpiceLayout ingredient={definition} currentSpices={ingredientItem.spices} onSpiceChange={handleSpiceChange} />
                   </div>
                 </div>
               </div>
