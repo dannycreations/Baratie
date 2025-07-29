@@ -1,6 +1,7 @@
 import { array, intersect, nonEmpty, number, object, optional, pipe, record, string, union } from 'valibot';
 
 import { ingredientRegistry, logger } from '../app/container';
+import { isObjectLike } from '../utilities/appUtil';
 
 import type { InferInput } from 'valibot';
 import type { IngredientDefinition, IngredientRegistry } from '../core/IngredientRegistry';
@@ -140,8 +141,7 @@ export async function loadAndExecuteExtension(extension: Readonly<Extension>, de
     return;
   }
 
-  const isModuleBased = typeof entryPointsOrModules[0] === 'object' && entryPointsOrModules[0] !== null;
-  const entryPoints = isModuleBased
+  const entryPoints = isObjectLike(entryPointsOrModules[0])
     ? (entryPointsOrModules as ReadonlyArray<ManifestModule>).map((m) => m.entry)
     : (entryPointsOrModules as string[]);
 

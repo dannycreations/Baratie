@@ -13,6 +13,14 @@ import type { AppTheme } from '../../app/themes';
 import type { IngredientDefinition, IngredientItem, SpiceValue } from '../../core/IngredientRegistry';
 import type { CookingStatusType } from '../../core/Kitchen';
 
+interface RecipeItemUIState {
+  readonly isAutoCook: boolean;
+  readonly isDragged: boolean;
+  readonly isEditing: boolean;
+  readonly isSpiceInInput: boolean;
+  readonly status: CookingStatusType;
+}
+
 export interface RecipeItemHandlers {
   readonly onRemove: (id: string) => void;
   readonly onSpiceChange: (ingredientId: string, spiceId: string, newValue: SpiceValue) => void;
@@ -25,13 +33,10 @@ export interface RecipeItemHandlers {
   readonly onLongPressEnd: () => void;
 }
 
-interface RecipeItemProps extends RecipeItemHandlers {
+interface RecipeItemProps {
   readonly ingredientItem: IngredientItem;
-  readonly isAutoCook: boolean;
-  readonly isDragged: boolean;
-  readonly isEditing: boolean;
-  readonly isSpiceInInput: boolean;
-  readonly status: CookingStatusType;
+  readonly uiState: RecipeItemUIState;
+  readonly handlers: RecipeItemHandlers;
 }
 
 interface MissingRecipeItemProps {
@@ -89,7 +94,7 @@ const SpiceInInputMessage = memo((): JSX.Element => {
   );
 });
 
-interface RecipeItemSpiceEditorProps {
+interface RecipeSpiceEditorProps {
   readonly ingredient: IngredientItem;
   readonly definition: IngredientDefinition;
   readonly onSpiceChange: (ingredientId: string, spiceId: string, newValue: SpiceValue) => void;
@@ -97,39 +102,31 @@ interface RecipeItemSpiceEditorProps {
   readonly onLongPressStart: () => void;
 }
 
-const RecipeItemSpiceEditor = memo<RecipeItemSpiceEditorProps>(
-  ({ ingredient, definition, onSpiceChange, onLongPressStart, onLongPressEnd }): JSX.Element => {
-    const theme = useThemeStore((state) => state.theme);
-    const handleSpiceChange = useCallback(
-      (spiceId: string, newValue: SpiceValue): void => {
-        onSpiceChange(ingredient.id, spiceId, newValue);
-      },
-      [onSpiceChange, ingredient.id],
-    );
+const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition, onSpiceChange, onLongPressStart, onLongPressEnd }): JSX.Element => {
+  const theme = useThemeStore((state) => state.theme);
+  const handleSpiceChange = useCallback(
+    (spiceId: string, newValue: SpiceValue): void => {
+      onSpiceChange(ingredient.id, spiceId, newValue);
+    },
+    [onSpiceChange, ingredient.id],
+  );
 
-    return (
-      <div
-        id={`options-${ingredient.id}`}
-        className="section-expand-enter-active"
-        onDoubleClick={(event) => {
-          event.stopPropagation();
-        }}
-      >
-        <div className="max-h-96 overflow-y-auto p-1">
-          <div className={`rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-2`}>
-            <SpiceLayout
-              ingredient={definition}
-              currentSpices={ingredient.spices}
-              onSpiceChange={handleSpiceChange}
-              onLongPressStart={onLongPressStart}
-              onLongPressEnd={onLongPressEnd}
-            />
-          </div>
+  return (
+    <div id={`options-${ingredient.id}`} className="section-expand-enter-active">
+      <div className="max-h-96 overflow-y-auto pl-1 pt-1 pb-1">
+        <div className={`rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-2`}>
+          <SpiceLayout
+            ingredient={definition}
+            currentSpices={ingredient.spices}
+            onSpiceChange={handleSpiceChange}
+            onLongPressStart={onLongPressStart}
+            onLongPressEnd={onLongPressEnd}
+          />
         </div>
       </div>
-    );
-  },
-);
+    </div>
+  );
+});
 
 function getStatusBorder(theme: AppTheme, status: CookingStatusType): string {
   const statusBorders: Readonly<Record<CookingStatusType, string>> = {
@@ -141,65 +138,50 @@ function getStatusBorder(theme: AppTheme, status: CookingStatusType): string {
   return statusBorders[status];
 }
 
-export const RecipeItem = memo<RecipeItemProps>(
-  ({
-    ingredientItem,
-    isDragged,
-    isAutoCook,
-    onRemove,
-    onSpiceChange,
-    onDragStart,
-    onDragEnd,
-    onDragOver,
-    onDragEnter,
-    isEditing,
-    isSpiceInInput,
-    onEditToggle,
-    status,
-    onLongPressStart,
-    onLongPressEnd,
-  }): JSX.Element => {
-    const theme = useThemeStore((state) => state.theme);
-    const definition = ingredientRegistry.getIngredient(ingredientItem.ingredientId);
+export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, handlers }): JSX.Element => {
+  const theme = useThemeStore((state) => state.theme);
+  const definition = ingredientRegistry.getIngredient(ingredientItem.ingredientId);
+  const { isAutoCook, isDragged, isEditing, isSpiceInInput, status } = uiState;
+  const { onRemove, onSpiceChange, onDragStart, onDragEnd, onDragOver, onDragEnter, onEditToggle, onLongPressStart, onLongPressEnd } = handlers;
 
-    if (!definition) {
-      return <MissingRecipeItem ingredientItem={ingredientItem} onRemove={onRemove} />;
-    }
+  if (!definition) {
+    return <MissingRecipeItem ingredientItem={ingredientItem} onRemove={onRemove} />;
+  }
 
-    const handleEditToggleCallback = useCallback(() => {
-      onEditToggle(ingredientItem.id);
-    }, [onEditToggle, ingredientItem.id]);
+  const handleEditToggleCallback = useCallback(() => {
+    onEditToggle(ingredientItem.id);
+  }, [onEditToggle, ingredientItem.id]);
 
-    const handleDragStart = useCallback(
-      (event: DragEvent<HTMLElement>): void => {
-        onDragStart(event, ingredientItem);
-      },
-      [onDragStart, ingredientItem],
-    );
+  const handleDragStart = useCallback(
+    (event: DragEvent<HTMLElement>): void => {
+      onDragStart(event, ingredientItem);
+    },
+    [onDragStart, ingredientItem],
+  );
 
-    const handleDragEnter = useCallback(
-      (event: DragEvent<HTMLElement>): void => {
-        onDragEnter(event, ingredientItem.id);
-      },
-      [onDragEnter, ingredientItem.id],
-    );
+  const handleDragEnter = useCallback(
+    (event: DragEvent<HTMLElement>): void => {
+      onDragEnter(event, ingredientItem.id);
+    },
+    [onDragEnter, ingredientItem.id],
+  );
 
-    const hasSpices = !!definition.spices && definition.spices.length > 0;
-    const canToggleEditor = hasSpices && !isSpiceInInput;
-    const isEditorVisible = isEditing && !isSpiceInInput && !isDragged;
-    const settingsTooltip = isSpiceInInput ? 'Options are in the Input panel' : isEditing ? 'Hide Options' : 'Edit Options';
+  const hasSpices = !!definition.spices && definition.spices.length > 0;
+  const canToggleEditor = hasSpices && !isSpiceInInput;
+  const isEditorVisible = isEditing && !isSpiceInInput && !isDragged;
+  const settingsTooltip = isSpiceInInput ? 'Options are in the Input panel' : isEditing ? 'Hide Options' : 'Edit Options';
 
-    const ariaLabelParts = [
-      `Recipe Item: ${ingredientItem.name}`,
-      `Status: ${isAutoCook ? status : 'Auto-Cook Disabled'}`,
-      isSpiceInInput ? 'Options are managed in the Input panel.' : '',
-      isEditorVisible ? 'The options editor is expanded.' : '',
-    ];
-    const ariaLabel = ariaLabelParts.filter(Boolean).join('. ');
+  const ariaLabelParts = [
+    `Recipe Item: ${ingredientItem.name}`,
+    `Status: ${isAutoCook ? status : 'Auto-Cook Disabled'}`,
+    isSpiceInInput ? 'Options are managed in the Input panel.' : '',
+    isEditorVisible ? 'The options editor is expanded.' : '',
+  ];
+  const ariaLabel = ariaLabelParts.filter(Boolean).join('. ');
 
-    const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
-    const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
-    const itemClass = `
+  const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
+  const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
+  const itemClass = `
       group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm
       outline-none transition-all duration-200 ease-in-out
       ${isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'}
@@ -207,95 +189,86 @@ export const RecipeItem = memo<RecipeItemProps>(
       ${isSpiceInInput ? 'pb-2' : ''}
     `.trim();
 
-    const grabHandleClass = `mr-2 cursor-grab text-${theme.contentTertiary} transition-colors group-hover:text-${theme.contentSecondary}`;
+  const grabHandleClass = `mr-2 cursor-grab text-${theme.contentTertiary} transition-colors group-hover:text-${theme.contentSecondary}`;
 
-    const leftColumn = (
-      <>
-        <Tooltip content="Drag to reorder" position="top">
-          <span
-            className={grabHandleClass}
-            aria-label="Drag handle"
-            aria-roledescription="draggable item"
-            draggable={true}
-            onDragStart={handleDragStart}
-            onDragEnd={onDragEnd}
-          >
-            <GrabIcon size={20} />
-          </span>
-        </Tooltip>
-        <Tooltip content={ingredientItem.name} position="top" className="min-w-0 flex-1">
-          <p className={`truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default`}>{ingredientItem.name}</p>
-        </Tooltip>
-      </>
-    );
+  const leftColumn = (
+    <>
+      <Tooltip content="Drag to reorder" position="top">
+        <span
+          className={grabHandleClass}
+          aria-label="Drag handle"
+          aria-roledescription="draggable item"
+          draggable={true}
+          onDragStart={handleDragStart}
+          onDragEnd={onDragEnd}
+        >
+          <GrabIcon size={20} />
+        </span>
+      </Tooltip>
+      <Tooltip content={ingredientItem.name} position="top" className="min-w-0 flex-1">
+        <p className={`truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default`}>{ingredientItem.name}</p>
+      </Tooltip>
+    </>
+  );
 
-    const rightColumn = (
-      <>
-        {hasSpices && (
-          <TooltipButton
-            icon={<PreferencesIcon size={18} />}
-            size="sm"
-            variant={isEditorVisible ? 'primary' : 'stealth'}
-            className={isEditorVisible ? '' : `text-${theme.contentTertiary} hover:text-${theme.infoFg}`}
-            aria-controls={`options-${ingredientItem.id}`}
-            aria-expanded={isEditorVisible}
-            aria-label={settingsTooltip}
-            tooltipContent={settingsTooltip}
-            tooltipPosition="top"
-            onClick={handleEditToggleCallback}
-          />
-        )}
+  const rightColumn = (
+    <>
+      {hasSpices && (
         <TooltipButton
-          icon={<XIcon size={18} />}
+          icon={<PreferencesIcon size={18} />}
           size="sm"
-          variant="danger"
-          className="opacity-50 group-hover:opacity-100 hover:!opacity-100"
-          aria-label={`Remove ingredient "${ingredientItem.name}" from recipe`}
-          tooltipContent="Remove Ingredient"
+          variant={isEditorVisible ? 'primary' : 'stealth'}
+          className={isEditorVisible ? '' : `text-${theme.contentTertiary} hover:text-${theme.infoFg}`}
+          aria-controls={`options-${ingredientItem.id}`}
+          aria-expanded={isEditorVisible}
+          aria-label={settingsTooltip}
+          tooltipContent={settingsTooltip}
           tooltipPosition="top"
-          onClick={() => onRemove(ingredientItem.id)}
+          onClick={handleEditToggleCallback}
         />
-      </>
-    );
+      )}
+      <TooltipButton
+        icon={<XIcon size={18} />}
+        size="sm"
+        variant="danger"
+        className="opacity-50 group-hover:opacity-100 hover:!opacity-100"
+        aria-label={`Remove ingredient "${ingredientItem.name}" from recipe`}
+        tooltipContent="Remove Ingredient"
+        tooltipPosition="top"
+        onClick={() => onRemove(ingredientItem.id)}
+      />
+    </>
+  );
 
-    const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement>): void => {
-      if (canToggleEditor) {
-        event.preventDefault();
-        handleEditToggleCallback();
-      }
-    };
-
-    return (
-      <div
-        className={itemClass}
-        role="listitem"
-        tabIndex={canToggleEditor ? 0 : -1}
-        aria-label={ariaLabel}
-        onDragEnter={handleDragEnter}
-        onDragOver={onDragOver}
-        onDoubleClick={handleDoubleClick}
-      >
-        <ItemListLayout
-          className="h-12 cursor-default p-2"
-          leftClasses="flex grow items-center min-w-0"
-          leftContent={leftColumn}
-          rightContent={rightColumn}
-        />
-        {hasSpices && (
-          <>
-            {isSpiceInInput && <SpiceInInputMessage />}
-            {isEditorVisible && (
-              <RecipeItemSpiceEditor
-                ingredient={ingredientItem}
-                definition={definition}
-                onSpiceChange={onSpiceChange}
-                onLongPressStart={onLongPressStart}
-                onLongPressEnd={onLongPressEnd}
-              />
-            )}
-          </>
-        )}
-      </div>
-    );
-  },
-);
+  return (
+    <div
+      className={itemClass}
+      role="listitem"
+      tabIndex={canToggleEditor ? 0 : -1}
+      aria-label={ariaLabel}
+      onDragEnter={handleDragEnter}
+      onDragOver={onDragOver}
+    >
+      <ItemListLayout
+        className="h-12 cursor-default p-2"
+        leftClasses="flex grow items-center min-w-0"
+        leftContent={leftColumn}
+        rightContent={rightColumn}
+      />
+      {hasSpices && (
+        <>
+          {isSpiceInInput && <SpiceInInputMessage />}
+          {isEditorVisible && (
+            <RecipeSpiceEditor
+              ingredient={ingredientItem}
+              definition={definition}
+              onSpiceChange={onSpiceChange}
+              onLongPressStart={onLongPressStart}
+              onLongPressEnd={onLongPressEnd}
+            />
+          )}
+        </>
+      )}
+    </div>
+  );
+});

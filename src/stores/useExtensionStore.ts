@@ -293,7 +293,7 @@ useExtensionStore.subscribe(
   (extensions) => {
     const storable = extensions
       .filter(
-        (ext): ext is StorableExtension & Pick<Extension, 'status'> =>
+        (ext) =>
           (ext.status === 'loaded' || ext.status === 'partial') &&
           !!ext.name &&
           typeof ext.fetchedAt === 'number' &&

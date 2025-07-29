@@ -44,10 +44,7 @@ export const AppearanceTab = memo((): JSX.Element => {
 
   const handleSelectTheme = useCallback(
     (themeId: ThemeId): void => {
-      const themeToSet = APP_THEMES.find((theme) => theme.id === themeId);
-      if (themeToSet) {
-        setTheme(themeToSet.id);
-      }
+      setTheme(themeId);
     },
     [setTheme],
   );

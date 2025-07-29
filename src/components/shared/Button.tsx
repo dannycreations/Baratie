@@ -140,8 +140,8 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
       variant="stealth"
       className={isCopied ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : ''}
       disabled={!textToCopy || isCopied}
-      aria-label={isCopied ? 'Result Copied to Clipboard' : 'Copy Result to Clipboard'}
-      tooltipContent={isCopied ? 'Copied!' : 'Copy Result'}
+      aria-label={isCopied ? 'Copied to clipboard' : 'Copy to clipboard'}
+      tooltipContent={isCopied ? 'Copied!' : 'Copy'}
       tooltipPosition={tooltipPosition}
       onClick={handleCopy}
     />

@@ -153,7 +153,7 @@ export const NotificationPanel = memo((): JSX.Element | null => {
   const map = useNotificationStore((state) => state.map);
 
   const messages = useMemo(() => {
-    return order.map((id) => map.get(id)).filter((n): n is NotificationMessage => !!n);
+    return order.map((id) => map.get(id)).filter((n) => !!n);
   }, [order, map]);
 
   if (messages.length === 0) {

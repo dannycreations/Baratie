@@ -42,6 +42,7 @@ interface SpiceContentProps {
 interface DefaultContentProps extends KitchenPanelSectionProps {
   readonly config: InputPanelConfig | null;
   readonly onDataChange: (data: string) => void;
+  readonly onFileDrop: (file: File) => void;
 }
 
 interface OutputContentProps extends KitchenPanelSectionProps {
@@ -123,7 +124,7 @@ const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient,
   );
 });
 
-const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange }) => {
+const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, onFileDrop }) => {
   const isTextareaDisabled = config?.mode === 'textarea' ? !!config.disabled : false;
   const placeholder = (config?.mode === 'textarea' && config.placeholder) || 'Place Raw Ingredients Here.';
 
@@ -137,6 +138,7 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange }
       textareaClasses="font-mono"
       wrapperClasses="flex-1 min-h-0"
       onChange={onDataChange}
+      onFileDrop={onFileDrop}
     />
   );
 });
@@ -177,7 +179,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
 
   const handleSetInputData = useCallback((data: string): void => kitchen.setInputData(data), []);
 
-  const handleFileSelected = useCallback(
+  const handleFileRead = useCallback(
     async (file: File): Promise<void> => {
       const operationId = ++importOperationRef.current;
 
@@ -206,7 +208,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   }, []);
 
   const headerActions = isInput ? (
-    <InputActions config={inputPanelConfig} data={data} onClear={handleClearInput} onFileSelect={handleFileSelected} />
+    <InputActions config={inputPanelConfig} data={data} onClear={handleClearInput} onFileSelect={handleFileRead} />
   ) : (
     <OutputActions data={data} onDownload={handleDownloadOutput} />
   );
@@ -225,7 +227,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
         />
       );
     }
-    return <DefaultContent config={inputPanelConfig} data={inputData} onDataChange={handleSetInputData} />;
+    return <DefaultContent config={inputPanelConfig} data={inputData} onDataChange={handleSetInputData} onFileDrop={handleFileRead} />;
   };
 
   return (

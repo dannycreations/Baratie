@@ -4,15 +4,14 @@ import { useAutoFocus } from '../../hooks/useAutoFocus';
 import { useExtensionStore } from '../../stores/useExtensionStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { IngredientList } from '../ingredient/IngredientList';
 import { Button } from '../shared/Button';
 import { BooleanInput } from '../shared/input/BooleanInput';
-import { SearchListLayout } from '../shared/layout/ListLayout';
+import { GroupListLayout, SearchListLayout } from '../shared/layout/ListLayout';
 import { Modal } from '../shared/Modal';
 
 import type { JSX } from 'react';
 import type { ExtensionManifest, ManifestModule } from '../../helpers/extensionHelper';
-import type { BaseListItem } from '../ingredient/IngredientList';
+import type { GroupListItem } from '../shared/layout/ListLayout';
 
 type ModuleIngredient = ManifestModule & { id: string };
 
@@ -109,7 +108,7 @@ export const ExtensionList = memo((): JSX.Element | null => {
     });
   }, []);
 
-  const handleToggleCategory = useCallback((modules: ReadonlyArray<BaseListItem>): void => {
+  const handleToggleCategory = useCallback((modules: ReadonlyArray<GroupListItem>): void => {
     const moduleEntries = modules.map((m) => m.id);
     setSelectedEntries((prev) => {
       const newSet = new Set(prev);
@@ -149,7 +148,7 @@ export const ExtensionList = memo((): JSX.Element | null => {
   }, []);
 
   const renderItemPrefix = useCallback(
-    (item: BaseListItem): JSX.Element => (
+    (item: GroupListItem): JSX.Element => (
       <BooleanInput
         id={`module-select-${item.id}`}
         checked={selectedEntries.has(item.id)}
@@ -162,7 +161,7 @@ export const ExtensionList = memo((): JSX.Element | null => {
   );
 
   const renderHeader = useCallback(
-    (category: string, items: ReadonlyArray<BaseListItem>): JSX.Element => {
+    (category: string, items: ReadonlyArray<GroupListItem>): JSX.Element => {
       const categoryId = `install-category-${category.replace(/\s+/g, '-').toLowerCase()}`;
       const areAllSelected = items.length > 0 && items.every((item) => selectedEntries.has(item.id));
 
@@ -187,7 +186,7 @@ export const ExtensionList = memo((): JSX.Element | null => {
   );
 
   const content = (
-    <IngredientList itemsByCategory={filteredGroupedModules} query={deferredQuery} renderHeader={renderHeader} renderItemPrefix={renderItemPrefix} />
+    <GroupListLayout itemsByCategory={filteredGroupedModules} query={deferredQuery} renderHeader={renderHeader} renderItemPrefix={renderItemPrefix} />
   );
 
   return (

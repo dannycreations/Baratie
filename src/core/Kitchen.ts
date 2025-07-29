@@ -2,6 +2,7 @@ import { KEY_REPEAT_STEP } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger } from '../app/container';
 import { useKitchenStore } from '../stores/useKitchenStore';
 import { useRecipeStore } from '../stores/useRecipeStore';
+import { isObjectLike } from '../utilities/appUtil';
 import { AppError } from './ErrorHandler';
 import { InputType } from './InputType';
 
@@ -43,7 +44,7 @@ interface IngredientRunResult {
 }
 
 function isPanelControlSignal(value: ResultType): value is PanelControlSignal {
-  return typeof value === 'object' && value !== null && 'output' in value && value.output instanceof InputType;
+  return isObjectLike(value) && 'output' in value && value.output instanceof InputType;
 }
 
 export class Kitchen {
@@ -127,7 +128,7 @@ export class Kitchen {
     }
   }
 
-  public toggleAutoCook = (): void => {
+  public toggleAutoCook(): void {
     const wasEnabled = useKitchenStore.getState().isAutoCookEnabled;
     useKitchenStore.getState().toggleAutoCookState();
 
@@ -141,7 +142,7 @@ export class Kitchen {
       }
       this.hasPendingCook = false;
     }
-  };
+  }
 
   private async cookRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeCookResult> {
     if (recipe.length === 0) {

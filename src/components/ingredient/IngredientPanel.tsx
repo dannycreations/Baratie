@@ -1,8 +1,9 @@
-import { memo, useCallback, useId, useState } from 'react';
+import { memo, useCallback, useDeferredValue, useId, useMemo, useState } from 'react';
 
-import { errorHandler } from '../../app/container';
+import { CATEGORY_FAVORITES } from '../../app/constants';
+import { errorHandler, ingredientRegistry } from '../../app/container';
+import { createIngredientSearchPredicate, groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
 import { useDropZone } from '../../hooks/useDropZone';
-import { useSearchIngredients } from '../../hooks/useSearchAction';
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useFavoriteStore } from '../../stores/useFavoriteStore';
 import { useIngredientStore } from '../../stores/useIngredientStore';
@@ -12,13 +13,13 @@ import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
 import { PlusIcon, PreferencesIcon, SettingsIcon, StarIcon } from '../shared/Icon';
 import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
-import { SearchListLayout } from '../shared/layout/ListLayout';
+import { GroupListLayout, SearchListLayout } from '../shared/layout/ListLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
-import { IngredientList } from './IngredientList';
 import { IngredientManager } from './IngredientManager';
 
 import type { DragEvent, JSX } from 'react';
-import type { BaseListItem } from './IngredientList';
+import type { IngredientProps } from '../../core/IngredientRegistry';
+import type { GroupListItem } from '../shared/layout/ListLayout';
 
 export const IngredientPanel = memo((): JSX.Element => {
   const favorites = useFavoriteStore((state) => state.favorites);
@@ -56,18 +57,55 @@ export const IngredientPanel = memo((): JSX.Element => {
     onDrop: handleDropRecipe,
   });
 
-  const { filteredIngredients, allIngredientsCount, visibleIngredientsCount } = useSearchIngredients({
-    query,
-    registryVersion,
-    favorites,
-    disabledCategories,
-    disabledIngredients,
-  });
+  const allIngredients = useMemo<ReadonlyArray<IngredientProps>>(() => {
+    return ingredientRegistry.getAllIngredients();
+  }, [registryVersion]);
+
+  const deferredQuery = useDeferredValue(query);
+
+  const visibleIngredientsList = useMemo(() => {
+    return allIngredients.filter((ing) => !disabledCategories.has(ing.category) && !disabledIngredients.has(ing.id));
+  }, [allIngredients, disabledCategories, disabledIngredients]);
+
+  const favoritesList = useMemo(() => {
+    return visibleIngredientsList.filter((ing) => favorites.has(ing.id));
+  }, [visibleIngredientsList, favorites]);
+
+  const regularList = useMemo(() => {
+    return visibleIngredientsList.filter((ing) => !favorites.has(ing.id));
+  }, [visibleIngredientsList, favorites]);
+
+  const groupedRegular = useMemo(() => groupAndSortIngredients(regularList), [regularList]);
+
+  const filteredIngredients = useMemo((): Array<[string, ReadonlyArray<IngredientProps>]> => {
+    const lowerQuery = deferredQuery.toLowerCase().trim();
+    if (!lowerQuery) {
+      const allGrouped = Array.from(groupedRegular.entries());
+      if (favoritesList.length > 0) {
+        return [[CATEGORY_FAVORITES, favoritesList], ...allGrouped];
+      }
+      return allGrouped;
+    }
+
+    const searchPredicate = createIngredientSearchPredicate(lowerQuery);
+    const filteredFavorites = favoritesList.filter(searchPredicate);
+    const filteredRegular = searchGroupedIngredients(groupedRegular, deferredQuery);
+
+    const result: Array<[string, ReadonlyArray<IngredientProps>]> = [];
+    if (filteredFavorites.length > 0) {
+      result.push([CATEGORY_FAVORITES, filteredFavorites]);
+    }
+    result.push(...filteredRegular);
+    return result;
+  }, [deferredQuery, favoritesList, groupedRegular]);
+
+  const allIngredientsCount = allIngredients.length;
+  const visibleIngredientsCount = visibleIngredientsList.length;
 
   const visibleIngredients = visibleIngredientsCount;
   const totalIngredients = allIngredientsCount;
 
-  const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: BaseListItem): void => {
+  const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: GroupListItem): void => {
     errorHandler.assert(item.id, 'Ingredient unique name not found on dragged element.', 'Ingredient Drag');
     event.dataTransfer.setData('application/x-baratie-ingredient-type', item.id);
     event.dataTransfer.effectAllowed = 'copy';
@@ -99,7 +137,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   );
 
   const renderItemActions = useCallback(
-    (item: BaseListItem): JSX.Element => {
+    (item: GroupListItem): JSX.Element => {
       const isFavorite = favorites.has(item.id);
 
       return (
@@ -147,7 +185,7 @@ export const IngredientPanel = memo((): JSX.Element => {
         <SearchListLayout
           listId={listId}
           listContent={
-            <IngredientList
+            <GroupListLayout
               query={query}
               itemsByCategory={filteredIngredients}
               renderItemActions={renderItemActions}

@@ -20,6 +20,7 @@ import { RecipeItem } from './RecipeItem';
 import type { DragEvent, JSX } from 'react';
 import type { IngredientItem, SpiceValue } from '../../core/IngredientRegistry';
 import type { CookbookModalProps } from '../../stores/useCookbookStore';
+import type { RecipeItemHandlers } from './RecipeItem';
 
 export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
@@ -134,7 +135,7 @@ export const RecipePanel = memo((): JSX.Element => {
           aria-label={autoCookLabel}
           tooltipContent={autoCookTooltip}
           tooltipPosition="bottom"
-          onClick={kitchen.toggleAutoCook}
+          onClick={() => kitchen.toggleAutoCook()}
         />
         <ConfirmButton
           actionName="Clear"
@@ -168,6 +169,21 @@ export const RecipePanel = memo((): JSX.Element => {
     [editingId, setEditingId],
   );
 
+  const recipeItemHandlers: RecipeItemHandlers = useMemo(
+    () => ({
+      onRemove: handleRemove,
+      onSpiceChange: handleSpiceChange,
+      onDragStart: handleDragStart,
+      onDragEnter: onMoveEnter,
+      onDragEnd: onMoveEnd,
+      onDragOver: onMoveOver,
+      onEditToggle: handleEditToggle,
+      onLongPressStart: startUpdateBatch,
+      onLongPressEnd: endUpdateBatch,
+    }),
+    [handleRemove, handleSpiceChange, handleDragStart, onMoveEnter, onMoveEnd, onMoveOver, handleEditToggle, startUpdateBatch, endUpdateBatch],
+  );
+
   let content: JSX.Element;
   if (ingredients.length === 0) {
     if (isDraggingIngredient) {
@@ -187,27 +203,15 @@ export const RecipePanel = memo((): JSX.Element => {
         {ingredients.map((ingredient: IngredientItem) => {
           const isSpiceInInput = inputPanelId === ingredient.id;
           const isEditingItem = editingId === ingredient.id;
+          const uiState = {
+            isAutoCook: isAutoCookEnabled,
+            isDragged: dragId === ingredient.id,
+            isEditing: !isSpiceInInput && isEditingItem,
+            isSpiceInInput: isSpiceInInput,
+            status: ingredientStatuses[ingredient.id] || 'idle',
+          };
 
-          return (
-            <RecipeItem
-              key={ingredient.id}
-              ingredientItem={ingredient}
-              isAutoCook={isAutoCookEnabled}
-              isDragged={dragId === ingredient.id}
-              isEditing={!isSpiceInInput && isEditingItem}
-              isSpiceInInput={isSpiceInInput}
-              status={ingredientStatuses[ingredient.id] || 'idle'}
-              onRemove={handleRemove}
-              onSpiceChange={handleSpiceChange}
-              onDragStart={handleDragStart}
-              onDragEnter={onMoveEnter}
-              onDragEnd={onMoveEnd}
-              onDragOver={onMoveOver}
-              onEditToggle={handleEditToggle}
-              onLongPressStart={startUpdateBatch}
-              onLongPressEnd={endUpdateBatch}
-            />
-          );
+          return <RecipeItem key={ingredient.id} ingredientItem={ingredient} uiState={uiState} handlers={recipeItemHandlers} />;
         })}
         {isDraggingIngredient && <DropZoneLayout mode="placeholder" text="Drop to add ingredient" variant="add" />}
       </div>

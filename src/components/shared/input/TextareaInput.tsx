@@ -1,10 +1,8 @@
 import { memo, useCallback, useRef, useState } from 'react';
 
-import { errorHandler } from '../../../app/container';
 import { useDropZone } from '../../../hooks/useDropZone';
 import { useLineNumber } from '../../../hooks/useLineNumber';
 import { useThemeStore } from '../../../stores/useThemeStore';
-import { readAsText } from '../../../utilities/fileUtil';
 import { DropZoneLayout } from '../layout/DropZoneLayout';
 
 import type { ChangeEvent, JSX, TextareaHTMLAttributes, UIEvent } from 'react';
@@ -12,13 +10,14 @@ import type { ChangeEvent, JSX, TextareaHTMLAttributes, UIEvent } from 'react';
 interface TextareaInputProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'value' | 'onChange' | 'readOnly' | 'spellCheck'> {
   readonly value: string;
   readonly onChange?: (value: string) => void;
+  readonly onFileDrop?: (file: File) => void;
   readonly showLineNumbers?: boolean;
   readonly textareaClasses?: string;
   readonly wrapperClasses?: string;
 }
 
 export const TextareaInput = memo<TextareaInputProps>(
-  ({ value, onChange, wrapperClasses = '', textareaClasses = '', showLineNumbers = false, ...rest }): JSX.Element => {
+  ({ value, onChange, onFileDrop, wrapperClasses = '', textareaClasses = '', showLineNumbers = false, ...rest }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const { disabled, placeholder = '' } = rest;
 
@@ -29,24 +28,20 @@ export const TextareaInput = memo<TextareaInputProps>(
 
     const virtualizedLines = useLineNumber({ value, showLineNumbers, textareaRef, scrollTop });
 
-    const handleFileDrop = useCallback(
-      async (file: File): Promise<void> => {
-        if (disabled || !onChange) {
-          return;
-        }
-        const { result: text, error } = await errorHandler.attemptAsync(() => readAsText(file));
-        if (!error && typeof text === 'string') {
-          onChange(text);
+    const handleDrop = useCallback(
+      (file: File): void => {
+        if (!disabled && onFileDrop) {
+          onFileDrop(file);
         }
       },
-      [disabled, onChange],
+      [disabled, onFileDrop],
     );
 
     const { isDragOver, dropZoneProps } = useDropZone<File, HTMLDivElement>({
-      disabled,
-      onValidate: (dt) => Array.from(dt.items).some((item) => item.kind === 'file'),
+      disabled: disabled || !onFileDrop,
+      onValidate: (dt) => Array.from(dt.items).some((item) => item.kind === 'file' && item.type.startsWith('text/')),
       onExtract: (dt) => dt.files?.[0],
-      onDrop: handleFileDrop,
+      onDrop: handleDrop,
     });
 
     const handleChange = useCallback(

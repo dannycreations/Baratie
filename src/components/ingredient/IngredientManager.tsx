@@ -7,13 +7,12 @@ import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { BooleanInput } from '../shared/input/BooleanInput';
-import { SearchListLayout } from '../shared/layout/ListLayout';
+import { GroupListLayout, SearchListLayout } from '../shared/layout/ListLayout';
 import { Modal } from '../shared/Modal';
-import { IngredientList } from './IngredientList';
 
 import type { JSX } from 'react';
 import type { IngredientProps } from '../../core/IngredientRegistry';
-import type { BaseListItem } from './IngredientList';
+import type { GroupListItem } from '../shared/layout/ListLayout';
 
 export const IngredientManager = memo((): JSX.Element => {
   const isModalOpen = useModalStore((state) => state.activeModal === 'ingredientManager');
@@ -45,7 +44,7 @@ export const IngredientManager = memo((): JSX.Element => {
   }, [ingredientsByCategory, query]);
 
   const renderHeader = useCallback(
-    (category: string, _items: ReadonlyArray<BaseListItem>): JSX.Element => {
+    (category: string, _items: ReadonlyArray<GroupListItem>): JSX.Element => {
       const categoryId = `manager-category-${category.replace(/\s+/g, '-').toLowerCase()}`;
       const isCategoryDisabled = disabledCategories.has(category);
 
@@ -64,7 +63,7 @@ export const IngredientManager = memo((): JSX.Element => {
   );
 
   const renderItemPrefix = useCallback(
-    (ingredient: BaseListItem): JSX.Element => {
+    (ingredient: GroupListItem): JSX.Element => {
       const isCategoryDisabled = disabledCategories.has(ingredient.category);
       const ingredientId = `manager-ingredient-${ingredient.name.replace(/\s+/g, '-').toLowerCase()}`;
       const isIngredientDisabled = disabledIngredients.has(ingredient.id);
@@ -82,14 +81,14 @@ export const IngredientManager = memo((): JSX.Element => {
   );
 
   const isItemDisabled = useCallback(
-    (ingredient: BaseListItem): boolean => {
+    (ingredient: GroupListItem): boolean => {
       return disabledCategories.has(ingredient.category) || disabledIngredients.has(ingredient.id);
     },
     [disabledCategories, disabledIngredients],
   );
 
   const content = (
-    <IngredientList
+    <GroupListLayout
       itemsByCategory={filteredList}
       query={query}
       isItemDisabled={isItemDisabled}

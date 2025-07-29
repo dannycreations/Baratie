@@ -1,6 +1,5 @@
 import { memo, useCallback, useMemo } from 'react';
 
-import { logger } from '../../../app/container';
 import { getVisibleSpices } from '../../../helpers/spiceHelper';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { BooleanInput } from '../input/BooleanInput';
@@ -97,16 +96,11 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
         return <TextareaInput id={id} value={value} placeholder={spice.placeholder} rows={4} onChange={handleTextareaChange} />;
       }
       case 'select': {
-        const value = rawValue ?? spice.value;
-        if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
-          logger.warn(`Invalid value type for select spice '${spice.id}': ${typeof value}. Reverting to default.`);
-          return <SelectInput id={id} value={spice.value} options={spice.options} onChange={handleSelectChange} />;
-        }
+        const isValid = ['string', 'number', 'boolean'].includes(typeof rawValue);
+        const value = isValid ? (rawValue as SpiceValue) : spice.value;
         return <SelectInput id={id} value={value} options={spice.options} onChange={handleSelectChange} />;
       }
       default: {
-        const unhandled = spice as SpiceDefinition;
-        logger.warn(`Unhandled spice type: ${unhandled.type}`);
         return null;
       }
     }
