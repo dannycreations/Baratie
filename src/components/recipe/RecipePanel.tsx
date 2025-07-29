@@ -3,6 +3,7 @@ import { memo, useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { ingredientRegistry, kitchen } from '../../app/container';
 import { useDragMove } from '../../hooks/useDragMove';
 import { useDropZone } from '../../hooks/useDropZone';
+import { useOverflowScroll } from '../../hooks/useOverflowScroll';
 import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useKitchenStore } from '../../stores/useKitchenStore';
@@ -39,6 +40,7 @@ export const RecipePanel = memo((): JSX.Element => {
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
 
   const prevIngredientsCount = useRef(ingredients.length);
+  const { ref: listScrollRef, className: overflowClasses } = useOverflowScroll<HTMLDivElement>({ yClasses: 'pr-1' });
   const listId = useId();
 
   const handleDropIngredient = useCallback((typeString: string): void => {
@@ -187,7 +189,7 @@ export const RecipePanel = memo((): JSX.Element => {
   let content: JSX.Element;
   if (ingredients.length === 0) {
     if (isDraggingIngredient) {
-      content = <DropZoneLayout mode="full" text="Drop to add ingredient" variant="add" />;
+      content = <DropZoneLayout mode="overlay" text="Drop to add ingredient" variant="add" />;
     } else {
       content = (
         <EmptyView className="flex h-full grow flex-col items-center justify-center p-3">
@@ -218,14 +220,15 @@ export const RecipePanel = memo((): JSX.Element => {
     );
   }
 
-  const listClass = `grow overflow-y-auto transition-colors duration-200 ${isDraggingIngredient ? `bg-${theme.surfaceMuted}` : ''}`.trim();
+  const listClass = `grow transition-colors duration-200 ${isDraggingIngredient ? `bg-${theme.surfaceMuted}` : ''}`.trim();
 
   return (
     <SectionLayout
       headerLeft="Recipe"
       headerRight={headerActions}
       className="h-[50vh] min-h-0 md:h-auto md:flex-1"
-      contentClasses={`relative flex h-full flex-col text-${theme.contentTertiary}`}
+      contentClasses={`${overflowClasses} relative flex h-full flex-col text-${theme.contentTertiary}`.trim()}
+      contentRef={listScrollRef}
     >
       <div className="flex h-full flex-col" {...dropZoneProps}>
         <SearchListLayout listId={listId} listContent={content} listWrapperClasses={listClass} />

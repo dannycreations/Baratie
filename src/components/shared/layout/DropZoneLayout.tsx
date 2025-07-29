@@ -4,7 +4,7 @@ import { useThemeStore } from '../../../stores/useThemeStore';
 
 import type { JSX } from 'react';
 
-type DropZoneMode = 'full' | 'overlay' | 'placeholder';
+type DropZoneMode = 'overlay' | 'placeholder';
 type DropZoneVariant = 'add' | 'remove';
 
 interface DropZoneProps {
@@ -15,7 +15,6 @@ interface DropZoneProps {
 }
 
 const DROPZONE_MODE_MAP: Readonly<Record<DropZoneMode, string>> = {
-  full: 'h-full w-full grow p-3',
   overlay: 'pointer-events-none absolute inset-0 z-10 p-3',
   placeholder: 'mt-2 h-14 text-sm',
 };

@@ -2,7 +2,6 @@ import { memo, useCallback, useState } from 'react';
 
 import { useOverflowScroll } from '../../../hooks/useOverflowScroll';
 import { useThemeStore } from '../../../stores/useThemeStore';
-import { TooltipButton } from '../Button';
 import { HighlightText } from '../HighlightText';
 import { ChevronRightIcon } from '../Icon';
 import { StringInput } from '../input/StringInput';
@@ -120,28 +119,23 @@ export const GroupListLayout = memo<GroupListProps>(
           const panelId = `${categoryId}-content`;
 
           const header = (
-            <div className={`flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-2 text-left text-${theme.contentSecondary}`}>
-              <div className="min-w-0 flex-1">
-                {renderHeader ? renderHeader(category, items) : <p className="truncate font-medium">{category}</p>}
-              </div>
-              <TooltipButton
-                icon={
-                  <ChevronRightIcon
-                    aria-hidden="true"
-                    className={`transform transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
-                    size={20}
-                  />
-                }
-                size="sm"
-                variant="stealth"
-                id={buttonId}
-                aria-controls={panelId}
-                aria-expanded={isExpanded}
-                aria-label={isExpanded ? `Collapse ${category}` : `Expand ${category}`}
-                tooltipContent={isExpanded ? `Collapse ${category}` : `Expand ${category}`}
-                onClick={() => handleCategoryToggle(category)}
+            <button
+              id={buttonId}
+              className={`
+                flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-2
+                text-left text-${theme.contentSecondary} outline-none hover:bg-${theme.surfaceHover}
+              `}
+              aria-controls={panelId}
+              aria-expanded={isExpanded}
+              onClick={() => handleCategoryToggle(category)}
+            >
+              {renderHeader ? renderHeader(category, items) : <p className="truncate font-medium">{category}</p>}
+              <ChevronRightIcon
+                aria-hidden="true"
+                className={`transform transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
+                size={20}
               />
-            </div>
+            </button>
           );
 
           const containerClass = `overflow-hidden rounded-md ${!isExpanded && index < itemsByCategory.length - 1 ? 'mb-2' : ''}`.trim();

@@ -9,12 +9,13 @@ import { Tooltip } from '../shared/Tooltip';
 
 import type { JSX } from 'react';
 import type { Extension } from '../../helpers/extensionHelper';
+import type { ExtensionState } from '../../stores/useExtensionStore';
 
 type ExtensionItemStatusProps = Pick<Extension, 'status' | 'errors'>;
 
 interface ExtensionItemActionHandlers {
-  readonly onRefresh: (id: string) => void;
-  readonly onRemove: (id: string) => void;
+  readonly onRefresh: ExtensionState['refresh'];
+  readonly onRemove: ExtensionState['remove'];
 }
 
 export interface ExtensionItemProps extends ExtensionItemStatusProps, ExtensionItemActionHandlers {
@@ -68,7 +69,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
   }, [onRemove, id]);
 
   const handleRefresh = useCallback((): void => {
-    onRefresh(id);
+    onRefresh(id, { force: true });
   }, [onRefresh, id]);
 
   const leftContent = (

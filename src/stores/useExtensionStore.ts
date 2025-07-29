@@ -25,7 +25,7 @@ export interface ExtensionState {
   readonly cancelPendingInstall: () => void;
   readonly init: () => Promise<void>;
   readonly installSelectedModules: (id: string, selectedModules: ReadonlyArray<ManifestModule>) => Promise<void>;
-  readonly refresh: (id: string) => Promise<void>;
+  readonly refresh: (id: string, options?: { readonly force?: boolean }) => Promise<void>;
   readonly remove: (id: string) => void;
   readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: ReadonlyArray<string>) => void;
   readonly setExtensions: (extensions: ReadonlyArray<Extension>) => void;
@@ -63,7 +63,7 @@ export const useExtensionStore = create<ExtensionState>()(
         return;
       }
 
-      await refresh(id);
+      await refresh(id, { force: true });
     },
 
     cancelPendingInstall: () => {
@@ -149,9 +149,9 @@ export const useExtensionStore = create<ExtensionState>()(
       });
     },
 
-    refresh: async (id) => {
-      const { upsert, setIngredients, setExtensionStatus } = get();
-      const storeExtension = get().extensionMap.get(id);
+    refresh: async (id, options) => {
+      const { upsert, setIngredients, setExtensionStatus, extensionMap } = get();
+      const storeExtension = extensionMap.get(id);
 
       logger.info(`Refreshing extension: ${storeExtension?.name || id}`);
       upsert({
@@ -179,7 +179,10 @@ export const useExtensionStore = create<ExtensionState>()(
         }
         const manifest: ExtensionManifest = validationResult.output;
 
-        if (Array.isArray(manifest.entry) && typeof manifest.entry[0] === 'object') {
+        const isManualAction = options?.force ?? false;
+        const isModuleBased = Array.isArray(manifest.entry) && typeof manifest.entry[0] === 'object';
+
+        if (isManualAction && isModuleBased) {
           upsert({ id: id, name: manifest.name, status: 'awaiting', manifest: manifest, scripts: {} });
         } else {
           if (storeExtension?.ingredients) {
@@ -187,8 +190,17 @@ export const useExtensionStore = create<ExtensionState>()(
             setIngredients(id, []);
           }
 
-          const freshExtension: Extension = { id: id, ...manifest, status: 'loading', scripts: {} };
+          const entryToUse = isModuleBased && storeExtension?.entry ? storeExtension.entry : manifest.entry;
+
+          const freshExtension: Extension = {
+            id: id,
+            name: manifest.name,
+            entry: entryToUse,
+            status: 'loading',
+            scripts: {},
+          };
           upsert(freshExtension);
+
           await loadAndExecuteExtension(freshExtension, {
             getExtensionMap: () => get().extensionMap,
             setExtensionStatus: get().setExtensionStatus,

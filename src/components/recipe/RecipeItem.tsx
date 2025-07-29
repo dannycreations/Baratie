@@ -113,7 +113,7 @@ const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition
 
   return (
     <div id={`options-${ingredient.id}`} className="section-expand-enter-active">
-      <div className="max-h-96 overflow-y-auto pl-1 pt-1 pb-1">
+      <div className="max-h-96 overflow-y-auto p-1">
         <div className={`rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-2`}>
           <SpiceLayout
             ingredient={definition}

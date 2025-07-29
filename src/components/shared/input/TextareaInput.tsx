@@ -66,7 +66,7 @@ export const TextareaInput = memo<TextareaInputProps>(
     `.trim();
 
     const gutterClass = `
-      shrink-0 select-none overflow-y-hidden border-r
+      shrink-0 select-none overflow-hidden border-r
       border-${theme.borderPrimary} bg-${theme.surfaceSecondary} p-2
       text-right text-${theme.contentTertiary}
     `;

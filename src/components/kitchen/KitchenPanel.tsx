@@ -111,7 +111,7 @@ const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient,
   errorHandler.assert(definition, 'Could not find definition for target ingredient in spice editor.');
 
   return (
-    <div aria-label={`Parameters for ${definition.name}`} className="overflow-y-auto">
+    <div aria-label={`Parameters for ${definition.name}`}>
       <SpiceLayout
         ingredient={definition}
         currentSpices={targetIngredient.spices}
