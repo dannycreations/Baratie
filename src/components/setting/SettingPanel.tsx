@@ -68,7 +68,7 @@ export const SettingPanel = memo((): JSX.Element => {
             </TabButton>
           ))}
         </div>
-        <div className="grow overflow-y-auto pt-3">
+        <div className="grow min-h-0 pt-3">
           {SETTING_TABS.map((tab) => (
             <div
               key={tab.id}
@@ -76,6 +76,7 @@ export const SettingPanel = memo((): JSX.Element => {
               role="tabpanel"
               hidden={activeTab !== tab.id}
               aria-labelledby={`${tabIdPrefix}-${tab.id}`}
+              className="h-full"
             >
               {tab.component}
             </div>

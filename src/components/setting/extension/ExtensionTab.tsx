@@ -56,7 +56,7 @@ export const ExtensionTab = memo((): JSX.Element => {
   );
 
   return (
-    <div className="space-y-3">
+    <div className="flex h-full flex-col gap-3">
       <div>
         <p className={`text-sm text-${theme.contentTertiary}`}>
           Add external ingredients by providing a link to a public GitHub repository. The repository must contain a{' '}
@@ -82,26 +82,28 @@ export const ExtensionTab = memo((): JSX.Element => {
         </Button>
       </div>
 
-      <div>
+      <div className="flex min-h-0 flex-1 flex-col">
         <h4 className={`mb-3 text-base font-medium text-${theme.contentSecondary}`}>Installed Extensions</h4>
-        {extensions.length === 0 ? (
-          <EmptyView>No extensions have been installed yet.</EmptyView>
-        ) : (
-          <ul className="space-y-2">
-            {extensions.map((extension) => (
-              <ExtensionItem
-                key={extension.id}
-                id={extension.id}
-                displayName={extension.name || extension.id}
-                status={extension.status}
-                errors={extension.errors}
-                isLoading={extension.status === 'loading'}
-                onRefresh={refreshExtension}
-                onRemove={removeExtension}
-              />
-            ))}
-          </ul>
-        )}
+        <div className="grow overflow-y-auto pr-1">
+          {extensions.length === 0 ? (
+            <EmptyView>No extensions have been installed yet.</EmptyView>
+          ) : (
+            <ul className="space-y-2">
+              {extensions.map((extension) => (
+                <ExtensionItem
+                  key={extension.id}
+                  id={extension.id}
+                  displayName={extension.name || extension.id}
+                  status={extension.status}
+                  errors={extension.errors}
+                  isLoading={extension.status === 'loading'}
+                  onRefresh={refreshExtension}
+                  onRemove={removeExtension}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );
