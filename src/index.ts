@@ -13,15 +13,7 @@ import { readAsBase64, readAsText, triggerDownload } from './utilities/fileUtil'
 
 import type { BaratieOptions } from './app/Baratie';
 import type { NotificationType } from './components/main/NotificationPanel';
-import type {
-  IngredientContext,
-  IngredientDefinition,
-  IngredientItem,
-  RecipebookItem,
-  ResultType,
-  SpiceDefinition,
-  SpiceValue,
-} from './core/IngredientRegistry';
+import type { IngredientContext, IngredientDefinition, IngredientItem, RecipebookItem, SpiceDefinition, SpiceValue } from './core/IngredientRegistry';
 import type { InputType } from './core/InputType';
 
 const { getState: getNotificationState } = useNotificationStore;
@@ -72,7 +64,6 @@ export type {
   InputType,
   NotificationType,
   RecipebookItem,
-  ResultType,
   SpiceDefinition,
   SpiceValue,
 };

@@ -1,34 +1,25 @@
-import { CATEGORY_FLOW, KEY_CUSTOM_OUTPUT } from '../app/constants';
+import { CATEGORY_EFFECT, KEY_CUSTOM_OUTPUT } from '../app/constants';
 
-import type { IngredientDefinition, OutputPanelConfig, PanelControlConfig } from '../core/IngredientRegistry';
+import type { IngredientDefinition } from '../core/IngredientRegistry';
 
 export const CUSTOM_OUTPUT_DEF: IngredientDefinition = {
   name: KEY_CUSTOM_OUTPUT,
-  category: CATEGORY_FLOW,
+  category: CATEGORY_EFFECT,
   description: 'Displays the output as plain text in the Output panel.',
   run: (input, _spices, context) => {
-    const inputValue = input.cast('string').getValue().trim();
+    const inputValue = input.cast('string').value.trim();
     if (!inputValue) {
-      return null;
+      return input.warning(null);
     }
 
-    const { ingredient: currentIngredient } = context;
-
-    const config: OutputPanelConfig = {
-      mode: 'textarea',
-      title: 'Output',
-      placeholder: 'Your results will be presented here.',
-    };
-
-    const panelInstruction: PanelControlConfig = {
+    return input.render({
       panelType: 'output',
-      providerId: currentIngredient.id,
-      config: config,
-    };
-
-    return {
-      output: input,
-      panelControl: panelInstruction,
-    };
+      providerId: context.ingredient.id,
+      config: {
+        mode: 'textarea',
+        title: 'Output',
+        placeholder: 'Your results will be presented here.',
+      },
+    });
   },
 };

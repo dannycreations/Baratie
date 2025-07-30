@@ -135,28 +135,28 @@ export function validateSpices(
 
     switch (spice.type) {
       case 'number': {
-        validatedSpices[spice.id] = input.cast('number', { max: spice.max, min: spice.min, value: spice.value }).getValue();
+        validatedSpices[spice.id] = input.cast('number', { max: spice.max, min: spice.min, value: spice.value }).value;
         break;
       }
       case 'boolean': {
-        validatedSpices[spice.id] = input.cast('boolean', { value: spice.value }).getValue();
+        validatedSpices[spice.id] = input.cast('boolean', { value: spice.value }).value;
         break;
       }
       case 'select': {
-        const selectedValue = input.getValue();
+        const selectedValue = input.value;
         const isValidOption = spice.options.some((opt) => String(opt.value) === String(selectedValue));
         validatedSpices[spice.id] = isValidOption ? prepareSelectValue(selectedValue as SpiceValue, spice) : spice.value;
         break;
       }
       case 'string':
       case 'textarea': {
-        validatedSpices[spice.id] = input.cast('string', { value: spice.value }).getValue();
+        validatedSpices[spice.id] = input.cast('string', { value: spice.value }).value;
         break;
       }
       default: {
         const unhandled = spice as SpiceDefinition;
         logger.warn(`An unhandled spice type was encountered: ${unhandled.id}`);
-        validatedSpices[unhandled.id] = input.getValue() as SpiceValue;
+        validatedSpices[unhandled.id] = input.value as SpiceValue;
         break;
       }
     }

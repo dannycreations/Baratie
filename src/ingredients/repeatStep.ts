@@ -1,4 +1,4 @@
-import { CATEGORY_FLOW, KEY_REPEAT_STEP } from '../app/constants';
+import { CATEGORY_EFFECT, KEY_REPEAT_STEP } from '../app/constants';
 import { errorHandler, ingredientRegistry, kitchen, logger } from '../app/container';
 import { InputType } from '../core/InputType';
 import { useNotificationStore } from '../stores/useNotificationStore';
@@ -63,7 +63,7 @@ const REPEAT_STEP_SPICES: ReadonlyArray<SpiceDefinition> = [
 
 export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
   name: KEY_REPEAT_STEP,
-  category: CATEGORY_FLOW,
+  category: CATEGORY_EFFECT,
   description: 'Repeats a sequence of preceding ingredients a specified number of times.',
   spices: REPEAT_STEP_SPICES,
   run: async (input, spices, context) => {
@@ -71,8 +71,8 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
 
     kitchen.setCookingInterval(intervalMs);
 
-    if (input.cast('string').getValue().trim() === '') {
-      return null;
+    if (!input.cast('string').value.trim()) {
+      return input.warning(null);
     }
 
     const { currentIndex, initialInput, recipe } = context;
@@ -88,7 +88,7 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
           'warning',
           'Configuration Warning',
         );
-      return new InputType('');
+      return input.update('');
     }
 
     for (let attempt = 0; attempt <= retriesOnError; attempt++) {
@@ -104,16 +104,15 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
                 errorHandler.assert(definition, `Definition for '${ingredient.name}' not found during sub-recipe execution.`);
 
                 const subContext: IngredientContext = { ...context, currentIndex: subIndex, ingredient: ingredient };
-                const runResult = await definition.run(new InputType(currentData), ingredient.spices, subContext);
+                const runResult = await definition.run(input.update(currentData), ingredient.spices, subContext);
 
-                if (runResult === null) {
+                errorHandler.assert(runResult instanceof InputType, `Ingredient '${definition.name}' returned an invalid result type.`);
+
+                if (runResult.warningMessage !== undefined) {
                   continue;
                 }
 
-                const outputResult = 'output' in runResult ? runResult.output : runResult;
-                errorHandler.assert(outputResult instanceof InputType, `Ingredient '${definition.name}' returned an invalid result type.`);
-
-                currentData = outputResult.cast('string').getValue();
+                currentData = runResult.cast('string').value;
               }
               return currentData;
             },
@@ -133,7 +132,7 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
         }
 
         const processedDelimiter = delimiter.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
-        return new InputType(collectedOutputs.join(processedDelimiter));
+        return input.update(collectedOutputs.join(processedDelimiter));
       } catch (error) {
         const isLastAttempt = attempt >= retriesOnError;
         if (isLastAttempt) {
@@ -153,6 +152,6 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
       }
     }
 
-    return new InputType('');
+    return input.update('');
   },
 };

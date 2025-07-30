@@ -1,5 +1,7 @@
 import { base64ToUint8Array, hexToUint8Array, isObjectLike, uint8ArrayToBase64, uint8ArrayToHex } from '../utilities/appUtil';
 
+import type { PanelControlConfig } from './IngredientRegistry';
+
 interface TypeMap {
   array: Array<unknown>;
   arraybuffer: ArrayBuffer;
@@ -17,10 +19,14 @@ type InputDataType = keyof TypeMap;
 type HandleFailure = <T>(e?: string) => InputType<T>;
 
 export class InputType<T = unknown> {
-  private readonly value: T;
+  public readonly value: T;
+  public readonly panelControl?: PanelControlConfig;
+  public readonly warningMessage?: string | null;
 
-  public constructor(value: T) {
+  public constructor(value: T, panelControl?: PanelControlConfig, warning?: string | null) {
     this.value = value;
+    this.panelControl = panelControl;
+    this.warningMessage = warning;
   }
 
   public cast<T = unknown>(type: 'array', options?: { readonly value?: Array<T> }): InputType<Array<T>>;
@@ -40,9 +46,9 @@ export class InputType<T = unknown> {
       readonly value?: unknown;
     },
   ): InputType<unknown> {
-    const handleFailure = <T>(e?: string): InputType<T> => {
+    const handleFailure = <U>(e?: string): InputType<U> => {
       if (typeof options?.value !== 'undefined') {
-        return new InputType(options.value as T);
+        return new InputType(options.value as U, this.panelControl, this.warningMessage);
       }
       throw new Error(e);
     };
@@ -73,7 +79,7 @@ export class InputType<T = unknown> {
     }
   }
 
-  public getType(): InputDataType {
+  public get type(): InputDataType {
     const value = this.value;
     if (value instanceof Uint8Array) {
       return 'bytearray';
@@ -99,23 +105,27 @@ export class InputType<T = unknown> {
     throw new Error(`Cannot determine InputDataType: Unknown value type (${String(value)})`);
   }
 
-  public getValue(): T {
-    return this.value;
+  public update<U>(newValue: U): InputType<U> {
+    return new InputType(newValue, this.panelControl, this.warningMessage);
   }
 
-  public update<U>(newValue: U): InputType<U> {
-    return new InputType(newValue);
+  public render(panelControl: PanelControlConfig): InputType<T> {
+    return new InputType(this.value, panelControl, this.warningMessage);
+  }
+
+  public warning(message: string | null): InputType<T> {
+    return new InputType(this.value, this.panelControl, message);
   }
 
   private castToArray(handleFailure: HandleFailure): InputType<Array<unknown>> {
     if (Array.isArray(this.value)) {
-      return new InputType(this.value);
+      return new InputType(this.value, this.panelControl, this.warningMessage);
     }
     if (typeof this.value === 'string') {
       try {
         const parsed = JSON.parse(this.value);
         if (Array.isArray(parsed)) {
-          return new InputType(parsed);
+          return new InputType(parsed, this.panelControl, this.warningMessage);
         }
       } catch {}
     }
@@ -124,21 +134,25 @@ export class InputType<T = unknown> {
 
   private castToArrayBuffer(handleFailure: HandleFailure): InputType<ArrayBuffer> {
     if (this.value instanceof ArrayBuffer) {
-      return new InputType(this.value);
+      return new InputType(this.value, this.panelControl, this.warningMessage);
     }
     if (this.value instanceof Uint8Array) {
-      return new InputType(this.value.buffer.slice(this.value.byteOffset, this.value.byteOffset + this.value.byteLength));
+      return new InputType(
+        this.value.buffer.slice(this.value.byteOffset, this.value.byteOffset + this.value.byteLength),
+        this.panelControl,
+        this.warningMessage,
+      );
     }
     if (typeof this.value === 'string') {
       const cleanValue = this.value.trim();
       try {
-        return new InputType(hexToUint8Array(cleanValue).buffer);
+        return new InputType(hexToUint8Array(cleanValue).buffer, this.panelControl, this.warningMessage);
       } catch {
         try {
-          return new InputType(base64ToUint8Array(cleanValue).buffer);
+          return new InputType(base64ToUint8Array(cleanValue).buffer, this.panelControl, this.warningMessage);
         } catch {
           const encoder = new TextEncoder();
-          return new InputType(encoder.encode(this.value).buffer);
+          return new InputType(encoder.encode(this.value).buffer, this.panelControl, this.warningMessage);
         }
       }
     }
@@ -147,22 +161,22 @@ export class InputType<T = unknown> {
 
   private castToBase64(handleFailure: HandleFailure): InputType<string> {
     if (this.value instanceof Uint8Array) {
-      return new InputType(uint8ArrayToBase64(this.value));
+      return new InputType(uint8ArrayToBase64(this.value), this.panelControl, this.warningMessage);
     }
     if (this.value instanceof ArrayBuffer) {
-      return new InputType(uint8ArrayToBase64(new Uint8Array(this.value)));
+      return new InputType(uint8ArrayToBase64(new Uint8Array(this.value)), this.panelControl, this.warningMessage);
     }
     if (typeof this.value === 'string') {
       const encoder = new TextEncoder();
       const utf8Bytes = encoder.encode(this.value);
-      return new InputType(uint8ArrayToBase64(utf8Bytes));
+      return new InputType(uint8ArrayToBase64(utf8Bytes), this.panelControl, this.warningMessage);
     }
     return handleFailure(`Cannot cast to Base64: Invalid type (${typeof this.value})`);
   }
 
   private castToBoolean(handleFailure: HandleFailure): InputType<boolean> {
     if (typeof this.value === 'boolean') {
-      return new InputType(this.value);
+      return new InputType(this.value, this.panelControl, this.warningMessage);
     }
     const stringValue = String(this.value ?? '')
       .trim()
@@ -170,11 +184,11 @@ export class InputType<T = unknown> {
     switch (stringValue) {
       case 'true':
       case '1':
-        return new InputType(true);
+        return new InputType(true, this.panelControl, this.warningMessage);
       case 'false':
       case '0':
       case '':
-        return new InputType(false);
+        return new InputType(false, this.panelControl, this.warningMessage);
       default:
         return handleFailure(`Cannot cast to boolean: Ambiguous value (${String(this.value)})`);
     }
@@ -182,21 +196,21 @@ export class InputType<T = unknown> {
 
   private castToByteArray(handleFailure: HandleFailure): InputType<Uint8Array> {
     if (this.value instanceof Uint8Array) {
-      return new InputType(this.value);
+      return new InputType(this.value, this.panelControl, this.warningMessage);
     }
     if (this.value instanceof ArrayBuffer) {
-      return new InputType(new Uint8Array(this.value));
+      return new InputType(new Uint8Array(this.value), this.panelControl, this.warningMessage);
     }
     if (typeof this.value === 'string') {
       const cleanValue = this.value.trim();
       try {
-        return new InputType(hexToUint8Array(cleanValue));
+        return new InputType(hexToUint8Array(cleanValue), this.panelControl, this.warningMessage);
       } catch {
         try {
-          return new InputType(base64ToUint8Array(cleanValue));
+          return new InputType(base64ToUint8Array(cleanValue), this.panelControl, this.warningMessage);
         } catch {
           const encoder = new TextEncoder();
-          return new InputType(encoder.encode(this.value));
+          return new InputType(encoder.encode(this.value), this.panelControl, this.warningMessage);
         }
       }
     }
@@ -205,15 +219,15 @@ export class InputType<T = unknown> {
 
   private castToHex(handleFailure: HandleFailure): InputType<string> {
     if (this.value instanceof Uint8Array) {
-      return new InputType(uint8ArrayToHex(this.value));
+      return new InputType(uint8ArrayToHex(this.value), this.panelControl, this.warningMessage);
     }
     if (this.value instanceof ArrayBuffer) {
-      return new InputType(uint8ArrayToHex(new Uint8Array(this.value)));
+      return new InputType(uint8ArrayToHex(new Uint8Array(this.value)), this.panelControl, this.warningMessage);
     }
     if (typeof this.value === 'string') {
       const encoder = new TextEncoder();
       const utf8Bytes = encoder.encode(this.value);
-      return new InputType(uint8ArrayToHex(utf8Bytes));
+      return new InputType(uint8ArrayToHex(utf8Bytes), this.panelControl, this.warningMessage);
     }
     return handleFailure(`Cannot cast to Hex: Invalid type (${typeof this.value})`);
   }
@@ -239,18 +253,18 @@ export class InputType<T = unknown> {
     if (max !== undefined) {
       numericValue = Math.min(max, numericValue);
     }
-    return new InputType(numericValue);
+    return new InputType(numericValue, this.panelControl, this.warningMessage);
   }
 
   private castToObject(handleFailure: HandleFailure): InputType<object> {
     if (isObjectLike(this.value) && !Array.isArray(this.value)) {
-      return new InputType(this.value);
+      return new InputType<object>(this.value, this.panelControl, this.warningMessage);
     }
     if (typeof this.value === 'string') {
       try {
         const parsed = JSON.parse(this.value);
         if (isObjectLike(parsed) && !Array.isArray(parsed)) {
-          return new InputType(parsed);
+          return new InputType(parsed, this.panelControl, this.warningMessage);
         }
       } catch {}
     }
@@ -267,16 +281,16 @@ export class InputType<T = unknown> {
     };
 
     if (this.value instanceof ArrayBuffer) {
-      return new InputType(toUtf8OrHex(new Uint8Array(this.value)));
+      return new InputType(toUtf8OrHex(new Uint8Array(this.value)), this.panelControl, this.warningMessage);
     }
     if (this.value instanceof Uint8Array) {
-      return new InputType(toUtf8OrHex(this.value));
+      return new InputType(toUtf8OrHex(this.value), this.panelControl, this.warningMessage);
     }
     if (isObjectLike(this.value)) {
       try {
-        return new InputType(JSON.stringify(this.value));
+        return new InputType(JSON.stringify(this.value), this.panelControl, this.warningMessage);
       } catch {}
     }
-    return new InputType(String(this.value ?? ''));
+    return new InputType(String(this.value ?? ''), this.panelControl, this.warningMessage);
   }
 }

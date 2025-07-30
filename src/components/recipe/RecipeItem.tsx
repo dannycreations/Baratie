@@ -19,6 +19,7 @@ interface RecipeItemUIState {
   readonly isEditing: boolean;
   readonly isSpiceInInput: boolean;
   readonly status: CookingStatusType;
+  readonly warning: string | null;
 }
 
 export interface RecipeItemHandlers {
@@ -103,11 +104,16 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
   );
 });
 
-const SpiceInInputMessage = memo((): JSX.Element => {
+interface InfoMessageProps {
+  type: 'spiceInInput' | 'warning';
+  message?: string;
+}
+
+const InfoMessage = memo<InfoMessageProps>(({ type, message }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   return (
     <div className={`p-2 mx-2 text-center text-xs italic rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover}`}>
-      Options are managed in the Input panel.
+      {type === 'spiceInInput' ? 'Options are managed in the Input panel.' : message}
     </div>
   );
 });
@@ -139,7 +145,7 @@ const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition
 export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, handlers }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const definition = ingredientRegistry.getIngredient(ingredientItem.ingredientId);
-  const { isAutoCook, isDragged, isEditing, isSpiceInInput, status } = uiState;
+  const { isAutoCook, isDragged, isEditing, isSpiceInInput, status, warning } = uiState;
   const { onRemove, onSpiceChange, onDragStart, onDragEnd, onDragOver, onDragEnter, onEditToggle, onLongPressStart, onLongPressEnd } = handlers;
 
   if (!definition) {
@@ -168,19 +174,21 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
   const canToggleEditor = hasSpices && !isSpiceInInput;
   const isEditorVisible = isEditing && !isSpiceInInput && !isDragged;
   const settingsTooltip = isSpiceInInput ? 'Options are in the Input panel' : isEditing ? 'Hide Options' : 'Edit Options';
+  const hasWarning = status === 'warning' && typeof warning === 'string' && warning.length > 0;
 
   const ariaLabelParts = [
     `Recipe Item: ${definition.name}`,
     `Status: ${isAutoCook ? status : 'Auto-Cook Disabled'}`,
     isSpiceInInput ? 'Options are managed in the Input panel.' : '',
     isEditorVisible ? 'The options editor is expanded.' : '',
+    hasWarning ? `Warning: ${warning}` : '',
   ];
   const ariaLabel = ariaLabelParts.filter(Boolean).join('. ');
 
   const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
   const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
   const itemClass =
-    `group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm outline-none transition-all duration-200 ease-in-out ${isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'} ${statusBorderClass} ${isSpiceInInput ? 'pb-2' : ''}`.trim();
+    `group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm outline-none transition-all duration-200 ease-in-out ${isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'} ${statusBorderClass} ${isSpiceInInput || hasWarning ? 'pb-2' : ''}`.trim();
   const grabHandleClass = `mr-2 text-${theme.contentTertiary} cursor-grab transition-colors group-hover:text-${theme.contentSecondary}`;
   const buttonId = `edit-button-${ingredientItem.id}`;
   const optionsId = `options-${ingredientItem.id}`;
@@ -252,9 +260,10 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
         leftContent={leftColumn}
         rightContent={rightColumn}
       />
+      {hasWarning && <InfoMessage type="warning" message={warning} />}
       {hasSpices && (
         <>
-          {isSpiceInInput && <SpiceInInputMessage />}
+          {!hasWarning && isSpiceInInput && <InfoMessage type="spiceInInput" />}
           <div
             id={optionsId}
             role="region"

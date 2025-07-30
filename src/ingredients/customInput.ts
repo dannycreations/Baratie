@@ -1,16 +1,16 @@
-import { CATEGORY_FLOW, KEY_CUSTOM_INPUT } from '../app/constants';
+import { CATEGORY_EFFECT, KEY_CUSTOM_INPUT } from '../app/constants';
 import { ingredientRegistry } from '../app/container';
 
-import type { IngredientDefinition, InputPanelConfig, PanelControlConfig } from '../core/IngredientRegistry';
+import type { IngredientDefinition, InputPanelConfig } from '../core/IngredientRegistry';
 
 export const CUSTOM_INPUT_DEF: IngredientDefinition = {
   name: KEY_CUSTOM_INPUT,
-  category: CATEGORY_FLOW,
+  category: CATEGORY_EFFECT,
   description: 'Controls the Input Panel to display options for the next ingredient in the recipe.',
   run: (input, _spices, context) => {
-    const { ingredient: currentIngredient, recipe, currentIndex } = context;
+    const { ingredient, recipe, currentIndex } = context;
 
-    let config: InputPanelConfig;
+    let config: InputPanelConfig | undefined;
     const nextIngredientIndex = currentIndex + 1;
 
     if (nextIngredientIndex < recipe.length) {
@@ -22,34 +22,17 @@ export const CUSTOM_INPUT_DEF: IngredientDefinition = {
           targetIngredientId: targetIngredient.id,
           title: `Options: ${targetIngredient.name}`,
         };
-      } else {
-        config = {
-          mode: 'textarea',
-          title: 'Input',
-          placeholder: 'The next ingredient has no configurable options.',
-          disabled: true,
-          showClear: false,
-        };
       }
-    } else {
-      config = {
-        mode: 'textarea',
-        title: 'Input',
-        placeholder: 'There is no subsequent ingredient to configure.',
-        disabled: true,
-        showClear: false,
-      };
     }
 
-    const panelInstruction: PanelControlConfig = {
-      panelType: 'input',
-      providerId: currentIngredient.id,
-      config: config,
-    };
+    if (!config) {
+      return input.warning('There are no ingredients with options below this one.');
+    }
 
-    return {
-      output: input,
-      panelControl: panelInstruction,
-    };
+    return input.render({
+      panelType: 'input',
+      providerId: ingredient.id,
+      config,
+    });
   },
 };

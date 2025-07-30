@@ -2,7 +2,6 @@ import { KEY_REPEAT_STEP } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger } from '../app/container';
 import { useKitchenStore } from '../stores/useKitchenStore';
 import { useRecipeStore } from '../stores/useRecipeStore';
-import { isObjectLike } from '../utilities/appUtil';
 import { AppError } from './ErrorHandler';
 import { InputType } from './InputType';
 
@@ -14,15 +13,13 @@ import type {
   InputPanelConfig,
   OutputPanelConfig,
   PanelControlConfig,
-  PanelControlSignal,
-  ResultType,
 } from './IngredientRegistry';
 
 export type CookingStatusType = 'idle' | 'error' | 'success' | 'warning';
 
 export type RecipeCookResult = Pick<
   KitchenState,
-  'cookingStatus' | 'ingredientStatuses' | 'inputPanelConfig' | 'inputPanelId' | 'outputData' | 'outputPanelConfig'
+  'cookingStatus' | 'ingredientStatuses' | 'ingredientWarnings' | 'inputPanelConfig' | 'inputPanelId' | 'outputData' | 'outputPanelConfig'
 >;
 
 interface RecipeLoopState {
@@ -33,18 +30,16 @@ interface RecipeLoopState {
   lastInputPanelId: string | null;
   lastOutputConfig: OutputPanelConfig | null;
   localStatuses: Record<string, CookingStatusType>;
+  localWarnings: Record<string, string | null>;
 }
 
 interface IngredientRunResult {
   readonly hasError: boolean;
   readonly nextData: string;
   readonly status: CookingStatusType;
-  readonly inputPanelIngId?: string | null;
+  readonly inputPanelId?: string | null;
   readonly panelInstruction?: PanelControlConfig;
-}
-
-function isPanelControlSignal(value: ResultType): value is PanelControlSignal {
-  return isObjectLike(value) && 'output' in value && value.output instanceof InputType;
+  readonly warningMessage?: string | null;
 }
 
 export class Kitchen {
@@ -149,6 +144,7 @@ export class Kitchen {
       return {
         cookingStatus: initialInput ? 'success' : 'idle',
         ingredientStatuses: {},
+        ingredientWarnings: {},
         inputPanelConfig: null,
         inputPanelId: null,
         outputData: initialInput,
@@ -163,6 +159,7 @@ export class Kitchen {
     return {
       cookingStatus: finalStatus,
       ingredientStatuses: loopResult.localStatuses,
+      ingredientWarnings: loopResult.localWarnings,
       inputPanelConfig: loopResult.lastInputConfig,
       inputPanelId: loopResult.lastInputPanelId,
       outputData: loopResult.cookedData,
@@ -179,6 +176,7 @@ export class Kitchen {
       lastInputPanelId: null,
       lastOutputConfig: null,
       localStatuses: {},
+      localWarnings: {},
     };
 
     for (let index = 0; index < recipe.length; index++) {
@@ -200,10 +198,14 @@ export class Kitchen {
       state.cookedData = result.nextData;
       state.localStatuses[ingredient.id] = result.status;
 
+      if (result.warningMessage) {
+        state.localWarnings[ingredient.id] = result.warningMessage;
+      }
+
       if (result.panelInstruction) {
         if (result.panelInstruction.panelType === 'input') {
           state.lastInputConfig = result.panelInstruction.config;
-          state.lastInputPanelId = result.inputPanelIngId ?? null;
+          state.lastInputPanelId = result.inputPanelId ?? null;
         } else if (result.panelInstruction.panelType === 'output') {
           state.lastOutputConfig = result.panelInstruction.config;
         }
@@ -237,22 +239,33 @@ export class Kitchen {
     if (error) {
       return { hasError: true, nextData: `Error: ${error.message}`, status: 'error' };
     }
-    if (result === null) {
-      logger.info(`Ingredient '${definition.name}' was skipped (returned null).`);
-      return { hasError: false, nextData: currentData, status: 'warning' };
+
+    errorHandler.assert(result instanceof InputType, `Ingredient '${definition.name}' returned an invalid result type.`);
+
+    if (result.warningMessage !== undefined) {
+      const message = result.warningMessage ? `: ${result.warningMessage}` : '.';
+      logger.info(`Ingredient '${definition.name}' was skipped with a warning${message}`);
+      return {
+        hasError: false,
+        nextData: currentData,
+        status: 'warning',
+        warningMessage: result.warningMessage,
+      };
     }
 
-    const output = isPanelControlSignal(result) ? result.output : result;
-    const panelInstruction = isPanelControlSignal(result) ? result.panelControl : undefined;
-    errorHandler.assert(output instanceof InputType, `Ingredient '${definition.name}' returned an invalid result type.`);
-
-    const nextData = output.cast('string').getValue();
-    let inputPanelIngId: string | null = null;
+    const panelInstruction = result.panelControl;
+    let inputPanelId: string | null = null;
     if (panelInstruction?.panelType === 'input' && panelInstruction.config.mode === 'spiceEditor') {
-      inputPanelIngId = panelInstruction.config.targetIngredientId;
+      inputPanelId = panelInstruction.config.targetIngredientId;
     }
 
-    return { hasError: false, status: 'success', nextData, panelInstruction, inputPanelIngId };
+    return {
+      hasError: false,
+      status: 'success',
+      nextData: result.cast('string').value,
+      panelInstruction,
+      inputPanelId,
+    };
   }
 
   private scheduleNextCook(): void {

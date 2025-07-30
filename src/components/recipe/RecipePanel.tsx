@@ -31,6 +31,7 @@ export const RecipePanel = memo((): JSX.Element => {
   const isCookbookOpen = useModalStore((state) => state.activeModal === 'cookbook');
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
   const ingredientStatuses = useKitchenStore((state) => state.ingredientStatuses);
+  const ingredientWarnings = useKitchenStore((state) => state.ingredientWarnings);
   const inputPanelId = useKitchenStore((state) => state.inputPanelId);
   const startUpdateBatch = useKitchenStore((state) => state.startUpdateBatch);
   const endUpdateBatch = useKitchenStore((state) => state.endUpdateBatch);
@@ -211,6 +212,7 @@ export const RecipePanel = memo((): JSX.Element => {
             isEditing: !isSpiceInInput && isEditingItem,
             isSpiceInInput: isSpiceInInput,
             status: ingredientStatuses[ingredient.id] || 'idle',
+            warning: ingredientWarnings[ingredient.id] || null,
           };
 
           return <RecipeItem key={ingredient.id} ingredientItem={ingredient} uiState={uiState} handlers={recipeItemHandlers} />;

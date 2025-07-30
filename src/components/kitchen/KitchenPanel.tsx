@@ -142,16 +142,19 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, 
   );
 });
 
-const OutputContent = memo<OutputContentProps>(({ config, data }) => (
-  <TextareaInput
-    value={data}
-    readOnly
-    aria-label="Result from Recipe Cooking Action"
-    placeholder={config?.placeholder || 'Your Results Will Be Presented Here.'}
-    showLineNumbers
-    wrapperClasses="flex-1 min-h-0"
-  />
-));
+const OutputContent = memo<OutputContentProps>(({ config, data }) => {
+  const placeholder = (config?.mode === 'textarea' ? config.placeholder : undefined) || 'Your Results Will Be Presented Here.';
+  return (
+    <TextareaInput
+      value={data}
+      readOnly
+      aria-label="Result from Recipe Cooking Action"
+      placeholder={placeholder}
+      showLineNumbers
+      wrapperClasses="flex-1 min-h-0"
+    />
+  );
+});
 
 export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const inputPanelConfig = useKitchenStore((state) => state.inputPanelConfig);
@@ -213,20 +216,27 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   );
 
   const renderContent = (): JSX.Element => {
-    if (!isInput) {
+    if (isInput) {
+      if (inputPanelConfig?.mode === 'custom') {
+        return inputPanelConfig.render();
+      }
+      if (inputPanelConfig?.mode === 'spiceEditor' && targetIngredient) {
+        return (
+          <SpiceContent
+            targetIngredient={targetIngredient}
+            onSpiceChange={handleSpiceChange}
+            onLongPressStart={startUpdateBatch}
+            onLongPressEnd={endUpdateBatch}
+          />
+        );
+      }
+      return <DefaultContent config={inputPanelConfig} data={inputData} onDataChange={handleSetInputData} onFileDrop={handleFileRead} />;
+    } else {
+      if (outputPanelConfig?.mode === 'custom') {
+        return outputPanelConfig.render();
+      }
       return <OutputContent config={outputPanelConfig} data={outputData} />;
     }
-    if (inputPanelConfig?.mode === 'spiceEditor' && targetIngredient) {
-      return (
-        <SpiceContent
-          targetIngredient={targetIngredient}
-          onSpiceChange={handleSpiceChange}
-          onLongPressStart={startUpdateBatch}
-          onLongPressEnd={endUpdateBatch}
-        />
-      );
-    }
-    return <DefaultContent config={inputPanelConfig} data={inputData} onDataChange={handleSetInputData} onFileDrop={handleFileRead} />;
   };
 
   return (

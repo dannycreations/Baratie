@@ -7,6 +7,7 @@ import type { CookingStatusType, RecipeCookResult } from '../core/Kitchen';
 export interface KitchenState {
   readonly cookingStatus: CookingStatusType;
   readonly ingredientStatuses: Readonly<Record<string, CookingStatusType>>;
+  readonly ingredientWarnings: Readonly<Record<string, string | null>>;
   readonly inputData: string;
   readonly inputPanelConfig: InputPanelConfig | null;
   readonly inputPanelId: string | null;
@@ -25,6 +26,7 @@ export const useKitchenStore = create<KitchenState>()(
   subscribeWithSelector((set) => ({
     cookingStatus: 'idle',
     ingredientStatuses: {},
+    ingredientWarnings: {},
     inputData: '',
     inputPanelConfig: null,
     inputPanelId: null,
@@ -37,6 +39,7 @@ export const useKitchenStore = create<KitchenState>()(
       set({
         cookingStatus: result.cookingStatus,
         ingredientStatuses: result.ingredientStatuses,
+        ingredientWarnings: result.ingredientWarnings,
         inputPanelConfig: result.inputPanelConfig,
         inputPanelId: result.inputPanelId,
         outputData: result.outputData,

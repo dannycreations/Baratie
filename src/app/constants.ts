@@ -1,5 +1,6 @@
 export const CATEGORY_FAVORITES = '⭐ Favorites';
-export const CATEGORY_FLOW = 'Flow Control';
+export const CATEGORY_EFFECT = 'Effect';
+
 export const KEY_CUSTOM_INPUT = 'Custom Input';
 export const KEY_CUSTOM_OUTPUT = 'Custom Output';
 export const KEY_REPEAT_STEP = 'Repeat Step';

@@ -2,6 +2,7 @@ import { errorHandler, logger } from '../app/container';
 import { useIngredientStore } from '../stores/useIngredientStore';
 import { getObjectHash } from '../utilities/appUtil';
 
+import type { JSX } from 'react';
 import type { InputType } from './InputType';
 
 export type SpiceValue = string | number | boolean;
@@ -25,31 +26,40 @@ export interface IngredientDefinition<T = unknown> {
   readonly category: string;
   readonly description: string;
   readonly spices?: ReadonlyArray<SpiceDefinition>;
-  readonly run: (input: InputType, spices: T, context: IngredientContext) => ResultType | Promise<ResultType>;
+  readonly run: (input: InputType, spices: T, context: IngredientContext) => InputType | Promise<InputType>;
 }
 
 export interface IngredientProps<T = unknown> extends IngredientDefinition<T> {
   readonly id: string;
 }
 
-export interface OutputPanelConfig {
+interface PanelBaseConfig {
   readonly title: string;
+}
+
+interface PanelTextareaConfig extends PanelBaseConfig {
   readonly mode: 'textarea';
   readonly placeholder: string;
 }
 
-interface InputPanelTextareaConfig extends OutputPanelConfig {
+interface PanelCustomConfig extends PanelBaseConfig {
+  readonly mode: 'custom';
+  readonly render: () => JSX.Element;
+}
+
+export type OutputPanelConfig = PanelTextareaConfig | PanelCustomConfig;
+
+interface InputPanelTextareaConfig extends PanelTextareaConfig {
   readonly disabled?: boolean;
   readonly showClear: boolean;
 }
 
-interface InputPanelSpiceEditorConfig {
-  readonly title: string;
+interface InputPanelSpiceEditorConfig extends PanelBaseConfig {
   readonly mode: 'spiceEditor';
   readonly targetIngredientId: string;
 }
 
-export type InputPanelConfig = InputPanelTextareaConfig | InputPanelSpiceEditorConfig;
+export type InputPanelConfig = InputPanelTextareaConfig | InputPanelSpiceEditorConfig | PanelCustomConfig;
 
 export type PanelControlConfig =
   | {
@@ -63,11 +73,6 @@ export type PanelControlConfig =
       readonly config: OutputPanelConfig;
     };
 
-export interface PanelControlSignal<OutType = unknown> {
-  readonly output: InputType<OutType>;
-  readonly panelControl?: PanelControlConfig;
-}
-
 export interface RecipebookItem {
   readonly id: string;
   readonly name: string;
@@ -75,8 +80,6 @@ export interface RecipebookItem {
   readonly createdAt: number;
   readonly updatedAt: number;
 }
-
-export type ResultType = InputType | PanelControlSignal | null;
 
 interface BaseSpice<SpiceType extends 'boolean' | 'number' | 'select' | 'string' | 'textarea', ValueType> {
   readonly id: string;
