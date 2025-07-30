@@ -72,7 +72,7 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
     kitchen.setCookingInterval(intervalMs);
 
     if (!input.cast('string').value.trim()) {
-      return input.warning(null);
+      return input.warning();
     }
 
     const { currentIndex, initialInput, recipe } = context;

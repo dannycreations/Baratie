@@ -113,8 +113,8 @@ export class InputType<T = unknown> {
     return new InputType(this.value, panelControl, this.warningMessage);
   }
 
-  public warning(message: string | null): InputType<T> {
-    return new InputType(this.value, this.panelControl, message);
+  public warning(message?: string): InputType<T> {
+    return new InputType(this.value, this.panelControl, message || null);
   }
 
   private castToArray(handleFailure: HandleFailure): InputType<Array<unknown>> {

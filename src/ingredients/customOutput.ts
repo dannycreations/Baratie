@@ -9,7 +9,7 @@ export const CUSTOM_OUTPUT_DEF: IngredientDefinition = {
   run: (input, _spices, context) => {
     const inputValue = input.cast('string').value.trim();
     if (!inputValue) {
-      return input.warning(null);
+      return input.warning();
     }
 
     return input.render({
