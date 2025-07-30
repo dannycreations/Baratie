@@ -21,7 +21,7 @@ import type { Extension, ExtensionManifest, ManifestModule, StorableExtension } 
 export interface ExtensionState {
   readonly extensions: ReadonlyArray<Extension>;
   readonly extensionMap: ReadonlyMap<string, Extension>;
-  readonly add: (url: string) => Promise<void>;
+  readonly add: (url: string, options?: { readonly force?: boolean }) => Promise<void>;
   readonly cancelPendingInstall: () => void;
   readonly init: () => Promise<void>;
   readonly installSelectedModules: (id: string, selectedModules: ReadonlyArray<ManifestModule>) => Promise<void>;
@@ -45,7 +45,7 @@ export const useExtensionStore = create<ExtensionState>()(
     extensions: [],
     extensionMap: new Map(),
 
-    add: async (url) => {
+    add: async (url, options) => {
       const { show } = useNotificationStore.getState();
       const repoInfo = parseGitHubUrl(url);
 
@@ -63,7 +63,7 @@ export const useExtensionStore = create<ExtensionState>()(
         return;
       }
 
-      await refresh(id, { force: true });
+      await refresh(id, options);
     },
 
     cancelPendingInstall: () => {
@@ -179,10 +179,8 @@ export const useExtensionStore = create<ExtensionState>()(
         }
         const manifest: ExtensionManifest = validationResult.output;
 
-        const isManualAction = options?.force ?? false;
         const isModuleBased = Array.isArray(manifest.entry) && typeof manifest.entry[0] === 'object';
-
-        if (isManualAction && isModuleBased) {
+        if (isModuleBased && !(options?.force ?? false)) {
           upsert({ id: id, name: manifest.name, status: 'awaiting', manifest: manifest, scripts: {} });
         } else {
           if (storeExtension?.ingredients) {

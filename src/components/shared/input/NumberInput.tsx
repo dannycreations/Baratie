@@ -104,10 +104,10 @@ export const NumberInput = memo<NumberInputProps>(
     const decrementPressHandlers = useLongPress(handleDecrement, pressHandlersConfig);
 
     const standardInputStyle = `
-      w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-2
+      w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} py-2 pl-2 pr-8
       text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary}
       outline-none focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50
-      number-input-no-spinner pr-8
+      number-input-no-spinner
     `;
 
     const containerClass = `relative flex items-center ${className}`;

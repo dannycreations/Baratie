@@ -16,7 +16,7 @@ export const BooleanInput = memo<BooleanInputProps>(({ id, checked, onChange, cl
 
   const containerClass = `relative inline-flex items-center cursor-pointer ${className}`.trim();
   const switchClass = `
-    peer h-6 w-11 rounded-full bg-${theme.surfaceTertiary} outline-none transition-all
+    peer h-6 w-11 rounded-full bg-${theme.surfaceTertiary} outline-none transition-colors
     after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5
     after:rounded-full after:border after:border-slate-300 after:bg-white
     after:transition-all after:content-[''] peer-focus:ring-2

@@ -81,7 +81,6 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
             cursor-pointer rounded-sm p-1 text-left text-xs
             text-${theme.contentTertiary} transition-colors
             duration-150 hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}
-            focus:outline-none
           `}
           onClick={handleCopyId}
         >

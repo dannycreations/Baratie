@@ -122,15 +122,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
           <p className={messageClass}>{notification.message}</p>
         </div>
         <div className="flex-shrink-0">
-          <Button
-            icon={<XIcon size={20} />}
-            size="sm"
-            variant="stealth"
-            title="Close"
-            className={`text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`}
-            aria-label="Close notification"
-            onClick={handleExit}
-          />
+          <Button icon={<XIcon size={20} />} size="sm" variant="stealth" title="Close" aria-label="Close notification" onClick={handleExit} />
         </div>
       </div>
       {!isExiting && (

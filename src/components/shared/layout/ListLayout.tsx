@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from 'react';
 
-import { useOverflowScroll } from '../../../hooks/useOverflowScroll';
+import { useOverflow } from '../../../hooks/useOverflow';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { HighlightText } from '../HighlightText';
 import { ChevronRightIcon } from '../Icon';
@@ -77,7 +77,6 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
             transition-colors duration-150 hover:bg-${theme.surfaceMuted}
           `}
         leftContent={leftColumn}
-        leftClasses="grow min-w-0"
         rightContent={rightColumn}
       />
     </li>
@@ -138,20 +137,14 @@ export const GroupListLayout = memo<GroupListProps>(
             </button>
           );
 
-          const containerClass = `overflow-hidden rounded-md ${!isExpanded && index < itemsByCategory.length - 1 ? 'mb-2' : ''}`.trim();
+          const containerClass = `overflow-hidden rounded-md ${index < itemsByCategory.length - 1 ? 'mb-2' : ''}`.trim();
 
           return (
             <div key={category} className={containerClass}>
               {header}
               {isExpanded && (
                 <div className="section-expand-enter-active">
-                  <div
-                    id={panelId}
-                    className={`max-h-64 overflow-y-auto bg-${theme.surfaceMuted} p-2 md:max-h-96`}
-                    role="region"
-                    aria-hidden={!isExpanded}
-                    aria-labelledby={buttonId}
-                  >
+                  <div id={panelId} className={`bg-${theme.surfaceMuted} p-2`} role="region" aria-hidden={!isExpanded} aria-labelledby={buttonId}>
                     <ul aria-labelledby={buttonId} className="space-y-2">
                       {items.map((item) => (
                         <GroupItemLayout
@@ -218,8 +211,7 @@ interface SearchListLayoutProps {
 
 export const SearchListLayout = memo<SearchListLayoutProps>(
   ({ containerClasses = 'flex h-full flex-col gap-2', listWrapperClasses = 'grow overflow-y-auto', listContent, listId, search }): JSX.Element => {
-    const { ref: listScrollRef, className: overflowClasses } = useOverflowScroll<HTMLDivElement>({ yClasses: 'pr-1' });
-    const finalClasses = `${listWrapperClasses} ${overflowClasses}`.trim();
+    const { ref: listScrollRef, hasOverflowY } = useOverflow<HTMLDivElement>();
 
     const onQueryChange = search?.onQueryChange;
 
@@ -259,7 +251,7 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
         <div
           ref={listScrollRef}
           id={listId}
-          className={finalClasses}
+          className={`${listWrapperClasses} ${hasOverflowY ? 'pr-1' : ''}`.trim()}
           role="region"
           aria-live={search ? 'polite' : undefined}
           aria-relevant={search ? 'all' : undefined}

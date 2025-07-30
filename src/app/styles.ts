@@ -18,6 +18,15 @@ body {
   line-height: 1.6;
 }
 
+@media screen and (max-width: 767px) {
+  html {
+    scrollbar-width: none;
+  }
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 input[type="search"]::-webkit-search-cancel-button {
   -webkit-appearance: none;
   display: none;
@@ -200,7 +209,7 @@ body.grabbing * {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
-    max-height: 500px;
+    max-height: 2000px;
   }
 }
 

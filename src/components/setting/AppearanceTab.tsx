@@ -72,11 +72,11 @@ export const AppearanceTab = memo((): JSX.Element => {
           ) : null;
 
           const itemLayoutClass = `
-            h-16 rounded-md border-2 p-2 transition-all duration-150
+            h-16 rounded-md border-2 p-2 transition-colors duration-150
             ${isChecked ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}` : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`}
           `;
 
-          const liClass = `list-none cursor-pointer rounded-md outline-none focus:ring-2 focus:ring-${theme.ring}`;
+          const liClass = `list-none cursor-pointer outline-none rounded-md focus:ring-2 focus:ring-${theme.ring}`;
 
           return (
             <li
@@ -91,7 +91,6 @@ export const AppearanceTab = memo((): JSX.Element => {
             >
               <ItemListLayout
                 className={itemLayoutClass}
-                leftClasses="grow min-w-0"
                 leftContent={leftContent}
                 rightClasses="flex shrink-0 items-center"
                 rightContent={rightContent}

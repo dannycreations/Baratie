@@ -135,7 +135,6 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, 
       disabled={isTextareaDisabled}
       placeholder={placeholder}
       showLineNumbers={true}
-      textareaClasses="font-mono"
       wrapperClasses="flex-1 min-h-0"
       onChange={onDataChange}
       onFileDrop={onFileDrop}
@@ -149,7 +148,6 @@ const OutputContent = memo<OutputContentProps>(({ config, data }) => (
     aria-label="Result from Recipe Cooking Action"
     placeholder={config?.placeholder || 'Your Results Will Be Presented Here.'}
     showLineNumbers={true}
-    textareaClasses="font-mono"
     wrapperClasses="flex-1 min-h-0"
   />
 ));

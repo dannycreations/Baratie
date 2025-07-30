@@ -36,6 +36,8 @@ export const SelectInput = memo(
     );
 
     const { className, ...trueRest } = rest;
+    const finalWrapperClass = `relative w-full ${className || ''}`.trim();
+
     const selectInputStyle = `
       w-full appearance-none rounded-md border border-${theme.borderPrimary}
       bg-${theme.surfaceTertiary} py-2 pl-2 pr-8 text-${theme.contentPrimary}
@@ -43,11 +45,10 @@ export const SelectInput = memo(
       transition-colors duration-150 focus:ring-2 focus:ring-${theme.ring}
       disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed
     `;
-    const finalClass = `${selectInputStyle} ${className || ''}`.trim();
 
     return (
-      <div className="relative w-full">
-        <select id={id} value={String(value)} className={finalClass} disabled={disabled} onChange={handleChange} {...trueRest}>
+      <div className={finalWrapperClass}>
+        <select id={id} value={String(value)} className={selectInputStyle} disabled={disabled} onChange={handleChange} {...trueRest}>
           {options.map((option) => (
             <option key={String(option.value)} value={String(option.value)} className={`bg-${theme.surfaceSecondary} text-${theme.contentSecondary}`}>
               {option.label}

@@ -10,9 +10,11 @@ import { NotificationPanel } from '../components/main/NotificationPanel';
 import { RecipePanel } from '../components/recipe/RecipePanel';
 import { ExtensionList } from '../components/setting/ExtensionList';
 import { SettingPanel } from '../components/setting/SettingPanel';
+import { parseGitHubUrl } from '../helpers/extensionHelper';
 import { internalIngredients } from '../ingredients';
 import { useAppStore } from '../stores/useAppStore';
-import { appRegistry, errorHandler, ingredientRegistry, kitchen } from './container';
+import { useExtensionStore } from '../stores/useExtensionStore';
+import { appRegistry, errorHandler, ingredientRegistry, kitchen, logger } from './container';
 import { APP_STYLES } from './styles';
 
 import type { JSX } from 'react';
@@ -21,6 +23,7 @@ const APP_STYLES_ID = 'baratie-global-styles';
 
 export interface BaratieOptions {
   readonly disableIngredients?: boolean;
+  readonly defaultExtensions?: string | ReadonlyArray<string>;
 }
 
 const BaratieView = memo((): JSX.Element => {
@@ -86,6 +89,31 @@ export function createRoot(element: HTMLElement | null, options?: Readonly<Barat
           }
         } finally {
           ingredientRegistry.endBatch();
+        }
+      },
+    });
+  }
+
+  if (options?.defaultExtensions) {
+    appRegistry.registerTask({
+      type: 'preInit',
+      message: 'Gathering exotic provisions...',
+      handler: async () => {
+        const { defaultExtensions } = options;
+        const { add, extensionMap } = useExtensionStore.getState();
+        const extensionsToLoad = Array.isArray(defaultExtensions) ? defaultExtensions : [defaultExtensions];
+
+        for (const url of extensionsToLoad) {
+          const repoInfo = parseGitHubUrl(url);
+          if (repoInfo) {
+            if (extensionMap.has(`${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`)) {
+              continue;
+            }
+
+            await add(url, { force: true });
+          } else {
+            logger.warn(`Invalid default extension URL provided: "${url}"`);
+          }
         }
       },
     });

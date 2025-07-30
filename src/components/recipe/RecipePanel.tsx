@@ -3,7 +3,7 @@ import { memo, useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { ingredientRegistry, kitchen } from '../../app/container';
 import { useDragMove } from '../../hooks/useDragMove';
 import { useDropZone } from '../../hooks/useDropZone';
-import { useOverflowScroll } from '../../hooks/useOverflowScroll';
+import { useOverflow } from '../../hooks/useOverflow';
 import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useKitchenStore } from '../../stores/useKitchenStore';
@@ -40,7 +40,7 @@ export const RecipePanel = memo((): JSX.Element => {
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
 
   const prevIngredientsCount = useRef(ingredients.length);
-  const { ref: listScrollRef, className: overflowClasses } = useOverflowScroll<HTMLDivElement>({ yClasses: 'pr-1' });
+  const { ref: listScrollRef, hasOverflowY } = useOverflow<HTMLDivElement>();
   const listId = useId();
 
   const handleDropIngredient = useCallback((typeString: string): void => {
@@ -192,7 +192,7 @@ export const RecipePanel = memo((): JSX.Element => {
       content = <DropZoneLayout mode="overlay" text="Drop to add ingredient" variant="add" />;
     } else {
       content = (
-        <EmptyView className="flex h-full grow flex-col items-center justify-center p-3">
+        <EmptyView className="flex h-full flex-col items-center justify-center p-3">
           No ingredients have been added.
           <br />
           Select from the Ingredients panel or drag them here.
@@ -227,7 +227,7 @@ export const RecipePanel = memo((): JSX.Element => {
       headerLeft="Recipe"
       headerRight={headerActions}
       className="h-[50vh] min-h-0 md:h-auto md:flex-1"
-      contentClasses={`${overflowClasses} relative flex h-full flex-col text-${theme.contentTertiary}`.trim()}
+      contentClasses={`${hasOverflowY ? 'pr-1' : ''} relative flex h-full flex-col text-${theme.contentTertiary}`.trim()}
       contentRef={listScrollRef}
     >
       <div className="flex h-full flex-col" {...dropZoneProps}>

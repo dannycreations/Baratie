@@ -18,14 +18,17 @@ interface StringInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, '
 export const StringInput = memo<StringInputProps>(
   ({ id, value, onChange, type = 'text', inputRef, showClearButton, onClear, ...rest }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
+    const { className, disabled, ...trueRest } = rest;
 
-    const { className, ...trueRest } = rest;
-    const standardInputStyle = `
-      w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-2
+    const hasClearButton = showClearButton && value && !disabled;
+
+    const baseInputStyle = `
+      w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary}
       text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary}
       outline-none focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50
     `;
-    const finalInputClass = `${standardInputStyle} ${showClearButton && value ? 'pr-8' : ''}`;
+    const paddingClass = hasClearButton ? 'py-2 pl-2 pr-8' : 'p-2';
+    const finalInputClass = `${baseInputStyle} ${paddingClass}`;
 
     const handleClear = (event: MouseEvent<HTMLButtonElement>): void => {
       onClear?.(event);
@@ -38,14 +41,14 @@ export const StringInput = memo<StringInputProps>(
 
     return (
       <div className={finalWrapperClass}>
-        <input ref={inputRef} id={id} type={type} value={value} className={finalInputClass} onChange={onChange} {...trueRest} />
-        {showClearButton && value && !rest.disabled && (
+        <input ref={inputRef} id={id} type={type} value={value} className={finalInputClass} onChange={onChange} disabled={disabled} {...trueRest} />
+        {hasClearButton && (
           <button
             type="button"
             className={`
               absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full
               text-${theme.contentTertiary} transition-colors hover:bg-${theme.surfaceMuted} hover:text-${theme.contentPrimary}
-              focus:outline-none focus:ring-2 focus:ring-${theme.ring}
+              focus:ring-2 focus:ring-${theme.ring}
             `}
             aria-label="Clear input"
             onClick={handleClear}

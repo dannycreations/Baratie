@@ -23,9 +23,9 @@ export const FormLayout = memo<FormLayoutProps>(
     const isRow = direction === 'row';
 
     const containerClass = className ?? (isRow ? 'flex items-center justify-start gap-2' : 'flex flex-col gap-2');
-    const finalLabelWrapClass = labelWrapperClasses ?? (isRow ? 'grow min-w-0' : '');
+    const finalLabelWrapClass = labelWrapperClasses ?? (isRow ? 'min-w-0' : '');
     const finalInputWrapClass = inputWrapperClasses ?? (isRow ? 'flex h-8 shrink-0 items-center' : 'w-full');
-    const finalLabelClass = labelClasses ?? `text-sm font-medium text-${theme.contentSecondary} ${isRow ? 'truncate' : ''}`;
+    const finalLabelClass = labelClasses ?? `text-sm font-medium text-${theme.contentSecondary} truncate`;
 
     const labelElement = label ? <label className={finalLabelClass}>{label}:</label> : null;
 

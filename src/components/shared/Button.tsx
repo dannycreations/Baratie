@@ -55,9 +55,9 @@ const ICON_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
 };
 
 const TEXT_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
-  xs: 'px-2 py-1 text-xs',
-  sm: 'px-2 py-2 text-sm',
-  lg: 'px-3 py-3 text-base',
+  xs: 'p-1 text-xs',
+  sm: 'p-2 text-sm',
+  lg: 'p-3 text-base',
 };
 
 const getVariantClasses = (variant: ButtonVariant, theme: AppTheme): string => {
@@ -66,14 +66,10 @@ const getVariantClasses = (variant: ButtonVariant, theme: AppTheme): string => {
     outline: `border-${theme.borderPrimary} bg-transparent text-${theme.contentSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
     primary: `border-transparent bg-${theme.accentBg} text-${theme.accentFg} hover:bg-${theme.accentBgHover}`,
     secondary: `border-transparent bg-${theme.surfaceTertiary} text-${theme.contentSecondary} hover:bg-${theme.surfaceHover} hover:text-${theme.contentPrimary}`,
-    stealth: `border-transparent bg-transparent text-${theme.contentTertiary} hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}`,
+    stealth: `border-transparent bg-transparent text-${theme.contentTertiary} hover:bg-${theme.surfaceMuted} hover:text-${theme.contentPrimary}`,
   };
   return variantMap[variant];
 };
-
-function getConfirmClasses(theme: Readonly<AppTheme>): string {
-  return `border border-${theme.dangerBorder} bg-${theme.dangerBg} text-${theme.accentFg} hover:bg-${theme.dangerBgHover}`;
-}
 
 export const Button = memo<ButtonProps>(
   ({
@@ -104,11 +100,11 @@ export const Button = memo<ButtonProps>(
 
     const finalClassName = `
       ${baseClass} ${shapeClass} ${variantClass} ${sizeClass}
-      ${loading && ' opacity-60'} ${fullWidth && ' w-full'} ${className}
+      ${loading ? ' opacity-60' : ''} ${fullWidth ? ' w-full' : ''} ${className}
     `.trim();
 
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
-    const loadingSpinner = <Loader2Icon aria-hidden="true" className={`h-4 w-4 animate-spin ${iconMarginClass}`} />;
+    const loadingSpinner = <Loader2Icon size={16} aria-hidden="true" className={`animate-spin ${iconMarginClass}`} />;
 
     const showIconLeft = iconPosition === 'left';
     const showIconRight = iconPosition === 'right';
@@ -138,7 +134,7 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
       icon={isCopied ? <CheckIcon size={18} /> : <CopyIcon size={18} />}
       size="sm"
       variant="stealth"
-      className={isCopied ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : ''}
+      className={isCopied ? `text-${theme.successFg}` : ''}
       disabled={!textToCopy || isCopied}
       aria-label={isCopied ? 'Copied to clipboard' : 'Copy to clipboard'}
       tooltipContent={isCopied ? 'Copied!' : 'Copy'}
@@ -176,7 +172,7 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
 
     const tooltipContent = isConfirm ? `Confirm ${actionName}` : `${actionName} ${itemType}`;
     const ariaLabel = isConfirm ? `Confirm ${actionName.toLowerCase()} of ${itemName}` : `${actionName} ${itemType}: ${itemName}`;
-    const buttonClass = `${className} ${isConfirm ? getConfirmClasses(theme) : ''}`.trim();
+    const buttonClass = `${className} ${isConfirm ? `bg-${theme.dangerBg} text-${theme.accentFg}` : ''}`.trim();
 
     const defaultIcon = icon ?? <Trash2Icon size={18} />;
     const defaultConfirmIcon = confirmIcon ?? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} />;

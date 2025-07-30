@@ -138,7 +138,7 @@ export const Modal = memo<ModalProps>(
           aria-labelledby={!hideHeader && title ? titleId : undefined}
         >
           {!hideHeader && (
-            <header className={`flex h-12 shrink-0 items-center justify-between border-b border-${theme.borderPrimary} p-2`}>
+            <header className={`flex h-12 shrink-0 items-center justify-between border-b border-${theme.borderPrimary} px-2`}>
               <h2 id={titleId} className={`grow truncate pr-2 text-xl font-semibold text-${theme.contentPrimary}`}>
                 {title}
               </h2>

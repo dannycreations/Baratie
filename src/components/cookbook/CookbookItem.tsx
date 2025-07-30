@@ -56,7 +56,6 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
             </p>
           </>
         }
-        rightClasses="flex shrink-0 items-center gap-1"
         rightContent={
           <>
             <TooltipButton

@@ -26,7 +26,7 @@ const TabButton = memo<TabButtonProps>(({ children, id, isActive, onClick }): JS
   const theme = useThemeStore((state) => state.theme);
 
   const tabClass = `
-    px-2 py-2 text-sm font-medium rounded-t-md border-b-2
+    p-2 text-sm font-medium rounded-t-md border-b-2
     outline-none transition-colors duration-150
     ${isActive ? `border-${theme.infoBorder} text-${theme.infoFg}` : `border-transparent text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`}
   `;

@@ -47,7 +47,7 @@ export const LoadingScreen = memo((): JSX.Element | null => {
         {isError ? (
           <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={48} />
         ) : (
-          <Loader2Icon className={`h-12 w-12 animate-spin text-${theme.infoFg}`} />
+          <Loader2Icon size={48} className={`animate-spin text-${theme.infoFg}`} />
         )}
         <h1 className={titleClass}>{isError ? 'Kitchen on Fire!' : 'Opening the Baratie'}</h1>
         <p key={message} className={`fade-in-text mt-2 text-${theme.contentTertiary}`}>

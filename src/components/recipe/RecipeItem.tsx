@@ -231,7 +231,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
         icon={<XIcon size={18} />}
         size="sm"
         variant="danger"
-        className="opacity-50 group-hover:opacity-100 hover:!opacity-100"
+        className="opacity-50 group-hover:opacity-100"
         aria-label={`Remove ingredient "${ingredientItem.name}" from recipe`}
         tooltipContent="Remove Ingredient"
         tooltipPosition="top"
