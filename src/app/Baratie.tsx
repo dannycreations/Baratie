@@ -67,7 +67,7 @@ const BaratieView = memo((): JSX.Element => {
   );
 });
 
-export function createRoot(element: HTMLElement | null, options?: Readonly<BaratieOptions>): void {
+export function createRoot(element: HTMLElement | null, options: Readonly<BaratieOptions> = {}): void {
   errorHandler.assert(element, 'Could not find the root element to mount the application.', 'Baratie Mount');
 
   if (!document.getElementById(APP_STYLES_ID)) {
@@ -77,7 +77,9 @@ export function createRoot(element: HTMLElement | null, options?: Readonly<Barat
     document.head.appendChild(style);
   }
 
-  if (!options?.disableIngredients) {
+  const { disableIngredients, defaultExtensions } = options;
+
+  if (!disableIngredients) {
     appRegistry.registerTask({
       type: 'preInit',
       message: 'Stocking rare ingredients...',
@@ -94,19 +96,19 @@ export function createRoot(element: HTMLElement | null, options?: Readonly<Barat
     });
   }
 
-  if (options?.defaultExtensions) {
+  if (defaultExtensions) {
     appRegistry.registerTask({
-      type: 'preInit',
+      type: 'postInit',
       message: 'Gathering exotic provisions...',
       handler: async () => {
-        const { defaultExtensions } = options;
         const { add, extensionMap } = useExtensionStore.getState();
         const extensionsToLoad = Array.isArray(defaultExtensions) ? defaultExtensions : [defaultExtensions];
 
         for (const url of extensionsToLoad) {
           const repoInfo = parseGitHubUrl(url);
           if (repoInfo) {
-            if (extensionMap.has(`${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`)) {
+            const repoName = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
+            if (extensionMap.has(repoName)) {
               continue;
             }
 
