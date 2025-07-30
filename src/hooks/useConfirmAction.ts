@@ -9,6 +9,7 @@ interface ConfirmActionReturn {
 
 export function useConfirmAction(callback: () => void, timeout: number): ConfirmActionReturn {
   const [isConfirm, setIsConfirm] = useState(false);
+
   const callbackRef = useRef(callback);
 
   useEffect(() => {
@@ -19,22 +20,22 @@ export function useConfirmAction(callback: () => void, timeout: number): Confirm
     setIsConfirm(false);
   }, []);
 
-  useControlTimer({
-    callback: resetConfirm,
-    duration: timeout,
-    reset: isConfirm,
-    state: isConfirm,
-  });
-
   const trigger = useCallback(() => {
-    setIsConfirm((current) => {
-      if (current) {
+    setIsConfirm((isCurrentlyConfirm) => {
+      if (isCurrentlyConfirm) {
         callbackRef.current();
         return false;
       }
       return true;
     });
   }, []);
+
+  useControlTimer({
+    callback: resetConfirm,
+    duration: timeout,
+    reset: isConfirm,
+    state: isConfirm,
+  });
 
   return {
     isConfirm,

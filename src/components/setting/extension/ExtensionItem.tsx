@@ -37,7 +37,7 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
 
   const current = statusMap[status] || statusMap.error;
   const content = (
-    <div className={`flex items-center gap-2 text-xs font-medium text-${current.color}`}>
+    <div className={`flex items-center gap-2 font-medium text-xs text-${current.color}`}>
       {current.icon}
       <span>{current.text}</span>
     </div>
@@ -77,11 +77,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
       <span className={`font-medium text-${theme.contentPrimary}`}>{displayName}</span>
       <Tooltip content={isCopied ? 'Copied URL!' : 'Click to copy URL'} position="top">
         <button
-          className={`
-            cursor-pointer rounded-sm text-left text-xs
-            text-${theme.contentTertiary} transition-colors
-            duration-150 hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}
-          `}
+          className={`rounded-sm text-left text-xs text-${theme.contentTertiary} cursor-pointer transition-colors duration-150 hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}`}
           onClick={handleCopyId}
         >
           {id}
@@ -109,8 +105,8 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
   return (
     <li className="list-none">
       <ItemListLayout
-        className={`h-16 rounded-md bg-${theme.surfaceTertiary} p-2 text-sm transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
-        leftClasses="grow min-w-0 mr-2"
+        className={`h-16 p-2 text-sm rounded-md bg-${theme.surfaceTertiary} transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
+        leftClasses="min-w-0 grow mr-2"
         leftContent={leftContent}
         rightClasses="flex shrink-0 items-center"
         rightContent={rightContent}

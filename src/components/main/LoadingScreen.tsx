@@ -28,12 +28,8 @@ export const LoadingScreen = memo((): JSX.Element | null => {
     return null;
   }
 
-  const containerClass = `
-    fixed inset-0 z-[900] flex flex-col items-center justify-center
-    bg-${theme.surfacePrimary} transition-opacity duration-300
-    ${isAppReady ? 'opacity-0' : 'opacity-100'}
-  `;
-  const titleClass = `mt-3 text-2xl font-semibold tracking-wider ${isError ? `text-${theme.dangerFg}` : `text-${theme.contentSecondary}`}`;
+  const containerClass = `fixed inset-0 z-[900] flex flex-col items-center justify-center bg-${theme.surfacePrimary} transition-opacity duration-300 ${isAppReady ? 'opacity-0' : 'opacity-100'}`;
+  const titleClass = `mt-3 font-semibold tracking-wider text-2xl ${isError ? `text-${theme.dangerFg}` : `text-${theme.contentSecondary}`}`;
 
   return (
     <div

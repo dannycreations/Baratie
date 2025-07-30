@@ -27,11 +27,8 @@ export const DropZoneLayout = memo<DropZoneProps>(({ text, variant = 'add', mode
     remove: `border-${theme.dangerBorder} bg-${theme.dangerBg} text-${theme.dangerFg}`,
   };
 
-  const combinedClass = `
-    flex items-center justify-center rounded-lg border-2
-    border-dashed text-center font-semibold transition-colors duration-200
-    ${dropZoneThemeMap[variant]} ${DROPZONE_MODE_MAP[mode]} ${className}
-  `.trim();
+  const combinedClass =
+    `flex items-center justify-center rounded-lg border-2 border-dashed text-center font-semibold transition-colors duration-200 ${dropZoneThemeMap[variant]} ${DROPZONE_MODE_MAP[mode]} ${className}`.trim();
 
   return (
     <div role="status" className={combinedClass}>

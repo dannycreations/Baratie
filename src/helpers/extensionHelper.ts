@@ -7,6 +7,8 @@ import type { InferInput } from 'valibot';
 import type { IngredientDefinition, IngredientRegistry } from '../core/IngredientRegistry';
 import type { LoadExtensionDependencies } from '../stores/useExtensionStore';
 
+const EXTENSION_CACHE_MS = 86_400_000;
+
 const NonEmptyString = pipe(string(), nonEmpty());
 
 export const ManifestModuleSchema = object({
@@ -54,8 +56,6 @@ export type Extension = BaseExtension &
     readonly ingredients?: ReadonlyArray<string>;
     readonly manifest?: ExtensionManifest;
   };
-
-const EXTENSION_CACHE_MS = 86_400_000;
 
 function executeScript(scriptContent: string, api: typeof window.Baratie): void {
   try {

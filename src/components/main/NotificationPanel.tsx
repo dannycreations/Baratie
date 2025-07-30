@@ -98,12 +98,8 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
   const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
 
-  const containerClass = `
-    relative w-full overflow-hidden rounded-lg border-l-4 shadow-lg
-    bg-${theme.surfaceSecondary} border-${borderColor} ${animationClass}
-    ${isPaused ? 'notification-paused' : ''}
-  `.trim();
-
+  const containerClass =
+    `relative w-full overflow-hidden rounded-lg border-l-4 border-${borderColor} bg-${theme.surfaceSecondary} shadow-lg ${animationClass} ${isPaused ? 'notification-paused' : ''}`.trim();
   const messageClass = `allow-text-selection text-sm text-${theme.contentSecondary} ${notification.title ? 'mt-1' : ''}`.trim();
 
   return (
@@ -118,7 +114,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
       <div className="flex items-start gap-2 p-3">
         <div className="flex-shrink-0">{renderIcon()}</div>
         <div className="flex-1">
-          {notification.title && <h3 className={`text-sm font-semibold text-${theme.contentPrimary}`}>{notification.title}</h3>}
+          {notification.title && <h3 className={`font-semibold text-sm text-${theme.contentPrimary}`}>{notification.title}</h3>}
           <p className={messageClass}>{notification.message}</p>
         </div>
         <div className="flex-shrink-0">
@@ -129,7 +125,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
         <div className={`absolute inset-x-0 bottom-0 h-1 bg-${theme.surfaceTertiary}`}>
           <div
             key={`${notification.id}-${notification.resetAt ?? 0}`}
-            className={`h-full bg-${barColor} progress-bar-fill`}
+            className={`h-full progress-bar-fill bg-${barColor}`}
             style={{
               animationDuration: `${duration}ms`,
             }}

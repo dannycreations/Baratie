@@ -11,10 +11,10 @@ export function useControlTimer({ callback, duration, state = true, reset }: Con
   const timerIdRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const remainingTimeRef = useRef(duration);
-  const savedCallbackRef = useRef<() => void>(callback);
+  const callbackRef = useRef<() => void>(callback);
 
   useEffect(() => {
-    savedCallbackRef.current = callback;
+    callbackRef.current = callback;
   }, [callback]);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export function useControlTimer({ callback, duration, state = true, reset }: Con
   }, [duration, reset]);
 
   useEffect(() => {
-    const clearTimer = () => {
+    const clearTimer = (): void => {
       if (timerIdRef.current) {
         clearTimeout(timerIdRef.current);
         timerIdRef.current = null;
@@ -33,7 +33,7 @@ export function useControlTimer({ callback, duration, state = true, reset }: Con
       clearTimer();
       startTimeRef.current = Date.now();
       timerIdRef.current = window.setTimeout(() => {
-        savedCallbackRef.current();
+        callbackRef.current();
       }, remainingTimeRef.current);
     } else {
       clearTimer();

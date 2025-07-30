@@ -49,7 +49,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
         inputRef: searchRef,
         ariaLabel: 'Search saved recipes',
         placeholder: 'Search Saved Recipes...',
-        wrapperClasses: `border-b border-${theme.borderPrimary} pb-2`,
+        wrapperClasses: `pb-2 border-b border-${theme.borderPrimary}`,
       }}
     />
   );

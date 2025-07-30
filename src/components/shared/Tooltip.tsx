@@ -179,11 +179,8 @@ export const Tooltip = memo<TooltipProps>(
 
     const arrowClass = tooltipArrows[position] || tooltipArrows.top;
     const visibilityClass = isVisible && style.isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
-    const tooltipClass = `
-      z-[1000] max-w-xs rounded-md bg-${theme.backdrop} p-2
-      text-sm font-medium text-${theme.accentFg} whitespace-pre-line
-      shadow-lg transition-opacity duration-150 ${visibilityClass} ${tooltipClasses}
-    `.trim();
+    const tooltipClass =
+      `z-[1000] max-w-xs p-2 whitespace-pre-line rounded-md bg-${theme.backdrop} font-medium text-sm text-${theme.accentFg} shadow-lg transition-opacity duration-150 ${visibilityClass} ${tooltipClasses}`.trim();
     const triggerClass = `relative inline-flex ${className}`.trim();
 
     const triggerElement = (

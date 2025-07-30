@@ -19,17 +19,17 @@ export function useLongPress(
 } {
   const timeoutRef = useRef<number | null>(null);
   const intervalRef = useRef<number | null>(null);
-  const savedCallback = useRef(callback);
-  const savedOnStart = useRef(onStart);
-  const savedOnEnd = useRef(onEnd);
+  const callbackRef = useRef(callback);
+  const onStartRef = useRef(onStart);
+  const onEndRef = useRef(onEnd);
 
   useEffect(() => {
-    savedCallback.current = callback;
+    callbackRef.current = callback;
   }, [callback]);
 
   useEffect(() => {
-    savedOnStart.current = onStart;
-    savedOnEnd.current = onEnd;
+    onStartRef.current = onStart;
+    onEndRef.current = onEnd;
   }, [onStart, onEnd]);
 
   const stop = useCallback((shouldCallOnEnd = true) => {
@@ -42,17 +42,17 @@ export function useLongPress(
       intervalRef.current = null;
     }
     if (shouldCallOnEnd) {
-      savedOnEnd.current?.();
+      onEndRef.current?.();
     }
   }, []);
 
   const start = useCallback(() => {
-    savedOnStart.current?.();
+    onStartRef.current?.();
     stop(false);
-    savedCallback.current();
+    callbackRef.current();
     timeoutRef.current = window.setTimeout(() => {
       intervalRef.current = window.setInterval(() => {
-        savedCallback.current();
+        callbackRef.current();
       }, interval);
     }, delay);
   }, [delay, interval, stop]);

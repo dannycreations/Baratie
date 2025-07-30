@@ -38,11 +38,7 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
   const theme = useThemeStore((state) => state.theme);
 
   const isDisabled = isItemDisabled?.(item) ?? false;
-  const nameClass = `
-      truncate pr-2 text-sm transition-colors duration-150
-      cursor-default group-hover:text-${theme.infoFg}
-      ${isDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}
-    `;
+  const nameClass = `truncate pr-2 text-sm text-${theme.contentSecondary} transition-colors duration-150 cursor-default group-hover:text-${theme.infoFg} ${isDisabled ? 'line-through' : ''}`;
 
   const handleDragStart = (event: DragEvent<HTMLElement>): void => {
     if (isDisabled) {
@@ -72,10 +68,7 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
   return (
     <li data-item-id={item.id} draggable={!isDisabled && !!onItemDragStart} onDragStart={handleDragStart}>
       <ItemListLayout
-        className={`
-            group h-12 rounded-md bg-${theme.surfaceTertiary} p-2
-            transition-colors duration-150 hover:bg-${theme.surfaceMuted}
-          `}
+        className={`group h-12 p-2 rounded-md bg-${theme.surfaceTertiary} transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
         leftContent={leftColumn}
         rightContent={rightColumn}
       />
@@ -112,8 +105,8 @@ export const GroupListLayout = memo<GroupListProps>(
     }
 
     return (
-      <>
-        {itemsByCategory.map(([category, items], index) => {
+      <div className="space-y-2">
+        {itemsByCategory.map(([category, items]) => {
           const isExpanded = !!query.trim() || expandedCategory === category;
           const categoryId = `category-panel-${category.replace(/\s+/g, '-').toLowerCase()}`;
           const buttonId = `${categoryId}-button`;
@@ -122,10 +115,7 @@ export const GroupListLayout = memo<GroupListProps>(
           const header = (
             <button
               id={buttonId}
-              className={`
-                flex h-12 w-full items-center justify-between bg-${theme.surfaceTertiary} p-2
-                text-left text-${theme.contentSecondary} outline-none hover:bg-${theme.surfaceHover}
-              `}
+              className={`flex h-12 w-full items-center justify-between p-2 text-${theme.contentSecondary} bg-${theme.surfaceTertiary} outline-none hover:bg-${theme.surfaceHover}`}
               aria-controls={panelId}
               aria-expanded={isExpanded}
               onClick={() => handleCategoryToggle(category)}
@@ -139,10 +129,8 @@ export const GroupListLayout = memo<GroupListProps>(
             </button>
           );
 
-          const containerClass = `overflow-hidden rounded-md ${index < itemsByCategory.length - 1 ? 'mb-2' : ''}`.trim();
-
           return (
-            <div key={category} className={containerClass}>
+            <div key={category} className="overflow-hidden rounded-md">
               {header}
               <div
                 id={panelId}
@@ -152,7 +140,7 @@ export const GroupListLayout = memo<GroupListProps>(
                 className={`accordion-grid ${isExpanded ? 'expanded' : ''}`}
               >
                 <div className="accordion-content">
-                  <div className={`bg-${theme.surfaceMuted} p-2`}>
+                  <div className={`p-2 bg-${theme.surfaceMuted}`}>
                     <ul aria-labelledby={buttonId} className="space-y-2">
                       {items.map((item) => (
                         <GroupItemLayout
@@ -172,7 +160,7 @@ export const GroupListLayout = memo<GroupListProps>(
             </div>
           );
         })}
-      </>
+      </div>
     );
   },
 );
@@ -187,7 +175,7 @@ interface ItemListLayoutProps extends HTMLAttributes<HTMLDivElement> {
 export const ItemListLayout = memo<ItemListLayoutProps>(
   ({ leftContent, rightContent, leftClasses, rightClasses, className, ...rest }): JSX.Element => {
     const containerClass = `flex w-full items-center justify-between ${className || ''}`.trim();
-    const leftWrapClass = leftClasses || 'grow min-w-0';
+    const leftWrapClass = leftClasses || 'min-w-0 grow';
     const rightWrapClass = rightClasses || 'flex shrink-0 items-center gap-1';
 
     return (

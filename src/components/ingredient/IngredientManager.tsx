@@ -52,7 +52,7 @@ export const IngredientManager = memo((): JSX.Element => {
         <div className="flex min-w-0 items-center gap-2">
           <BooleanInput id={`${categoryId}-toggle`} checked={!isCategoryDisabled} onChange={() => toggleCategory(category)} />
           <label
-            className={`truncate cursor-pointer font-medium ${isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}`}
+            className={`truncate font-medium cursor-pointer ${isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}`}
           >
             {category}
           </label>

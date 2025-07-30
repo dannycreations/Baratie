@@ -93,23 +93,14 @@ export const Button = memo<ButtonProps>(
     const theme = useThemeStore((state) => state.theme);
     const finalVariant = variant ?? 'primary';
 
-    const baseClass = `
-      inline-flex items-center justify-center border font-medium outline-none
-      transition-all duration-150 ease-in-out focus:ring-2
-      focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50
-    `;
+    const baseClass = `inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-${theme.ring}`;
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
     const variantClass = getVariantClasses(finalVariant, theme);
     const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
-
-    const finalClassName = `
-      ${baseClass} ${shapeClass} ${variantClass} ${sizeClass}
-      ${loading ? ' opacity-60' : ''} ${fullWidth ? ' w-full' : ''} ${className}
-    `.trim();
-
+    const finalClassName =
+      `${baseClass} ${shapeClass} ${variantClass} ${sizeClass} ${loading ? ' opacity-60' : ''} ${fullWidth ? ' w-full' : ''} ${className}`.trim();
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
     const loadingSpinner = <Loader2Icon size={16} aria-hidden="true" className={`animate-spin ${iconMarginClass}`} />;
-
     const showIconLeft = iconPosition === 'left';
     const showIconRight = iconPosition === 'right';
 

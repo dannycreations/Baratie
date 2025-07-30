@@ -39,7 +39,6 @@ const BaratieView = memo((): JSX.Element => {
   return (
     <>
       <LoadingScreen />
-
       <div className={mainContentClass} aria-hidden={!isAppReady}>
         <main
           className="flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden"

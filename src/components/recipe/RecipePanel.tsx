@@ -227,7 +227,7 @@ export const RecipePanel = memo((): JSX.Element => {
       headerLeft="Recipe"
       headerRight={headerActions}
       className="h-[50vh] min-h-0 md:h-auto md:flex-1"
-      contentClasses={`${hasOverflowY ? 'pr-1' : ''} relative flex h-full flex-col text-${theme.contentTertiary}`.trim()}
+      contentClasses={`relative flex h-full flex-col text-${theme.contentTertiary} ${hasOverflowY ? 'pr-1' : ''}`.trim()}
       contentRef={listScrollRef}
     >
       <div className="flex h-full flex-col" {...dropZoneProps}>

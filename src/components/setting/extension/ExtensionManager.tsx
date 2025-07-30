@@ -163,7 +163,7 @@ export const ExtensionPanel = memo((): JSX.Element | null => {
       return (
         <div className="flex min-w-0 items-center gap-2">
           <BooleanInput id={`${categoryId}-toggle`} checked={areAllSelected} onChange={() => handleToggleCategory(items)} />
-          <label className={`truncate cursor-pointer font-medium text-${theme.contentSecondary}`}>{category}</label>
+          <label className={`truncate font-medium text-${theme.contentSecondary} cursor-pointer`}>{category}</label>
         </div>
       );
     },
@@ -189,7 +189,7 @@ export const ExtensionPanel = memo((): JSX.Element | null => {
       isOpen={isModalOpen}
       size="xl"
       title={pendingSelection?.manifest.name || 'Install Extension'}
-      contentClasses="flex max-h-[80vh] flex-col"
+      contentClasses="flex flex-col max-h-[80vh]"
       headerActions={headerActions}
       onClose={handleClose}
       onExited={resetState}

@@ -21,13 +21,9 @@ export const StringInput = memo<StringInputProps>(
     const { className, disabled, ...trueRest } = rest;
 
     const hasClearButton = showClearButton && value && !disabled;
-
-    const baseInputStyle = `
-      w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary}
-      text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary}
-      outline-none focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50
-    `;
-    const paddingClass = hasClearButton ? 'py-2 pl-2 pr-8' : 'p-2';
+    const finalWrapperClass = `relative ${className || ''}`.trim();
+    const baseInputStyle = `w-full rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary} text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} outline-none focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50`;
+    const paddingClass = `py-2 pl-2 ${hasClearButton ? 'pr-8' : 'pr-2'}`;
     const finalInputClass = `${baseInputStyle} ${paddingClass}`;
 
     const handleClear = (event: MouseEvent<HTMLButtonElement>): void => {
@@ -37,19 +33,13 @@ export const StringInput = memo<StringInputProps>(
       }
     };
 
-    const finalWrapperClass = `relative w-full ${className || ''}`.trim();
-
     return (
       <div className={finalWrapperClass}>
         <input ref={inputRef} id={id} type={type} value={value} className={finalInputClass} onChange={onChange} disabled={disabled} {...trueRest} />
         {hasClearButton && (
           <button
             type="button"
-            className={`
-              absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full
-              text-${theme.contentTertiary} transition-colors hover:bg-${theme.surfaceMuted} hover:text-${theme.contentPrimary}
-              focus:ring-2 focus:ring-${theme.ring}
-            `}
+            className={`absolute top-1/2 right-2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-${theme.contentTertiary} transition-colors hover:bg-${theme.surfaceMuted} hover:text-${theme.contentPrimary} focus:ring-2 focus:ring-${theme.ring}`}
             aria-label="Clear input"
             onClick={handleClear}
           >

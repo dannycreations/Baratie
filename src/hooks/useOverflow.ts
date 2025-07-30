@@ -8,14 +8,19 @@ interface OverflowReturn<T extends HTMLElement> {
   readonly hasOverflowY: boolean;
 }
 
-const INITIAL_STATUS: Omit<OverflowReturn<HTMLElement>, 'ref'> = {
+interface OverflowStatus {
+  readonly hasOverflowX: boolean;
+  readonly hasOverflowY: boolean;
+}
+
+const INITIAL_STATUS: OverflowStatus = {
   hasOverflowX: false,
   hasOverflowY: false,
 };
 
 export function useOverflow<T extends HTMLElement>(): OverflowReturn<T> {
   const ref = useRef<T>(null);
-  const [status, setStatus] = useState<typeof INITIAL_STATUS>(INITIAL_STATUS);
+  const [status, setStatus] = useState<OverflowStatus>(INITIAL_STATUS);
 
   useLayoutEffect(() => {
     const element = ref.current;
@@ -24,11 +29,12 @@ export function useOverflow<T extends HTMLElement>(): OverflowReturn<T> {
     }
 
     const checkOverflow = (): void => {
-      const hasOverflowY = element.scrollHeight > element.clientHeight;
       const hasOverflowX = element.scrollWidth > element.clientWidth;
-      setStatus((current) => {
-        if (current.hasOverflowX === hasOverflowX && current.hasOverflowY === hasOverflowY) {
-          return current;
+      const hasOverflowY = element.scrollHeight > element.clientHeight;
+
+      setStatus((currentStatus) => {
+        if (currentStatus.hasOverflowX === hasOverflowX && currentStatus.hasOverflowY === hasOverflowY) {
+          return currentStatus;
         }
         return { hasOverflowX, hasOverflowY };
       });

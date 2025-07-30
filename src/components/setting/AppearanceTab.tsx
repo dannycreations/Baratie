@@ -58,10 +58,12 @@ export const AppearanceTab = memo((): JSX.Element => {
         <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {APP_THEMES.map((item) => {
             const isChecked = id === item.id;
+            const liClass = `list-none rounded-md cursor-pointer outline-none focus:ring-2 focus:ring-${theme.ring}`;
+            const itemLayoutClass = `h-16 p-2 border-2 rounded-md transition-colors duration-150 ${isChecked ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}` : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`}`;
 
             const leftContent = (
               <div className="flex flex-col justify-center gap-1">
-                <span className={`text-sm font-medium ${isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`}`}>{item.name}</span>
+                <span className={`font-medium text-sm ${isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`}`}>{item.name}</span>
                 <PalettePreview theme={item.theme} />
               </div>
             );
@@ -71,13 +73,6 @@ export const AppearanceTab = memo((): JSX.Element => {
                 <CheckIcon aria-hidden="true" className={`text-${theme.infoFg}`} size={16} />
               </div>
             ) : null;
-
-            const itemLayoutClass = `
-            h-16 rounded-md border-2 p-2 transition-colors duration-150
-            ${isChecked ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}` : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`}
-          `;
-
-            const liClass = `list-none cursor-pointer outline-none rounded-md focus:ring-2 focus:ring-${theme.ring}`;
 
             return (
               <li

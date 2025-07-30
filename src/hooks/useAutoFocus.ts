@@ -13,10 +13,13 @@ export function useAutoFocus<T extends HTMLElement>(elementRef: RefObject<T | nu
 
   useEffect(() => {
     if (isActive) {
-      const timer = setTimeout(() => {
+      const timer = window.setTimeout(() => {
         elementRef.current?.focus();
       }, delay);
-      return () => clearTimeout(timer);
+
+      return () => {
+        clearTimeout(timer);
+      };
     }
   }, [isActive, delay, elementRef]);
 }

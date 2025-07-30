@@ -44,6 +44,24 @@ interface MissingRecipeItemProps {
   readonly onRemove: (id: string) => void;
 }
 
+interface RecipeSpiceEditorProps {
+  readonly ingredient: IngredientItem;
+  readonly definition: IngredientDefinition;
+  readonly onSpiceChange: (ingredientId: string, spiceId: string, newValue: SpiceValue) => void;
+  readonly onLongPressEnd: () => void;
+  readonly onLongPressStart: () => void;
+}
+
+function getStatusBorder(theme: AppTheme, status: CookingStatusType): string {
+  const statusBorders: Readonly<Record<CookingStatusType, string>> = {
+    idle: '',
+    error: theme.dangerBorder,
+    success: theme.successBorder,
+    warning: theme.warningBorder,
+  };
+  return statusBorders[status];
+}
+
 const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemove }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const handleRemove = useCallback((): void => {
@@ -58,7 +76,7 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
     >
       <div className="p-2">
         <ItemListLayout
-          leftClasses="flex grow items-center min-w-0"
+          leftClasses="flex min-w-0 grow items-center"
           leftContent={
             <div className="flex items-center gap-1">
               <AlertTriangleIcon aria-hidden="true" className={`text-${theme.dangerFg}`} size={20} />
@@ -88,19 +106,11 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
 const SpiceInInputMessage = memo((): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   return (
-    <div className={`mx-2 rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-2 text-center text-xs italic`}>
+    <div className={`p-2 mx-2 text-center text-xs italic rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover}`}>
       Options are managed in the Input panel.
     </div>
   );
 });
-
-interface RecipeSpiceEditorProps {
-  readonly ingredient: IngredientItem;
-  readonly definition: IngredientDefinition;
-  readonly onSpiceChange: (ingredientId: string, spiceId: string, newValue: SpiceValue) => void;
-  readonly onLongPressEnd: () => void;
-  readonly onLongPressStart: () => void;
-}
 
 const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition, onSpiceChange, onLongPressStart, onLongPressEnd }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
@@ -112,8 +122,8 @@ const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition
   );
 
   return (
-    <div className="max-h-96 overflow-y-auto p-1">
-      <div className={`rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-2`}>
+    <div className="max-h-96 p-1 overflow-y-auto">
+      <div className={`p-2 rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover}`}>
         <SpiceLayout
           ingredient={definition}
           currentSpices={ingredient.spices}
@@ -125,16 +135,6 @@ const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition
     </div>
   );
 });
-
-function getStatusBorder(theme: AppTheme, status: CookingStatusType): string {
-  const statusBorders: Readonly<Record<CookingStatusType, string>> = {
-    idle: '',
-    error: theme.dangerBorder,
-    success: theme.successBorder,
-    warning: theme.warningBorder,
-  };
-  return statusBorders[status];
-}
 
 export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, handlers }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
@@ -170,7 +170,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
   const settingsTooltip = isSpiceInInput ? 'Options are in the Input panel' : isEditing ? 'Hide Options' : 'Edit Options';
 
   const ariaLabelParts = [
-    `Recipe Item: ${ingredientItem.name}`,
+    `Recipe Item: ${definition.name}`,
     `Status: ${isAutoCook ? status : 'Auto-Cook Disabled'}`,
     isSpiceInInput ? 'Options are managed in the Input panel.' : '',
     isEditorVisible ? 'The options editor is expanded.' : '',
@@ -179,15 +179,11 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
 
   const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
   const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
-  const itemClass = `
-      group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm
-      outline-none transition-all duration-200 ease-in-out
-      ${isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'}
-      ${statusBorderClass}
-      ${isSpiceInInput ? 'pb-2' : ''}
-    `.trim();
-
-  const grabHandleClass = `mr-2 cursor-grab text-${theme.contentTertiary} transition-colors group-hover:text-${theme.contentSecondary}`;
+  const itemClass =
+    `group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm outline-none transition-all duration-200 ease-in-out ${isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'} ${statusBorderClass} ${isSpiceInInput ? 'pb-2' : ''}`.trim();
+  const grabHandleClass = `mr-2 text-${theme.contentTertiary} cursor-grab transition-colors group-hover:text-${theme.contentSecondary}`;
+  const buttonId = `edit-button-${ingredientItem.id}`;
+  const optionsId = `options-${ingredientItem.id}`;
 
   const leftColumn = (
     <>
@@ -196,21 +192,20 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
           className={grabHandleClass}
           aria-label="Drag handle"
           aria-roledescription="draggable item"
-          draggable={true}
+          draggable
           onDragStart={handleDragStart}
           onDragEnd={onDragEnd}
         >
           <GrabIcon size={20} />
         </span>
       </Tooltip>
-      <Tooltip content={ingredientItem.name} position="top" className="min-w-0 flex-1">
-        <p className={`truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default`}>{ingredientItem.name}</p>
-      </Tooltip>
+      <div className="min-w-0 flex-1">
+        <Tooltip content={definition.description} position="top">
+          <p className={`truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default`}>{definition.name}</p>
+        </Tooltip>
+      </div>
     </>
   );
-
-  const buttonId = `edit-button-${ingredientItem.id}`;
-  const optionsId = `options-${ingredientItem.id}`;
 
   const rightColumn = (
     <>
@@ -234,7 +229,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
         size="sm"
         variant="danger"
         className="opacity-50 group-hover:opacity-100"
-        aria-label={`Remove ingredient "${ingredientItem.name}" from recipe`}
+        aria-label={`Remove ingredient "${definition.name}" from recipe`}
         tooltipContent="Remove Ingredient"
         tooltipPosition="top"
         onClick={() => onRemove(ingredientItem.id)}
@@ -252,7 +247,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
       onDragOver={onDragOver}
     >
       <ItemListLayout
-        className="h-12 cursor-default p-2"
+        className="h-12 p-2 cursor-default"
         leftClasses="flex grow items-center min-w-0"
         leftContent={leftColumn}
         rightContent={rightColumn}

@@ -7,7 +7,7 @@ import { DropZoneLayout } from '../layout/DropZoneLayout';
 
 import type { ChangeEvent, JSX, TextareaHTMLAttributes, UIEvent } from 'react';
 
-interface TextareaInputProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'value' | 'onChange' | 'readOnly' | 'spellCheck'> {
+interface TextareaInputProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'value' | 'onChange' | 'spellCheck'> {
   readonly value: string;
   readonly onChange?: (value: string) => void;
   readonly onFileDrop?: (file: File) => void;
@@ -59,22 +59,10 @@ export const TextareaInput = memo<TextareaInputProps>(
       setScrollTop(newScrollTop);
     }, []);
 
-    const containerClass = `
-      relative flex overflow-hidden rounded-md border border-${theme.borderPrimary}
-      bg-${theme.surfaceSecondary} focus-within:ring-2 focus-within:ring-${theme.ring}
-      ${disabled ? 'opacity-50' : ''} ${wrapperClasses}
-    `.trim();
-
-    const gutterClass = `
-      shrink-0 select-none overflow-hidden border-r
-      border-${theme.borderPrimary} bg-${theme.surfaceSecondary} p-2
-      text-right text-${theme.contentTertiary}
-    `;
-
-    const commonStyles = `
-      h-full w-full resize-none p-2 text-${theme.contentPrimary} outline-none
-      allow-text-selection placeholder:text-${theme.contentTertiary} font-mono
-    `;
+    const containerClass =
+      `relative flex overflow-hidden rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} focus-within:ring-2 focus-within:ring-${theme.ring} ${disabled ? 'opacity-50' : ''} ${wrapperClasses}`.trim();
+    const gutterClass = `shrink-0 p-2 overflow-hidden select-none text-right text-${theme.contentTertiary} bg-${theme.surfaceSecondary} border-r border-${theme.borderPrimary}`;
+    const commonStyles = `h-full w-full resize-none p-2 font-mono text-${theme.contentPrimary} outline-none allow-text-selection placeholder:text-${theme.contentTertiary}`;
     const textareaClass = `${commonStyles} bg-transparent ${textareaClasses}`;
 
     return (

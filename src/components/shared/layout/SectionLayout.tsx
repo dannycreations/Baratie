@@ -18,16 +18,14 @@ export const SectionLayout = memo<SectionLayoutProps>(
     const theme = useThemeStore((state) => state.theme);
 
     const panelClass = `flex flex-col overflow-hidden rounded-lg bg-${theme.surfaceSecondary} ${className}`.trim();
-    const headerClass = `
-      flex h-12 shrink-0 items-center justify-between border-b
-      border-${theme.borderPrimary} bg-${theme.surfaceTertiary} p-2 text-${theme.contentPrimary}
-    `.trim();
-    const contentClass = `grow overflow-auto p-3 ${contentClasses}`.trim();
+    const headerClass =
+      `flex h-12 shrink-0 items-center justify-between p-2 text-${theme.contentPrimary} border-b border-${theme.borderPrimary} bg-${theme.surfaceTertiary}`.trim();
+    const contentClass = `grow p-3 overflow-auto ${contentClasses}`.trim();
 
     return (
       <section role="region" className={panelClass} aria-labelledby={titleId} {...rest}>
         <div className={headerClass}>
-          <h2 id={titleId} className="min-w-0 truncate pr-2 text-lg font-semibold">
+          <h2 id={titleId} className="min-w-0 truncate pr-2 font-semibold text-lg">
             {headerLeft}
           </h2>
           {headerRight && <div className="flex shrink-0 items-center gap-1">{headerRight}</div>}

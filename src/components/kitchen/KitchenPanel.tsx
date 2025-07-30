@@ -134,7 +134,7 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, 
       aria-label="Input Panel for Raw Data"
       disabled={isTextareaDisabled}
       placeholder={placeholder}
-      showLineNumbers={true}
+      showLineNumbers
       wrapperClasses="flex-1 min-h-0"
       onChange={onDataChange}
       onFileDrop={onFileDrop}
@@ -145,9 +145,10 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, 
 const OutputContent = memo<OutputContentProps>(({ config, data }) => (
   <TextareaInput
     value={data}
+    readOnly
     aria-label="Result from Recipe Cooking Action"
     placeholder={config?.placeholder || 'Your Results Will Be Presented Here.'}
-    showLineNumbers={true}
+    showLineNumbers
     wrapperClasses="flex-1 min-h-0"
   />
 ));

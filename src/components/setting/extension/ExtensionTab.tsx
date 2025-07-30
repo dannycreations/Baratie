@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useState } from 'react';
 
+import { useOverflow } from '../../../hooks/useOverflow';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
 import { useThemeStore } from '../../../stores/useThemeStore';
@@ -21,6 +22,8 @@ export const ExtensionTab = memo((): JSX.Element => {
 
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const { ref: listScrollRef, hasOverflowY } = useOverflow<HTMLDivElement>();
 
   useEffect(() => {
     const pendingInstall = extensions.find((ext) => ext.status === 'awaiting');
@@ -60,7 +63,7 @@ export const ExtensionTab = memo((): JSX.Element => {
       <div>
         <p className={`text-sm text-${theme.contentTertiary}`}>
           Add external ingredients by providing a link to a public GitHub repository. The repository must contain a{' '}
-          <code className={`rounded-md bg-${theme.surfaceHover} p-1 text-xs text-${theme.contentSecondary}`}>manifest.json</code> file.
+          <code className={`p-1 rounded-md bg-${theme.surfaceHover} text-xs text-${theme.contentSecondary}`}>manifest.json</code> file.
         </p>
       </div>
 
@@ -82,9 +85,9 @@ export const ExtensionTab = memo((): JSX.Element => {
         </Button>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col">
-        <h4 className={`mb-3 text-base font-medium text-${theme.contentSecondary}`}>Installed Extensions</h4>
-        <div className="grow overflow-y-auto pr-1">
+      <div className="flex flex-1 flex-col min-h-0">
+        <h4 className={`mb-3 font-medium text-base text-${theme.contentSecondary}`}>Installed Extensions</h4>
+        <div ref={listScrollRef} className={`grow overflow-y-auto ${hasOverflowY ? 'pr-1' : ''}`}>
           {extensions.length === 0 ? (
             <EmptyView>No extensions have been installed yet.</EmptyView>
           ) : (

@@ -24,6 +24,7 @@ export function useDragMove({ dragId, setDragId, onDragMove }: DragMoveHookProps
     } else {
       document.body.classList.remove('grabbing');
     }
+
     return () => {
       document.body.classList.remove('grabbing');
     };
@@ -52,6 +53,7 @@ export function useDragMove({ dragId, setDragId, onDragMove }: DragMoveHookProps
   const handleDragEnter = useCallback(
     (event: DragEvent<HTMLElement>, targetItemId: string): void => {
       event.preventDefault();
+
       if (dragId && dragId !== targetItemId) {
         onDragMove(dragId, targetItemId);
       }

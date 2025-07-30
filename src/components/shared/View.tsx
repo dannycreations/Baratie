@@ -29,7 +29,7 @@ function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
 export const EmptyView = memo<EmptyViewProps>(
   ({ children, className = 'flex flex-col items-center justify-center p-3', textClasses, icon, title }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
-    const titleClass = `mb-1 text-center text-lg font-semibold text-${theme.contentSecondary}`;
+    const titleClass = `mb-1 text-center font-semibold text-lg text-${theme.contentSecondary}`;
 
     // ! This is a user-preferred choice and should not be changed.
     // `break-all` is used instead of `break-words` to prevent layout issues with long, unbreakable strings (e.g., URLs, tokens).
@@ -57,9 +57,9 @@ export const ErrorView = memo<ErrorViewProps>(({ error, errorInfo }): JSX.Elemen
     return null;
   }
 
-  const detailsClass = `mt-3 max-h-48 overflow-y-auto rounded-md bg-${theme.surfaceTertiary} p-2 text-left text-xs`.trim();
-  const summaryClass = `cursor-pointer font-medium text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`;
-  const preClass = `mt-2 whitespace-pre-wrap allow-text-selection text-${theme.contentSecondary}`;
+  const detailsClass = `max-h-48 mt-3 p-2 overflow-y-auto rounded-md bg-${theme.surfaceTertiary} text-left text-xs`.trim();
+  const summaryClass = `font-medium text-${theme.contentTertiary} cursor-pointer hover:text-${theme.contentPrimary}`;
+  const preClass = `mt-2 whitespace-pre-wrap text-${theme.contentSecondary} allow-text-selection`;
 
   return (
     <details className={detailsClass}>

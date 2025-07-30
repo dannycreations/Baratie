@@ -36,15 +36,8 @@ export const SelectInput = memo(
     );
 
     const { className, ...trueRest } = rest;
-    const finalWrapperClass = `relative w-full ${className || ''}`.trim();
-
-    const selectInputStyle = `
-      w-full appearance-none rounded-md border border-${theme.borderPrimary}
-      bg-${theme.surfaceTertiary} py-2 pl-2 pr-8 text-${theme.contentPrimary}
-      placeholder:text-${theme.contentTertiary} outline-none
-      transition-colors duration-150 focus:ring-2 focus:ring-${theme.ring}
-      disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed
-    `;
+    const finalWrapperClass = `relative ${className || ''}`.trim();
+    const selectInputStyle = `w-full appearance-none py-2 pl-2 pr-8 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} bg-${theme.surfaceTertiary} rounded-md border border-${theme.borderPrimary} outline-none transition-colors duration-150 cursor-pointer focus:ring-2 focus:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
 
     return (
       <div className={finalWrapperClass}>
