@@ -201,7 +201,7 @@ export const RecipePanel = memo((): JSX.Element => {
     }
   } else {
     content = (
-      <div role="list" aria-label="Current recipe steps" className="space-y-2">
+      <div role="list" aria-label="Current recipe steps" className="space-y-2 pb-3">
         {ingredients.map((ingredient: IngredientItem) => {
           const isSpiceInInput = inputPanelId === ingredient.id;
           const isEditingItem = editingId === ingredient.id;

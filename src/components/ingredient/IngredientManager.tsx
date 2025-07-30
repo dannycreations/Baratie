@@ -15,7 +15,7 @@ import type { IngredientProps } from '../../core/IngredientRegistry';
 import type { GroupListItem } from '../shared/layout/ListLayout';
 
 export const IngredientManager = memo((): JSX.Element => {
-  const isModalOpen = useModalStore((state) => state.activeModal === 'ingredientManager');
+  const isModalOpen = useModalStore((state) => state.activeModal === 'ingredient');
   const closeModal = useModalStore((state) => state.closeModal);
   const disabledCategories = useIngredientStore((state) => state.disabledCategories);
   const disabledIngredients = useIngredientStore((state) => state.disabledIngredients);
@@ -98,7 +98,7 @@ export const IngredientManager = memo((): JSX.Element => {
   );
 
   return (
-    <Modal isOpen={isModalOpen} size="lg" title="Manage Ingredients" bodyClasses="p-3" contentClasses="max-h-[80vh]" onClose={closeModal}>
+    <Modal isOpen={isModalOpen} size="lg" title="Manage Ingredients" contentClasses="max-h-[80vh]" onClose={closeModal}>
       <SearchListLayout
         listId={listId}
         listContent={content}

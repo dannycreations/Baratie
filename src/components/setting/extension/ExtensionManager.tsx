@@ -1,24 +1,19 @@
 import { memo, useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react';
 
-import { useAutoFocus } from '../../hooks/useAutoFocus';
-import { useExtensionStore } from '../../stores/useExtensionStore';
-import { useModalStore } from '../../stores/useModalStore';
-import { useThemeStore } from '../../stores/useThemeStore';
-import { Button } from '../shared/Button';
-import { BooleanInput } from '../shared/input/BooleanInput';
-import { GroupListLayout, SearchListLayout } from '../shared/layout/ListLayout';
-import { Modal } from '../shared/Modal';
+import { useAutoFocus } from '../../../hooks/useAutoFocus';
+import { useExtensionStore } from '../../../stores/useExtensionStore';
+import { useModalStore } from '../../../stores/useModalStore';
+import { useThemeStore } from '../../../stores/useThemeStore';
+import { Button } from '../../shared/Button';
+import { BooleanInput } from '../../shared/input/BooleanInput';
+import { GroupListLayout, SearchListLayout } from '../../shared/layout/ListLayout';
+import { Modal } from '../../shared/Modal';
 
 import type { JSX } from 'react';
-import type { ExtensionManifest, ManifestModule } from '../../helpers/extensionHelper';
-import type { GroupListItem } from '../shared/layout/ListLayout';
+import type { ManifestModule } from '../../../helpers/extensionHelper';
+import type { GroupListItem } from '../../shared/layout/ListLayout';
 
 type ModuleIngredient = ManifestModule & { id: string };
-
-export interface ExtensionListProps {
-  id: string;
-  manifest: ExtensionManifest;
-}
 
 function groupModulesForDisplay(modules: ReadonlyArray<ManifestModule>): Array<[string, Array<ModuleIngredient>]> {
   const grouped = new Map<string, Array<ModuleIngredient>>();
@@ -36,10 +31,10 @@ function groupModulesForDisplay(modules: ReadonlyArray<ManifestModule>): Array<[
   return [...grouped.entries()].sort(([a], [b]) => a.localeCompare(b));
 }
 
-export const ExtensionList = memo((): JSX.Element | null => {
+export const ExtensionPanel = memo((): JSX.Element | null => {
   const activeModal = useModalStore((state) => state.activeModal);
+  const getModal = useModalStore((state) => state.getModal);
   const closeModal = useModalStore((state) => state.closeModal);
-  const modalProps = useModalStore((state) => state.modalProps as ExtensionListProps | null);
   const installSelectedModules = useExtensionStore((state) => state.installSelectedModules);
   const cancelPendingInstall = useExtensionStore((state) => state.cancelPendingInstall);
   const theme = useThemeStore((state) => state.theme);
@@ -52,8 +47,8 @@ export const ExtensionList = memo((): JSX.Element | null => {
   const searchRef = useRef<HTMLInputElement>(null);
   const deferredQuery = useDeferredValue(query);
 
-  const isModalOpen = activeModal === 'extensionInstall';
-  const pendingSelection = isModalOpen ? modalProps : null;
+  const isModalOpen = activeModal === 'extension';
+  const pendingSelection = isModalOpen ? getModal('extension') : null;
 
   useAutoFocus(searchRef, isModalOpen);
 
@@ -194,7 +189,6 @@ export const ExtensionList = memo((): JSX.Element | null => {
       isOpen={isModalOpen}
       size="xl"
       title={pendingSelection?.manifest.name || 'Install Extension'}
-      bodyClasses="p-3"
       contentClasses="flex max-h-[80vh] flex-col"
       headerActions={headerActions}
       onClose={handleClose}

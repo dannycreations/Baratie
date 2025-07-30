@@ -1,10 +1,11 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 
 import { useModalStore } from '../../stores/useModalStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { Modal } from '../shared/Modal';
 import { AppearanceTab } from './AppearanceTab';
-import { ExtensionTab } from './ExtensionTab';
+import { ExtensionPanel } from './extension/ExtensionManager';
+import { ExtensionTab } from './extension/ExtensionTab';
 
 import type { JSX } from 'react';
 
@@ -50,29 +51,38 @@ export const SettingPanel = memo((): JSX.Element => {
     setActiveTab(tab);
   }, []);
 
-  const bodyContent = useMemo<JSX.Element | null>(() => {
-    return SETTING_TABS.find((tab) => tab.id === activeTab)?.component ?? null;
-  }, [activeTab]);
-
   return (
-    <Modal isOpen={isModalOpen} size="xl" title="Settings" bodyClasses="p-3" contentClasses="flex max-h-[80vh] flex-col" onClose={closeModal}>
-      <div role="tablist" aria-label="Settings categories" className={`flex gap-1 border-b border-${theme.borderPrimary}`}>
-        {SETTING_TABS.map((tab) => (
-          <TabButton
-            key={tab.id}
-            id={`${tabIdPrefix}-${tab.id}`}
-            isActive={activeTab === tab.id}
-            onClick={() => {
-              handleTabSelect(tab.id);
-            }}
-          >
-            {tab.label}
-          </TabButton>
-        ))}
-      </div>
-      <div id={`${tabIdPrefix}-${activeTab}-panel`} className="grow pt-3" role="tabpanel" aria-labelledby={`${tabIdPrefix}-${activeTab}`}>
-        {bodyContent}
-      </div>
-    </Modal>
+    <>
+      <Modal isOpen={isModalOpen} size="xl" title="Settings" contentClasses="flex max-h-[80vh] flex-col" onClose={closeModal}>
+        <div role="tablist" aria-label="Settings categories" className={`flex gap-1 border-b border-${theme.borderPrimary}`}>
+          {SETTING_TABS.map((tab) => (
+            <TabButton
+              key={tab.id}
+              id={`${tabIdPrefix}-${tab.id}`}
+              isActive={activeTab === tab.id}
+              onClick={() => {
+                handleTabSelect(tab.id);
+              }}
+            >
+              {tab.label}
+            </TabButton>
+          ))}
+        </div>
+        <div className="grow overflow-y-auto pt-3">
+          {SETTING_TABS.map((tab) => (
+            <div
+              key={tab.id}
+              id={`${tabIdPrefix}-${tab.id}-panel`}
+              role="tabpanel"
+              hidden={activeTab !== tab.id}
+              aria-labelledby={`${tabIdPrefix}-${tab.id}`}
+            >
+              {tab.component}
+            </div>
+          ))}
+        </div>
+      </Modal>
+      <ExtensionPanel />
+    </>
   );
 });

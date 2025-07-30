@@ -112,17 +112,15 @@ const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition
   );
 
   return (
-    <div id={`options-${ingredient.id}`} className="section-expand-enter-active">
-      <div className="max-h-96 overflow-y-auto p-1">
-        <div className={`rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-2`}>
-          <SpiceLayout
-            ingredient={definition}
-            currentSpices={ingredient.spices}
-            onSpiceChange={handleSpiceChange}
-            onLongPressStart={onLongPressStart}
-            onLongPressEnd={onLongPressEnd}
-          />
-        </div>
+    <div className="max-h-96 overflow-y-auto p-1">
+      <div className={`rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover} p-2`}>
+        <SpiceLayout
+          ingredient={definition}
+          currentSpices={ingredient.spices}
+          onSpiceChange={handleSpiceChange}
+          onLongPressStart={onLongPressStart}
+          onLongPressEnd={onLongPressEnd}
+        />
       </div>
     </div>
   );
@@ -211,15 +209,19 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
     </>
   );
 
+  const buttonId = `edit-button-${ingredientItem.id}`;
+  const optionsId = `options-${ingredientItem.id}`;
+
   const rightColumn = (
     <>
       {hasSpices && (
         <TooltipButton
+          id={buttonId}
           icon={<PreferencesIcon size={18} />}
           size="sm"
           variant={isEditorVisible ? 'primary' : 'stealth'}
           className={isEditorVisible ? '' : `text-${theme.contentTertiary} hover:text-${theme.infoFg}`}
-          aria-controls={`options-${ingredientItem.id}`}
+          aria-controls={optionsId}
           aria-expanded={isEditorVisible}
           aria-label={settingsTooltip}
           tooltipContent={settingsTooltip}
@@ -258,15 +260,23 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
       {hasSpices && (
         <>
           {isSpiceInInput && <SpiceInInputMessage />}
-          {isEditorVisible && (
-            <RecipeSpiceEditor
-              ingredient={ingredientItem}
-              definition={definition}
-              onSpiceChange={onSpiceChange}
-              onLongPressStart={onLongPressStart}
-              onLongPressEnd={onLongPressEnd}
-            />
-          )}
+          <div
+            id={optionsId}
+            role="region"
+            aria-labelledby={buttonId}
+            aria-hidden={!isEditorVisible}
+            className={`accordion-grid ${isEditorVisible ? 'expanded' : ''}`}
+          >
+            <div className="accordion-content">
+              <RecipeSpiceEditor
+                ingredient={ingredientItem}
+                definition={definition}
+                onSpiceChange={onSpiceChange}
+                onLongPressStart={onLongPressStart}
+                onLongPressEnd={onLongPressEnd}
+              />
+            </div>
+          </div>
         </>
       )}
     </div>

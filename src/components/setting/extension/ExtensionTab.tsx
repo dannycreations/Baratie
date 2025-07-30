@@ -1,12 +1,12 @@
 import { memo, useCallback, useEffect, useState } from 'react';
 
-import { useExtensionStore } from '../../stores/useExtensionStore';
-import { useModalStore } from '../../stores/useModalStore';
-import { useThemeStore } from '../../stores/useThemeStore';
-import { Button } from '../shared/Button';
-import { GitMergeIcon } from '../shared/Icon';
-import { StringInput } from '../shared/input/StringInput';
-import { EmptyView } from '../shared/View';
+import { useExtensionStore } from '../../../stores/useExtensionStore';
+import { useModalStore } from '../../../stores/useModalStore';
+import { useThemeStore } from '../../../stores/useThemeStore';
+import { Button } from '../../shared/Button';
+import { GitMergeIcon } from '../../shared/Icon';
+import { StringInput } from '../../shared/input/StringInput';
+import { EmptyView } from '../../shared/View';
 import { ExtensionItem } from './ExtensionItem';
 
 import type { ChangeEvent, JSX, KeyboardEvent } from 'react';
@@ -25,7 +25,7 @@ export const ExtensionTab = memo((): JSX.Element => {
   useEffect(() => {
     const pendingInstall = extensions.find((ext) => ext.status === 'awaiting');
     if (pendingInstall && pendingInstall.manifest) {
-      openModal('extensionInstall', { id: pendingInstall.id, manifest: pendingInstall.manifest });
+      openModal('extension', { id: pendingInstall.id, manifest: pendingInstall.manifest });
     }
   }, [extensions, openModal]);
 

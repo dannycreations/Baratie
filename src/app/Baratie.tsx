@@ -8,7 +8,6 @@ import { ErrorBoundary } from '../components/main/ErrorBoundary';
 import { LoadingScreen } from '../components/main/LoadingScreen';
 import { NotificationPanel } from '../components/main/NotificationPanel';
 import { RecipePanel } from '../components/recipe/RecipePanel';
-import { ExtensionList } from '../components/setting/ExtensionList';
 import { SettingPanel } from '../components/setting/SettingPanel';
 import { parseGitHubUrl } from '../helpers/extensionHelper';
 import { internalIngredients } from '../ingredients';
@@ -61,7 +60,6 @@ const BaratieView = memo((): JSX.Element => {
         <NotificationPanel />
         <CookbookPanel />
         <SettingPanel />
-        <ExtensionList />
       </div>
     </>
   );

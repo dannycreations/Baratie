@@ -100,6 +100,8 @@ export const GroupListLayout = memo<GroupListProps>(
     const theme = useThemeStore((state) => state.theme);
 
     const handleCategoryToggle = useCallback((category: string): void => {
+      // ! This is a user-preferred choice and should not be changed.
+      // This ensures only one category is expanded at a time.
       setExpandedCategory((current) => (current === category ? null : category));
     }, []);
 
@@ -142,9 +144,15 @@ export const GroupListLayout = memo<GroupListProps>(
           return (
             <div key={category} className={containerClass}>
               {header}
-              {isExpanded && (
-                <div className="section-expand-enter-active">
-                  <div id={panelId} className={`bg-${theme.surfaceMuted} p-2`} role="region" aria-hidden={!isExpanded} aria-labelledby={buttonId}>
+              <div
+                id={panelId}
+                role="region"
+                aria-labelledby={buttonId}
+                aria-hidden={!isExpanded}
+                className={`accordion-grid ${isExpanded ? 'expanded' : ''}`}
+              >
+                <div className="accordion-content">
+                  <div className={`bg-${theme.surfaceMuted} p-2`}>
                     <ul aria-labelledby={buttonId} className="space-y-2">
                       {items.map((item) => (
                         <GroupItemLayout
@@ -160,7 +168,7 @@ export const GroupListLayout = memo<GroupListProps>(
                     </ul>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           );
         })}
@@ -210,7 +218,13 @@ interface SearchListLayoutProps {
 }
 
 export const SearchListLayout = memo<SearchListLayoutProps>(
-  ({ containerClasses = 'flex h-full flex-col gap-2', listWrapperClasses = 'grow overflow-y-auto', listContent, listId, search }): JSX.Element => {
+  ({
+    containerClasses = 'flex h-full flex-col gap-2 min-h-0',
+    listWrapperClasses = 'grow overflow-y-auto',
+    listContent,
+    listId,
+    search,
+  }): JSX.Element => {
     const { ref: listScrollRef, hasOverflowY } = useOverflow<HTMLDivElement>();
 
     const onQueryChange = search?.onQueryChange;

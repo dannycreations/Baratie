@@ -200,22 +200,18 @@ body.grabbing * {
   animation: scaleDown 0.2s ease-in forwards;
 }
 
-@keyframes sectionExpandEnter {
-  from {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.98);
-    max-height: 0;
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    max-height: 2000px;
-  }
-}
-
-.section-expand-enter-active {
-  animation: sectionExpandEnter 0.3s ease-out forwards;
+.accordion-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.1s ease-in-out;
   overflow: hidden;
+}
+.accordion-grid.expanded {
+  grid-template-rows: 1fr;
+}
+.accordion-content {
+  overflow: hidden;
+  min-height: 0;
 }
 
 .number-input-no-spinner::-webkit-outer-spin-button,

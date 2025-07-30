@@ -1,15 +1,15 @@
 import { memo, useCallback } from 'react';
 
-import { useCopyAction } from '../../hooks/useCopyAction';
-import { useThemeStore } from '../../stores/useThemeStore';
-import { ConfirmButton, TooltipButton } from '../shared/Button';
-import { AlertTriangleIcon, CheckIcon, Loader2Icon, RefreshCwIcon } from '../shared/Icon';
-import { ItemListLayout } from '../shared/layout/ListLayout';
-import { Tooltip } from '../shared/Tooltip';
+import { useCopyAction } from '../../../hooks/useCopyAction';
+import { useThemeStore } from '../../../stores/useThemeStore';
+import { ConfirmButton, TooltipButton } from '../../shared/Button';
+import { AlertTriangleIcon, CheckIcon, Loader2Icon, RefreshCwIcon } from '../../shared/Icon';
+import { ItemListLayout } from '../../shared/layout/ListLayout';
+import { Tooltip } from '../../shared/Tooltip';
 
 import type { JSX } from 'react';
-import type { Extension } from '../../helpers/extensionHelper';
-import type { ExtensionState } from '../../stores/useExtensionStore';
+import type { Extension } from '../../../helpers/extensionHelper';
+import type { ExtensionState } from '../../../stores/useExtensionStore';
 
 type ExtensionItemStatusProps = Pick<Extension, 'status' | 'errors'>;
 
@@ -69,7 +69,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
   }, [onRemove, id]);
 
   const handleRefresh = useCallback((): void => {
-    onRefresh(id, { force: true });
+    onRefresh(id);
   }, [onRefresh, id]);
 
   const leftContent = (
@@ -78,7 +78,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
       <Tooltip content={isCopied ? 'Copied URL!' : 'Click to copy URL'} position="top">
         <button
           className={`
-            cursor-pointer rounded-sm p-1 text-left text-xs
+            cursor-pointer rounded-sm text-left text-xs
             text-${theme.contentTertiary} transition-colors
             duration-150 hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}
           `}

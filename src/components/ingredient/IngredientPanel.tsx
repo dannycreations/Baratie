@@ -37,7 +37,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   const [query, setQuery] = useState<string>('');
 
   const listId = useId();
-  const isIngredientOpen = activeModal === 'ingredientManager';
+  const isIngredientOpen = activeModal === 'ingredient';
   const isSettingOpen = activeModal === 'settings';
 
   const handleDropRecipe = useCallback(
@@ -121,7 +121,7 @@ export const IngredientPanel = memo((): JSX.Element => {
         tooltipContent={`Manage Ingredients\n${visibleIngredients} of ${totalIngredients} visible`}
         tooltipDisabled={isIngredientOpen}
         tooltipPosition="bottom"
-        onClick={() => openModal('ingredientManager')}
+        onClick={() => openModal('ingredient')}
       />
       <TooltipButton
         icon={<SettingsIcon size={18} />}

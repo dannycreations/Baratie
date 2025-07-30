@@ -112,7 +112,7 @@ export const useExtensionStore = create<ExtensionState>()(
             upsert: get().upsert,
           });
         }
-        return get().refresh(ext.id);
+        return get().refresh(ext.id, { force: true });
       });
 
       await Promise.all(

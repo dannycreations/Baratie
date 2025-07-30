@@ -37,14 +37,18 @@ interface CopyButtonProps {
 }
 
 interface ConfirmButtonProps {
+  readonly actionName?: string;
+  readonly ariaLabel?: string;
+  readonly className?: string;
+  readonly confirmAriaLabel?: string;
+  readonly confirmIcon?: ReactNode;
+  readonly confirmTooltip?: ReactNode;
+  readonly disabled?: boolean;
+  readonly icon?: ReactNode;
   readonly itemName: string;
   readonly itemType: string;
   readonly onConfirm: () => void;
-  readonly actionName?: string;
-  readonly className?: string;
-  readonly confirmIcon?: ReactNode;
-  readonly disabled?: boolean;
-  readonly icon?: ReactNode;
+  readonly tooltip?: ReactNode;
   readonly tooltipPosition?: TooltipProps['position'];
 }
 
@@ -165,13 +169,23 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
     disabled = false,
     icon,
     confirmIcon,
+    tooltip: customTooltip,
+    confirmTooltip: customConfirmTooltip,
+    ariaLabel: customAriaLabel,
+    confirmAriaLabel: customConfirmAriaLabel,
   }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
     const { isConfirm, trigger } = useConfirmAction(onConfirm, CONFIRM_SHOW_MS);
 
-    const tooltipContent = isConfirm ? `Confirm ${actionName}` : `${actionName} ${itemType}`;
-    const ariaLabel = isConfirm ? `Confirm ${actionName.toLowerCase()} of ${itemName}` : `${actionName} ${itemType}: ${itemName}`;
+    const defaultTooltip = `${actionName} ${itemType}`;
+    const defaultConfirmTooltip = `Confirm ${actionName}`;
+    const tooltipContent = isConfirm ? (customConfirmTooltip ?? defaultConfirmTooltip) : (customTooltip ?? defaultTooltip);
+
+    const defaultAriaLabel = `${actionName} ${itemType}: ${itemName}`;
+    const defaultConfirmAriaLabel = `Confirm ${actionName.toLowerCase()} of ${itemName}`;
+    const ariaLabel = isConfirm ? (customConfirmAriaLabel ?? defaultConfirmAriaLabel) : (customAriaLabel ?? defaultAriaLabel);
+
     const buttonClass = `${className} ${isConfirm ? `bg-${theme.dangerBg} text-${theme.accentFg}` : ''}`.trim();
 
     const defaultIcon = icon ?? <Trash2Icon size={18} />;

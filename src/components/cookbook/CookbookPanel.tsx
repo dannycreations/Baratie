@@ -13,7 +13,6 @@ import { CookbookSave } from './CookbookSave';
 
 import type { JSX } from 'react';
 import type { RecipebookItem } from '../../core/IngredientRegistry';
-import type { CookbookModalProps } from '../../stores/useCookbookStore';
 
 interface SaveHeaderActionsProps {
   readonly isSaveDisabled: boolean;
@@ -76,7 +75,7 @@ const LoadHeaderActions = memo<LoadHeaderActionsProps>(({ isExportDisabled, onFi
 
 export const CookbookPanel = memo((): JSX.Element | null => {
   const activeModal = useModalStore((state) => state.activeModal);
-  const modalProps = useModalStore((state) => state.modalProps as CookbookModalProps | null);
+  const getModal = useModalStore((state) => state.getModal);
   const closeModal = useModalStore((state) => state.closeModal);
   const nameInput = useCookbookStore((state) => state.nameInput);
   const query = useCookbookStore((state) => state.query);
@@ -96,7 +95,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const searchRef = useRef<HTMLInputElement>(null);
 
   const isModalOpen = activeModal === 'cookbook';
-  const modalMode = isModalOpen ? modalProps?.mode : null;
+  const modalMode = isModalOpen ? getModal('cookbook').mode : null;
   const isRecipeEmpty = ingredients.length === 0;
   const isSaveDisabled = !nameInput.trim() || isRecipeEmpty;
 
@@ -176,7 +175,6 @@ export const CookbookPanel = memo((): JSX.Element | null => {
       size="lg"
       title={title}
       titleId="cookbook-modal-title"
-      bodyClasses="p-3"
       contentClasses="max-h-[80vh]"
       headerActions={headerActions}
       onClose={closeModal}

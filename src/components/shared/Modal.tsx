@@ -17,12 +17,8 @@ interface ModalProps {
   readonly isOpen: boolean;
   readonly title: string;
   readonly onClose: () => void;
-  readonly bodyClasses?: string;
   readonly contentClasses?: string;
-  readonly footerContent?: ReactNode;
   readonly headerActions?: ReactNode;
-  readonly hideFooter?: boolean;
-  readonly hideHeader?: boolean;
   readonly modalId?: string;
   readonly onExited?: () => void;
   readonly size?: ModalSize;
@@ -46,14 +42,10 @@ export const Modal = memo<ModalProps>(
     title,
     children,
     headerActions,
-    footerContent,
     modalId = 'generic-modal',
     titleId = 'generic-modal-title',
     size = 'lg',
-    hideHeader = false,
-    hideFooter = false,
     contentClasses = '',
-    bodyClasses = '',
   }): JSX.Element | null => {
     const [isRendered, setIsRendered] = useState(false);
 
@@ -135,23 +127,18 @@ export const Modal = memo<ModalProps>(
           tabIndex={-1}
           aria-busy={!isOpen}
           aria-modal="true"
-          aria-labelledby={!hideHeader && title ? titleId : undefined}
+          aria-labelledby={title ? titleId : undefined}
         >
-          {!hideHeader && (
-            <header className={`flex h-12 shrink-0 items-center justify-between border-b border-${theme.borderPrimary} px-2`}>
-              <h2 id={titleId} className={`grow truncate pr-2 text-xl font-semibold text-${theme.contentPrimary}`}>
-                {title}
-              </h2>
-              <div className="flex shrink-0 items-center gap-2">
-                {headerActions && <div className="flex shrink-0 items-center gap-1">{headerActions}</div>}
-                <Button icon={<XIcon size={20} />} size="sm" variant="stealth" aria-label={`Close ${title || 'modal'}`} onClick={onClose} />
-              </div>
-            </header>
-          )}
-          <main className={`grow overflow-y-auto ${bodyClasses}`}>{children}</main>
-          {!hideFooter && footerContent && (
-            <footer className={`flex shrink-0 justify-end gap-2 border-t border-${theme.borderPrimary} p-2`}>{footerContent}</footer>
-          )}
+          <header className={`flex h-12 shrink-0 items-center justify-between border-b border-${theme.borderPrimary} px-2`}>
+            <h2 id={titleId} className={`grow truncate pr-2 text-xl font-semibold text-${theme.contentPrimary}`}>
+              {title}
+            </h2>
+            <div className="flex shrink-0 items-center gap-2">
+              {headerActions && <div className="flex shrink-0 items-center gap-1">{headerActions}</div>}
+              <Button icon={<XIcon size={20} />} size="sm" variant="stealth" aria-label={`Close ${title || 'modal'}`} onClick={onClose} />
+            </div>
+          </header>
+          <main className="flex flex-col p-3 min-h-0">{children}</main>
         </div>
       </div>,
       document.body,
