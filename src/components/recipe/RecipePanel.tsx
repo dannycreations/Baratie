@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useId, useMemo, useRef } from 'react';
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { ingredientRegistry, kitchen } from '../../app/container';
 import { useDragMove } from '../../hooks/useDragMove';
@@ -40,6 +40,7 @@ export const RecipePanel = memo((): JSX.Element => {
   const dragId = useDragMoveStore((state) => state.draggedItemId);
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
 
+  const [interruptedEditingId, setInterruptedEditingId] = useState<string | null>(null);
   const prevIngredientsCount = useRef(ingredients.length);
   const { ref: listScrollRef, hasOverflowY } = useOverflow<HTMLDivElement>();
   const listId = useId();
@@ -72,19 +73,34 @@ export const RecipePanel = memo((): JSX.Element => {
     onDragStart: onMoveStart,
     onDragEnter: onMoveEnter,
     onDragOver: onMoveOver,
-    onDragEnd: onMoveEnd,
+    onDragEnd: originalOnMoveEnd,
   } = useDragMove({
     dragId,
     setDragId: setDraggedItemId,
     onDragMove: handleReorder,
   });
 
+  const onMoveEnd = useCallback(
+    (event: DragEvent<HTMLElement>) => {
+      originalOnMoveEnd(event);
+      if (interruptedEditingId) {
+        setEditingId(interruptedEditingId);
+        setInterruptedEditingId(null);
+      }
+    },
+    [originalOnMoveEnd, interruptedEditingId, setEditingId],
+  );
+
   const handleDragStart = useCallback(
     (event: DragEvent<HTMLElement>, ingredient: IngredientItem): void => {
+      if (editingId) {
+        setInterruptedEditingId(editingId);
+        setEditingId(null);
+      }
       onMoveStart(event, ingredient.id);
       event.dataTransfer.setData('application/x-baratie-recipe-item-id', ingredient.id);
     },
-    [onMoveStart],
+    [editingId, onMoveStart, setEditingId],
   );
 
   const openCookbook = useCallback(
