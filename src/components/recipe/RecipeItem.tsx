@@ -208,7 +208,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
         </span>
       </Tooltip>
       <div className="min-w-0 flex-1">
-        <Tooltip content={definition.description} position="top">
+        <Tooltip content={definition.description} position="top" className="inline-block max-w-full">
           <p className={`truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default`}>{definition.name}</p>
         </Tooltip>
       </div>

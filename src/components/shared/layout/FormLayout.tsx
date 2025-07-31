@@ -25,7 +25,9 @@ export const FormLayout = memo<FormLayoutProps>(
     const containerClass = className ?? (isRow ? 'flex items-center justify-start gap-2' : 'flex flex-col gap-2');
     const finalLabelWrapClass = labelWrapperClasses ?? (isRow ? 'min-w-0' : '');
     const finalInputWrapClass = inputWrapperClasses ?? (isRow ? 'flex h-8 shrink-0 items-center' : 'w-full');
-    const finalLabelClass = labelClasses ?? `truncate font-medium text-sm text-${theme.contentSecondary}`;
+    const finalLabelClass = labelClasses ?? `font-medium text-sm text-${theme.contentSecondary}`;
+
+    const labelText = <span className="block truncate">{label}:</span>;
 
     return (
       <div className={containerClass}>
@@ -33,11 +35,17 @@ export const FormLayout = memo<FormLayoutProps>(
           <div className={finalLabelWrapClass}>
             <label className={finalLabelClass}>
               {description ? (
-                <Tooltip content={description} disabled={!description} position="top" tooltipClasses="max-w-[250px]">
-                  {label}:
+                <Tooltip
+                  content={description}
+                  disabled={!description}
+                  position="top"
+                  tooltipClasses="max-w-[250px]"
+                  className="inline-block max-w-full"
+                >
+                  {labelText}
                 </Tooltip>
               ) : (
-                `${label}:`
+                labelText
               )}
             </label>
           </div>

@@ -50,7 +50,12 @@ export const IngredientManager = memo((): JSX.Element => {
 
       return (
         <div className="flex min-w-0 items-center gap-2">
-          <BooleanInput id={`${categoryId}-toggle`} checked={!isCategoryDisabled} onChange={() => toggleCategory(category)} />
+          <BooleanInput
+            id={`${categoryId}-toggle`}
+            checked={!isCategoryDisabled}
+            offBackgroundColor={theme.borderPrimary}
+            onChange={() => toggleCategory(category)}
+          />
           <label
             className={`truncate font-medium cursor-pointer ${isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}`}
           >
@@ -73,11 +78,12 @@ export const IngredientManager = memo((): JSX.Element => {
           id={ingredientId}
           checked={!isIngredientDisabled}
           disabled={isCategoryDisabled}
+          offBackgroundColor={theme.borderPrimary}
           onChange={() => toggleIngredient(ingredient.id)}
         />
       );
     },
-    [disabledCategories, disabledIngredients, toggleIngredient],
+    [disabledCategories, disabledIngredients, toggleIngredient, theme],
   );
 
   const isItemDisabled = useCallback(
