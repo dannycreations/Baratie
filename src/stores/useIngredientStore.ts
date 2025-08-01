@@ -32,7 +32,7 @@ export const useIngredientStore = create<IngredientState>()(
         return typeof c === 'string' && allCategories.has(c);
       });
       const validIngredients = (filters?.ingredients ?? []).filter((i) => {
-        return typeof i === 'string' && !!ingredientRegistry.getIngredient(i);
+        return typeof i === 'string' && !!ingredientRegistry.get(i);
       });
 
       set({
@@ -95,8 +95,8 @@ useIngredientStore.subscribe((state) => {
     storage.set(
       STORAGE_FILTERS,
       {
-        categories: Array.from(disabledCategories),
-        ingredients: Array.from(disabledIngredients),
+        categories: [...disabledCategories],
+        ingredients: [...disabledIngredients],
       },
       'Ingredient Filters',
     );

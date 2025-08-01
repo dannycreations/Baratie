@@ -134,7 +134,7 @@ export const useExtensionStore = create<ExtensionState>()(
       }
 
       if (extension.ingredients) {
-        ingredientRegistry.unregisterIngredients(extension.ingredients);
+        ingredientRegistry.unregister(extension.ingredients);
         setIngredients(id, []);
       }
 
@@ -184,7 +184,7 @@ export const useExtensionStore = create<ExtensionState>()(
           upsert({ id: id, name: manifest.name, status: 'awaiting', manifest: manifest, scripts: {} });
         } else {
           if (storeExtension?.ingredients) {
-            ingredientRegistry.unregisterIngredients(storeExtension.ingredients);
+            ingredientRegistry.unregister(storeExtension.ingredients);
             setIngredients(id, []);
           }
 
@@ -228,7 +228,7 @@ export const useExtensionStore = create<ExtensionState>()(
 
       if (ingredientsToRemove.length > 0) {
         const ingredientsToRemoveSet = new Set(ingredientsToRemove);
-        ingredientRegistry.unregisterIngredients(ingredientsToRemove);
+        ingredientRegistry.unregister(ingredientsToRemove);
 
         const { ingredients: recipe, setRecipe, activeRecipeId } = useRecipeStore.getState();
         const updatedRecipe = recipe.filter((ing) => !ingredientsToRemoveSet.has(ing.ingredientId));

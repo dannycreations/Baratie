@@ -144,7 +144,7 @@ const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition
 
 export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, handlers }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
-  const definition = ingredientRegistry.getIngredient(ingredientItem.ingredientId);
+  const definition = ingredientRegistry.get(ingredientItem.ingredientId);
   const { isAutoCook, isDragged, isEditing, isSpiceInInput, status, warning } = uiState;
   const { onRemove, onSpiceChange, onDragStart, onDragEnd, onDragOver, onDragEnter, onEditToggle, onLongPressStart, onLongPressEnd } = handlers;
 

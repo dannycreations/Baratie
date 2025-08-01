@@ -79,9 +79,7 @@ export function hexToUint8Array(hex: string): Uint8Array {
 }
 
 export function uint8ArrayToHex(bytes: Uint8Array): string {
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
+  return [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 export function uint8ArrayToBase64(bytes: Uint8Array): string {

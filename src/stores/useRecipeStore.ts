@@ -28,7 +28,7 @@ export const useRecipeStore = create<RecipeState>()(
     ingredients: [],
 
     addIngredient: (ingredientId, initialSpices) => {
-      const ingredientDefinition = ingredientRegistry.getIngredient(ingredientId);
+      const ingredientDefinition = ingredientRegistry.get(ingredientId);
       errorHandler.assert(ingredientDefinition, `Ingredient definition not found for ID: ${ingredientId}`, 'Recipe Add Ingredient', {
         genericMessage: `Ingredient "${ingredientId}" could not be added because its definition is missing.`,
       });
@@ -114,7 +114,7 @@ export const useRecipeStore = create<RecipeState>()(
 
     setRecipe: (ingredients, activeRecipeId = null) => {
       const validIngredients = ingredients.map((ingredient) => {
-        const ingredientDefinition = ingredientRegistry.getIngredient(ingredient.ingredientId);
+        const ingredientDefinition = ingredientRegistry.get(ingredient.ingredientId);
         if (ingredientDefinition) {
           const validatedSpices = validateSpices(ingredientDefinition, ingredient.spices);
           return { ...ingredient, spices: validatedSpices };
@@ -139,7 +139,7 @@ export const useRecipeStore = create<RecipeState>()(
         errorHandler.assert(index !== -1, `Ingredient with ID "${id}" not found for spice change.`, 'Recipe Change Spice');
 
         const ingredientToUpdate = ingredients[index];
-        const ingredientDefinition = ingredientRegistry.getIngredient(ingredientToUpdate.ingredientId);
+        const ingredientDefinition = ingredientRegistry.get(ingredientToUpdate.ingredientId);
         errorHandler.assert(
           ingredientDefinition,
           `Ingredient definition not found for ID "${ingredientToUpdate.ingredientId}".`,

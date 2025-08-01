@@ -40,7 +40,7 @@ export interface SanitizedRecipesResult {
 
 export function createRecipeHash(ingredients: ReadonlyArray<IngredientItem>): string {
   const canonicalParts = ingredients.map((ing) => {
-    const definition = ingredientRegistry.getIngredient(ing.ingredientId);
+    const definition = ingredientRegistry.get(ing.ingredientId);
 
     if (!definition?.spices || definition.spices.length === 0) {
       return ing.ingredientId;
@@ -66,8 +66,8 @@ export function saveAllRecipes(recipes: ReadonlyArray<RecipebookItem>): boolean 
 
 export function sanitizeIngredient(rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientItem | null {
   const definition = rawIngredient.ingredientId
-    ? ingredientRegistry.getIngredient(rawIngredient.ingredientId)
-    : ingredientRegistry.getIngredientByName(rawIngredient.name);
+    ? ingredientRegistry.get(rawIngredient.ingredientId)
+    : ingredientRegistry.getByName(rawIngredient.name);
 
   if (!definition) {
     logger.warn(`Skipping unknown ingredient '${rawIngredient.name}' from ${source} for recipe '${recipeName}'. Its definition could not be found.`);

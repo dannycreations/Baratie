@@ -154,8 +154,8 @@ export async function loadAndExecuteExtension(extension: Readonly<Extension>, de
     ...window.Baratie,
     ingredient: {
       ...window.Baratie.ingredient,
-      registerIngredient: <T>(definition: IngredientDefinition<T>, _namespace?: string): string => {
-        const registeredId = ingredientRegistry.registerIngredient(definition, id);
+      register: <T>(definition: IngredientDefinition<T>, _namespace?: string): string => {
+        const registeredId = ingredientRegistry.register(definition, id);
         newlyRegisteredKeys.push(registeredId);
         return registeredId;
       },
@@ -197,7 +197,7 @@ export async function loadAndExecuteExtension(extension: Readonly<Extension>, de
   if (!getExtensionMap().has(id)) {
     logger.info(`Extension '${name || id}' was removed during load. Aborting update and cleaning up registered ingredients.`);
     if (newlyRegisteredKeys.length > 0) {
-      ingredientRegistry.unregisterIngredients(newlyRegisteredKeys);
+      ingredientRegistry.unregister(newlyRegisteredKeys);
     }
     return;
   }

@@ -181,7 +181,7 @@ export class Kitchen {
 
     for (let index = 0; index < recipe.length; index++) {
       const ingredient = recipe[index];
-      const definition = ingredientRegistry.getIngredient(ingredient.ingredientId);
+      const definition = ingredientRegistry.get(ingredient.ingredientId);
 
       if (!definition) {
         const errorMessage = `Ingredient '${ingredient.name}' is misconfigured or from a removed extension.`;

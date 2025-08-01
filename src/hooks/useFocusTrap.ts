@@ -28,7 +28,7 @@ export function useFocusTrap({ elementRef, isActive }: FocusTrapProps): void {
     }
     element.focus();
 
-    const focusableElements = Array.from(element.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)).filter((el) => {
+    const focusableElements = [...element.querySelectorAll(FOCUSABLE_SELECTORS)].filter((el) => {
       return el instanceof HTMLElement && !!el.offsetParent;
     });
 

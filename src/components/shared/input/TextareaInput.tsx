@@ -39,7 +39,7 @@ export const TextareaInput = memo<TextareaInputProps>(
 
     const { isDragOver, dropZoneProps } = useDropZone<File, HTMLDivElement>({
       disabled: disabled || !onFileDrop,
-      onValidate: (dt) => Array.from(dt.items).some((item) => item.kind === 'file' && item.type.startsWith('text/')),
+      onValidate: (dt) => [...dt.items].some((item) => item.kind === 'file' && item.type.startsWith('text/')),
       onExtract: (dt) => dt.files?.[0],
       onDrop: handleDrop,
     });

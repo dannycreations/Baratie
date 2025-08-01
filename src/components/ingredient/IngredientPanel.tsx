@@ -58,7 +58,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   });
 
   const allIngredients = useMemo<ReadonlyArray<IngredientProps>>(() => {
-    return ingredientRegistry.getAllIngredients();
+    return ingredientRegistry.getAll();
   }, [registryVersion]);
 
   const deferredQuery = useDeferredValue(query);
@@ -80,7 +80,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   const filteredIngredients = useMemo((): Array<[string, ReadonlyArray<IngredientProps>]> => {
     const lowerQuery = deferredQuery.toLowerCase().trim();
     if (!lowerQuery) {
-      const allGrouped = Array.from(groupedRegular.entries());
+      const allGrouped = [...groupedRegular.entries()];
       if (favoritesList.length > 0) {
         return [[CATEGORY_FAVORITES, favoritesList], ...allGrouped];
       }

@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import { createRoot } from './app/Baratie';
-import { appRegistry, errorHandler, ingredientRegistry, logger } from './app/container';
+import { errorHandler, ingredientRegistry, logger, taskRegistry } from './app/container';
 import { LogLevel } from './core/Logger';
 import { useNotificationStore } from './stores/useNotificationStore';
 import { useRecipeStore } from './stores/useRecipeStore';
@@ -21,11 +21,11 @@ const { getState: getRecipeState } = useRecipeStore;
 
 const BARATIE_API = {
   LogLevel,
-  app: appRegistry,
+  logger,
   createRoot,
+  task: taskRegistry,
   error: errorHandler,
   ingredient: ingredientRegistry,
-  logger,
   helpers: {
     file: {
       download: triggerDownload,

@@ -1,15 +1,15 @@
 import { memo, useEffect, useState } from 'react';
 
-import { useAppStore } from '../../stores/useAppStore';
+import { useTaskStore } from '../../stores/useTaskStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { AlertTriangleIcon, Loader2Icon } from '../shared/Icon';
 
 import type { JSX } from 'react';
 
 export const LoadingScreen = memo((): JSX.Element | null => {
-  const isAppReady = useAppStore((state) => state.isInitialized);
-  const message = useAppStore((state) => state.loadingMessage);
-  const isError = useAppStore((state) => state.loadingHasError);
+  const isAppReady = useTaskStore((state) => state.isInitialized);
+  const message = useTaskStore((state) => state.loadingMessage);
+  const isError = useTaskStore((state) => state.loadingHasError);
   const theme = useThemeStore((state) => state.theme);
 
   const [isRemoved, setIsRemoved] = useState(false);

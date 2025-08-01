@@ -23,7 +23,7 @@ export const useFavoriteStore = create<FavoriteState>()(
       if (parsedFavorites) {
         if (Array.isArray(parsedFavorites)) {
           favorites = parsedFavorites.reduce<Array<string>>((acc, item) => {
-            if (typeof item === 'string' && ingredientRegistry.getIngredient(item)) {
+            if (typeof item === 'string' && ingredientRegistry.get(item)) {
               acc.push(item);
             }
             return acc;
@@ -66,6 +66,6 @@ export const useFavoriteStore = create<FavoriteState>()(
 useFavoriteStore.subscribe(
   (state) => state.favorites,
   (favorites) => {
-    storage.set(STORAGE_FAVORITES, Array.from(favorites), 'Favorite Ingredients');
+    storage.set(STORAGE_FAVORITES, [...favorites], 'Favorite Ingredients');
   },
 );

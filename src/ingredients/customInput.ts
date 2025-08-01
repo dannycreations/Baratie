@@ -15,7 +15,7 @@ export const CUSTOM_INPUT_DEF: IngredientDefinition = {
 
     if (nextIngredientIndex < recipe.length) {
       const targetIngredient = recipe[nextIngredientIndex];
-      const targetDefinition = ingredientRegistry.getIngredient(targetIngredient.ingredientId);
+      const targetDefinition = ingredientRegistry.get(targetIngredient.ingredientId);
       if (targetDefinition?.spices && targetDefinition.spices.length > 0) {
         config = {
           mode: 'spiceEditor',

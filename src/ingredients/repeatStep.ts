@@ -100,7 +100,7 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
               let currentData = initialInput;
               for (let subIndex = 0; subIndex < ingredientsToRepeat.length; subIndex++) {
                 const ingredient = ingredientsToRepeat[subIndex];
-                const definition = ingredientRegistry.getIngredient(ingredient.ingredientId);
+                const definition = ingredientRegistry.get(ingredient.ingredientId);
                 errorHandler.assert(definition, `Definition for '${ingredient.name}' not found during sub-recipe execution.`);
 
                 const subContext: IngredientContext = { ...context, currentIndex: subIndex, ingredient: ingredient };

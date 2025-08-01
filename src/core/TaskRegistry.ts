@@ -1,9 +1,9 @@
 import { errorHandler, logger } from '../app/container';
-import { useAppStore } from '../stores/useAppStore';
 import { useCookbookStore } from '../stores/useCookbookStore';
 import { useExtensionStore } from '../stores/useExtensionStore';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
 import { useIngredientStore } from '../stores/useIngredientStore';
+import { useTaskStore } from '../stores/useTaskStore';
 
 interface InitializationTask {
   readonly type?: 'preInit' | 'postInit';
@@ -11,7 +11,7 @@ interface InitializationTask {
   readonly handler?: () => unknown;
 }
 
-export class AppRegistry {
+export class TaskRegistry {
   private readonly systemTasks: ReadonlyArray<InitializationTask>;
   private readonly userTasks: Array<InitializationTask> = [];
   private isRunning = false;
@@ -51,17 +51,13 @@ export class AppRegistry {
     ];
   }
 
-  public registerTask(task: InitializationTask): void {
-    this.userTasks.push({ type: 'preInit', ...task });
-  }
-
-  public async runInitSequence(): Promise<void> {
+  public async init(): Promise<void> {
     if (this.isRunning) {
       logger.info('Initialization sequence already running.');
       return;
     }
 
-    if (useAppStore.getState().isInitialized) {
+    if (useTaskStore.getState().isInitialized) {
       return;
     }
 
@@ -74,7 +70,7 @@ export class AppRegistry {
       const allTasks = [...preTasks, ...this.systemTasks, ...postTasks];
 
       for (const task of allTasks) {
-        useAppStore.getState().setLoadingMessage(task.message);
+        useTaskStore.getState().setLoadingMessage(task.message);
         logger.debug(`Executing init task: ${task.message}`);
 
         if (task.handler) {
@@ -84,7 +80,7 @@ export class AppRegistry {
           });
 
           if (error) {
-            useAppStore.getState().setLoadingMessage(error.userMessage || error.message, true);
+            useTaskStore.getState().setLoadingMessage(error.userMessage || error.message, true);
             return;
           }
         }
@@ -94,10 +90,14 @@ export class AppRegistry {
         });
       }
 
-      useAppStore.getState().setInitialized(true);
+      useTaskStore.getState().setInitialized(true);
       logger.info('Application initialization sequence completed successfully.');
     } finally {
       this.isRunning = false;
     }
+  }
+
+  public register(task: InitializationTask): void {
+    this.userTasks.push({ type: 'preInit', ...task });
   }
 }

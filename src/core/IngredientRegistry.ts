@@ -128,6 +128,19 @@ export class IngredientRegistry {
     this.resort();
   }
 
+  public get(id: string): IngredientProps | undefined {
+    return this.ingredients.get(id);
+  }
+
+  public getAll(): ReadonlyArray<IngredientProps> {
+    return [...this.ingredients.values()];
+  }
+
+  public getByName(name: string): IngredientProps | undefined {
+    const id = this.nameToIdMap.get(name);
+    return id ? this.ingredients.get(id) : undefined;
+  }
+
   public getAllCategories(): ReadonlySet<string> {
     if (this.categories) {
       return this.categories;
@@ -142,20 +155,7 @@ export class IngredientRegistry {
     return this.categories;
   }
 
-  public getAllIngredients(): ReadonlyArray<IngredientProps> {
-    return Array.from(this.ingredients.values());
-  }
-
-  public getIngredient(id: string): IngredientProps | undefined {
-    return this.ingredients.get(id);
-  }
-
-  public getIngredientByName(name: string): IngredientProps | undefined {
-    const id = this.nameToIdMap.get(name);
-    return id ? this.ingredients.get(id) : undefined;
-  }
-
-  public registerIngredient<T>(definition: IngredientDefinition<T>, namespace?: string): string {
+  public register<T>(definition: IngredientDefinition<T>, namespace?: string): string {
     const { run, ...restOfDefinition } = definition;
     const id = getObjectHash(restOfDefinition, namespace);
 
@@ -174,7 +174,7 @@ export class IngredientRegistry {
     return id;
   }
 
-  public unregisterIngredients(ids: ReadonlyArray<string>): void {
+  public unregister(ids: ReadonlyArray<string>): void {
     let changed = false;
     for (const id of ids) {
       if (this.ingredients.delete(id)) {
@@ -188,7 +188,7 @@ export class IngredientRegistry {
   }
 
   private resort(): void {
-    const sortedEntries = Array.from(this.ingredients.entries()).sort(([, a], [, b]) => a.name.localeCompare(b.name));
+    const sortedEntries = [...this.ingredients.entries()].sort(([, a], [, b]) => a.name.localeCompare(b.name));
     this.ingredients = new Map(sortedEntries);
     this.nameToIdMap = new Map(sortedEntries.map(([id, ingredient]) => [ingredient.name, id]));
     this.categories = null;

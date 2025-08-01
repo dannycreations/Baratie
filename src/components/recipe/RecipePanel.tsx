@@ -46,7 +46,7 @@ export const RecipePanel = memo((): JSX.Element => {
   const listId = useId();
 
   const handleDropIngredient = useCallback((typeString: string): void => {
-    if (typeString && ingredientRegistry.getIngredient(typeString)) {
+    if (typeString && ingredientRegistry.get(typeString)) {
       useRecipeStore.getState().addIngredient(typeString);
     }
   }, []);

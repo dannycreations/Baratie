@@ -32,7 +32,7 @@ export const IngredientManager = memo((): JSX.Element => {
   useAutoFocus(searchRef, isModalOpen);
 
   const allIngredients = useMemo<ReadonlyArray<IngredientProps>>(() => {
-    return ingredientRegistry.getAllIngredients();
+    return ingredientRegistry.getAll();
   }, [registryVersion]);
 
   const ingredientsByCategory = useMemo(() => {

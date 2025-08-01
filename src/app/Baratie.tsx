@@ -11,9 +11,9 @@ import { RecipePanel } from '../components/recipe/RecipePanel';
 import { SettingPanel } from '../components/setting/SettingPanel';
 import { parseGitHubUrl } from '../helpers/extensionHelper';
 import { internalIngredients } from '../ingredients';
-import { useAppStore } from '../stores/useAppStore';
 import { useExtensionStore } from '../stores/useExtensionStore';
-import { appRegistry, errorHandler, ingredientRegistry, kitchen, logger } from './container';
+import { useTaskStore } from '../stores/useTaskStore';
+import { errorHandler, ingredientRegistry, kitchen, logger, taskRegistry } from './container';
 import { APP_STYLES } from './styles';
 
 import type { JSX } from 'react';
@@ -26,7 +26,7 @@ export interface BaratieOptions {
 }
 
 const BaratieView = memo((): JSX.Element => {
-  const isAppReady = useAppStore((state) => state.isInitialized);
+  const isAppReady = useTaskStore((state) => state.isInitialized);
 
   useEffect(() => {
     if (isAppReady) {
@@ -77,14 +77,14 @@ export function createRoot(element: HTMLElement | null, options: Readonly<Barati
   const { disableIngredients, defaultExtensions } = options;
 
   if (!disableIngredients) {
-    appRegistry.registerTask({
+    taskRegistry.register({
       type: 'preInit',
       message: 'Stocking rare ingredients...',
       handler: () => {
         try {
           ingredientRegistry.startBatch();
           for (const definition of internalIngredients) {
-            ingredientRegistry.registerIngredient(definition, 'baratie');
+            ingredientRegistry.register(definition, 'baratie');
           }
         } finally {
           ingredientRegistry.endBatch();
@@ -94,7 +94,7 @@ export function createRoot(element: HTMLElement | null, options: Readonly<Barati
   }
 
   if (defaultExtensions) {
-    appRegistry.registerTask({
+    taskRegistry.register({
       type: 'postInit',
       message: 'Gathering exotic provisions...',
       handler: async () => {
@@ -118,7 +118,7 @@ export function createRoot(element: HTMLElement | null, options: Readonly<Barati
     });
   }
 
-  appRegistry.runInitSequence();
+  taskRegistry.init();
 
   const root = createReactRoot(element);
 

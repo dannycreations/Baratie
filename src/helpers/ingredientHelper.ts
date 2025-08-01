@@ -28,7 +28,7 @@ export function searchGroupedIngredients(
 ): Array<[string, ReadonlyArray<IngredientProps>]> {
   const lowerQuery = query.toLowerCase().trim();
   if (!lowerQuery) {
-    return Array.from(groupedIngredients.entries());
+    return [...groupedIngredients.entries()];
   }
 
   const result: Array<[string, ReadonlyArray<IngredientProps>]> = [];

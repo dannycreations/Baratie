@@ -107,7 +107,7 @@ const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient,
     [onSpiceChange, targetIngredient.id],
   );
 
-  const definition = ingredientRegistry.getIngredient(targetIngredient.ingredientId);
+  const definition = ingredientRegistry.get(targetIngredient.ingredientId);
   errorHandler.assert(definition, 'Could not find definition for target ingredient in spice editor.');
 
   return (

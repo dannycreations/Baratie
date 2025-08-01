@@ -236,7 +236,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     }
 
     if (added > 0 || updated > 0) {
-      const mergedList = Array.from(recipeMap.values());
+      const mergedList = [...recipeMap.values()];
       if (saveAllRecipes(mergedList)) {
         const summary = [
           added > 0 ? `${added} new recipe${added > 1 ? 's' : ''} added.` : '',

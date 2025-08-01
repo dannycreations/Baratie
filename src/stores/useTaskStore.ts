@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-interface AppState {
+interface TaskState {
   readonly isInitialized: boolean;
   readonly loadingHasError: boolean;
   readonly loadingMessage: string;
@@ -9,7 +9,7 @@ interface AppState {
   readonly setLoadingMessage: (message: string, hasError?: boolean) => void;
 }
 
-export const useAppStore = create<AppState>()(
+export const useTaskStore = create<TaskState>()(
   subscribeWithSelector((set) => ({
     isInitialized: false,
     loadingHasError: false,
