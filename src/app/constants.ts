@@ -10,6 +10,7 @@ export const STORAGE_EXTENSIONS = 'baratie-extensions';
 export const STORAGE_FAVORITES = 'baratie-favorites';
 export const STORAGE_FILTERS = 'baratie-filters';
 export const STORAGE_THEME = 'baratie-theme';
+export const STORAGE_SETTINGS = 'baratie-settings';
 
 export const CONFIRM_SHOW_MS = 3000;
 export const COPY_SHOW_MS = 1500;

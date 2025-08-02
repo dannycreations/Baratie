@@ -3,12 +3,13 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { errorHandler, ingredientRegistry, logger } from '../app/container';
 import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
+import { useSettingStore } from './useSettingStore';
 
 import type { IngredientItem, SpiceValue } from '../core/IngredientRegistry';
 
 interface RecipeState {
   readonly activeRecipeId: string | null;
-  readonly editingId: string | null;
+  readonly editingIds: ReadonlySet<string>;
   readonly ingredients: ReadonlyArray<IngredientItem>;
   readonly addIngredient: (ingredientId: string, initialSpices?: Readonly<Record<string, unknown>>) => void;
   readonly clearRecipe: () => void;
@@ -16,7 +17,7 @@ interface RecipeState {
   readonly removeIngredient: (id: string) => void;
   readonly reorderIngredients: (draggedId: string, targetId: string) => void;
   readonly setActiveRecipeId: (id: string | null) => void;
-  readonly setEditingId: (id: string | null) => void;
+  readonly toggleEditingId: (id: string) => void;
   readonly setRecipe: (ingredients: ReadonlyArray<IngredientItem>, activeRecipeId: string | null) => void;
   readonly updateSpice: (id: string, spiceId: string, rawValue: SpiceValue) => void;
 }
@@ -24,7 +25,7 @@ interface RecipeState {
 export const useRecipeStore = create<RecipeState>()(
   subscribeWithSelector((set, get) => ({
     activeRecipeId: null,
-    editingId: null,
+    editingIds: new Set(),
     ingredients: [],
 
     addIngredient: (ingredientId, initialSpices) => {
@@ -52,7 +53,7 @@ export const useRecipeStore = create<RecipeState>()(
       set({
         activeRecipeId: null,
         ingredients: [],
-        editingId: null,
+        editingIds: new Set(),
       });
     },
 
@@ -71,11 +72,13 @@ export const useRecipeStore = create<RecipeState>()(
 
         const newIngredients = [...state.ingredients];
         newIngredients.splice(index, 1);
+        const newEditingIds = new Set(state.editingIds);
+        newEditingIds.delete(id);
 
         return {
           ingredients: newIngredients,
           activeRecipeId: state.activeRecipeId === id ? null : state.activeRecipeId,
-          editingId: state.editingId === id ? null : state.editingId,
+          editingIds: newEditingIds,
         };
       });
     },
@@ -106,9 +109,22 @@ export const useRecipeStore = create<RecipeState>()(
       });
     },
 
-    setEditingId: (editingId) => {
-      set({
-        editingId: editingId,
+    toggleEditingId: (id) => {
+      set((state) => {
+        const { allowMultipleOpen } = useSettingStore.getState();
+        const newEditingIds = new Set(state.editingIds);
+        const isCurrentlyEditing = newEditingIds.has(id);
+
+        if (isCurrentlyEditing) {
+          newEditingIds.delete(id);
+        } else {
+          if (!allowMultipleOpen) {
+            newEditingIds.clear();
+          }
+          newEditingIds.add(id);
+        }
+
+        return { editingIds: newEditingIds };
       });
     },
 
@@ -128,7 +144,7 @@ export const useRecipeStore = create<RecipeState>()(
       set({
         activeRecipeId: activeRecipeId,
         ingredients: validIngredients,
-        editingId: null,
+        editingIds: new Set(),
       });
     },
 

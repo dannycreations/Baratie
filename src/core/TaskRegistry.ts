@@ -3,6 +3,7 @@ import { useCookbookStore } from '../stores/useCookbookStore';
 import { useExtensionStore } from '../stores/useExtensionStore';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
 import { useIngredientStore } from '../stores/useIngredientStore';
+import { useSettingStore } from '../stores/useSettingStore';
 import { useTaskStore } from '../stores/useTaskStore';
 
 interface InitializationTask {
@@ -43,6 +44,12 @@ export class TaskRegistry {
         message: "Consulting the ship's log...",
         handler: () => {
           return useIngredientStore.getState().init();
+        },
+      },
+      {
+        message: 'Adjusting the ship sails...',
+        handler: () => {
+          return useSettingStore.getState().init();
         },
       },
       {

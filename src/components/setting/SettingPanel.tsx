@@ -6,10 +6,12 @@ import { Modal } from '../shared/Modal';
 import { AppearanceTab } from './AppearanceTab';
 import { ExtensionManager } from './extension/ExtensionManager';
 import { ExtensionTab } from './extension/ExtensionTab';
+import { GeneralTab } from './GeneralTab';
 
 import type { JSX } from 'react';
 
 const SETTING_TABS = [
+  { id: 'general', label: 'General', component: <GeneralTab /> },
   { id: 'appearance', label: 'Appearance', component: <AppearanceTab /> },
   { id: 'extensions', label: 'Extensions', component: <ExtensionTab /> },
 ] as const;
@@ -40,7 +42,7 @@ export const SettingPanel = memo((): JSX.Element => {
   const closeModal = useModalStore((state) => state.closeModal);
   const theme = useThemeStore((state) => state.theme);
 
-  const [activeTab, setActiveTab] = useState<SettingTab>('appearance');
+  const [activeTab, setActiveTab] = useState<SettingTab>('general');
   const tabIdPrefix = 'setting-tab';
 
   const handleTabSelect = useCallback((tab: SettingTab): void => {

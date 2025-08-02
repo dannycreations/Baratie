@@ -1,6 +1,7 @@
 import { memo, useCallback, useState } from 'react';
 
 import { useOverflow } from '../../../hooks/useOverflow';
+import { useSettingStore } from '../../../stores/useSettingStore';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { HighlightText } from '../HighlightText';
 import { ChevronRightIcon } from '../Icon';
@@ -88,15 +89,30 @@ export const GroupListLayout = memo<GroupListProps>(
     onItemDragStart,
     isItemDisabled,
   }): JSX.Element => {
-    const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+    const { allowMultipleOpen } = useSettingStore((state) => state);
+    const [expandedCategories, setExpandedCategories] = useState<ReadonlySet<string>>(new Set());
 
     const theme = useThemeStore((state) => state.theme);
 
-    const handleCategoryToggle = useCallback((category: string): void => {
-      // ! This is a user-preferred choice and should not be changed.
-      // This ensures only one category is expanded at a time.
-      setExpandedCategory((current) => (current === category ? null : category));
-    }, []);
+    const handleCategoryToggle = useCallback(
+      (category: string): void => {
+        setExpandedCategories((current) => {
+          const newSet = new Set(current);
+          const isExpanded = newSet.has(category);
+
+          if (isExpanded) {
+            newSet.delete(category);
+          } else {
+            if (!allowMultipleOpen) {
+              newSet.clear();
+            }
+            newSet.add(category);
+          }
+          return newSet;
+        });
+      },
+      [allowMultipleOpen],
+    );
 
     if (itemsByCategory.length === 0) {
       return (
@@ -107,7 +123,7 @@ export const GroupListLayout = memo<GroupListProps>(
     return (
       <div className="space-y-2">
         {itemsByCategory.map(([category, items]) => {
-          const isExpanded = !!query.trim() || expandedCategory === category;
+          const isExpanded = !!query.trim() || expandedCategories.has(category);
           const categoryId = `category-panel-${category.replace(/\s+/g, '-').toLowerCase()}`;
           const buttonId = `${categoryId}-button`;
           const panelId = `${categoryId}-content`;

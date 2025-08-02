@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useId, useMemo, useRef } from 'react';
 
 import { ingredientRegistry, kitchen } from '../../app/container';
 import { useDragMove } from '../../hooks/useDragMove';
@@ -25,8 +25,8 @@ import type { RecipeItemHandlers } from './RecipeItem';
 
 export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
-  const editingId = useRecipeStore((state) => state.editingId);
-  const setEditingId = useRecipeStore((state) => state.setEditingId);
+  const editingIds = useRecipeStore((state) => state.editingIds);
+  const toggleEditingId = useRecipeStore((state) => state.toggleEditingId);
   const openModal = useModalStore((state) => state.openModal);
   const isCookbookOpen = useModalStore((state) => state.activeModal === 'cookbook');
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
@@ -40,7 +40,6 @@ export const RecipePanel = memo((): JSX.Element => {
   const dragId = useDragMoveStore((state) => state.draggedItemId);
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
 
-  const [interruptedEditingId, setInterruptedEditingId] = useState<string | null>(null);
   const prevIngredientsCount = useRef(ingredients.length);
   const { ref: listScrollRef, hasOverflowY } = useOverflow<HTMLDivElement>();
   const listId = useId();
@@ -73,34 +72,22 @@ export const RecipePanel = memo((): JSX.Element => {
     onDragStart: onMoveStart,
     onDragEnter: onMoveEnter,
     onDragOver: onMoveOver,
-    onDragEnd: originalOnMoveEnd,
+    onDragEnd,
   } = useDragMove({
     dragId,
     setDragId: setDraggedItemId,
     onDragMove: handleReorder,
   });
 
-  const onMoveEnd = useCallback(
-    (event: DragEvent<HTMLElement>) => {
-      originalOnMoveEnd(event);
-      if (interruptedEditingId) {
-        setEditingId(interruptedEditingId);
-        setInterruptedEditingId(null);
-      }
-    },
-    [originalOnMoveEnd, interruptedEditingId, setEditingId],
-  );
-
   const handleDragStart = useCallback(
     (event: DragEvent<HTMLElement>, ingredient: IngredientItem): void => {
-      if (editingId) {
-        setInterruptedEditingId(editingId);
-        setEditingId(null);
+      if (editingIds.size > 0) {
+        useRecipeStore.setState({ editingIds: new Set() });
       }
       onMoveStart(event, ingredient.id);
       event.dataTransfer.setData('application/x-baratie-recipe-item-id', ingredient.id);
     },
-    [editingId, onMoveStart, setEditingId],
+    [editingIds.size, onMoveStart],
   );
 
   const openCookbook = useCallback(
@@ -180,12 +167,11 @@ export const RecipePanel = memo((): JSX.Element => {
     (id: string): void => {
       const isSpiceInInput = useKitchenStore.getState().inputPanelId === id;
       if (isSpiceInInput) {
-        setEditingId(null);
         return;
       }
-      setEditingId(editingId === id ? null : id);
+      toggleEditingId(id);
     },
-    [editingId, setEditingId],
+    [toggleEditingId],
   );
 
   const recipeItemHandlers: RecipeItemHandlers = useMemo(
@@ -194,13 +180,13 @@ export const RecipePanel = memo((): JSX.Element => {
       onSpiceChange: handleSpiceChange,
       onDragStart: handleDragStart,
       onDragEnter: onMoveEnter,
-      onDragEnd: onMoveEnd,
+      onDragEnd: onDragEnd,
       onDragOver: onMoveOver,
       onEditToggle: handleEditToggle,
       onLongPressStart: startUpdateBatch,
       onLongPressEnd: endUpdateBatch,
     }),
-    [handleRemove, handleSpiceChange, handleDragStart, onMoveEnter, onMoveEnd, onMoveOver, handleEditToggle, startUpdateBatch, endUpdateBatch],
+    [handleRemove, handleSpiceChange, handleDragStart, onMoveEnter, onDragEnd, onMoveOver, handleEditToggle, startUpdateBatch, endUpdateBatch],
   );
 
   let content: JSX.Element;
@@ -221,7 +207,7 @@ export const RecipePanel = memo((): JSX.Element => {
       <div role="list" aria-label="Current recipe steps" className="space-y-2 pb-3">
         {ingredients.map((ingredient: IngredientItem) => {
           const isSpiceInInput = inputPanelId === ingredient.id;
-          const isEditingItem = editingId === ingredient.id;
+          const isEditingItem = editingIds.has(ingredient.id);
           const uiState = {
             isAutoCook: isAutoCookEnabled,
             isDragged: dragId === ingredient.id,

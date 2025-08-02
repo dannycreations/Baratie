@@ -109,7 +109,7 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
   return (
     <FormLayout
       inputId={`spice-${spice.id}`}
-      label={spice.label}
+      label={`${spice.label}:`}
       description={spice.description}
       direction={spice.type === 'boolean' ? 'row' : 'col'}
     >

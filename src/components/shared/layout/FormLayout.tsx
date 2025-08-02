@@ -27,7 +27,7 @@ export const FormLayout = memo<FormLayoutProps>(
     const finalInputWrapClass = inputWrapperClasses ?? (isRow ? 'flex h-8 shrink-0 items-center' : 'w-full');
     const finalLabelClass = labelClasses ?? `font-medium text-sm text-${theme.contentSecondary}`;
 
-    const labelText = <span className="block truncate">{label}:</span>;
+    const labelText = <span className="block truncate">{label}</span>;
 
     return (
       <div className={containerClass}>
