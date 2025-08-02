@@ -74,7 +74,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
 
   const leftContent = (
     <div className="flex flex-col">
-      <span className={`font-medium text-${theme.contentPrimary}`}>{displayName}</span>
+      <span className={`font-medium text-${theme.contentPrimary} cursor-default`}>{displayName}</span>
       <Tooltip content={isCopied ? 'Copied URL!' : 'Click to copy URL'} position="top">
         <button
           className={`rounded-sm text-left text-xs text-${theme.contentTertiary} cursor-pointer transition-colors duration-150 hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}`}

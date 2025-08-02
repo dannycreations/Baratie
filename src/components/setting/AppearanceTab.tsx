@@ -5,7 +5,7 @@ import { useThemeStore } from '../../stores/useThemeStore';
 import { CheckIcon } from '../shared/Icon';
 import { ItemListLayout } from '../shared/layout/ListLayout';
 
-import type { JSX } from 'react';
+import type { JSX, KeyboardEvent } from 'react';
 import type { AppTheme } from '../../app/themes';
 import type { ThemeId } from '../../stores/useThemeStore';
 
@@ -49,6 +49,16 @@ export const AppearanceTab = memo((): JSX.Element => {
     [setTheme],
   );
 
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLLIElement>, themeId: ThemeId): void => {
+      if (event.key === ' ' || event.key === 'Enter') {
+        event.preventDefault();
+        handleSelectTheme(themeId);
+      }
+    },
+    [handleSelectTheme],
+  );
+
   return (
     <div role="radiogroup" aria-labelledby="theme-group-label">
       <div className="flex h-full flex-col">
@@ -83,6 +93,9 @@ export const AppearanceTab = memo((): JSX.Element => {
                 aria-checked={isChecked}
                 onClick={() => {
                   handleSelectTheme(item.id);
+                }}
+                onKeyDown={(e) => {
+                  handleKeyDown(e, item.id);
                 }}
               >
                 <ItemListLayout

@@ -26,7 +26,7 @@ export class Storage {
       `${context} Storage Save`,
       {
         genericMessage: `Failed to save ${context.toLowerCase()} data to local storage.`,
-        shouldNotify: false,
+        shouldNotify: true,
       },
     );
     return !error;

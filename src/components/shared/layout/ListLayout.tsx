@@ -39,10 +39,11 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
   const theme = useThemeStore((state) => state.theme);
 
   const isDisabled = isItemDisabled?.(item) ?? false;
-  const nameClass = `truncate pr-2 text-sm text-${theme.contentSecondary} transition-colors duration-150 cursor-default group-hover:text-${theme.infoFg} ${isDisabled ? 'line-through' : ''}`;
+  const isDraggable = !isDisabled && !!onItemDragStart;
+  const nameClass = `block truncate pr-2 text-sm text-${theme.contentSecondary} transition-colors duration-150 cursor-default group-hover:text-${theme.infoFg} ${isDisabled ? 'line-through' : ''}`;
 
   const handleDragStart = (event: DragEvent<HTMLElement>): void => {
-    if (isDisabled) {
+    if (!isDraggable) {
       return;
     }
     onItemDragStart?.(event, item);
@@ -57,9 +58,9 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
         position="top"
         tooltipClasses="max-w-xs"
       >
-        <p className={nameClass}>
+        <span tabIndex={0} className={`${nameClass} outline-none`}>
           <HighlightText highlight={query} text={item.name} />
-        </p>
+        </span>
       </Tooltip>
     </div>
   );
@@ -67,7 +68,13 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
   const rightColumn = renderItemActions?.(item);
 
   return (
-    <li data-item-id={item.id} draggable={!isDisabled && !!onItemDragStart} onDragStart={handleDragStart}>
+    <li
+      data-item-id={item.id}
+      draggable={isDraggable}
+      role="listitem"
+      aria-roledescription={isDraggable ? 'draggable item' : undefined}
+      onDragStart={handleDragStart}
+    >
       <ItemListLayout
         className={`group h-12 p-2 rounded-md bg-${theme.surfaceTertiary} transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
         leftContent={leftColumn}

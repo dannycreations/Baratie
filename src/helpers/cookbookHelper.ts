@@ -102,14 +102,15 @@ export function sanitizeRecipe(rawRecipe: RawRecipeBookItem, source: 'fileImport
 
 export function processAndSanitizeRecipes(rawItems: ReadonlyArray<unknown>, source: 'fileImport' | 'storage'): SanitizedRecipesResult {
   const allWarnings = new Set<string>();
+  const sanitizedRecipes: Array<RecipebookItem> = [];
   let corruptionCount = 0;
 
-  const recipes = rawItems.reduce<Array<RecipebookItem>>((acc, rawItem) => {
+  for (const rawItem of rawItems) {
     const itemValidation = safeParse(RecipeBookItemSchema, rawItem);
     if (itemValidation.success) {
       const { recipe, warning } = sanitizeRecipe(itemValidation.output, source);
       if (recipe) {
-        acc.push(recipe);
+        sanitizedRecipes.push(recipe);
       }
       if (warning) {
         allWarnings.add(warning);
@@ -117,8 +118,7 @@ export function processAndSanitizeRecipes(rawItems: ReadonlyArray<unknown>, sour
     } else {
       corruptionCount++;
     }
-    return acc;
-  }, []);
+  }
 
-  return { recipes, warnings: allWarnings, hasCorruption: corruptionCount > 0 };
+  return { recipes: sanitizedRecipes, warnings: allWarnings, hasCorruption: corruptionCount > 0 };
 }

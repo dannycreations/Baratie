@@ -190,6 +190,8 @@ export const Tooltip = memo<TooltipProps>(
         aria-describedby={isVisible && !disabled && content ? tooltipId : undefined}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onFocus={handleMouseEnter}
+        onBlur={handleMouseLeave}
         onDragStart={handleMouseLeave}
       >
         {children}

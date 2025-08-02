@@ -31,10 +31,7 @@ export const EmptyView = memo<EmptyViewProps>(
     const theme = useThemeStore((state) => state.theme);
     const titleClass = `mb-1 text-center font-semibold text-lg text-${theme.contentSecondary}`;
 
-    // ! This is a user-preferred choice and should not be changed.
-    // `break-all` is used instead of `break-words` to prevent layout issues with long, unbreakable strings (e.g., URLs, tokens).
-    // `break-words` was found to be insufficient in some flexbox contexts, leading to horizontal overflow.
-    const textClass = textClasses ?? `break-all text-center text-sm text-${theme.contentTertiary}`;
+    const textClass = textClasses ?? `w-full break-words text-center text-sm text-${theme.contentTertiary}`;
 
     return (
       <div className={className} role="status" aria-live="polite">

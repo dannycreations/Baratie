@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useState } from 'react';
 
+import { parseGitHubUrl } from '../../../helpers/extensionHelper';
 import { useOverflow } from '../../../hooks/useOverflow';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
@@ -22,6 +23,7 @@ export const ExtensionTab = memo((): JSX.Element => {
 
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [validationStatus, setValidationStatus] = useState<'empty' | 'valid' | 'invalid'>('empty');
 
   const { ref: listScrollRef, hasOverflowY } = useOverflow<HTMLDivElement>();
 
@@ -32,8 +34,18 @@ export const ExtensionTab = memo((): JSX.Element => {
     }
   }, [extensions, openModal]);
 
+  useEffect(() => {
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) {
+      setValidationStatus('empty');
+      return;
+    }
+    const isValid = parseGitHubUrl(trimmedUrl);
+    setValidationStatus(isValid ? 'valid' : 'invalid');
+  }, [url]);
+
   const handleAdd = useCallback(async (): Promise<void> => {
-    if (!url.trim() || isLoading) {
+    if (!url.trim() || isLoading || validationStatus !== 'valid') {
       return;
     }
     setIsLoading(true);
@@ -43,7 +55,7 @@ export const ExtensionTab = memo((): JSX.Element => {
     } finally {
       setIsLoading(false);
     }
-  }, [url, isLoading, addExtension]);
+  }, [url, isLoading, addExtension, validationStatus]);
 
   const handleUrlChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
     setUrl(event.target.value);
@@ -80,7 +92,7 @@ export const ExtensionTab = memo((): JSX.Element => {
           onKeyDown={handleKeyDown}
           onClear={() => setUrl('')}
         />
-        <Button icon={<GitMergeIcon size={20} />} size="sm" loading={isLoading} onClick={handleAdd}>
+        <Button icon={<GitMergeIcon size={20} />} size="sm" loading={isLoading} disabled={validationStatus !== 'valid'} onClick={handleAdd}>
           Add
         </Button>
       </div>

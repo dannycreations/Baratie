@@ -200,6 +200,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
           className={grabHandleClass}
           aria-label="Drag handle"
           aria-roledescription="draggable item"
+          tabIndex={0}
           draggable
           onDragStart={handleDragStart}
           onDragEnd={onDragEnd}
@@ -209,7 +210,9 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
       </Tooltip>
       <div className="min-w-0 flex-1">
         <Tooltip content={definition.description} position="top" className="inline-block max-w-full">
-          <p className={`truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default`}>{definition.name}</p>
+          <span tabIndex={0} className={`block truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default outline-none`}>
+            {definition.name}
+          </span>
         </Tooltip>
       </div>
     </>

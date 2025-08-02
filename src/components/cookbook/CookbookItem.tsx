@@ -4,7 +4,6 @@ import { useThemeStore } from '../../stores/useThemeStore';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
 import { UploadCloudIcon } from '../shared/Icon';
 import { ItemListLayout } from '../shared/layout/ListLayout';
-import { Tooltip } from '../shared/Tooltip';
 
 import type { JSX } from 'react';
 import type { RecipebookItem } from '../../core/IngredientRegistry';
@@ -27,7 +26,7 @@ const timestampFormatter = new Intl.DateTimeFormat(undefined, {
 });
 
 function formatTimestamp(timestamp: number): string {
-  return timestampFormatter.format(timestamp);
+  return timestampFormatter.format(new Date(timestamp));
 }
 
 export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete }): JSX.Element => {
@@ -48,9 +47,9 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
         leftClasses="grow min-w-0 mr-2"
         leftContent={
           <>
-            <Tooltip content={recipe.name} position="top">
-              <p className={`truncate font-medium text-sm text-${theme.contentPrimary} cursor-default`}>{recipe.name}</p>
-            </Tooltip>
+            <span tabIndex={0} className={`block truncate font-medium text-sm text-${theme.contentPrimary} cursor-default outline-none`}>
+              {recipe.name}
+            </span>
             <p className={`text-xs text-${theme.contentTertiary}`}>
               Last Updated: {formatTimestamp(recipe.updatedAt)} ({recipe.ingredients.length} steps)
             </p>
