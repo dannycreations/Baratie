@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 
 import type { DragEvent } from 'react';
 
-export interface DropZoneOptions<T> {
+export interface DropZoneProps<T> {
   readonly disabled?: boolean;
   readonly effect?: 'copy' | 'move' | 'link';
   readonly onDrop?: (data: T) => void;
@@ -27,7 +27,7 @@ export function useDropZone<T, E extends HTMLElement>({
   onExtract,
   disabled = false,
   effect = 'copy',
-}: DropZoneOptions<T>): DropZoneReturn<E> {
+}: DropZoneProps<T>): DropZoneReturn<E> {
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleDragEnter = useCallback(

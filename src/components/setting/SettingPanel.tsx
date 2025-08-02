@@ -38,7 +38,7 @@ const TabButton = memo<TabButtonProps>(({ children, id, isActive, onClick }): JS
 });
 
 export const SettingPanel = memo((): JSX.Element => {
-  const isModalOpen = useModalStore((state) => state.activeModal === 'settings');
+  const isModalOpen = useModalStore((state) => state.currentModal?.type === 'settings');
   const closeModal = useModalStore((state) => state.closeModal);
   const theme = useThemeStore((state) => state.theme);
 

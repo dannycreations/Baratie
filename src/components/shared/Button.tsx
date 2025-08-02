@@ -7,14 +7,14 @@ import { useThemeStore } from '../../stores/useThemeStore';
 import { AlertTriangleIcon, CheckIcon, CopyIcon, Loader2Icon, Trash2Icon } from './Icon';
 import { Tooltip } from './Tooltip';
 
-import type { ButtonHTMLAttributes, JSX, ReactNode } from 'react';
+import type { JSX, MouseEvent, ReactNode } from 'react';
 import type { AppTheme } from '../../app/themes';
 import type { TooltipProps } from './Tooltip';
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'stealth' | 'outline';
 type ButtonSize = 'xs' | 'sm' | 'lg';
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps {
   readonly children?: ReactNode;
   readonly fullWidth?: boolean;
   readonly icon?: ReactNode;
@@ -22,6 +22,11 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   readonly loading?: boolean;
   readonly size?: ButtonSize;
   readonly variant?: ButtonVariant;
+  readonly className?: string;
+  readonly disabled?: boolean;
+  readonly onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
+  readonly title?: string;
+  readonly type?: 'button' | 'submit' | 'reset';
 }
 
 export interface TooltipButtonProps extends ButtonProps {
@@ -85,7 +90,7 @@ export const Button = memo<ButtonProps>(
     size = 'sm',
     type = 'button',
     variant,
-    ...props
+    title,
   }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const finalVariant = variant ?? 'primary';
@@ -97,12 +102,12 @@ export const Button = memo<ButtonProps>(
     const finalClassName =
       `${baseClass} ${shapeClass} ${variantClass} ${sizeClass} ${loading ? ' opacity-60' : ''} ${fullWidth ? ' w-full' : ''} ${className}`.trim();
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
-    const loadingSpinner = <Loader2Icon size={16} aria-hidden="true" className={`animate-spin ${iconMarginClass}`} />;
+    const loadingSpinner = <Loader2Icon size={16} className={`animate-spin ${iconMarginClass}`} />;
     const showIconLeft = iconPosition === 'left';
     const showIconRight = iconPosition === 'right';
 
     return (
-      <button type={type} className={finalClassName.trim()} disabled={loading || disabled} onClick={onClick} {...props}>
+      <button type={type} className={finalClassName.trim()} disabled={loading || disabled} onClick={onClick} title={title}>
         {loading && showIconLeft && loadingSpinner}
         {icon && showIconLeft && <span className={iconMarginClass}>{icon}</span>}
         {children}

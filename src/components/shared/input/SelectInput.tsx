@@ -3,10 +3,10 @@ import { memo, useCallback, useMemo } from 'react';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { ChevronDownIcon } from '../Icon';
 
-import type { ChangeEventHandler, JSX, SelectHTMLAttributes } from 'react';
+import type { ChangeEventHandler, JSX } from 'react';
 import type { SpiceValue } from '../../../core/IngredientRegistry';
 
-interface SelectInputProps<T extends SpiceValue> extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'id' | 'onChange' | 'value'> {
+interface SelectInputProps<T extends SpiceValue> {
   readonly id: string;
   readonly options: ReadonlyArray<{
     readonly label: string;
@@ -14,10 +14,12 @@ interface SelectInputProps<T extends SpiceValue> extends Omit<SelectHTMLAttribut
   }>;
   readonly value: T;
   readonly onChange: (value: T) => void;
+  readonly disabled?: boolean;
+  readonly className?: string;
 }
 
 export const SelectInput = memo(
-  <T extends SpiceValue>({ id, value, onChange, options, disabled = false, ...rest }: SelectInputProps<T>): JSX.Element => {
+  <T extends SpiceValue>({ id, value, onChange, options, disabled = false, className }: SelectInputProps<T>): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
     const valueToOptionMap = useMemo(() => {
@@ -35,13 +37,12 @@ export const SelectInput = memo(
       [valueToOptionMap, onChange],
     );
 
-    const { className, ...trueRest } = rest;
     const finalWrapperClass = `relative ${className || ''}`.trim();
     const selectInputStyle = `w-full appearance-none py-2 pl-2 pr-8 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} bg-${theme.surfaceTertiary} rounded-md border border-${theme.borderPrimary} outline-none transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`;
 
     return (
       <div className={finalWrapperClass}>
-        <select id={id} value={String(value)} className={selectInputStyle} disabled={disabled} onChange={handleChange} {...trueRest}>
+        <select id={id} value={String(value)} className={selectInputStyle} disabled={disabled} onChange={handleChange}>
           {options.map((option) => (
             <option key={String(option.value)} value={String(option.value)} className={`bg-${theme.surfaceSecondary} text-${theme.contentSecondary}`}>
               {option.label}

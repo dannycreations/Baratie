@@ -30,7 +30,13 @@ export const ExtensionTab = memo((): JSX.Element => {
   useEffect(() => {
     const pendingInstall = extensions.find((ext) => ext.status === 'awaiting');
     if (pendingInstall && pendingInstall.manifest) {
-      openModal('extension', { id: pendingInstall.id, manifest: pendingInstall.manifest });
+      openModal({
+        type: 'extension',
+        props: {
+          id: pendingInstall.id,
+          manifest: pendingInstall.manifest,
+        },
+      });
     }
   }, [extensions, openModal]);
 

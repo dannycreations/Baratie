@@ -18,38 +18,26 @@ type ModalType = keyof ModalMap;
 type ModalPayload = { [K in ModalType]: { type: K; props: ModalMap[K] } }[ModalType];
 
 interface ModalState {
-  readonly activeModal: ModalType | null;
-  readonly modalProps: unknown;
+  readonly currentModal: ModalPayload | null;
   readonly previousModals: ReadonlyArray<ModalPayload>;
-  readonly getModal: <T extends ModalType>(type: T) => ModalMap[T];
-  readonly openModal: <T extends ModalType>(type: T, props?: ModalMap[T], options?: { readonly replace?: boolean }) => void;
+  readonly openModal: (payload: ModalPayload, options?: { readonly replace?: boolean }) => void;
   readonly closeModal: () => void;
 }
 
 export const useModalStore = create<ModalState>()((set, get) => ({
-  activeModal: null,
-  modalProps: null,
+  currentModal: null,
   previousModals: [],
 
-  getModal<T extends ModalType>(type: T) {
-    const { modalProps } = get();
-    return modalProps as ModalMap[typeof type];
-  },
-
-  openModal: <T extends ModalType>(type: T, props?: ModalMap[T], options?: { readonly replace?: boolean }) => {
-    const { activeModal, modalProps, previousModals } = get();
+  openModal: (payload: ModalPayload, options?: { readonly replace?: boolean }) => {
+    const { currentModal, previousModals } = get();
     const newPreviousModals = [...previousModals];
 
-    if (activeModal && !options?.replace) {
-      newPreviousModals.push({
-        type: activeModal,
-        props: modalProps,
-      } as ModalPayload);
+    if (currentModal && !options?.replace) {
+      newPreviousModals.push(currentModal);
     }
 
     set({
-      activeModal: type,
-      modalProps: props,
+      currentModal: payload,
       previousModals: newPreviousModals,
     });
   },
@@ -59,18 +47,9 @@ export const useModalStore = create<ModalState>()((set, get) => ({
     const newPreviousModals = [...previousModals];
     const lastPrevious = newPreviousModals.pop();
 
-    if (lastPrevious) {
-      set({
-        activeModal: lastPrevious.type,
-        modalProps: lastPrevious.props,
-        previousModals: newPreviousModals,
-      });
-    } else {
-      set({
-        activeModal: null,
-        modalProps: null,
-        previousModals: [],
-      });
-    }
+    set({
+      currentModal: lastPrevious || null,
+      previousModals: newPreviousModals,
+    });
   },
 }));

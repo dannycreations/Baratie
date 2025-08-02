@@ -3,9 +3,9 @@ import { memo } from 'react';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { XIcon } from '../Icon';
 
-import type { ChangeEventHandler, InputHTMLAttributes, JSX, MouseEvent, RefObject } from 'react';
+import type { ChangeEventHandler, JSX, KeyboardEvent, MouseEvent, RefObject } from 'react';
 
-interface StringInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id' | 'onChange' | 'value' | 'type'> {
+interface StringInputProps {
   readonly id: string;
   readonly value: string;
   readonly onChange: ChangeEventHandler<HTMLInputElement>;
@@ -13,12 +13,15 @@ interface StringInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, '
   readonly onClear?: (event: MouseEvent<HTMLButtonElement>) => void;
   readonly showClearButton?: boolean;
   readonly type?: 'text' | 'search' | 'email' | 'password' | 'tel' | 'url' | 'number';
+  readonly className?: string;
+  readonly disabled?: boolean;
+  readonly placeholder?: string;
+  readonly onKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export const StringInput = memo<StringInputProps>(
-  ({ id, value, onChange, type = 'text', inputRef, showClearButton, onClear, ...rest }): JSX.Element => {
+  ({ id, value, onChange, type = 'text', inputRef, showClearButton, onClear, className, disabled, placeholder, onKeyDown }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
-    const { className, disabled, ...trueRest } = rest;
 
     const hasClearButton = showClearButton && value && !disabled;
     const finalWrapperClass = `relative ${className || ''}`.trim();
@@ -35,7 +38,17 @@ export const StringInput = memo<StringInputProps>(
 
     return (
       <div className={finalWrapperClass}>
-        <input ref={inputRef} id={id} type={type} value={value} className={finalInputClass} onChange={onChange} disabled={disabled} {...trueRest} />
+        <input
+          ref={inputRef}
+          id={id}
+          type={type}
+          value={value}
+          className={finalInputClass}
+          onChange={onChange}
+          disabled={disabled}
+          placeholder={placeholder}
+          onKeyDown={onKeyDown}
+        />
         {hasClearButton && (
           <button
             type="button"

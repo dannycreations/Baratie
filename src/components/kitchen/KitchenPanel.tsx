@@ -92,6 +92,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const startUpdateBatch = useKitchenStore((state) => state.startUpdateBatch);
   const endUpdateBatch = useKitchenStore((state) => state.endUpdateBatch);
   const ingredients = useRecipeStore((state) => state.ingredients);
+  const updateSpice = useRecipeStore((state) => state.updateSpice);
 
   const importOperationRef = useRef<number>(0);
 
@@ -133,9 +134,12 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
     triggerDownload(data, fileName);
   }, [data]);
 
-  const handleSpiceChange = useCallback((id: string, spiceId: string, rawValue: SpiceValue): void => {
-    useRecipeStore.getState().updateSpice(id, spiceId, rawValue);
-  }, []);
+  const handleSpiceChange = useCallback(
+    (id: string, spiceId: string, rawValue: SpiceValue): void => {
+      updateSpice(id, spiceId, rawValue);
+    },
+    [updateSpice],
+  );
 
   const renderActions = useMemo(() => {
     if (isInput) {

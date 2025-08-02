@@ -26,9 +26,15 @@ import type { RecipeItemHandlers } from './RecipeItem';
 export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
   const editingIds = useRecipeStore((state) => state.editingIds);
+  const activeRecipeId = useRecipeStore((state) => state.activeRecipeId);
+  const addIngredient = useRecipeStore((state) => state.addIngredient);
+  const clearRecipe = useRecipeStore((state) => state.clearRecipe);
+  const removeIngredient = useRecipeStore((state) => state.removeIngredient);
+  const reorderIngredients = useRecipeStore((state) => state.reorderIngredients);
   const toggleEditingId = useRecipeStore((state) => state.toggleEditingId);
+  const updateSpice = useRecipeStore((state) => state.updateSpice);
   const openModal = useModalStore((state) => state.openModal);
-  const isCookbookOpen = useModalStore((state) => state.activeModal === 'cookbook');
+  const isCookbookOpen = useModalStore((state) => state.currentModal?.type === 'cookbook');
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
   const ingredientStatuses = useKitchenStore((state) => state.ingredientStatuses);
   const ingredientWarnings = useKitchenStore((state) => state.ingredientWarnings);
@@ -44,11 +50,14 @@ export const RecipePanel = memo((): JSX.Element => {
   const { ref: listScrollRef, hasOverflowY } = useOverflow<HTMLDivElement>();
   const listId = useId();
 
-  const handleDropIngredient = useCallback((typeString: string): void => {
-    if (typeString && ingredientRegistry.get(typeString)) {
-      useRecipeStore.getState().addIngredient(typeString);
-    }
-  }, []);
+  const handleDropIngredient = useCallback(
+    (typeString: string): void => {
+      if (typeString && ingredientRegistry.get(typeString)) {
+        addIngredient(typeString);
+      }
+    },
+    [addIngredient],
+  );
 
   const { isDragOver: isDraggingIngredient, dropZoneProps } = useDropZone<string, HTMLDivElement>({
     onValidate: (dt) => dt.types.includes('application/x-baratie-ingredient-type'),
@@ -64,9 +73,12 @@ export const RecipePanel = memo((): JSX.Element => {
     prevIngredientsCount.current = ingredients.length;
   }, [ingredients, listId]);
 
-  const handleReorder = useCallback((draggedId: string, targetId: string): void => {
-    useRecipeStore.getState().reorderIngredients(draggedId, targetId);
-  }, []);
+  const handleReorder = useCallback(
+    (draggedId: string, targetId: string): void => {
+      reorderIngredients(draggedId, targetId);
+    },
+    [reorderIngredients],
+  );
 
   const {
     onDragStart: onMoveStart,
@@ -92,16 +104,15 @@ export const RecipePanel = memo((): JSX.Element => {
 
   const openCookbook = useCallback(
     (args: { readonly mode: 'save' | 'load' }): void => {
-      const { ingredients, activeRecipeId } = useRecipeStore.getState();
       const props: CookbookModalProps = args.mode === 'save' ? { mode: 'save', ingredients, activeRecipeId } : { mode: 'load' };
 
       prepareCookbook(props);
-      openModal('cookbook', props);
+      openModal({ type: 'cookbook', props });
     },
-    [openModal, prepareCookbook],
+    [openModal, prepareCookbook, ingredients, activeRecipeId],
   );
 
-  const handleClearRecipe = useCallback((): void => useRecipeStore.getState().clearRecipe(), []);
+  const handleClearRecipe = useCallback((): void => clearRecipe(), [clearRecipe]);
 
   const headerActions = useMemo((): JSX.Element => {
     const autoCookTooltip = isAutoCookEnabled ? 'Pause Auto-Cooking' : 'Resume Auto-Cooking';
@@ -150,13 +161,19 @@ export const RecipePanel = memo((): JSX.Element => {
     );
   }, [ingredients.length, isCookbookOpen, isAutoCookEnabled, theme, openCookbook, handleClearRecipe]);
 
-  const handleRemove = useCallback((id: string): void => {
-    useRecipeStore.getState().removeIngredient(id);
-  }, []);
+  const handleRemove = useCallback(
+    (id: string): void => {
+      removeIngredient(id);
+    },
+    [removeIngredient],
+  );
 
-  const handleSpiceChange = useCallback((id: string, spiceId: string, rawValue: SpiceValue): void => {
-    useRecipeStore.getState().updateSpice(id, spiceId, rawValue);
-  }, []);
+  const handleSpiceChange = useCallback(
+    (id: string, spiceId: string, rawValue: SpiceValue): void => {
+      updateSpice(id, spiceId, rawValue);
+    },
+    [updateSpice],
+  );
 
   const handleEditToggle = useCallback(
     (id: string): void => {

@@ -67,9 +67,6 @@ export function useDragMove({ dragId, setDragId, onDragMove }: DragMoveHookProps
 
       if (dragId) {
         event.dataTransfer.dropEffect = 'move';
-        if (event.currentTarget) {
-          event.currentTarget.setAttribute('aria-dropeffect', 'move');
-        }
       }
     },
     [dragId],

@@ -2,18 +2,19 @@ import { memo } from 'react';
 
 import { useThemeStore } from '../../../stores/useThemeStore';
 
-import type { ChangeEvent, InputHTMLAttributes, JSX } from 'react';
+import type { ChangeEvent, JSX } from 'react';
 
-interface BooleanInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'checked' | 'id' | 'className'> {
+interface BooleanInputProps {
   readonly id: string;
   readonly checked: boolean;
   readonly onChange: (event: ChangeEvent<HTMLInputElement>) => void;
   readonly className?: string;
   readonly offBackgroundColor?: string;
+  readonly disabled?: boolean;
 }
 
 export const BooleanInput = memo<BooleanInputProps>(
-  ({ id, checked, onChange, className = '', disabled = false, offBackgroundColor, ...rest }): JSX.Element => {
+  ({ id, checked, onChange, className = '', disabled = false, offBackgroundColor }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
     const finalOffBgColor = offBackgroundColor || theme.surfaceTertiary;
@@ -23,7 +24,7 @@ export const BooleanInput = memo<BooleanInputProps>(
 
     return (
       <label className={containerClass}>
-        <input id={id} type="checkbox" checked={checked} className="peer sr-only" disabled={disabled} onChange={onChange} {...rest} />
+        <input id={id} type="checkbox" checked={checked} className="peer sr-only" disabled={disabled} onChange={onChange} />
         <div className={switchClass} />
       </label>
     );

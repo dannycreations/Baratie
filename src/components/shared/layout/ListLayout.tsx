@@ -9,7 +9,7 @@ import { StringInput } from '../input/StringInput';
 import { Tooltip } from '../Tooltip';
 import { EmptyView } from '../View';
 
-import type { ChangeEvent, DragEvent, HTMLAttributes, JSX, ReactNode, RefObject } from 'react';
+import type { ChangeEvent, DragEvent, JSX, ReactNode, RefObject } from 'react';
 
 export interface GroupListItem {
   readonly id: string;
@@ -173,21 +173,24 @@ export const GroupListLayout = memo<GroupListProps>(
   },
 );
 
-interface ItemListLayoutProps extends HTMLAttributes<HTMLDivElement> {
+interface ItemListLayoutProps {
   readonly leftContent: ReactNode;
   readonly leftClasses?: string;
   readonly rightContent?: ReactNode;
   readonly rightClasses?: string;
+  readonly className?: string;
+  readonly onDragEnter?: (event: DragEvent<HTMLDivElement>) => void;
+  readonly onDragOver?: (event: DragEvent<HTMLDivElement>) => void;
 }
 
 export const ItemListLayout = memo<ItemListLayoutProps>(
-  ({ leftContent, rightContent, leftClasses, rightClasses, className, ...rest }): JSX.Element => {
+  ({ leftContent, rightContent, leftClasses, rightClasses, className, onDragEnter, onDragOver }): JSX.Element => {
     const containerClass = `flex w-full items-center justify-between ${className || ''}`.trim();
     const leftWrapClass = leftClasses || 'min-w-0 grow';
     const rightWrapClass = rightClasses || 'flex shrink-0 items-center gap-1';
 
     return (
-      <div className={containerClass} {...rest}>
+      <div className={containerClass} onDragEnter={onDragEnter} onDragOver={onDragOver}>
         <div className={leftWrapClass}>{leftContent}</div>
         {rightContent && <div className={rightWrapClass}>{rightContent}</div>}
       </div>

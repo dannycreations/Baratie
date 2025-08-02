@@ -2,18 +2,19 @@ import { memo, useId } from 'react';
 
 import { useThemeStore } from '../../../stores/useThemeStore';
 
-import type { HTMLAttributes, JSX, ReactNode, RefObject } from 'react';
+import type { JSX, ReactNode, RefObject } from 'react';
 
-interface SectionLayoutProps extends HTMLAttributes<HTMLElement> {
+interface SectionLayoutProps {
   readonly children: ReactNode;
   readonly headerLeft: ReactNode;
   readonly contentClasses?: string;
   readonly headerRight?: ReactNode;
   readonly contentRef?: RefObject<HTMLDivElement | null>;
+  readonly className?: string;
 }
 
 export const SectionLayout = memo<SectionLayoutProps>(
-  ({ headerLeft, headerRight, children, className = '', contentClasses = '', contentRef, ...rest }): JSX.Element => {
+  ({ headerLeft, headerRight, children, className = '', contentClasses = '', contentRef }): JSX.Element => {
     const titleId = useId();
     const theme = useThemeStore((state) => state.theme);
 
@@ -23,7 +24,7 @@ export const SectionLayout = memo<SectionLayoutProps>(
     const contentClass = `grow p-3 overflow-auto ${contentClasses}`.trim();
 
     return (
-      <section className={panelClass} {...rest}>
+      <section className={panelClass}>
         <div className={headerClass}>
           <h2 id={titleId} className="min-w-0 truncate pr-2 font-semibold text-lg">
             {headerLeft}

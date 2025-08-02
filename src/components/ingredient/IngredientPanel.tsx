@@ -30,15 +30,15 @@ export const IngredientPanel = memo((): JSX.Element => {
   const disabledIngredients = useIngredientStore((state) => state.disabledIngredients);
   const registryVersion = useIngredientStore((state) => state.registryVersion);
   const openModal = useModalStore((state) => state.openModal);
-  const activeModal = useModalStore((state) => state.activeModal);
+  const currentModal = useModalStore((state) => state.currentModal);
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
   const theme = useThemeStore((state) => state.theme);
 
   const [query, setQuery] = useState<string>('');
 
   const listId = useId();
-  const isIngredientOpen = activeModal === 'ingredient';
-  const isSettingOpen = activeModal === 'settings';
+  const isIngredientOpen = currentModal?.type === 'ingredient';
+  const isSettingOpen = currentModal?.type === 'settings';
 
   const handleDropRecipe = useCallback(
     (id: string): void => {
@@ -120,7 +120,7 @@ export const IngredientPanel = memo((): JSX.Element => {
         tooltipContent={`Manage Ingredients\n${visibleIngredients} of ${totalIngredients} visible`}
         tooltipDisabled={isIngredientOpen}
         tooltipPosition="bottom"
-        onClick={() => openModal('ingredient')}
+        onClick={() => openModal({ type: 'ingredient', props: undefined })}
       />
       <TooltipButton
         icon={<SettingsIcon size={18} />}
@@ -129,7 +129,7 @@ export const IngredientPanel = memo((): JSX.Element => {
         tooltipContent="Settings, Appearance & Extensions"
         tooltipDisabled={isSettingOpen}
         tooltipPosition="bottom"
-        onClick={() => openModal('settings')}
+        onClick={() => openModal({ type: 'settings', props: undefined })}
       />
     </>
   );

@@ -1,22 +1,32 @@
 import { forwardRef, memo } from 'react';
 
-import type { JSX, ReactNode, SVGProps } from 'react';
+import type { JSX, ReactNode } from 'react';
 
-export interface IconProps extends SVGProps<SVGSVGElement> {
+export interface IconProps {
   readonly size?: number | string;
+  readonly className?: string;
+  readonly fill?: string;
+  readonly stroke?: string;
+  readonly strokeWidth?: string | number;
+  readonly strokeLinecap?: 'butt' | 'round' | 'square' | 'inherit';
+  readonly strokeLinejoin?: 'miter' | 'round' | 'bevel' | 'inherit';
 }
 
 export interface StarIconProps extends IconProps {
   readonly isFilled?: boolean;
 }
 
-export interface CreateIconOptions<P extends IconProps = IconProps> {
+type SvgIconAttributes = Omit<IconProps, 'size' | 'className'>;
+
+const svgAttributeKeys: ReadonlyArray<keyof SvgIconAttributes> = ['fill', 'stroke', 'strokeWidth', 'strokeLinecap', 'strokeLinejoin'];
+
+export interface CreateIconProps<P extends IconProps = IconProps> {
   readonly iconName: string;
   readonly path: ReactNode;
-  readonly defaultProps?: Partial<SVGProps<SVGSVGElement>> | ((props: P) => Partial<SVGProps<SVGSVGElement>>);
+  readonly defaultProps?: Partial<SvgIconAttributes> | ((props: P) => Partial<SvgIconAttributes>);
 }
 
-export function createIcon<P extends IconProps = IconProps>({ iconName, defaultProps = {}, path }: Readonly<CreateIconOptions<P>>) {
+export function createIcon<P extends IconProps = IconProps>({ iconName, defaultProps = {}, path }: Readonly<CreateIconProps<P>>) {
   const componentName = iconName
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
@@ -26,14 +36,21 @@ export function createIcon<P extends IconProps = IconProps>({ iconName, defaultP
     const { size = 24, className = '', ...rest } = props;
     const computedDefaultProps = typeof defaultProps === 'function' ? defaultProps(props as P) : defaultProps;
 
-    const finalProps: SVGProps<SVGSVGElement> = {
+    const svgRest: Partial<SvgIconAttributes> = {};
+    for (const key of svgAttributeKeys) {
+      if (key in rest) {
+        (svgRest as any)[key] = rest[key as keyof typeof rest];
+      }
+    }
+
+    const finalProps: SvgIconAttributes = {
       fill: 'none',
       stroke: 'currentColor',
       strokeWidth: '2',
       strokeLinecap: 'round',
       strokeLinejoin: 'round',
       ...computedDefaultProps,
-      ...rest,
+      ...svgRest,
     };
 
     return (

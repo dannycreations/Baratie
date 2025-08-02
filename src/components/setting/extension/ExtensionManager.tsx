@@ -32,8 +32,7 @@ function groupModulesForDisplay(modules: ReadonlyArray<ManifestModule>): Array<[
 }
 
 export const ExtensionManager = memo((): JSX.Element | null => {
-  const activeModal = useModalStore((state) => state.activeModal);
-  const getModal = useModalStore((state) => state.getModal);
+  const currentModal = useModalStore((state) => state.currentModal);
   const closeModal = useModalStore((state) => state.closeModal);
   const installSelectedModules = useExtensionStore((state) => state.installSelectedModules);
   const cancelPendingInstall = useExtensionStore((state) => state.cancelPendingInstall);
@@ -47,8 +46,8 @@ export const ExtensionManager = memo((): JSX.Element | null => {
   const searchRef = useRef<HTMLInputElement>(null);
   const deferredQuery = useDeferredValue(query);
 
-  const isModalOpen = activeModal === 'extension';
-  const pendingSelection = isModalOpen ? getModal('extension') : null;
+  const isModalOpen = currentModal?.type === 'extension';
+  const pendingSelection = isModalOpen ? currentModal.props : null;
 
   useAutoFocus(searchRef, isModalOpen);
 

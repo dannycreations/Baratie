@@ -5,21 +5,37 @@ import { useLineNumber } from '../../../hooks/useLineNumber';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { DropZoneLayout } from '../layout/DropZoneLayout';
 
-import type { ChangeEvent, JSX, TextareaHTMLAttributes, UIEvent } from 'react';
+import type { ChangeEvent, JSX, UIEvent } from 'react';
 
-interface TextareaInputProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'value' | 'onChange' | 'spellCheck'> {
+interface TextareaInputProps {
   readonly value: string;
   readonly onChange?: (value: string) => void;
   readonly onFileDrop?: (file: File) => void;
   readonly showLineNumbers?: boolean;
   readonly textareaClasses?: string;
   readonly wrapperClasses?: string;
+  readonly disabled?: boolean;
+  readonly placeholder?: string;
+  readonly readOnly?: boolean;
+  readonly rows?: number;
+  readonly id?: string;
 }
 
 export const TextareaInput = memo<TextareaInputProps>(
-  ({ value, onChange, onFileDrop, wrapperClasses = '', textareaClasses = '', showLineNumbers = false, ...rest }): JSX.Element => {
+  ({
+    value,
+    onChange,
+    onFileDrop,
+    wrapperClasses = '',
+    textareaClasses = '',
+    showLineNumbers = false,
+    disabled,
+    placeholder = '',
+    readOnly,
+    rows,
+    id,
+  }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
-    const { disabled, placeholder = '' } = rest;
 
     const lineNumbersRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -80,12 +96,14 @@ export const TextareaInput = memo<TextareaInputProps>(
         )}
         <textarea
           ref={textareaRef}
+          id={id}
           value={value}
           className={textareaClass}
           disabled={disabled}
           placeholder={placeholder}
           spellCheck={false}
-          {...rest}
+          readOnly={readOnly}
+          rows={rows}
           onChange={handleChange}
           onScroll={handleScroll}
         />

@@ -65,8 +65,7 @@ const LoadHeaderActions = memo<LoadHeaderActionsProps>(({ isExportDisabled, onFi
 ));
 
 export const CookbookPanel = memo((): JSX.Element | null => {
-  const activeModal = useModalStore((state) => state.activeModal);
-  const getModal = useModalStore((state) => state.getModal);
+  const currentModal = useModalStore((state) => state.currentModal);
   const closeModal = useModalStore((state) => state.closeModal);
   const nameInput = useCookbookStore((state) => state.nameInput);
   const query = useCookbookStore((state) => state.query);
@@ -85,8 +84,8 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const nameRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const isModalOpen = activeModal === 'cookbook';
-  const modalMode = isModalOpen ? getModal('cookbook').mode : null;
+  const isModalOpen = currentModal?.type === 'cookbook';
+  const modalMode = isModalOpen ? currentModal.props.mode : null;
   const isRecipeEmpty = ingredients.length === 0;
   const isSaveDisabled = !nameInput.trim() || isRecipeEmpty;
 
