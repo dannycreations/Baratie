@@ -113,7 +113,6 @@ export const IngredientManager = memo((): JSX.Element => {
           onQueryChange: setQuery,
           id: 'ingredient-manager-search',
           inputRef: searchRef,
-          ariaLabel: 'Search ingredients or categories',
           placeholder: 'Search Ingredients...',
         }}
       />

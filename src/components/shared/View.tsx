@@ -34,12 +34,8 @@ export const EmptyView = memo<EmptyViewProps>(
     const textClass = textClasses ?? `w-full break-words text-center text-sm text-${theme.contentTertiary}`;
 
     return (
-      <div className={className} role="status" aria-live="polite">
-        {icon && (
-          <div aria-hidden="true" className={`mb-2 text-${theme.contentTertiary}`}>
-            {icon}
-          </div>
-        )}
+      <div className={className}>
+        {icon && <div className={`mb-2 text-${theme.contentTertiary}`}>{icon}</div>}
         {title && <h3 className={titleClass}>{title}</h3>}
         <div className={textClass}>{children}</div>
       </div>

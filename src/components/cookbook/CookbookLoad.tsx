@@ -27,7 +27,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
       listId={listId}
       listContent={
         recipes.length > 0 ? (
-          <ul aria-label="List of saved recipes" className="space-y-2">
+          <ul className="space-y-2">
             {recipes.map((recipe) => (
               <CookbookItem key={recipe.id} recipe={recipe} onDelete={onDelete} onLoad={onLoad} />
             ))}
@@ -47,7 +47,6 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
         onQueryChange,
         id: 'recipe-search',
         inputRef: searchRef,
-        ariaLabel: 'Search saved recipes',
         placeholder: 'Search Saved Recipes...',
         wrapperClasses: `pb-2 border-b border-${theme.borderPrimary}`,
       }}

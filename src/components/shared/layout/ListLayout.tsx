@@ -58,7 +58,7 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
         position="top"
         tooltipClasses="max-w-xs"
       >
-        <span tabIndex={0} className={`${nameClass} outline-none`}>
+        <span className={`${nameClass} outline-none`}>
           <HighlightText highlight={query} text={item.name} />
         </span>
       </Tooltip>
@@ -68,13 +68,7 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
   const rightColumn = renderItemActions?.(item);
 
   return (
-    <li
-      data-item-id={item.id}
-      draggable={isDraggable}
-      role="listitem"
-      aria-roledescription={isDraggable ? 'draggable item' : undefined}
-      onDragStart={handleDragStart}
-    >
+    <li data-item-id={item.id} draggable={isDraggable} onDragStart={handleDragStart}>
       <ItemListLayout
         className={`group h-12 p-2 rounded-md bg-${theme.surfaceTertiary} transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
         leftContent={leftColumn}
@@ -139,13 +133,10 @@ export const GroupListLayout = memo<GroupListProps>(
             <button
               id={buttonId}
               className={`flex h-12 w-full items-center justify-between p-2 text-${theme.contentSecondary} bg-${theme.surfaceTertiary} outline-none hover:bg-${theme.surfaceHover} focus-visible:ring-2 focus-visible:ring-${theme.ring}`}
-              aria-controls={panelId}
-              aria-expanded={isExpanded}
               onClick={() => handleCategoryToggle(category)}
             >
               {renderHeader ? renderHeader(category, items) : <p className="truncate font-medium">{category}</p>}
               <ChevronRightIcon
-                aria-hidden="true"
                 className={`transform transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
                 size={20}
               />
@@ -155,16 +146,10 @@ export const GroupListLayout = memo<GroupListProps>(
           return (
             <div key={category} className="overflow-hidden rounded-md">
               {header}
-              <div
-                id={panelId}
-                role="region"
-                aria-labelledby={buttonId}
-                aria-hidden={!isExpanded}
-                className={`accordion-grid ${isExpanded ? 'expanded' : ''}`}
-              >
+              <div id={panelId} className={`accordion-grid ${isExpanded ? 'expanded' : ''}`}>
                 <div className="accordion-content">
                   <div className={`p-2 bg-${theme.surfaceMuted}`}>
-                    <ul aria-labelledby={buttonId} className="space-y-2">
+                    <ul className="space-y-2">
                       {items.map((item) => (
                         <GroupItemLayout
                           key={item.id}
@@ -214,7 +199,6 @@ interface SearchProps {
   readonly query: string;
   readonly onQueryChange: (query: string) => void;
   readonly id: string;
-  readonly ariaLabel: string;
   readonly inputRef?: RefObject<HTMLInputElement | null>;
   readonly placeholder?: string;
   readonly wrapperClasses?: string;
@@ -258,14 +242,12 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
     return (
       <div className={containerClasses}>
         {search && (
-          <div role="search" className={search.wrapperClasses}>
+          <div className={search.wrapperClasses}>
             <StringInput
               id={search.id}
               type="search"
               value={search.query}
               inputRef={search.inputRef}
-              aria-controls={listId}
-              aria-label={search.ariaLabel}
               placeholder={search.placeholder}
               showClearButton
               onChange={handleChange!}
@@ -273,14 +255,7 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
             />
           </div>
         )}
-        <div
-          ref={listScrollRef}
-          id={listId}
-          className={`${listWrapperClasses} ${hasOverflowY ? 'pr-1' : ''}`.trim()}
-          role="region"
-          aria-live={search ? 'polite' : undefined}
-          aria-relevant={search ? 'all' : undefined}
-        >
+        <div id={listId} ref={listScrollRef} className={`${listWrapperClasses} ${hasOverflowY ? 'pr-1' : ''}`.trim()}>
           {listContent}
         </div>
       </div>

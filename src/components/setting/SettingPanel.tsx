@@ -31,7 +31,7 @@ const TabButton = memo<TabButtonProps>(({ children, id, isActive, onClick }): JS
   const tabClass = `p-2 font-medium text-sm rounded-t-md border-b-2 outline-none transition-colors duration-150 ${isActive ? `border-${theme.infoBorder} text-${theme.infoFg}` : `border-transparent text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`}`;
 
   return (
-    <button id={id} className={tabClass} role="tab" aria-selected={isActive} aria-controls={`${id}-panel`} onClick={onClick}>
+    <button id={id} className={tabClass} onClick={onClick}>
       {children}
     </button>
   );
@@ -52,7 +52,7 @@ export const SettingPanel = memo((): JSX.Element => {
   return (
     <>
       <Modal isOpen={isModalOpen} size="xl" title="Settings" contentClasses="flex flex-col max-h-[80vh]" onClose={closeModal}>
-        <div role="tablist" aria-label="Settings categories" className={`flex gap-1 border-b border-${theme.borderPrimary}`}>
+        <div className={`flex gap-1 border-b border-${theme.borderPrimary}`}>
           {SETTING_TABS.map((tab) => (
             <TabButton
               key={tab.id}
@@ -68,14 +68,7 @@ export const SettingPanel = memo((): JSX.Element => {
         </div>
         <div className="grow min-h-0 pt-3">
           {SETTING_TABS.map((tab) => (
-            <div
-              key={tab.id}
-              id={`${tabIdPrefix}-${tab.id}-panel`}
-              role="tabpanel"
-              hidden={activeTab !== tab.id}
-              aria-labelledby={`${tabIdPrefix}-${tab.id}`}
-              className="h-full"
-            >
+            <div key={tab.id} id={`${tabIdPrefix}-${tab.id}-panel`} className={activeTab === tab.id ? 'h-full' : 'hidden'}>
               {tab.component}
             </div>
           ))}

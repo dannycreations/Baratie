@@ -23,7 +23,7 @@ export const SectionLayout = memo<SectionLayoutProps>(
     const contentClass = `grow p-3 overflow-auto ${contentClasses}`.trim();
 
     return (
-      <section role="region" className={panelClass} aria-labelledby={titleId} {...rest}>
+      <section className={panelClass} {...rest}>
         <div className={headerClass}>
           <h2 id={titleId} className="min-w-0 truncate pr-2 font-semibold text-lg">
             {headerLeft}

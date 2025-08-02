@@ -103,14 +103,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const messageClass = `allow-text-selection text-sm text-${theme.contentSecondary} ${notification.title ? 'mt-1' : ''}`.trim();
 
   return (
-    <div
-      className={containerClass}
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <div className={containerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="flex items-start gap-2 p-3">
         <div className="flex-shrink-0">{renderIcon()}</div>
         <div className="flex-1">
@@ -118,7 +111,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
           <p className={messageClass}>{notification.message}</p>
         </div>
         <div className="flex-shrink-0">
-          <Button icon={<XIcon size={20} />} size="sm" variant="stealth" title="Close" aria-label="Close notification" onClick={handleExit} />
+          <Button icon={<XIcon size={20} />} size="sm" variant="stealth" title="Close" onClick={handleExit} />
         </div>
       </div>
       {!isExiting && (
@@ -149,7 +142,7 @@ export const NotificationPanel = memo((): JSX.Element | null => {
   }
 
   return (
-    <div className="fixed inset-x-3 top-3 z-[700] space-y-2 sm:left-auto sm:w-full sm:max-w-sm" aria-live="polite" aria-relevant="additions">
+    <div className="fixed inset-x-3 top-3 z-[700] space-y-2 sm:left-auto sm:w-full sm:max-w-sm">
       {messages.map((notification) => (
         <NotificationItem key={notification.id} notification={notification} />
       ))}

@@ -84,7 +84,6 @@ export const ExtensionTab = memo((): JSX.Element => {
           id="extension-url-input"
           className="grow"
           value={url}
-          aria-label="GitHub Repository URL"
           disabled={isLoading}
           placeholder="user/repo@branch or full GitHub URL"
           showClearButton

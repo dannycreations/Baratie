@@ -184,16 +184,7 @@ export const Tooltip = memo<TooltipProps>(
     const triggerClass = `relative inline-flex ${className}`.trim();
 
     const triggerElement = (
-      <div
-        ref={triggerRef}
-        className={triggerClass}
-        aria-describedby={isVisible && !disabled && content ? tooltipId : undefined}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onFocus={handleMouseEnter}
-        onBlur={handleMouseLeave}
-        onDragStart={handleMouseLeave}
-      >
+      <div ref={triggerRef} className={triggerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onDragStart={handleMouseLeave}>
         {children}
       </div>
     );
@@ -208,7 +199,6 @@ export const Tooltip = memo<TooltipProps>(
             ref={tooltipRef}
             id={tooltipId}
             className={tooltipClass}
-            role="tooltip"
             style={{
               position: 'fixed',
               top: `${style.top}px`,

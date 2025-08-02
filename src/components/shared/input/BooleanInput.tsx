@@ -23,7 +23,7 @@ export const BooleanInput = memo<BooleanInputProps>(
 
     return (
       <label className={containerClass}>
-        <input id={id} type="checkbox" role="switch" checked={checked} className="peer sr-only" disabled={disabled} onChange={onChange} {...rest} />
+        <input id={id} type="checkbox" checked={checked} className="peer sr-only" disabled={disabled} onChange={onChange} {...rest} />
         <div className={switchClass} />
       </label>
     );

@@ -105,7 +105,6 @@ export const RecipePanel = memo((): JSX.Element => {
 
   const headerActions = useMemo((): JSX.Element => {
     const autoCookTooltip = isAutoCookEnabled ? 'Pause Auto-Cooking' : 'Resume Auto-Cooking';
-    const autoCookLabel = isAutoCookEnabled ? 'Pause Automatic Cooking' : 'Resume Automatic Cooking and Run';
     const autoCookClass = isAutoCookEnabled
       ? `text-${theme.warningFg} hover:!bg-${theme.warningBg}`
       : `text-${theme.successFg} hover:!bg-${theme.successBg}`;
@@ -117,7 +116,6 @@ export const RecipePanel = memo((): JSX.Element => {
           size="sm"
           variant="stealth"
           disabled={ingredients.length === 0}
-          aria-label="Save current recipe to cookbook"
           tooltipContent="Save to Cookbook"
           tooltipDisabled={isCookbookOpen}
           tooltipPosition="bottom"
@@ -127,7 +125,6 @@ export const RecipePanel = memo((): JSX.Element => {
           icon={<FolderOpenIcon size={18} />}
           size="sm"
           variant="stealth"
-          aria-label="Load a saved recipe from the cookbook"
           tooltipContent="Open Cookbook"
           tooltipDisabled={isCookbookOpen}
           tooltipPosition="bottom"
@@ -138,14 +135,12 @@ export const RecipePanel = memo((): JSX.Element => {
           size="sm"
           variant="stealth"
           className={autoCookClass}
-          aria-label={autoCookLabel}
           tooltipContent={autoCookTooltip}
           tooltipPosition="bottom"
           onClick={() => kitchen.toggleAutoCook()}
         />
         <ConfirmButton
           actionName="Clear"
-          itemName="the current recipe"
           itemType="Recipe"
           disabled={ingredients.length === 0}
           tooltipPosition="bottom"
@@ -204,7 +199,7 @@ export const RecipePanel = memo((): JSX.Element => {
     }
   } else {
     content = (
-      <div role="list" aria-label="Current recipe steps" className="space-y-2 pb-3">
+      <div className="space-y-2 pb-3">
         {ingredients.map((ingredient: IngredientItem) => {
           const isSpiceInInput = inputPanelId === ingredient.id;
           const isEditingItem = editingIds.has(ingredient.id);

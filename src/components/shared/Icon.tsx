@@ -44,7 +44,6 @@ export function createIcon<P extends IconProps = IconProps>({ iconName, defaultP
         className={`flex-shrink-0 icon-${iconName} ${className}`}
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
         {...finalProps}
       >
         {path}

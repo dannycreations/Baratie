@@ -49,7 +49,7 @@ export const SelectInput = memo(
           ))}
         </select>
         <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-${theme.contentTertiary}`}>
-          <ChevronDownIcon aria-hidden="true" size={20} />
+          <ChevronDownIcon size={20} />
         </div>
       </div>
     );

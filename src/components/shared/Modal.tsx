@@ -114,23 +114,14 @@ export const Modal = memo<ModalProps>(
 
     return createPortal(
       <div ref={backdropRef} className={backdropClass} onClick={handleBackdropClick}>
-        <div
-          ref={modalContentRef}
-          id={modalId}
-          className={modalClass}
-          role="dialog"
-          tabIndex={-1}
-          aria-busy={!isOpen}
-          aria-modal="true"
-          aria-labelledby={title ? titleId : undefined}
-        >
+        <div ref={modalContentRef} id={modalId} className={modalClass}>
           <header className={`flex h-12 shrink-0 items-center justify-between border-b border-${theme.borderPrimary} px-2`}>
             <h2 id={titleId} className={`grow truncate pr-2 font-semibold text-xl text-${theme.contentPrimary}`}>
               {title}
             </h2>
             <div className="flex shrink-0 items-center gap-2">
               {headerActions && <div className="flex shrink-0 items-center gap-1">{headerActions}</div>}
-              <Button icon={<XIcon size={20} />} size="sm" variant="stealth" aria-label={`Close ${title || 'modal'}`} onClick={onClose} />
+              <Button icon={<XIcon size={20} />} size="sm" variant="stealth" onClick={onClose} />
             </div>
           </header>
           <main className="flex min-h-0 flex-col p-3">{children}</main>

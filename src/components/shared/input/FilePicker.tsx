@@ -36,7 +36,7 @@ export const FilePicker = memo<FilePickerProps>(({ children, onFileSelect, accep
   return (
     <>
       {children({ trigger })}
-      <input ref={inputRef} id={inputId} type="file" className="hidden" accept={accept} aria-hidden="true" onChange={handleFileChange} />
+      <input ref={inputRef} id={inputId} type="file" className="hidden" accept={accept} onChange={handleFileChange} />
     </>
   );
 });

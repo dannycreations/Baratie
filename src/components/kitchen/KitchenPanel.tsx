@@ -51,16 +51,14 @@ const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient,
   errorHandler.assert(definition, 'Could not find definition for target ingredient in spice editor.');
 
   return (
-    <div aria-label={`Parameters for ${definition.name}`}>
-      <SpiceLayout
-        ingredient={definition}
-        currentSpices={targetIngredient.spices}
-        containerClasses="space-y-2"
-        onSpiceChange={handleSpiceChange}
-        onLongPressStart={onLongPressStart}
-        onLongPressEnd={onLongPressEnd}
-      />
-    </div>
+    <SpiceLayout
+      ingredient={definition}
+      currentSpices={targetIngredient.spices}
+      containerClasses="space-y-2"
+      onSpiceChange={handleSpiceChange}
+      onLongPressStart={onLongPressStart}
+      onLongPressEnd={onLongPressEnd}
+    />
   );
 });
 
@@ -71,7 +69,6 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, 
   return (
     <TextareaInput
       value={data}
-      aria-label="Input Panel for Raw Data"
       disabled={isTextareaDisabled}
       placeholder={placeholder}
       showLineNumbers
@@ -84,16 +81,7 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, 
 
 const OutputContent = memo<OutputContentProps>(({ config, data }) => {
   const placeholder = (config?.mode === 'textarea' ? config.placeholder : undefined) || 'Your Results Will Be Presented Here.';
-  return (
-    <TextareaInput
-      value={data}
-      readOnly
-      aria-label="Result from Recipe Cooking Action"
-      placeholder={placeholder}
-      showLineNumbers
-      wrapperClasses="flex-1 min-h-0"
-    />
-  );
+  return <TextareaInput value={data} readOnly placeholder={placeholder} showLineNumbers wrapperClasses="flex-1 min-h-0" />;
 });
 
 export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
@@ -160,7 +148,6 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
               icon={<FileTextIcon size={18} />}
               size="sm"
               variant="stealth"
-              aria-label="Open a text file as input"
               tooltipContent="Open File..."
               tooltipPosition="left"
               onClick={trigger}
@@ -177,7 +164,6 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
             size="sm"
             variant="danger"
             disabled={data.length === 0}
-            aria-label="Clear data from the input panel"
             tooltipContent="Clear Input Panel"
             tooltipPosition="left"
             onClick={handleClearInput}
@@ -198,7 +184,6 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
         size="sm"
         variant="stealth"
         disabled={data.length === 0}
-        aria-label="Save output to a file"
         tooltipContent="Save Output"
         tooltipPosition="left"
         onClick={handleDownloadOutput}
@@ -236,13 +221,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   };
 
   return (
-    <SectionLayout
-      headerLeft={title}
-      headerRight={renderActions}
-      className="h-[50vh] min-h-0 md:h-1/2"
-      contentClasses="flex flex-col"
-      aria-live={config ? 'polite' : undefined}
-    >
+    <SectionLayout headerLeft={title} headerRight={renderActions} className="h-[50vh] min-h-0 md:h-1/2" contentClasses="flex flex-col">
       {renderContent()}
     </SectionLayout>
   );

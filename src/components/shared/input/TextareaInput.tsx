@@ -68,7 +68,7 @@ export const TextareaInput = memo<TextareaInputProps>(
     return (
       <div className={containerClass} {...dropZoneProps}>
         {showLineNumbers && (
-          <div ref={lineNumbersRef} className={gutterClass} aria-hidden="true">
+          <div ref={lineNumbersRef} className={gutterClass}>
             <div style={{ paddingTop: `${virtualizedLines.paddingTop}px`, paddingBottom: `${virtualizedLines.paddingBottom}px` }}>
               {virtualizedLines.visibleItems.map(({ key, number }) => (
                 <div key={key} style={{ height: virtualizedLines.lineHeight }}>

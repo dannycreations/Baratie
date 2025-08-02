@@ -32,7 +32,6 @@ const SaveHeaderActions = memo<SaveHeaderActionsProps>(({ isSaveDisabled, onExpo
       icon={<DownloadCloudIcon size={20} />}
       variant="stealth"
       disabled={isSaveDisabled}
-      aria-label="Export the current recipe to a file"
       tooltipContent="Export Recipe to JSON"
       onClick={onExportCurrent}
     />
@@ -40,7 +39,6 @@ const SaveHeaderActions = memo<SaveHeaderActionsProps>(({ isSaveDisabled, onExpo
       icon={<SaveIcon size={20} />}
       variant="primary"
       disabled={isSaveDisabled}
-      aria-label="Save the current recipe to the cookbook"
       tooltipContent="Save to Browser Storage"
       onClick={onSave}
     >
@@ -53,20 +51,13 @@ const LoadHeaderActions = memo<LoadHeaderActionsProps>(({ isExportDisabled, onFi
   <>
     <FilePicker accept=".json" onFileSelect={onFileImport}>
       {({ trigger }) => (
-        <TooltipButton
-          icon={<UploadCloudIcon size={20} />}
-          variant="stealth"
-          aria-label="Import recipes from a JSON file"
-          tooltipContent="Import from JSON File"
-          onClick={trigger}
-        />
+        <TooltipButton icon={<UploadCloudIcon size={20} />} variant="stealth" tooltipContent="Import from JSON File" onClick={trigger} />
       )}
     </FilePicker>
     <TooltipButton
       icon={<DownloadCloudIcon size={20} />}
       variant="stealth"
       disabled={isExportDisabled}
-      aria-label="Export all saved recipes to a file"
       tooltipContent="Export All Saved Recipes"
       onClick={onExportAll}
     />
@@ -174,7 +165,6 @@ export const CookbookPanel = memo((): JSX.Element | null => {
       isOpen={isModalOpen}
       size="lg"
       title={title}
-      titleId="cookbook-modal-title"
       contentClasses="max-h-[80vh]"
       headerActions={headerActions}
       onClose={closeModal}

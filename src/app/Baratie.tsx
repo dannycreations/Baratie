@@ -39,18 +39,14 @@ const BaratieView = memo((): JSX.Element => {
   return (
     <>
       <LoadingScreen />
-      <div className={mainContentClass} aria-hidden={!isAppReady}>
-        <main
-          className="flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden"
-          role="main"
-          aria-label="Main Application Workspace"
-        >
-          <section className="flex w-full flex-col gap-3 md:flex-1 md:flex-row md:overflow-hidden" aria-label="Ingredient and Recipe Management">
+      <div className={mainContentClass}>
+        <main className="flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden">
+          <section className="flex w-full flex-col gap-3 md:flex-1 md:flex-row md:overflow-hidden">
             <IngredientPanel />
             <RecipePanel />
           </section>
 
-          <section className="flex w-full flex-col gap-3 md:flex-1 md:overflow-hidden" aria-label="Input and Output Panels">
+          <section className="flex w-full flex-col gap-3 md:flex-1 md:overflow-hidden">
             <KitchenPanel type="input" />
             <KitchenPanel type="output" />
           </section>

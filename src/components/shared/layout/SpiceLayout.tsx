@@ -140,7 +140,7 @@ export const SpiceLayout = memo<SpiceLayoutProps>(
     }
 
     return (
-      <form role="form" className={finalContainerClass} aria-label={`Options for ${ingredient.name}`} onSubmit={handleSubmit}>
+      <form className={finalContainerClass} onSubmit={handleSubmit}>
         {visibleSpices.map((spice) => {
           const rawValue = currentSpices[spice.id];
           return (

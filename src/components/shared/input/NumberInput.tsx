@@ -127,7 +127,6 @@ export const NumberInput = memo<NumberInputProps>(
             type="button"
             tabIndex={-1}
             className={`${stepButtonClass} rounded-tr-sm`}
-            aria-label="Increment value"
             disabled={disabled || (max !== undefined && value >= max)}
             {...incrementPressHandlers}
           >
@@ -137,7 +136,6 @@ export const NumberInput = memo<NumberInputProps>(
             type="button"
             tabIndex={-1}
             className={`${stepButtonClass} rounded-br-sm`}
-            aria-label="Decrement value"
             disabled={disabled || (min !== undefined && value <= min)}
             {...decrementPressHandlers}
           >

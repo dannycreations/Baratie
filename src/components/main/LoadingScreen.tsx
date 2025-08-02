@@ -32,13 +32,7 @@ export const LoadingScreen = memo((): JSX.Element | null => {
   const titleClass = `mt-3 font-semibold tracking-wider text-2xl ${isError ? `text-${theme.dangerFg}` : `text-${theme.contentSecondary}`}`;
 
   return (
-    <div
-      className={containerClass}
-      role="status"
-      aria-live="polite"
-      aria-label={isError ? 'Application Failed to Load' : 'Loading Application'}
-      aria-hidden={isAppReady}
-    >
+    <div className={containerClass}>
       <div className="flex flex-col items-center p-3 text-center">
         {isError ? (
           <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={48} />

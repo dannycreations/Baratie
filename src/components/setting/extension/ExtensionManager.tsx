@@ -202,7 +202,6 @@ export const ExtensionManager = memo((): JSX.Element | null => {
           onQueryChange: setQuery,
           id: 'module-install-search',
           inputRef: searchRef,
-          ariaLabel: 'Search modules to install',
           placeholder: 'Search Modules...',
         }}
       />

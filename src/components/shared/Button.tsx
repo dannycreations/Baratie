@@ -38,14 +38,11 @@ interface CopyButtonProps {
 
 interface ConfirmButtonProps {
   readonly actionName?: string;
-  readonly ariaLabel?: string;
   readonly className?: string;
-  readonly confirmAriaLabel?: string;
   readonly confirmIcon?: ReactNode;
   readonly confirmTooltip?: ReactNode;
   readonly disabled?: boolean;
   readonly icon?: ReactNode;
-  readonly itemName: string;
   readonly itemType: string;
   readonly onConfirm: () => void;
   readonly tooltip?: ReactNode;
@@ -131,7 +128,6 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
       variant="stealth"
       className={isCopied ? `text-${theme.successFg}` : ''}
       disabled={!textToCopy || isCopied}
-      aria-label={isCopied ? 'Copied to clipboard' : 'Copy to clipboard'}
       tooltipContent={isCopied ? 'Copied!' : 'Copy'}
       tooltipPosition={tooltipPosition}
       onClick={handleCopy}
@@ -152,7 +148,6 @@ export const TooltipButton = memo<TooltipButtonProps>(
 export const ConfirmButton = memo<ConfirmButtonProps>(
   ({
     onConfirm,
-    itemName,
     itemType,
     actionName = 'Delete',
     tooltipPosition = 'top',
@@ -162,8 +157,6 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
     confirmIcon,
     tooltip: customTooltip,
     confirmTooltip: customConfirmTooltip,
-    ariaLabel: customAriaLabel,
-    confirmAriaLabel: customConfirmAriaLabel,
   }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
@@ -172,10 +165,6 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
     const defaultTooltip = `${actionName} ${itemType}`;
     const defaultConfirmTooltip = `Confirm ${actionName}`;
     const tooltipContent = isConfirm ? (customConfirmTooltip ?? defaultConfirmTooltip) : (customTooltip ?? defaultTooltip);
-
-    const defaultAriaLabel = `${actionName} ${itemType}: ${itemName}`;
-    const defaultConfirmAriaLabel = `Confirm ${actionName.toLowerCase()} of ${itemName}`;
-    const ariaLabel = isConfirm ? (customConfirmAriaLabel ?? defaultConfirmAriaLabel) : (customAriaLabel ?? defaultAriaLabel);
 
     const buttonClass = `${className} ${isConfirm ? `bg-${theme.dangerBg} text-${theme.accentFg}` : ''}`.trim();
 
@@ -189,7 +178,6 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
         variant="danger"
         className={buttonClass}
         disabled={disabled}
-        aria-label={ariaLabel}
         tooltipContent={tooltipContent}
         tooltipPosition={tooltipPosition}
         onClick={trigger}

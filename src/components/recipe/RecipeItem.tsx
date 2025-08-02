@@ -70,17 +70,13 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
   }, [onRemove, ingredientItem.id]);
 
   return (
-    <div
-      className={`group flex flex-col rounded-md bg-${theme.dangerBg} text-sm outline-none`}
-      role="listitem"
-      aria-label={`Error: Ingredient ${ingredientItem.name} not found.`}
-    >
+    <div className={`group flex flex-col rounded-md bg-${theme.dangerBg} text-sm outline-none`}>
       <div className="p-2">
         <ItemListLayout
           leftClasses="flex min-w-0 grow items-center"
           leftContent={
             <div className="flex items-center gap-1">
-              <AlertTriangleIcon aria-hidden="true" className={`text-${theme.dangerFg}`} size={20} />
+              <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={20} />
               <span className={`truncate pr-2 font-medium text-${theme.dangerFg}`}>{ingredientItem.name} (Missing)</span>
             </div>
           }
@@ -89,7 +85,6 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
               icon={<XIcon size={18} />}
               size="sm"
               variant="danger"
-              aria-label={`Remove missing ingredient "${ingredientItem.name}" from recipe`}
               tooltipContent="Remove Missing Ingredient"
               tooltipPosition="top"
               onClick={handleRemove}
@@ -171,48 +166,25 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
   );
 
   const hasSpices = !!definition.spices && definition.spices.length > 0;
-  const canToggleEditor = hasSpices && !isSpiceInInput;
   const isEditorVisible = isEditing && !isSpiceInInput && !isDragged;
   const settingsTooltip = isSpiceInInput ? 'Options are in the Input panel' : isEditing ? 'Hide Options' : 'Edit Options';
   const hasWarning = status === 'warning' && typeof warning === 'string' && warning.length > 0;
-
-  const ariaLabelParts = [
-    `Recipe Item: ${definition.name}`,
-    `Status: ${isAutoCook ? status : 'Auto-Cook Disabled'}`,
-    isSpiceInInput ? 'Options are managed in the Input panel.' : '',
-    isEditorVisible ? 'The options editor is expanded.' : '',
-    hasWarning ? `Warning: ${warning}` : '',
-  ];
-  const ariaLabel = ariaLabelParts.filter(Boolean).join('. ');
-
   const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
   const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
   const itemClass =
     `group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm outline-none transition-all duration-200 ease-in-out ${isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'} ${statusBorderClass} ${isSpiceInInput || hasWarning ? 'pb-2' : ''}`.trim();
   const grabHandleClass = `mr-2 text-${theme.contentTertiary} cursor-grab transition-colors group-hover:text-${theme.contentSecondary}`;
-  const buttonId = `edit-button-${ingredientItem.id}`;
-  const optionsId = `options-${ingredientItem.id}`;
 
   const leftColumn = (
     <>
       <Tooltip content="Drag to reorder" position="top">
-        <span
-          className={grabHandleClass}
-          aria-label="Drag handle"
-          aria-roledescription="draggable item"
-          tabIndex={0}
-          draggable
-          onDragStart={handleDragStart}
-          onDragEnd={onDragEnd}
-        >
+        <span className={grabHandleClass} draggable onDragStart={handleDragStart} onDragEnd={onDragEnd}>
           <GrabIcon size={20} />
         </span>
       </Tooltip>
       <div className="min-w-0 flex-1">
         <Tooltip content={definition.description} position="top" className="inline-block max-w-full">
-          <span tabIndex={0} className={`block truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default outline-none`}>
-            {definition.name}
-          </span>
+          <span className={`block truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default outline-none`}>{definition.name}</span>
         </Tooltip>
       </div>
     </>
@@ -222,14 +194,10 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
     <>
       {hasSpices && (
         <TooltipButton
-          id={buttonId}
           icon={<PreferencesIcon size={18} />}
           size="sm"
           variant={isEditorVisible ? 'primary' : 'stealth'}
           className={isEditorVisible ? '' : `text-${theme.contentTertiary} hover:text-${theme.infoFg}`}
-          aria-controls={optionsId}
-          aria-expanded={isEditorVisible}
-          aria-label={settingsTooltip}
           tooltipContent={settingsTooltip}
           tooltipPosition="top"
           onClick={handleEditToggleCallback}
@@ -240,7 +208,6 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
         size="sm"
         variant="danger"
         className="opacity-50 group-hover:opacity-100"
-        aria-label={`Remove ingredient "${definition.name}" from recipe`}
         tooltipContent="Remove Ingredient"
         tooltipPosition="top"
         onClick={() => onRemove(ingredientItem.id)}
@@ -249,14 +216,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
   );
 
   return (
-    <div
-      className={itemClass}
-      role="listitem"
-      tabIndex={canToggleEditor ? 0 : -1}
-      aria-label={ariaLabel}
-      onDragEnter={handleDragEnter}
-      onDragOver={onDragOver}
-    >
+    <div className={itemClass} onDragEnter={handleDragEnter} onDragOver={onDragOver}>
       <ItemListLayout
         className="h-12 p-2 cursor-default"
         leftClasses="flex grow items-center min-w-0"
@@ -267,13 +227,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
       {hasSpices && (
         <>
           {!hasWarning && isSpiceInInput && <InfoMessage type="spiceInInput" />}
-          <div
-            id={optionsId}
-            role="region"
-            aria-labelledby={buttonId}
-            aria-hidden={!isEditorVisible}
-            className={`accordion-grid ${isEditorVisible ? 'expanded' : ''}`}
-          >
+          <div className={`accordion-grid ${isEditorVisible ? 'expanded' : ''}`}>
             <div className="accordion-content">
               <RecipeSpiceEditor
                 ingredient={ingredientItem}

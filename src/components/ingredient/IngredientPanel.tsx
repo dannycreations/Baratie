@@ -117,7 +117,6 @@ export const IngredientPanel = memo((): JSX.Element => {
         icon={<PreferencesIcon size={18} />}
         size="sm"
         variant="stealth"
-        aria-label={`Manage ingredients. ${visibleIngredients} of ${totalIngredients} visible.`}
         tooltipContent={`Manage Ingredients\n${visibleIngredients} of ${totalIngredients} visible`}
         tooltipDisabled={isIngredientOpen}
         tooltipPosition="bottom"
@@ -127,7 +126,6 @@ export const IngredientPanel = memo((): JSX.Element => {
         icon={<SettingsIcon size={18} />}
         size="sm"
         variant="stealth"
-        aria-label="Open application settings"
         tooltipContent="Settings, Appearance & Extensions"
         tooltipDisabled={isSettingOpen}
         tooltipPosition="bottom"
@@ -151,8 +149,6 @@ export const IngredientPanel = memo((): JSX.Element => {
                 ? `text-${theme.favoriteFg} hover:text-${theme.favoriteFgHover}`
                 : `text-${theme.contentTertiary} hover:text-${theme.favoriteFg}`
             }`}
-            aria-label={isFavorite ? `Remove '${item.name}' from favorites` : `Add '${item.name}' to favorites`}
-            aria-pressed={isFavorite}
             tooltipContent={isFavorite ? `Remove '${item.name}' from favorites` : `Add '${item.name}' to favorites`}
             tooltipPosition="top"
             onClick={() => toggleFavorite(item.id)}
@@ -162,7 +158,6 @@ export const IngredientPanel = memo((): JSX.Element => {
             size="sm"
             variant="primary"
             className="opacity-70 group-hover:opacity-100"
-            aria-label={`Add '${item.name}' to the recipe`}
             tooltipContent={`Add '${item.name}' to Recipe`}
             tooltipPosition="top"
             onClick={() => addIngredient(item.id)}
@@ -196,7 +191,6 @@ export const IngredientPanel = memo((): JSX.Element => {
             query,
             onQueryChange: setQuery,
             id: 'ingredient-search',
-            ariaLabel: 'Search for ingredients',
             placeholder: 'Search Ingredients...',
           }}
         />

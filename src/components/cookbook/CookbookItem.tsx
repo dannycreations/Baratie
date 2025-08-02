@@ -47,9 +47,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
         leftClasses="grow min-w-0 mr-2"
         leftContent={
           <>
-            <span tabIndex={0} className={`block truncate font-medium text-sm text-${theme.contentPrimary} cursor-default outline-none`}>
-              {recipe.name}
-            </span>
+            <span className={`block truncate font-medium text-sm text-${theme.contentPrimary} cursor-default outline-none`}>{recipe.name}</span>
             <p className={`text-xs text-${theme.contentTertiary}`}>
               Last Updated: {formatTimestamp(recipe.updatedAt)} ({recipe.ingredients.length} steps)
             </p>
@@ -61,7 +59,6 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
               icon={<UploadCloudIcon size={18} />}
               size="sm"
               variant="primary"
-              aria-label={`Load the recipe: ${recipe.name}`}
               tooltipContent="Load Recipe"
               tooltipPosition="left"
               onClick={handleLoad}
@@ -69,7 +66,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
               Load
             </TooltipButton>
 
-            <ConfirmButton actionName="Delete" itemName={recipe.name} itemType="Recipe" tooltipPosition="left" onConfirm={handleConfirmDelete} />
+            <ConfirmButton actionName="Delete" itemType="Recipe" tooltipPosition="left" onConfirm={handleConfirmDelete} />
           </>
         }
       />

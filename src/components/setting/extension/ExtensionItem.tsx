@@ -94,11 +94,10 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
         size="sm"
         variant="stealth"
         disabled={isLoading}
-        aria-label={`Refresh extension: ${displayName}`}
         tooltipContent="Refresh & Check for Updates"
         onClick={handleRefresh}
       />
-      <ConfirmButton actionName="Remove" itemName={displayName} itemType="Extension" onConfirm={handleConfirmDelete} />
+      <ConfirmButton actionName="Remove" itemType="Extension" onConfirm={handleConfirmDelete} />
     </div>
   );
 

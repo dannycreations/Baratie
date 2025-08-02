@@ -29,24 +29,16 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
   const dialogClass = `w-full max-w-md p-3 text-center rounded-lg border border-${theme.dangerBorder} bg-${theme.surfaceSecondary} sm:max-w-lg md:max-w-2xl`;
 
   return (
-    <div className={backdropClass} role="alertdialog" aria-modal="true" aria-labelledby="error-dialog-title" aria-describedby={ERROR_DESCRIPTION_ID}>
+    <div className={backdropClass}>
       <div className={dialogClass}>
-        <div role="img" aria-label="Warning" className={`mb-3 text-5xl text-${theme.dangerFg}`}>
-          ⚠️
-        </div>
+        <div className={`mb-3 text-5xl text-${theme.dangerFg}`}>⚠️</div>
         <h2 id="error-dialog-title" className={`mb-2 font-bold text-2xl text-${theme.dangerFg}`}>
           A Kitchen Catastrophe!
         </h2>
         <p id={ERROR_DESCRIPTION_ID} className={`mb-3 text-${theme.contentSecondary}`}>
           A sudden squall has hit the galley! Reloading might calm the seas.
         </p>
-        <Button
-          icon={<RefreshCwIcon size={20} />}
-          size="sm"
-          variant="primary"
-          aria-label="Reload the application to try again"
-          onClick={() => window.location.reload()}
-        >
+        <Button icon={<RefreshCwIcon size={20} />} size="sm" variant="primary" onClick={() => window.location.reload()}>
           Batten Down the Hatches!
         </Button>
         {error && <ErrorView error={error} errorInfo={errorInfo} />}
