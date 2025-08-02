@@ -2,7 +2,7 @@ import { errorHandler, logger } from '../app/container';
 import { useIngredientStore } from '../stores/useIngredientStore';
 import { getObjectHash } from '../utilities/appUtil';
 
-import type { JSX } from 'react';
+import type { ReactNode } from 'react';
 import type { InputType } from './InputType';
 
 export type SpiceValue = string | number | boolean;
@@ -34,7 +34,7 @@ export interface IngredientProps<T = unknown> extends IngredientDefinition<T> {
 }
 
 interface PanelBaseConfig {
-  readonly title: string;
+  readonly title: () => ReactNode;
 }
 
 interface PanelTextareaConfig extends PanelBaseConfig {
@@ -42,9 +42,10 @@ interface PanelTextareaConfig extends PanelBaseConfig {
   readonly placeholder: string;
 }
 
-interface PanelCustomConfig extends PanelBaseConfig {
+export interface PanelCustomConfig extends PanelBaseConfig {
   readonly mode: 'custom';
-  readonly render: () => JSX.Element;
+  readonly actions?: (defaultActions: ReadonlyArray<ReactNode>) => ReadonlyArray<ReactNode>;
+  readonly content: () => ReactNode;
 }
 
 export type OutputPanelConfig = PanelTextareaConfig | PanelCustomConfig;

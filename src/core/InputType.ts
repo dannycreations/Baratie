@@ -1,8 +1,8 @@
 import { base64ToUint8Array, hexToUint8Array, isObjectLike, uint8ArrayToBase64, uint8ArrayToHex } from '../utilities/appUtil';
 
-import type { PanelControlConfig } from './IngredientRegistry';
+import type { PanelControlConfig, PanelCustomConfig } from './IngredientRegistry';
 
-interface TypeMap {
+interface InputTypeMap {
   array: Array<unknown>;
   arraybuffer: ArrayBuffer;
   base64: string;
@@ -14,7 +14,9 @@ interface TypeMap {
   string: string;
 }
 
-type InputDataType = keyof TypeMap;
+type InputDataType = keyof InputTypeMap;
+
+type InputRenderProps = Omit<PanelControlConfig, 'config'> & Omit<PanelCustomConfig, 'mode'>;
 
 type HandleFailure = <T>(e?: string) => InputType<T>;
 
@@ -109,8 +111,19 @@ export class InputType<T = unknown> {
     return new InputType(newValue, this.panelControl, this.warningMessage);
   }
 
-  public render(panelControl: PanelControlConfig): InputType<T> {
-    return new InputType(this.value, panelControl, this.warningMessage);
+  public render(panelControl: InputRenderProps): InputType<T> {
+    const panelInstruction: PanelControlConfig = {
+      panelType: panelControl.panelType,
+      providerId: panelControl.providerId,
+      config: {
+        mode: 'custom',
+        title: panelControl.title,
+        actions: panelControl.actions,
+        content: panelControl.content,
+      },
+    };
+
+    return new InputType(this.value, panelInstruction, this.warningMessage);
   }
 
   public warning(message?: string): InputType<T> {

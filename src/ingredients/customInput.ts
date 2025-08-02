@@ -1,5 +1,6 @@
 import { CATEGORY_EFFECT, KEY_CUSTOM_INPUT } from '../app/constants';
 import { ingredientRegistry } from '../app/container';
+import { InputType } from '../core/InputType';
 
 import type { IngredientDefinition, InputPanelConfig } from '../core/IngredientRegistry';
 
@@ -20,7 +21,7 @@ export const CUSTOM_INPUT_DEF: IngredientDefinition = {
         config = {
           mode: 'spiceEditor',
           targetIngredientId: targetIngredient.id,
-          title: `Options: ${targetIngredient.name}`,
+          title: () => `Options: ${targetIngredient.name}`,
         };
       }
     }
@@ -29,7 +30,7 @@ export const CUSTOM_INPUT_DEF: IngredientDefinition = {
       return input.warning('There are no ingredients with options below this one.');
     }
 
-    return input.render({
+    return new InputType(input.value, {
       panelType: 'input',
       providerId: ingredient.id,
       config,

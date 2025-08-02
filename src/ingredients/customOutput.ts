@@ -1,4 +1,5 @@
 import { CATEGORY_EFFECT, KEY_CUSTOM_OUTPUT } from '../app/constants';
+import { InputType } from '../core/InputType';
 
 import type { IngredientDefinition } from '../core/IngredientRegistry';
 
@@ -12,12 +13,12 @@ export const CUSTOM_OUTPUT_DEF: IngredientDefinition = {
       return input.warning();
     }
 
-    return input.render({
+    return new InputType(input.value, {
       panelType: 'output',
       providerId: context.ingredient.id,
       config: {
         mode: 'textarea',
-        title: 'Output',
+        title: () => 'Output',
         placeholder: 'Your results will be presented here.',
       },
     });
