@@ -4,7 +4,7 @@ import { useModalStore } from '../../stores/useModalStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { Modal } from '../shared/Modal';
 import { AppearanceTab } from './AppearanceTab';
-import { ExtensionPanel } from './extension/ExtensionManager';
+import { ExtensionManager } from './extension/ExtensionManager';
 import { ExtensionTab } from './extension/ExtensionTab';
 
 import type { JSX } from 'react';
@@ -79,7 +79,7 @@ export const SettingPanel = memo((): JSX.Element => {
           ))}
         </div>
       </Modal>
-      <ExtensionPanel />
+      <ExtensionManager />
     </>
   );
 });

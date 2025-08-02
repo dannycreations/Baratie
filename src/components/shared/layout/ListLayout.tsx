@@ -235,7 +235,7 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
     return (
       <div className={containerClasses}>
         {search && (
-          <div className={search.wrapperClasses}>
+          <div role="search" className={search.wrapperClasses}>
             <StringInput
               id={search.id}
               type="search"

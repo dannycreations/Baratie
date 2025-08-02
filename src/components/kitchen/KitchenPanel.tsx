@@ -65,7 +65,7 @@ const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient,
 });
 
 const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, onFileDrop }) => {
-  const isTextareaDisabled = config?.mode === 'textarea' ? !!config.disabled : false;
+  const isTextareaDisabled = config?.mode === 'textarea' && (config.disabled ?? false);
   const placeholder = (config?.mode === 'textarea' && config.placeholder) || 'Place Raw Ingredients Here.';
 
   return (

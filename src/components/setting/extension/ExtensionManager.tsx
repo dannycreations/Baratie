@@ -31,7 +31,7 @@ function groupModulesForDisplay(modules: ReadonlyArray<ManifestModule>): Array<[
   return [...grouped.entries()].sort(([a], [b]) => a.localeCompare(b));
 }
 
-export const ExtensionPanel = memo((): JSX.Element | null => {
+export const ExtensionManager = memo((): JSX.Element | null => {
   const activeModal = useModalStore((state) => state.activeModal);
   const getModal = useModalStore((state) => state.getModal);
   const closeModal = useModalStore((state) => state.closeModal);
