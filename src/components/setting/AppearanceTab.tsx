@@ -58,7 +58,7 @@ export const AppearanceTab = memo((): JSX.Element => {
         <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {APP_THEMES.map((item) => {
             const isChecked = id === item.id;
-            const liClass = `list-none rounded-md cursor-pointer outline-none focus:ring-2 focus:ring-${theme.ring}`;
+            const liClass = `list-none rounded-md cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-${theme.ring}`;
             const itemLayoutClass = `h-16 p-2 border-2 rounded-md transition-colors duration-150 ${isChecked ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}` : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`}`;
 
             const leftContent = (

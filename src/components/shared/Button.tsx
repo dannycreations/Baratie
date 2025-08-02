@@ -93,7 +93,7 @@ export const Button = memo<ButtonProps>(
     const theme = useThemeStore((state) => state.theme);
     const finalVariant = variant ?? 'primary';
 
-    const baseClass = `inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-${theme.ring}`;
+    const baseClass = `inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-${theme.ring}`;
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
     const variantClass = getVariantClasses(finalVariant, theme);
     const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];

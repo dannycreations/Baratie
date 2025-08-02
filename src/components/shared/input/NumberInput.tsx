@@ -103,7 +103,7 @@ export const NumberInput = memo<NumberInputProps>(
     const incrementPressHandlers = useLongPress(handleIncrement, pressHandlersConfig);
     const decrementPressHandlers = useLongPress(handleDecrement, pressHandlersConfig);
 
-    const standardInputStyle = `w-full py-2 pl-2 pr-8 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} bg-${theme.surfaceTertiary} rounded-md border border-${theme.borderPrimary} outline-none focus:ring-2 focus:ring-${theme.ring} disabled:opacity-50 number-input-no-spinner`;
+    const standardInputStyle = `w-full py-2 pl-2 pr-8 text-${theme.contentPrimary} placeholder:text-${theme.contentTertiary} bg-${theme.surfaceTertiary} rounded-md border border-${theme.borderPrimary} outline-none focus-visible:ring-2 focus-visible:ring-${theme.ring} disabled:opacity-50 number-input-no-spinner`;
     const containerClass = `relative flex items-center ${className}`;
     const buttonGroupClass = `absolute top-1 right-1 flex h-[calc(100%-8px)] w-6 flex-col bg-${theme.surfaceTertiary} rounded-r-md border-l border-${theme.borderPrimary}`;
     const stepButtonClass = `flex h-1/2 w-full shrink-0 items-center justify-center text-${theme.contentTertiary} transition-colors hover:bg-${theme.surfaceMuted} hover:text-${theme.contentPrimary} disabled:cursor-not-allowed disabled:text-${theme.contentDisabled}`;

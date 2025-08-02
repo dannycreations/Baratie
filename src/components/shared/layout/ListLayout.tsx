@@ -131,7 +131,7 @@ export const GroupListLayout = memo<GroupListProps>(
           const header = (
             <button
               id={buttonId}
-              className={`flex h-12 w-full items-center justify-between p-2 text-${theme.contentSecondary} bg-${theme.surfaceTertiary} outline-none hover:bg-${theme.surfaceHover}`}
+              className={`flex h-12 w-full items-center justify-between p-2 text-${theme.contentSecondary} bg-${theme.surfaceTertiary} outline-none hover:bg-${theme.surfaceHover} focus-visible:ring-2 focus-visible:ring-${theme.ring}`}
               aria-controls={panelId}
               aria-expanded={isExpanded}
               onClick={() => handleCategoryToggle(category)}

@@ -203,7 +203,7 @@ body.grabbing * {
 .accordion-grid {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.1s ease-in-out;
+  transition: grid-template-rows 0.2s ease-in-out;
   overflow: hidden;
 }
 .accordion-grid.expanded {
