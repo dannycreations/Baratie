@@ -33,7 +33,7 @@ export const FormLayout = memo<FormLayoutProps>(
       <div className={containerClass}>
         {label ? (
           <div className={finalLabelWrapClass}>
-            <label className={finalLabelClass}>
+            <label htmlFor={inputId} className={finalLabelClass}>
               {description ? (
                 <Tooltip
                   content={description}

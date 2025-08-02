@@ -19,19 +19,18 @@ const SETTING_TABS = [
 type SettingTab = (typeof SETTING_TABS)[number]['id'];
 
 interface TabButtonProps {
-  readonly id: string;
   readonly children: string;
   readonly isActive: boolean;
   readonly onClick: () => void;
 }
 
-const TabButton = memo<TabButtonProps>(({ children, id, isActive, onClick }): JSX.Element => {
+const TabButton = memo<TabButtonProps>(({ children, isActive, onClick }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
   const tabClass = `p-2 font-medium text-sm rounded-t-md border-b-2 outline-none transition-colors duration-150 ${isActive ? `border-${theme.infoBorder} text-${theme.infoFg}` : `border-transparent text-${theme.contentTertiary} hover:text-${theme.contentPrimary}`}`;
 
   return (
-    <button id={id} className={tabClass} onClick={onClick}>
+    <button className={tabClass} onClick={onClick}>
       {children}
     </button>
   );
@@ -43,7 +42,6 @@ export const SettingPanel = memo((): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
   const [activeTab, setActiveTab] = useState<SettingTab>('general');
-  const tabIdPrefix = 'setting-tab';
 
   const handleTabSelect = useCallback((tab: SettingTab): void => {
     setActiveTab(tab);
@@ -52,11 +50,10 @@ export const SettingPanel = memo((): JSX.Element => {
   return (
     <>
       <Modal isOpen={isModalOpen} size="xl" title="Settings" contentClasses="flex flex-col max-h-[80vh]" onClose={closeModal}>
-        <div className={`flex gap-1 border-b border-${theme.borderPrimary}`}>
+        <nav className={`flex gap-1 border-b border-${theme.borderPrimary}`}>
           {SETTING_TABS.map((tab) => (
             <TabButton
               key={tab.id}
-              id={`${tabIdPrefix}-${tab.id}`}
               isActive={activeTab === tab.id}
               onClick={() => {
                 handleTabSelect(tab.id);
@@ -65,10 +62,10 @@ export const SettingPanel = memo((): JSX.Element => {
               {tab.label}
             </TabButton>
           ))}
-        </div>
+        </nav>
         <div className="grow min-h-0 pt-3">
           {SETTING_TABS.map((tab) => (
-            <div key={tab.id} id={`${tabIdPrefix}-${tab.id}-panel`} className={activeTab === tab.id ? 'h-full' : 'hidden'}>
+            <div key={tab.id} className={activeTab === tab.id ? 'h-full' : 'hidden'}>
               {tab.component}
             </div>
           ))}

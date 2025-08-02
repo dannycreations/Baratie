@@ -37,7 +37,7 @@ export const EmptyView = memo<EmptyViewProps>(
       <div className={className}>
         {icon && <div className={`mb-2 text-${theme.contentTertiary}`}>{icon}</div>}
         {title && <h3 className={titleClass}>{title}</h3>}
-        <div className={textClass}>{children}</div>
+        <p className={textClass}>{children}</p>
       </div>
     );
   },

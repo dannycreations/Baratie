@@ -46,9 +46,7 @@ export const AppearanceTab = memo((): JSX.Element => {
 
   return (
     <div className="flex h-full flex-col">
-      <p id="theme-group-label" className={`mb-3 text-sm text-${theme.contentTertiary}`}>
-        Select a color theme for the application.
-      </p>
+      <p className={`mb-3 text-sm text-${theme.contentTertiary}`}>Select a color theme for the application.</p>
       <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {APP_THEMES.map((item) => {
           const isChecked = id === item.id;
@@ -57,7 +55,7 @@ export const AppearanceTab = memo((): JSX.Element => {
 
           const leftContent = (
             <div className="flex flex-col justify-center gap-1">
-              <span className={`font-medium text-sm ${isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`}`}>{item.name}</span>
+              <h3 className={`font-medium text-sm ${isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`}`}>{item.name}</h3>
               <PalettePreview theme={item.theme} />
             </div>
           );

@@ -12,6 +12,7 @@ interface RecipeState {
   readonly editingIds: ReadonlySet<string>;
   readonly ingredients: ReadonlyArray<IngredientItem>;
   readonly addIngredient: (ingredientId: string, initialSpices?: Readonly<Record<string, unknown>>) => void;
+  readonly clearEditingIds: () => void;
   readonly clearRecipe: () => void;
   readonly getActiveRecipeId: () => string | null;
   readonly removeIngredient: (id: string) => void;
@@ -47,6 +48,10 @@ export const useRecipeStore = create<RecipeState>()(
           ingredients: [...state.ingredients, newIngredient],
         };
       });
+    },
+
+    clearEditingIds: () => {
+      set({ editingIds: new Set() });
     },
 
     clearRecipe: () => {

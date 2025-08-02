@@ -56,11 +56,11 @@ export const IngredientManager = memo((): JSX.Element => {
             offBackgroundColor={theme.borderPrimary}
             onChange={() => toggleCategory(category)}
           />
-          <label
+          <span
             className={`truncate font-medium cursor-pointer ${isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}`}
           >
             {category}
-          </label>
+          </span>
         </div>
       );
     },

@@ -8,8 +8,6 @@ import { ErrorView } from '../shared/View';
 
 import type { ErrorInfo, JSX, ReactNode } from 'react';
 
-const ERROR_DESCRIPTION_ID = 'error-dialog-description';
-
 interface ErrorBoundaryProps {
   readonly children: ReactNode;
 }
@@ -32,12 +30,8 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
     <div className={backdropClass}>
       <div className={dialogClass}>
         <div className={`mb-3 text-5xl text-${theme.dangerFg}`}>⚠️</div>
-        <h2 id="error-dialog-title" className={`mb-2 font-bold text-2xl text-${theme.dangerFg}`}>
-          A Kitchen Catastrophe!
-        </h2>
-        <p id={ERROR_DESCRIPTION_ID} className={`mb-3 text-${theme.contentSecondary}`}>
-          A sudden squall has hit the galley! Reloading might calm the seas.
-        </p>
+        <h2 className={`mb-2 font-bold text-2xl text-${theme.dangerFg}`}>A Kitchen Catastrophe!</h2>
+        <p className={`mb-3 text-${theme.contentSecondary}`}>A sudden squall has hit the galley! Reloading might calm the seas.</p>
         <Button icon={<RefreshCwIcon size={20} />} size="sm" variant="primary" onClick={() => window.location.reload()}>
           Batten Down the Hatches!
         </Button>

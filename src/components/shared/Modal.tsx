@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 
 import { MODAL_SHOW_MS } from '../../app/constants';
 import { errorHandler } from '../../app/container';
-import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { Button } from './Button';
 import { XIcon } from './Icon';
@@ -19,10 +18,8 @@ interface ModalProps {
   readonly onClose: () => void;
   readonly contentClasses?: string;
   readonly headerActions?: ReactNode;
-  readonly modalId?: string;
   readonly onExited?: () => void;
   readonly size?: ModalSize;
-  readonly titleId?: string;
 }
 
 const MODAL_SIZE_MAP: Readonly<Record<ModalSize, string>> = {
@@ -35,26 +32,13 @@ const MODAL_SIZE_MAP: Readonly<Record<ModalSize, string>> = {
 };
 
 export const Modal = memo<ModalProps>(
-  ({
-    isOpen,
-    onClose,
-    onExited,
-    title,
-    children,
-    headerActions,
-    modalId = 'generic-modal',
-    titleId = 'generic-modal-title',
-    size = 'lg',
-    contentClasses = '',
-  }): JSX.Element | null => {
+  ({ isOpen, onClose, onExited, title, children, headerActions, size = 'lg', contentClasses = '' }): JSX.Element | null => {
     const [isRendered, setIsRendered] = useState(false);
 
     const theme = useThemeStore((state) => state.theme);
 
     const backdropRef = useRef<HTMLDivElement>(null);
     const modalContentRef = useRef<HTMLDivElement>(null);
-
-    useFocusTrap({ elementRef: modalContentRef, isActive: isOpen });
 
     const handleBackdropClick = useCallback(
       (event: MouseEvent<HTMLDivElement>): void => {
@@ -114,17 +98,15 @@ export const Modal = memo<ModalProps>(
 
     return createPortal(
       <div ref={backdropRef} className={backdropClass} onClick={handleBackdropClick}>
-        <div ref={modalContentRef} id={modalId} className={modalClass}>
+        <div ref={modalContentRef} className={modalClass}>
           <header className={`flex h-12 shrink-0 items-center justify-between border-b border-${theme.borderPrimary} px-2`}>
-            <h2 id={titleId} className={`grow truncate pr-2 font-semibold text-xl text-${theme.contentPrimary}`}>
-              {title}
-            </h2>
+            <h2 className={`grow truncate pr-2 font-semibold text-xl text-${theme.contentPrimary}`}>{title}</h2>
             <div className="flex shrink-0 items-center gap-2">
               {headerActions && <div className="flex shrink-0 items-center gap-1">{headerActions}</div>}
               <Button icon={<XIcon size={20} />} size="sm" variant="stealth" onClick={onClose} />
             </div>
           </header>
-          <main className="flex min-h-0 flex-col p-3">{children}</main>
+          <div className="flex min-h-0 flex-col p-3">{children}</div>
         </div>
       </div>,
       document.body,

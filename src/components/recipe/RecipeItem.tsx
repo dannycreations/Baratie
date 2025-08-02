@@ -70,14 +70,14 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
   }, [onRemove, ingredientItem.id]);
 
   return (
-    <div className={`group flex flex-col rounded-md bg-${theme.dangerBg} text-sm outline-none`}>
+    <li className={`group flex flex-col rounded-md bg-${theme.dangerBg} text-sm outline-none`}>
       <div className="p-2">
         <ItemListLayout
           leftClasses="flex min-w-0 grow items-center"
           leftContent={
             <div className="flex items-center gap-1">
               <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={20} />
-              <span className={`truncate pr-2 font-medium text-${theme.dangerFg}`}>{ingredientItem.name} (Missing)</span>
+              <h3 className={`truncate pr-2 font-medium text-${theme.dangerFg}`}>{ingredientItem.name} (Missing)</h3>
             </div>
           }
           rightContent={
@@ -95,7 +95,7 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
           This ingredient could not be found. It may be from a disabled or uninstalled extension.
         </p>
       </div>
-    </div>
+    </li>
   );
 });
 
@@ -107,9 +107,9 @@ interface InfoMessageProps {
 const InfoMessage = memo<InfoMessageProps>(({ type, message }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   return (
-    <div className={`p-2 mx-2 text-center text-xs italic rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover}`}>
+    <p className={`p-2 mx-2 text-center text-xs italic rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover}`}>
       {type === 'spiceInInput' ? 'Options are managed in the Input panel.' : message}
-    </div>
+    </p>
   );
 });
 
@@ -184,7 +184,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
       </Tooltip>
       <div className="min-w-0 flex-1">
         <Tooltip content={definition.description} position="top" className="inline-block max-w-full">
-          <span className={`block truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default outline-none`}>{definition.name}</span>
+          <h3 className={`block truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default outline-none`}>{definition.name}</h3>
         </Tooltip>
       </div>
     </>
@@ -216,7 +216,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
   );
 
   return (
-    <div className={itemClass} onDragEnter={handleDragEnter} onDragOver={onDragOver}>
+    <li className={itemClass} onDragEnter={handleDragEnter} onDragOver={onDragOver}>
       <ItemListLayout
         className="h-12 p-2 cursor-default"
         leftClasses="flex grow items-center min-w-0"
@@ -240,6 +240,6 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
           </div>
         </>
       )}
-    </div>
+    </li>
   );
 });

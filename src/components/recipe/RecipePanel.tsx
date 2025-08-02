@@ -32,6 +32,7 @@ export const RecipePanel = memo((): JSX.Element => {
   const removeIngredient = useRecipeStore((state) => state.removeIngredient);
   const reorderIngredients = useRecipeStore((state) => state.reorderIngredients);
   const toggleEditingId = useRecipeStore((state) => state.toggleEditingId);
+  const clearEditingIds = useRecipeStore((state) => state.clearEditingIds);
   const updateSpice = useRecipeStore((state) => state.updateSpice);
   const openModal = useModalStore((state) => state.openModal);
   const isCookbookOpen = useModalStore((state) => state.currentModal?.type === 'cookbook');
@@ -94,12 +95,12 @@ export const RecipePanel = memo((): JSX.Element => {
   const handleDragStart = useCallback(
     (event: DragEvent<HTMLElement>, ingredient: IngredientItem): void => {
       if (editingIds.size > 0) {
-        useRecipeStore.setState({ editingIds: new Set() });
+        clearEditingIds();
       }
       onMoveStart(event, ingredient.id);
       event.dataTransfer.setData('application/x-baratie-recipe-item-id', ingredient.id);
     },
-    [editingIds.size, onMoveStart],
+    [editingIds.size, onMoveStart, clearEditingIds],
   );
 
   const openCookbook = useCallback(
@@ -216,7 +217,7 @@ export const RecipePanel = memo((): JSX.Element => {
     }
   } else {
     content = (
-      <div className="space-y-2 pb-3">
+      <ul className="space-y-2 pb-3">
         {ingredients.map((ingredient: IngredientItem) => {
           const isSpiceInInput = inputPanelId === ingredient.id;
           const isEditingItem = editingIds.has(ingredient.id);
@@ -231,8 +232,12 @@ export const RecipePanel = memo((): JSX.Element => {
 
           return <RecipeItem key={ingredient.id} ingredientItem={ingredient} uiState={uiState} handlers={recipeItemHandlers} />;
         })}
-        {isDraggingIngredient && <DropZoneLayout mode="placeholder" text="Drop to add ingredient" variant="add" />}
-      </div>
+        {isDraggingIngredient && (
+          <li>
+            <DropZoneLayout mode="placeholder" text="Drop to add ingredient" variant="add" />
+          </li>
+        )}
+      </ul>
     );
   }
 

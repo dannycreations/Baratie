@@ -47,7 +47,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
         leftClasses="grow min-w-0 mr-2"
         leftContent={
           <>
-            <span className={`block truncate font-medium text-sm text-${theme.contentPrimary} cursor-default outline-none`}>{recipe.name}</span>
+            <h3 className={`block truncate font-medium text-sm text-${theme.contentPrimary} cursor-default outline-none`}>{recipe.name}</h3>
             <p className={`text-xs text-${theme.contentTertiary}`}>
               Last Updated: {formatTimestamp(recipe.updatedAt)} ({recipe.ingredients.length} steps)
             </p>

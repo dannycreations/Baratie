@@ -103,7 +103,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const messageClass = `allow-text-selection text-sm text-${theme.contentSecondary} ${notification.title ? 'mt-1' : ''}`.trim();
 
   return (
-    <div className={containerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <li className={containerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="flex items-start gap-2 p-3">
         <div className="flex-shrink-0">{renderIcon()}</div>
         <div className="flex-1">
@@ -125,7 +125,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
           />
         </div>
       )}
-    </div>
+    </li>
   );
 });
 
@@ -142,10 +142,10 @@ export const NotificationPanel = memo((): JSX.Element | null => {
   }
 
   return (
-    <div className="fixed inset-x-3 top-3 z-[700] space-y-2 sm:left-auto sm:w-full sm:max-w-sm">
+    <ul className="fixed inset-x-3 top-3 z-[700] m-0 list-none space-y-2 p-0 sm:left-auto sm:w-full sm:max-w-sm">
       {messages.map((notification) => (
         <NotificationItem key={notification.id} notification={notification} />
       ))}
-    </div>
+    </ul>
   );
 });

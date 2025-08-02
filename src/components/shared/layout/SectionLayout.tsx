@@ -25,12 +25,12 @@ export const SectionLayout = memo<SectionLayoutProps>(
 
     return (
       <section className={panelClass}>
-        <div className={headerClass}>
+        <header className={headerClass}>
           <h2 id={titleId} className="min-w-0 truncate pr-2 font-semibold text-lg">
             {headerLeft}
           </h2>
           {headerRight && <div className="flex shrink-0 items-center gap-1">{headerRight}</div>}
-        </div>
+        </header>
         <div ref={contentRef} className={contentClass}>
           {children}
         </div>

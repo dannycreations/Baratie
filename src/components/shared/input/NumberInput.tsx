@@ -125,7 +125,6 @@ export const NumberInput = memo<NumberInputProps>(
         <div className={buttonGroupClass}>
           <button
             type="button"
-            tabIndex={-1}
             className={`${stepButtonClass} rounded-tr-sm`}
             disabled={disabled || (max !== undefined && value >= max)}
             {...incrementPressHandlers}
@@ -134,7 +133,6 @@ export const NumberInput = memo<NumberInputProps>(
           </button>
           <button
             type="button"
-            tabIndex={-1}
             className={`${stepButtonClass} rounded-br-sm`}
             disabled={disabled || (min !== undefined && value <= min)}
             {...decrementPressHandlers}

@@ -58,9 +58,9 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
         position="top"
         tooltipClasses="max-w-xs"
       >
-        <span className={`${nameClass} outline-none`}>
+        <h3 className={`${nameClass} outline-none`}>
           <HighlightText highlight={query} text={item.name} />
-        </span>
+        </h3>
       </Tooltip>
     </div>
   );
@@ -125,13 +125,9 @@ export const GroupListLayout = memo<GroupListProps>(
       <div className="space-y-2">
         {itemsByCategory.map(([category, items]) => {
           const isExpanded = !!query.trim() || expandedCategories.has(category);
-          const categoryId = `category-panel-${category.replace(/\s+/g, '-').toLowerCase()}`;
-          const buttonId = `${categoryId}-button`;
-          const panelId = `${categoryId}-content`;
 
           const header = (
             <button
-              id={buttonId}
               className={`flex h-12 w-full items-center justify-between p-2 text-${theme.contentSecondary} bg-${theme.surfaceTertiary} outline-none hover:bg-${theme.surfaceHover} focus-visible:ring-2 focus-visible:ring-${theme.ring}`}
               onClick={() => handleCategoryToggle(category)}
             >
@@ -144,9 +140,9 @@ export const GroupListLayout = memo<GroupListProps>(
           );
 
           return (
-            <div key={category} className="overflow-hidden rounded-md">
+            <section key={category} className="overflow-hidden rounded-md">
               {header}
-              <div id={panelId} className={`accordion-grid ${isExpanded ? 'expanded' : ''}`}>
+              <div className={`accordion-grid ${isExpanded ? 'expanded' : ''}`}>
                 <div className="accordion-content">
                   <div className={`p-2 bg-${theme.surfaceMuted}`}>
                     <ul className="space-y-2">
@@ -165,7 +161,7 @@ export const GroupListLayout = memo<GroupListProps>(
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
           );
         })}
       </div>

@@ -101,7 +101,6 @@ export const TextareaInput = memo<TextareaInputProps>(
           className={textareaClass}
           disabled={disabled}
           placeholder={placeholder}
-          spellCheck={false}
           readOnly={readOnly}
           rows={rows}
           onChange={handleChange}

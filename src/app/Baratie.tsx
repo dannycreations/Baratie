@@ -39,8 +39,8 @@ const BaratieView = memo((): JSX.Element => {
   return (
     <>
       <LoadingScreen />
-      <div className={mainContentClass}>
-        <main className="flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden">
+      <main className={mainContentClass}>
+        <div className="flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden">
           <section className="flex w-full flex-col gap-3 md:flex-1 md:flex-row md:overflow-hidden">
             <IngredientPanel />
             <RecipePanel />
@@ -50,12 +50,12 @@ const BaratieView = memo((): JSX.Element => {
             <KitchenPanel type="input" />
             <KitchenPanel type="output" />
           </section>
-        </main>
+        </div>
 
         <NotificationPanel />
         <CookbookPanel />
         <SettingPanel />
-      </div>
+      </main>
     </>
   );
 });
