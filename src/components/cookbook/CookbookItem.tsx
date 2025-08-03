@@ -3,6 +3,7 @@ import { memo, useCallback } from 'react';
 import { ICON_SIZES } from '../../app/constants';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
+import { HighlightText } from '../shared/HighlightText';
 import { UploadCloudIcon } from '../shared/Icon';
 import { ItemListLayout } from '../shared/layout/ListLayout';
 
@@ -16,6 +17,7 @@ export interface CookbookItemHandlers {
 
 interface CookbookItemProps extends CookbookItemHandlers {
   readonly recipe: RecipebookItem;
+  readonly query: string;
 }
 
 const timestampFormatter = new Intl.DateTimeFormat(undefined, {
@@ -30,7 +32,7 @@ function formatTimestamp(timestamp: number): string {
   return timestampFormatter.format(new Date(timestamp));
 }
 
-export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete }): JSX.Element => {
+export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete, query }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
   const handleConfirmDelete = useCallback((): void => {
@@ -48,7 +50,9 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
         leftClasses="grow min-w-0 mr-2"
         leftContent={
           <>
-            <h3 className={`block truncate font-medium text-sm text-${theme.contentPrimary} cursor-default outline-none`}>{recipe.name}</h3>
+            <h3 className={`block truncate font-medium text-sm text-${theme.contentPrimary} cursor-default outline-none`}>
+              <HighlightText text={recipe.name} highlight={query} />
+            </h3>
             <p className={`text-xs text-${theme.contentTertiary}`}>
               Last Updated: {formatTimestamp(recipe.updatedAt)} ({recipe.ingredients.length} steps)
             </p>

@@ -29,7 +29,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
         recipes.length > 0 ? (
           <ul className="space-y-2">
             {recipes.map((recipe) => (
-              <CookbookItem key={recipe.id} recipe={recipe} onDelete={onDelete} onLoad={onLoad} />
+              <CookbookItem key={recipe.id} recipe={recipe} onDelete={onDelete} onLoad={onLoad} query={query} />
             ))}
           </ul>
         ) : (
