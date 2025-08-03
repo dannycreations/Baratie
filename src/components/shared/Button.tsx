@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react';
 
-import { CONFIRM_SHOW_MS } from '../../app/constants';
+import { CONFIRM_SHOW_MS, ICON_SIZES } from '../../app/constants';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { useCopyAction } from '../../hooks/useCopyAction';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -102,7 +102,7 @@ export const Button = memo<ButtonProps>(
     const finalClassName =
       `${baseClass} ${shapeClass} ${variantClass} ${sizeClass} ${loading ? ' opacity-60' : ''} ${fullWidth ? ' w-full' : ''} ${className}`.trim();
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
-    const loadingSpinner = <Loader2Icon size={16} className={`animate-spin ${iconMarginClass}`} />;
+    const loadingSpinner = <Loader2Icon size={ICON_SIZES.XS} className={`animate-spin ${iconMarginClass}`} />;
     const showIconLeft = iconPosition === 'left';
     const showIconRight = iconPosition === 'right';
 
@@ -128,7 +128,7 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
 
   return (
     <TooltipButton
-      icon={isCopied ? <CheckIcon size={18} /> : <CopyIcon size={18} />}
+      icon={isCopied ? <CheckIcon size={ICON_SIZES.SM} /> : <CopyIcon size={ICON_SIZES.SM} />}
       size="sm"
       variant="stealth"
       className={isCopied ? `text-${theme.successFg}` : ''}
@@ -173,8 +173,8 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
 
     const buttonClass = `${className} ${isConfirm ? `bg-${theme.dangerBg} text-${theme.accentFg}` : ''}`.trim();
 
-    const defaultIcon = icon ?? <Trash2Icon size={18} />;
-    const defaultConfirmIcon = confirmIcon ?? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={18} />;
+    const defaultIcon = icon ?? <Trash2Icon size={ICON_SIZES.SM} />;
+    const defaultConfirmIcon = confirmIcon ?? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={ICON_SIZES.SM} />;
 
     return (
       <TooltipButton

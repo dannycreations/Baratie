@@ -20,7 +20,34 @@ export const BooleanInput = memo<BooleanInputProps>(
     const finalOffBgColor = offBackgroundColor || theme.surfaceTertiary;
 
     const containerClass = `relative inline-flex items-center cursor-pointer ${className}`.trim();
-    const switchClass = `peer h-6 w-11 rounded-full bg-${finalOffBgColor} outline-none transition-colors after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-${theme.borderSecondary} after:bg-white after:transition-all after:content-[''] peer-focus-visible:ring-2 peer-focus-visible:ring-${theme.ring} peer-checked:bg-${theme.accentBg} peer-checked:after:translate-x-full peer-disabled:opacity-50`;
+
+    const switchClass = [
+      'peer',
+      'h-6',
+      'w-11',
+      'rounded-full',
+      `bg-${finalOffBgColor}`,
+      'outline-none',
+      'transition-colors',
+      'after:absolute',
+      'after:top-[2px]',
+      'after:left-[2px]',
+      'after:h-5',
+      'after:w-5',
+      'after:rounded-full',
+      'after:border',
+      `after:border-${theme.borderSecondary}`,
+      'after:bg-white',
+      'after:transition-all',
+      "after:content-['']",
+      `peer-focus-visible:ring-2`,
+      `peer-focus-visible:ring-${theme.ring}`,
+      `peer-checked:bg-${theme.accentBg}`,
+      'peer-checked:after:translate-x-full',
+      'peer-disabled:opacity-50',
+    ]
+      .join(' ')
+      .trim();
 
     return (
       <div className={containerClass}>

@@ -40,7 +40,21 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
 
   const isDisabled = isItemDisabled?.(item) ?? false;
   const isDraggable = !isDisabled && !!onItemDragStart;
-  const nameClass = `block truncate pr-2 text-sm text-${theme.contentSecondary} transition-colors duration-150 cursor-default group-hover:text-${theme.infoFg} ${isDisabled ? 'line-through' : ''}`;
+
+  const nameClass = [
+    'block',
+    'truncate',
+    'pr-2',
+    'text-sm',
+    `text-${theme.contentSecondary}`,
+    'transition-colors',
+    'duration-150',
+    'cursor-default',
+    `group-hover:text-${theme.infoFg}`,
+    isDisabled ? 'line-through' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const handleDragStart = (event: DragEvent<HTMLElement>): void => {
     if (!isDraggable) {

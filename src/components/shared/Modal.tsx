@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { MODAL_SHOW_MS } from '../../app/constants';
+import { ICON_SIZES, MODAL_SHOW_MS } from '../../app/constants';
 import { errorHandler } from '../../app/container';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { Button } from './Button';
@@ -103,7 +103,7 @@ export const Modal = memo<ModalProps>(
             <h2 className={`grow truncate pr-2 font-semibold text-xl text-${theme.contentPrimary}`}>{title}</h2>
             <div className="flex shrink-0 items-center gap-2">
               {headerActions && <div className="flex shrink-0 items-center gap-1">{headerActions}</div>}
-              <Button icon={<XIcon size={20} />} size="sm" variant="stealth" onClick={onClose} />
+              <Button icon={<XIcon size={ICON_SIZES.MD} />} size="sm" variant="stealth" onClick={onClose} />
             </div>
           </header>
           <div className="flex min-h-0 flex-col p-3">{children}</div>

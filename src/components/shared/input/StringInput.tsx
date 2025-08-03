@@ -1,16 +1,17 @@
 import { memo } from 'react';
 
+import { ICON_SIZES } from '../../../app/constants';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { XIcon } from '../Icon';
 
-import type { ChangeEventHandler, JSX, KeyboardEvent, MouseEvent, RefObject } from 'react';
+import type { ChangeEventHandler, JSX, KeyboardEvent, RefObject } from 'react';
 
 interface StringInputProps {
   readonly id: string;
   readonly value: string;
   readonly onChange: ChangeEventHandler<HTMLInputElement>;
   readonly inputRef?: RefObject<HTMLInputElement | null>;
-  readonly onClear?: (event: MouseEvent<HTMLButtonElement>) => void;
+  readonly onClear?: () => void;
   readonly showClearButton?: boolean;
   readonly type?: 'text' | 'search' | 'email' | 'password' | 'tel' | 'url' | 'number';
   readonly className?: string;
@@ -29,12 +30,31 @@ export const StringInput = memo<StringInputProps>(
     const paddingClass = `py-2 pl-2 ${hasClearButton ? 'pr-8' : 'pr-2'}`;
     const finalInputClass = `${baseInputStyle} ${paddingClass}`;
 
-    const handleClear = (event: MouseEvent<HTMLButtonElement>): void => {
-      onClear?.(event);
+    const handleClear = (): void => {
+      onClear?.();
       if (document.activeElement !== inputRef?.current) {
         inputRef?.current?.focus();
       }
     };
+
+    const clearButtonClass = [
+      'absolute',
+      'top-1/2',
+      'right-2',
+      'flex',
+      'h-6',
+      'w-6',
+      '-translate-y-1/2',
+      'items-center',
+      'justify-center',
+      'rounded-full',
+      `text-${theme.contentTertiary}`,
+      'transition-colors',
+      `hover:bg-${theme.surfaceMuted}`,
+      `hover:text-${theme.contentPrimary}`,
+      'focus-visible:ring-2',
+      `focus-visible:ring-${theme.ring}`,
+    ].join(' ');
 
     return (
       <div className={finalWrapperClass}>
@@ -50,12 +70,8 @@ export const StringInput = memo<StringInputProps>(
           onKeyDown={onKeyDown}
         />
         {hasClearButton && (
-          <button
-            type="button"
-            className={`absolute top-1/2 right-2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-${theme.contentTertiary} transition-colors hover:bg-${theme.surfaceMuted} hover:text-${theme.contentPrimary} focus-visible:ring-2 focus-visible:ring-${theme.ring}`}
-            onClick={handleClear}
-          >
-            <XIcon size={16} />
+          <button type="button" className={clearButtonClass} onClick={handleClear}>
+            <XIcon size={ICON_SIZES.XS} />
           </button>
         )}
       </div>

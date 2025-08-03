@@ -1,5 +1,6 @@
 import { memo, useCallback, useDeferredValue, useMemo, useRef } from 'react';
 
+import { ICON_SIZES } from '../../app/constants';
 import { useAutoFocus } from '../../hooks/useAutoFocus';
 import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useModalStore } from '../../stores/useModalStore';
@@ -29,14 +30,14 @@ interface LoadHeaderActionsProps {
 const SaveHeaderActions = memo<SaveHeaderActionsProps>(({ isSaveDisabled, onExportCurrent, onSave }) => (
   <>
     <TooltipButton
-      icon={<DownloadCloudIcon size={20} />}
+      icon={<DownloadCloudIcon size={ICON_SIZES.MD} />}
       variant="stealth"
       disabled={isSaveDisabled}
       tooltipContent="Export Recipe to JSON"
       onClick={onExportCurrent}
     />
     <TooltipButton
-      icon={<SaveIcon size={20} />}
+      icon={<SaveIcon size={ICON_SIZES.MD} />}
       variant="primary"
       disabled={isSaveDisabled}
       tooltipContent="Save to Browser Storage"
@@ -51,11 +52,11 @@ const LoadHeaderActions = memo<LoadHeaderActionsProps>(({ isExportDisabled, onFi
   <>
     <FilePicker accept=".json" onFileSelect={onFileImport}>
       {({ trigger }) => (
-        <TooltipButton icon={<UploadCloudIcon size={20} />} variant="stealth" tooltipContent="Import from JSON File" onClick={trigger} />
+        <TooltipButton icon={<UploadCloudIcon size={ICON_SIZES.MD} />} variant="stealth" tooltipContent="Import from JSON File" onClick={trigger} />
       )}
     </FilePicker>
     <TooltipButton
-      icon={<DownloadCloudIcon size={20} />}
+      icon={<DownloadCloudIcon size={ICON_SIZES.MD} />}
       variant="stealth"
       disabled={isExportDisabled}
       tooltipContent="Export All Saved Recipes"

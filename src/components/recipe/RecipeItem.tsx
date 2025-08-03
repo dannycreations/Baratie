@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react';
 
+import { ICON_SIZES } from '../../app/constants';
 import { ingredientRegistry } from '../../app/container';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
@@ -76,13 +77,13 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
           leftClasses="flex min-w-0 grow items-center"
           leftContent={
             <div className="flex items-center gap-1">
-              <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={20} />
+              <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={ICON_SIZES.MD} />
               <h3 className={`truncate pr-2 font-medium text-${theme.dangerFg}`}>{ingredientItem.name} (Missing)</h3>
             </div>
           }
           rightContent={
             <TooltipButton
-              icon={<XIcon size={18} />}
+              icon={<XIcon size={ICON_SIZES.SM} />}
               size="sm"
               variant="danger"
               tooltipContent="Remove Missing Ingredient"
@@ -171,15 +172,32 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
   const hasWarning = status === 'warning' && typeof warning === 'string' && warning.length > 0;
   const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
   const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
-  const itemClass =
-    `group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm outline-none transition-all duration-200 ease-in-out ${isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'} ${statusBorderClass} ${isSpiceInInput || hasWarning ? 'pb-2' : ''}`.trim();
+
+  const itemClass = [
+    'group',
+    'flex',
+    'flex-col',
+    'rounded-md',
+    `bg-${theme.surfaceTertiary}`,
+    'text-sm',
+    'outline-none',
+    'transition-all',
+    'duration-200',
+    'ease-in-out',
+    isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100',
+    statusBorderClass,
+    isSpiceInInput || hasWarning ? 'pb-2' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   const grabHandleClass = `mr-2 text-${theme.contentTertiary} cursor-grab transition-colors group-hover:text-${theme.contentSecondary}`;
 
   const leftColumn = (
     <>
       <Tooltip content="Drag to reorder" position="top">
         <span className={grabHandleClass} draggable onDragStart={handleDragStart} onDragEnd={onDragEnd}>
-          <GrabIcon size={20} />
+          <GrabIcon size={ICON_SIZES.MD} />
         </span>
       </Tooltip>
       <div className="min-w-0 flex-1">
@@ -194,7 +212,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
     <>
       {hasSpices && (
         <TooltipButton
-          icon={<PreferencesIcon size={18} />}
+          icon={<PreferencesIcon size={ICON_SIZES.SM} />}
           size="sm"
           variant={isEditorVisible ? 'primary' : 'stealth'}
           className={isEditorVisible ? '' : `text-${theme.contentTertiary} hover:text-${theme.infoFg}`}
@@ -204,7 +222,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
         />
       )}
       <TooltipButton
-        icon={<XIcon size={18} />}
+        icon={<XIcon size={ICON_SIZES.SM} />}
         size="sm"
         variant="danger"
         className="opacity-50 group-hover:opacity-100"

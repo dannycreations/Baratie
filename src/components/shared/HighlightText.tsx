@@ -11,17 +11,19 @@ interface HighlightTextProps {
 
 export const HighlightText = memo<HighlightTextProps>(({ text, highlight }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
-  if (!highlight.trim() || !text) {
+  const trimmedHighlight = highlight.trim();
+
+  if (!trimmedHighlight || !text) {
     return <>{text}</>;
   }
 
-  const regex = new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  const regex = new RegExp(`(${trimmedHighlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
   const parts = text.split(regex);
 
   return (
     <>
       {parts.map((part, i) =>
-        regex.test(part) ? (
+        i % 2 === 1 ? (
           <mark key={i} className={`px-1 rounded bg-${theme.highlightBg} text-${theme.highlightFg}`}>
             {part}
           </mark>

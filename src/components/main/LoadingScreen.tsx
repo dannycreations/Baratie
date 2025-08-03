@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from 'react';
 
+import { ICON_SIZES } from '../../app/constants';
 import { useTaskStore } from '../../stores/useTaskStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { AlertTriangleIcon, Loader2Icon } from '../shared/Icon';
@@ -35,9 +36,9 @@ export const LoadingScreen = memo((): JSX.Element | null => {
     <div className={containerClass}>
       <div className="flex flex-col items-center p-3 text-center">
         {isError ? (
-          <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={48} />
+          <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={ICON_SIZES.XXL} />
         ) : (
-          <Loader2Icon size={48} className={`animate-spin text-${theme.infoFg}`} />
+          <Loader2Icon size={ICON_SIZES.XXL} className={`animate-spin text-${theme.infoFg}`} />
         )}
         <h1 className={titleClass}>{isError ? 'Kitchen on Fire!' : 'Opening the Baratie'}</h1>
         <p key={message} className={`fade-in-text mt-2 text-${theme.contentTertiary}`}>

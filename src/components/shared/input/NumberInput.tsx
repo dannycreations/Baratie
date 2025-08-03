@@ -1,10 +1,11 @@
 import { memo, useCallback, useEffect, useState } from 'react';
 
+import { ICON_SIZES } from '../../../app/constants';
 import { useLongPress } from '../../../hooks/useLongPress';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { ChevronDownIcon, ChevronUpIcon } from '../Icon';
 
-import type { ChangeEvent, JSX, KeyboardEvent } from 'react';
+import type { ChangeEvent, JSX, KeyboardEvent, WheelEvent } from 'react';
 
 interface NumberInputProps {
   readonly id: string;
@@ -96,6 +97,18 @@ export const NumberInput = memo<NumberInputProps>(
       [handleStep, handleBlur],
     );
 
+    const handleWheel = useCallback(
+      (event: WheelEvent<HTMLInputElement>) => {
+        if (document.activeElement !== event.currentTarget) {
+          return;
+        }
+        event.preventDefault();
+        const direction = event.deltaY < 0 ? 'up' : 'down';
+        handleStep(direction);
+      },
+      [handleStep],
+    );
+
     const handleIncrement = useCallback(() => handleStep('up'), [handleStep]);
     const handleDecrement = useCallback(() => handleStep('down'), [handleStep]);
 
@@ -121,6 +134,7 @@ export const NumberInput = memo<NumberInputProps>(
           onBlur={handleBlur}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
+          onWheel={handleWheel}
         />
         <div className={buttonGroupClass}>
           <button
@@ -129,7 +143,7 @@ export const NumberInput = memo<NumberInputProps>(
             disabled={disabled || (max !== undefined && value >= max)}
             {...incrementPressHandlers}
           >
-            <ChevronUpIcon size={14} />
+            <ChevronUpIcon size={ICON_SIZES.XXS} />
           </button>
           <button
             type="button"
@@ -137,7 +151,7 @@ export const NumberInput = memo<NumberInputProps>(
             disabled={disabled || (min !== undefined && value <= min)}
             {...decrementPressHandlers}
           >
-            <ChevronDownIcon size={14} />
+            <ChevronDownIcon size={ICON_SIZES.XXS} />
           </button>
         </div>
       </div>

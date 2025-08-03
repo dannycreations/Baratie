@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useState } from 'react';
 
+import { ICON_SIZES } from '../../../app/constants';
 import { parseGitHubUrl } from '../../../helpers/extensionHelper';
 import { useOverflow } from '../../../hooks/useOverflow';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
@@ -97,7 +98,13 @@ export const ExtensionTab = memo((): JSX.Element => {
           onKeyDown={handleKeyDown}
           onClear={() => setUrl('')}
         />
-        <Button icon={<GitMergeIcon size={20} />} size="sm" loading={isLoading} disabled={validationStatus !== 'valid'} onClick={handleAdd}>
+        <Button
+          icon={<GitMergeIcon size={ICON_SIZES.MD} />}
+          size="sm"
+          loading={isLoading}
+          disabled={validationStatus !== 'valid'}
+          onClick={handleAdd}
+        >
           Add
         </Button>
       </div>

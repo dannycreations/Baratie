@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useId, useMemo, useRef } from 'react';
 
+import { ICON_SIZES } from '../../app/constants';
 import { ingredientRegistry, kitchen } from '../../app/container';
 import { useDragMove } from '../../hooks/useDragMove';
 import { useDropZone } from '../../hooks/useDropZone';
@@ -124,7 +125,7 @@ export const RecipePanel = memo((): JSX.Element => {
     return (
       <>
         <TooltipButton
-          icon={<SaveIcon size={18} />}
+          icon={<SaveIcon size={ICON_SIZES.SM} />}
           size="sm"
           variant="stealth"
           disabled={ingredients.length === 0}
@@ -134,7 +135,7 @@ export const RecipePanel = memo((): JSX.Element => {
           onClick={() => openCookbook({ mode: 'save' })}
         />
         <TooltipButton
-          icon={<FolderOpenIcon size={18} />}
+          icon={<FolderOpenIcon size={ICON_SIZES.SM} />}
           size="sm"
           variant="stealth"
           tooltipContent="Open Cookbook"
@@ -143,7 +144,7 @@ export const RecipePanel = memo((): JSX.Element => {
           onClick={() => openCookbook({ mode: 'load' })}
         />
         <TooltipButton
-          icon={isAutoCookEnabled ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
+          icon={isAutoCookEnabled ? <PauseIcon size={ICON_SIZES.SM} /> : <PlayIcon size={ICON_SIZES.SM} />}
           size="sm"
           variant="stealth"
           className={autoCookClass}

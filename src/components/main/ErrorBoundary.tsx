@@ -1,5 +1,6 @@
 import { Component } from 'react';
 
+import { ICON_SIZES } from '../../app/constants';
 import { logger } from '../../app/container';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { Button } from '../shared/Button';
@@ -32,7 +33,7 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
         <div className={`mb-3 text-5xl text-${theme.dangerFg}`}>⚠️</div>
         <h2 className={`mb-2 font-bold text-2xl text-${theme.dangerFg}`}>A Kitchen Catastrophe!</h2>
         <p className={`mb-3 text-${theme.contentSecondary}`}>A sudden squall has hit the galley! Reloading might calm the seas.</p>
-        <Button icon={<RefreshCwIcon size={20} />} size="sm" variant="primary" onClick={() => window.location.reload()}>
+        <Button icon={<RefreshCwIcon size={ICON_SIZES.MD} />} size="sm" variant="primary" onClick={() => window.location.reload()}>
           Batten Down the Hatches!
         </Button>
         {error && <ErrorView error={error} errorInfo={errorInfo} />}

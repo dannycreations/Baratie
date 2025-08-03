@@ -1,5 +1,7 @@
 import { forwardRef, memo } from 'react';
 
+import { ICON_SIZES } from '../../app/constants';
+
 import type { JSX, ReactNode } from 'react';
 
 export interface IconProps {
@@ -33,7 +35,7 @@ export function createIcon<P extends IconProps = IconProps>({ iconName, defaultP
     .join('');
 
   const Component = forwardRef<SVGSVGElement, P>((props, ref): JSX.Element => {
-    const { size = 24, className = '', ...rest } = props;
+    const { size = ICON_SIZES.LG, className = '', ...rest } = props;
     const computedDefaultProps = typeof defaultProps === 'function' ? defaultProps(props as P) : defaultProps;
 
     const svgRest: Partial<SvgIconAttributes> = {};

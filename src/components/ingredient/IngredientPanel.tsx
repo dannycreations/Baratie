@@ -1,6 +1,6 @@
 import { memo, useCallback, useDeferredValue, useId, useMemo, useState } from 'react';
 
-import { CATEGORY_FAVORITES } from '../../app/constants';
+import { CATEGORY_FAVORITES, ICON_SIZES } from '../../app/constants';
 import { errorHandler, ingredientRegistry } from '../../app/container';
 import { createIngredientSearchPredicate, groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
 import { useDropZone } from '../../hooks/useDropZone';
@@ -114,7 +114,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   const headerActions = (
     <>
       <TooltipButton
-        icon={<PreferencesIcon size={18} />}
+        icon={<PreferencesIcon size={ICON_SIZES.SM} />}
         size="sm"
         variant="stealth"
         tooltipContent={`Manage Ingredients\n${visibleIngredients} of ${totalIngredients} visible`}
@@ -123,7 +123,7 @@ export const IngredientPanel = memo((): JSX.Element => {
         onClick={() => openModal({ type: 'ingredient', props: undefined })}
       />
       <TooltipButton
-        icon={<SettingsIcon size={18} />}
+        icon={<SettingsIcon size={ICON_SIZES.SM} />}
         size="sm"
         variant="stealth"
         tooltipContent="Settings, Appearance & Extensions"
@@ -137,24 +137,24 @@ export const IngredientPanel = memo((): JSX.Element => {
   const renderItemActions = useCallback(
     (item: GroupListItem): JSX.Element => {
       const isFavorite = favorites.has(item.id);
+      const starClasses = [
+        'opacity-70 group-hover:opacity-100',
+        isFavorite ? `text-${theme.favoriteFg} hover:text-${theme.favoriteFgHover}` : `text-${theme.contentTertiary} hover:text-${theme.favoriteFg}`,
+      ].join(' ');
 
       return (
         <>
           <TooltipButton
-            icon={<StarIcon isFilled={isFavorite} size={18} />}
+            icon={<StarIcon isFilled={isFavorite} size={ICON_SIZES.SM} />}
             size="sm"
             variant="stealth"
-            className={`opacity-70 group-hover:opacity-100 ${
-              isFavorite
-                ? `text-${theme.favoriteFg} hover:text-${theme.favoriteFgHover}`
-                : `text-${theme.contentTertiary} hover:text-${theme.favoriteFg}`
-            }`}
+            className={starClasses}
             tooltipContent={isFavorite ? `Remove '${item.name}' from favorites` : `Add '${item.name}' to favorites`}
             tooltipPosition="top"
             onClick={() => toggleFavorite(item.id)}
           />
           <TooltipButton
-            icon={<PlusIcon size={18} />}
+            icon={<PlusIcon size={ICON_SIZES.SM} />}
             size="sm"
             variant="primary"
             className="opacity-70 group-hover:opacity-100"

@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react';
 
+import { ICON_SIZES } from '../../app/constants';
 import { APP_THEMES } from '../../app/themes';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { CheckIcon } from '../shared/Icon';
@@ -51,7 +52,20 @@ export const AppearanceTab = memo((): JSX.Element => {
         {APP_THEMES.map((item) => {
           const isChecked = id === item.id;
           const liClass = `list-none rounded-md cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-${theme.ring}`;
-          const itemLayoutClass = `h-16 p-2 border-2 rounded-md transition-colors duration-150 ${isChecked ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}` : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`}`;
+
+          const itemLayoutClass = [
+            'h-16',
+            'p-2',
+            'border-2',
+            'rounded-md',
+            'transition-colors',
+            'duration-150',
+            isChecked
+              ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
+              : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
+          ]
+            .join(' ')
+            .trim();
 
           const leftContent = (
             <div className="flex flex-col justify-center gap-1">
@@ -62,7 +76,7 @@ export const AppearanceTab = memo((): JSX.Element => {
 
           const rightContent = isChecked ? (
             <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-500/20">
-              <CheckIcon className={`text-${theme.infoFg}`} size={16} />
+              <CheckIcon className={`text-${theme.infoFg}`} size={ICON_SIZES.XS} />
             </div>
           ) : null;
 

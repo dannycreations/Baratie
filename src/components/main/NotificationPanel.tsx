@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { NOTIFICATION_EXIT_MS, NOTIFICATION_SHOW_MS } from '../../app/constants';
+import { ICON_SIZES, NOTIFICATION_EXIT_MS, NOTIFICATION_SHOW_MS } from '../../app/constants';
 import { useControlTimer } from '../../hooks/useControlTimer';
 import { useNotificationStore } from '../../stores/useNotificationStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -85,21 +85,34 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const renderIcon = (): JSX.Element => {
     switch (notification.type) {
       case 'success':
-        return <CheckIcon className={`text-${iconColor}`} size={20} />;
+        return <CheckIcon className={`text-${iconColor}`} size={ICON_SIZES.MD} />;
       case 'error':
       case 'warning':
-        return <AlertTriangleIcon className={`text-${iconColor}`} size={20} />;
+        return <AlertTriangleIcon className={`text-${iconColor}`} size={ICON_SIZES.MD} />;
       case 'info':
       default:
-        return <InfoIcon className={`text-${iconColor}`} size={20} />;
+        return <InfoIcon className={`text-${iconColor}`} size={ICON_SIZES.MD} />;
     }
   };
 
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
   const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
 
-  const containerClass =
-    `relative w-full overflow-hidden rounded-lg border-l-4 border-${borderColor} bg-${theme.surfaceSecondary} shadow-lg ${animationClass} ${isPaused ? 'notification-paused' : ''}`.trim();
+  const containerClass = [
+    'relative',
+    'w-full',
+    'overflow-hidden',
+    'rounded-lg',
+    'border-l-4',
+    `border-${borderColor}`,
+    `bg-${theme.surfaceSecondary}`,
+    'shadow-lg',
+    animationClass,
+    isPaused ? 'notification-paused' : '',
+  ]
+    .join(' ')
+    .trim();
+
   const messageClass = `allow-text-selection text-sm text-${theme.contentSecondary} ${notification.title ? 'mt-1' : ''}`.trim();
 
   return (
@@ -111,7 +124,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
           <p className={messageClass}>{notification.message}</p>
         </div>
         <div className="flex-shrink-0">
-          <Button icon={<XIcon size={20} />} size="sm" variant="stealth" title="Close" onClick={handleExit} />
+          <Button icon={<XIcon size={ICON_SIZES.MD} />} size="sm" variant="stealth" title="Close" onClick={handleExit} />
         </div>
       </div>
       {!isExiting && (

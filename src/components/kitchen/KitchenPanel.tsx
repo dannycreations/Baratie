@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo, useRef } from 'react';
 
+import { ICON_SIZES } from '../../app/constants';
 import { errorHandler, ingredientRegistry, kitchen } from '../../app/container';
 import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
@@ -149,7 +150,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
         <FilePicker key="file-picker" accept="text/*" onFileSelect={handleFileRead}>
           {({ trigger }) => (
             <TooltipButton
-              icon={<FileTextIcon size={18} />}
+              icon={<FileTextIcon size={ICON_SIZES.SM} />}
               size="sm"
               variant="stealth"
               tooltipContent="Open File..."
@@ -164,7 +165,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
         defaultInputActions.push(
           <TooltipButton
             key="clear-button"
-            icon={<Trash2Icon size={18} />}
+            icon={<Trash2Icon size={ICON_SIZES.SM} />}
             size="sm"
             variant="danger"
             disabled={data.length === 0}
@@ -184,7 +185,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
     const defaultOutputActions: ReactNode[] = [
       <TooltipButton
         key="download-button"
-        icon={<DownloadCloudIcon size={18} />}
+        icon={<DownloadCloudIcon size={ICON_SIZES.SM} />}
         size="sm"
         variant="stealth"
         disabled={data.length === 0}

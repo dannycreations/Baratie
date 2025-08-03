@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react';
 
+import { ICON_SIZES } from '../../../app/constants';
 import { useCopyAction } from '../../../hooks/useCopyAction';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { ConfirmButton, TooltipButton } from '../../shared/Button';
@@ -28,11 +29,11 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
   const theme = useThemeStore((state) => state.theme);
 
   const statusMap = {
-    loading: { icon: <Loader2Icon className="animate-spin" size={16} />, text: 'Loading...', color: theme.contentTertiary },
-    loaded: { icon: <CheckIcon size={16} />, text: 'Loaded', color: theme.successFg },
-    error: { icon: <AlertTriangleIcon size={16} />, text: 'Error', color: theme.dangerFg },
-    partial: { icon: <AlertTriangleIcon size={16} />, text: 'Partial', color: theme.warningFg },
-    awaiting: { icon: <Loader2Icon className="animate-spin" size={16} />, text: 'Awaiting Install...', color: theme.infoFg },
+    loading: { icon: <Loader2Icon className="animate-spin" size={ICON_SIZES.XS} />, text: 'Loading...', color: theme.contentTertiary },
+    loaded: { icon: <CheckIcon size={ICON_SIZES.XS} />, text: 'Loaded', color: theme.successFg },
+    error: { icon: <AlertTriangleIcon size={ICON_SIZES.XS} />, text: 'Error', color: theme.dangerFg },
+    partial: { icon: <AlertTriangleIcon size={ICON_SIZES.XS} />, text: 'Partial', color: theme.warningFg },
+    awaiting: { icon: <Loader2Icon className="animate-spin" size={ICON_SIZES.XS} />, text: 'Awaiting Install...', color: theme.infoFg },
   };
 
   const current = statusMap[status] || statusMap.error;
@@ -90,7 +91,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
     <div className="flex items-center gap-2">
       <ExtensionItemStatus status={status} errors={errors} />
       <TooltipButton
-        icon={<RefreshCwIcon size={18} />}
+        icon={<RefreshCwIcon size={ICON_SIZES.SM} />}
         size="sm"
         variant="stealth"
         disabled={isLoading}

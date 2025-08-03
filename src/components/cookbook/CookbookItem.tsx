@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react';
 
+import { ICON_SIZES } from '../../app/constants';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
 import { UploadCloudIcon } from '../shared/Icon';
@@ -56,7 +57,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete 
         rightContent={
           <>
             <TooltipButton
-              icon={<UploadCloudIcon size={18} />}
+              icon={<UploadCloudIcon size={ICON_SIZES.SM} />}
               size="sm"
               variant="primary"
               tooltipContent="Load Recipe"
