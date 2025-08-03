@@ -150,22 +150,18 @@ export class InputType<T = unknown> {
       return new InputType(this.value, this.panelControl, this.warningMessage);
     }
     if (this.value instanceof Uint8Array) {
-      return new InputType(
-        this.value.buffer.slice(this.value.byteOffset, this.value.byteOffset + this.value.byteLength),
-        this.panelControl,
-        this.warningMessage,
-      );
+      return new InputType(this.value.slice().buffer, this.panelControl, this.warningMessage);
     }
     if (typeof this.value === 'string') {
       const cleanValue = this.value.trim();
       try {
-        return new InputType(hexToUint8Array(cleanValue).buffer, this.panelControl, this.warningMessage);
+        return new InputType(hexToUint8Array(cleanValue).slice().buffer, this.panelControl, this.warningMessage);
       } catch {
         try {
-          return new InputType(base64ToUint8Array(cleanValue).buffer, this.panelControl, this.warningMessage);
+          return new InputType(base64ToUint8Array(cleanValue).slice().buffer, this.panelControl, this.warningMessage);
         } catch {
           const encoder = new TextEncoder();
-          return new InputType(encoder.encode(this.value).buffer, this.panelControl, this.warningMessage);
+          return new InputType(encoder.encode(this.value).slice().buffer, this.panelControl, this.warningMessage);
         }
       }
     }

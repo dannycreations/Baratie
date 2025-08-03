@@ -123,7 +123,7 @@ export function triggerDownload(data: string, fileName: string, mimeType = 'text
 
       if (isBase64) {
         const byteArray = base64ToUint8Array(data);
-        blob = new Blob([byteArray], { type: mimeType });
+        blob = new Blob([new Uint8Array(byteArray)], { type: mimeType });
       } else {
         blob = new Blob([data], { type: mimeType });
       }
