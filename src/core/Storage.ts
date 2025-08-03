@@ -18,6 +18,19 @@ export class Storage {
     return result;
   }
 
+  public remove(key: string, context: string): boolean {
+    const { error } = errorHandler.attempt(
+      () => {
+        localStorage.removeItem(key);
+      },
+      `${context} Storage Remove`,
+      {
+        genericMessage: `Failed to remove ${context.toLowerCase()} data from local storage.`,
+      },
+    );
+    return !error;
+  }
+
   public set(key: string, value: unknown, context: string): boolean {
     const { error } = errorHandler.attempt(
       () => {

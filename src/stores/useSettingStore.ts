@@ -1,39 +1,50 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { STORAGE_SETTINGS } from '../app/constants';
+import { STORAGE_RECIPE, STORAGE_SETTINGS } from '../app/constants';
 import { storage } from '../app/container';
 
-interface AppSettings {
-  readonly allowMultipleOpen: boolean;
+interface SettingProps {
+  readonly multipleOpen: boolean;
+  readonly persistRecipe: boolean;
 }
 
-interface SettingState extends AppSettings {
+interface SettingState extends SettingProps {
   readonly init: () => void;
-  readonly setAllowMultipleOpen: (value: boolean) => void;
+  readonly setMultipleOpen: (value: boolean) => void;
+  readonly setPersistRecipe: (value: boolean) => void;
 }
 
 export const useSettingStore = create<SettingState>()(
   subscribeWithSelector((set) => ({
-    allowMultipleOpen: false,
+    multipleOpen: false,
+    persistRecipe: true,
 
     init: () => {
-      const settings = storage.get<AppSettings>(STORAGE_SETTINGS, 'App Settings');
+      const settings = storage.get<SettingProps>(STORAGE_SETTINGS, 'App Settings');
       if (settings) {
         set({
-          allowMultipleOpen: settings.allowMultipleOpen ?? false,
+          multipleOpen: settings.multipleOpen ?? false,
+          persistRecipe: settings.persistRecipe ?? true,
         });
       }
     },
 
-    setAllowMultipleOpen: (value) => {
-      set({ allowMultipleOpen: value });
+    setMultipleOpen: (value) => {
+      set({ multipleOpen: value });
+    },
+
+    setPersistRecipe: (value) => {
+      if (!value) {
+        storage.remove(STORAGE_RECIPE, 'Current Recipe');
+      }
+      set({ persistRecipe: value });
     },
   })),
 );
 
 useSettingStore.subscribe(
-  (state) => ({ allowMultipleOpen: state.allowMultipleOpen }),
+  (state) => ({ allowMultipleOpen: state.multipleOpen, persistRecipe: state.persistRecipe }),
   (settings) => {
     storage.set(STORAGE_SETTINGS, settings, 'App Settings');
   },

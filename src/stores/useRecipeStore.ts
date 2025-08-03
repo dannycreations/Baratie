@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { errorHandler, ingredientRegistry, logger } from '../app/container';
+import { STORAGE_RECIPE } from '../app/constants';
+import { errorHandler, ingredientRegistry, logger, storage } from '../app/container';
 import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
 import { useSettingStore } from './useSettingStore';
 
@@ -15,6 +16,7 @@ interface RecipeState {
   readonly clearEditingIds: () => void;
   readonly clearRecipe: () => void;
   readonly getActiveRecipeId: () => string | null;
+  readonly init: () => void;
   readonly removeIngredient: (id: string) => void;
   readonly reorderIngredients: (draggedId: string, targetId: string) => void;
   readonly setActiveRecipeId: (id: string | null) => void;
@@ -64,6 +66,19 @@ export const useRecipeStore = create<RecipeState>()(
 
     getActiveRecipeId: () => {
       return get().activeRecipeId;
+    },
+
+    init: () => {
+      if (useSettingStore.getState().persistRecipe) {
+        const stored = storage.get<{
+          ingredients: ReadonlyArray<IngredientItem>;
+          activeRecipeId: string | null;
+        }>(STORAGE_RECIPE, 'Current Recipe');
+
+        if (stored && Array.isArray(stored.ingredients)) {
+          get().setRecipe(stored.ingredients, stored.activeRecipeId);
+        }
+      }
     },
 
     removeIngredient: (id) => {
@@ -116,14 +131,14 @@ export const useRecipeStore = create<RecipeState>()(
 
     toggleEditingId: (id) => {
       set((state) => {
-        const { allowMultipleOpen } = useSettingStore.getState();
+        const { multipleOpen } = useSettingStore.getState();
         const newEditingIds = new Set(state.editingIds);
         const isCurrentlyEditing = newEditingIds.has(id);
 
         if (isCurrentlyEditing) {
           newEditingIds.delete(id);
         } else {
-          if (!allowMultipleOpen) {
+          if (!multipleOpen) {
             newEditingIds.clear();
           }
           newEditingIds.add(id);
@@ -189,3 +204,19 @@ export const useRecipeStore = create<RecipeState>()(
     },
   })),
 );
+
+let lastIngredients = useRecipeStore.getState().ingredients;
+let lastActiveRecipeId = useRecipeStore.getState().activeRecipeId;
+
+useRecipeStore.subscribe((state) => {
+  if (!useSettingStore.getState().persistRecipe) {
+    return;
+  }
+
+  const { ingredients, activeRecipeId } = state;
+  if (ingredients !== lastIngredients || activeRecipeId !== lastActiveRecipeId) {
+    storage.set(STORAGE_RECIPE, { ingredients, activeRecipeId }, 'Current Recipe');
+    lastIngredients = ingredients;
+    lastActiveRecipeId = activeRecipeId;
+  }
+});

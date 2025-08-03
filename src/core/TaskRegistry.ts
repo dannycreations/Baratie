@@ -3,6 +3,7 @@ import { useCookbookStore } from '../stores/useCookbookStore';
 import { useExtensionStore } from '../stores/useExtensionStore';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
 import { useIngredientStore } from '../stores/useIngredientStore';
+import { useRecipeStore } from '../stores/useRecipeStore';
 import { useSettingStore } from '../stores/useSettingStore';
 import { useTaskStore } from '../stores/useTaskStore';
 
@@ -38,6 +39,12 @@ export class TaskRegistry {
         message: 'Unfurling the recipe scrolls...',
         handler: () => {
           return useCookbookStore.getState().init();
+        },
+      },
+      {
+        message: 'Remembering the current recipe...',
+        handler: () => {
+          return useRecipeStore.getState().init();
         },
       },
       {

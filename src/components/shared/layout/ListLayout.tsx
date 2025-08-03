@@ -104,7 +104,7 @@ export const GroupListLayout = memo<GroupListProps>(
     onItemDragStart,
     isItemDisabled,
   }): JSX.Element => {
-    const { allowMultipleOpen } = useSettingStore((state) => state);
+    const { multipleOpen } = useSettingStore((state) => state);
     const [expandedCategories, setExpandedCategories] = useState<ReadonlySet<string>>(new Set());
 
     const theme = useThemeStore((state) => state.theme);
@@ -118,7 +118,7 @@ export const GroupListLayout = memo<GroupListProps>(
           if (isExpanded) {
             newSet.delete(category);
           } else {
-            if (!allowMultipleOpen) {
+            if (!multipleOpen) {
               newSet.clear();
             }
             newSet.add(category);
@@ -126,7 +126,7 @@ export const GroupListLayout = memo<GroupListProps>(
           return newSet;
         });
       },
-      [allowMultipleOpen],
+      [multipleOpen],
     );
 
     if (itemsByCategory.length === 0) {
