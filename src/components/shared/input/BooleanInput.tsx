@@ -22,7 +22,6 @@ export const BooleanInput = memo<BooleanInputProps>(
     const containerClass = `relative inline-flex items-center cursor-pointer ${className}`.trim();
 
     const switchClass = [
-      'peer',
       'h-6',
       'w-11',
       'rounded-full',
@@ -50,10 +49,10 @@ export const BooleanInput = memo<BooleanInputProps>(
       .trim();
 
     return (
-      <div className={containerClass}>
+      <label className={containerClass}>
         <input id={id} type="checkbox" checked={checked} className="peer absolute h-0 w-0 opacity-0" disabled={disabled} onChange={onChange} />
         <div className={switchClass} />
-      </div>
+      </label>
     );
   },
 );
