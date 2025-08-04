@@ -46,8 +46,8 @@ export const AppearanceTab = memo((): JSX.Element => {
   );
 
   return (
-    <div className="flex h-full flex-col">
-      <p className={`mb-3 text-sm text-${theme.contentTertiary}`}>Select a color theme for the application.</p>
+    <div className="flex h-full flex-col gap-3">
+      <p className={`text-sm text-${theme.contentTertiary}`}>Select a color theme for the application.</p>
       <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {APP_THEMES.map((item) => {
           const isChecked = id === item.id;

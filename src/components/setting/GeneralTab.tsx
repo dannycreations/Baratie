@@ -31,7 +31,7 @@ export const GeneralTab = memo((): JSX.Element => {
   return (
     <div className="flex h-full flex-col gap-3">
       <p className={`text-sm text-${theme.contentTertiary}`}>Manage general application behavior and user interface preferences.</p>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <div className={`p-3 rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary}`}>
           <FormLayout
             inputId="allow-multiple-open"

@@ -79,14 +79,11 @@ export const ExtensionTab = memo((): JSX.Element => {
 
   return (
     <div className="flex h-full flex-col gap-3">
-      <div>
-        <p className={`text-sm text-${theme.contentTertiary}`}>
-          Add external ingredients by providing a link to a public GitHub repository. The repository must contain a{' '}
-          <code className={`p-1 rounded-md bg-${theme.surfaceHover} text-xs text-${theme.contentSecondary}`}>manifest.json</code> file.
-        </p>
-      </div>
-
-      <div className="flex items-center gap-1">
+      <p className={`text-sm text-${theme.contentTertiary}`}>
+        Add external ingredients by providing a link to a public GitHub repository. The repository must contain a{' '}
+        <code className={`p-1 rounded-md bg-${theme.surfaceHover} text-xs text-${theme.contentSecondary}`}>manifest.json</code> file.
+      </p>
+      <div className="flex items-center gap-2">
         <StringInput
           id="extension-url-input"
           className="grow"
