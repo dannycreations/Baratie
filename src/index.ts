@@ -9,6 +9,7 @@ import { errorHandler, ingredientRegistry, logger, taskRegistry } from './app/co
 import { LogLevel } from './core/Logger';
 import { useNotificationStore } from './stores/useNotificationStore';
 import { useRecipeStore } from './stores/useRecipeStore';
+import { useThemeStore } from './stores/useThemeStore';
 import { readAsBase64, readAsText, triggerDownload } from './utilities/fileUtil';
 
 import type { BaratieOptions } from './app/Baratie';
@@ -49,6 +50,9 @@ const BARATIE_API = {
       update: (id: string, spiceId: string, rawValue: SpiceValue) => {
         return getRecipeState().updateSpice(id, spiceId, rawValue);
       },
+    },
+    theme: {
+      get: () => useThemeStore((state) => state.theme),
     },
   },
 } as const;
