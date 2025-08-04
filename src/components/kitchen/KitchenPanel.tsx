@@ -2,9 +2,11 @@ import { memo, useCallback, useMemo, useRef } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { errorHandler, ingredientRegistry, kitchen } from '../../app/container';
+import { InputType } from '../../core/InputType';
 import { useKitchenStore } from '../../stores/useKitchenStore';
+import { useNotificationStore } from '../../stores/useNotificationStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
-import { readAsText, triggerDownload } from '../../utilities/fileUtil';
+import { readFile, triggerDownload } from '../../utilities/fileUtil';
 import { CopyButton, TooltipButton } from '../shared/Button';
 import { DownloadCloudIcon, FileTextIcon, Trash2Icon } from '../shared/Icon';
 import { FilePicker } from '../shared/input/FilePicker';
@@ -114,11 +116,18 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const handleFileRead = useCallback(
     async (file: File): Promise<void> => {
       const operationId = ++importOperationRef.current;
+      useNotificationStore.getState();
 
-      const { result: text, error } = await errorHandler.attemptAsync(() => readAsText(file));
-      if (operationId === importOperationRef.current && !error && typeof text === 'string') {
-        handleSetInputData(text);
+      const { result: buffer, error } = await errorHandler.attemptAsync<ArrayBuffer>(() => {
+        return readFile(file, 'readAsArrayBuffer', 'File to ArrayBuffer');
+      }, `Read File: ${file.name}`);
+
+      if (operationId !== importOperationRef.current || error || !buffer) {
+        return;
       }
+
+      const stringResult = new InputType(buffer).cast('string');
+      handleSetInputData(stringResult.value);
     },
     [handleSetInputData],
   );
@@ -147,7 +156,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
       const showClearButton = !inputPanelConfig || (inputPanelConfig.mode === 'textarea' && inputPanelConfig.showClear);
 
       const defaultInputActions: ReactNode[] = [
-        <FilePicker key="file-picker" accept="text/*" onFileSelect={handleFileRead}>
+        <FilePicker key="file-picker" accept="*/*" onFileSelect={handleFileRead}>
           {({ trigger }) => (
             <TooltipButton
               icon={<FileTextIcon size={ICON_SIZES.SM} />}
@@ -203,7 +212,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
 
   const renderContent = (): ReactNode => {
     if (isInput) {
-      if (inputPanelConfig?.mode === 'custom') {
+      if (inputPanelConfig?.mode === 'custom' && typeof inputPanelConfig.content === 'function') {
         return inputPanelConfig.content();
       }
       if (inputPanelConfig?.mode === 'spiceEditor' && targetIngredient) {
@@ -218,7 +227,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
       }
       return <DefaultContent config={inputPanelConfig} data={inputData} onDataChange={handleSetInputData} onFileDrop={handleFileRead} />;
     } else {
-      if (outputPanelConfig?.mode === 'custom') {
+      if (outputPanelConfig?.mode === 'custom' && typeof outputPanelConfig.content === 'function') {
         return outputPanelConfig.content();
       }
       return <OutputContent config={outputPanelConfig} data={outputData} />;

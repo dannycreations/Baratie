@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { STORAGE_COOKBOOK } from '../app/constants';
 import { errorHandler, logger, storage } from '../app/container';
 import { createRecipeHash, processAndSanitizeRecipes, saveAllRecipes } from '../helpers/cookbookHelper';
-import { readAsText, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
+import { readFile, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
 
@@ -150,7 +150,9 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       return;
     }
 
-    const { result: content } = await errorHandler.attemptAsync(() => readAsText(file), 'File Read for Import');
+    const { result: content } = await errorHandler.attemptAsync<string>(() => {
+      return readFile(file, 'readAsText', 'File to String');
+    }, 'File Read for Import');
     if (!content) {
       return;
     }

@@ -1,19 +1,14 @@
 import { errorHandler } from '../app/container';
 import { AppError } from '../core/ErrorHandler';
-import { base64ToUint8Array } from './appUtil';
+import { base64ToUint8Array } from './cryptoUtil';
 
-function readFile<T>(
-  file: Readonly<File>,
-  readMethod: 'readAsText' | 'readAsDataURL' | 'readAsArrayBuffer',
-  processOnLoad: (readerResult: string | ArrayBuffer | null) => T,
-  context: string,
-): Promise<T> {
+export function readFile<T>(file: Readonly<File>, readMethod: 'readAsText' | 'readAsArrayBuffer', context: string): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const reader = new FileReader();
 
     reader.onload = () => {
       try {
-        resolve(processOnLoad(reader.result));
+        resolve(reader.result as T);
       } catch (error) {
         reject(
           new AppError(
@@ -41,42 +36,6 @@ function readFile<T>(
       reject(new AppError(`Exception during ${readMethod} call: ${String(error)}`, context, `Could not read '${file.name}'.`, error));
     }
   });
-}
-
-export function readAsBase64(file: Readonly<File>): Promise<string> {
-  return readFile(
-    file,
-    'readAsDataURL',
-    (result) => {
-      if (typeof result !== 'string') {
-        throw new AppError('FileReader result was not a string.', 'File to Base64', 'Could not read file content.');
-      }
-      const base64Data = result.split(',')[1];
-      if (base64Data === undefined) {
-        throw new AppError('Could not extract Base64 content from the file data URL.', 'File to Base64', 'Could not process file content.');
-      }
-      return base64Data;
-    },
-    'File to Base64',
-  );
-}
-
-export function readAsText(file: Readonly<File>): Promise<string> {
-  return readFile(
-    file,
-    'readAsText',
-    (result) => {
-      if (typeof result === 'string') {
-        return result;
-      }
-      throw new AppError(
-        'FileReader result was not a string after readAsText.',
-        'File Read As Text',
-        `The file '${file.name}' could not be read as text.`,
-      );
-    },
-    'File Read As Text',
-  );
 }
 
 export function sanitizeFileName(name: string, fallbackName = 'file'): string {

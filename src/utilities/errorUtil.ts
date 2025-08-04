@@ -1,5 +1,5 @@
 import { AppError } from '../core/ErrorHandler';
-import { isObjectLike } from './appUtil';
+import { isObjectLike } from './objectUtil';
 
 export function createErrorObject(error: Error): Record<string, unknown> {
   const errorObject: Record<string, unknown> = {

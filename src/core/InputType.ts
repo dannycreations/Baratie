@@ -1,4 +1,5 @@
-import { base64ToUint8Array, hexToUint8Array, isObjectLike, uint8ArrayToBase64, uint8ArrayToHex } from '../utilities/appUtil';
+import { base64ToUint8Array, hexToUint8Array, uint8ArrayToBase64, uint8ArrayToHex } from '../utilities/cryptoUtil';
+import { isObjectLike } from '../utilities/objectUtil';
 
 import type { PanelControlConfig, PanelCustomConfig } from './IngredientRegistry';
 

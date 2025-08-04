@@ -1,6 +1,6 @@
 import { errorHandler, logger } from '../app/container';
 import { useIngredientStore } from '../stores/useIngredientStore';
-import { getObjectHash } from '../utilities/appUtil';
+import { getObjectHash } from '../utilities/objectUtil';
 
 import type { ReactNode } from 'react';
 import type { InputType } from './InputType';
@@ -34,7 +34,7 @@ export interface IngredientProps<T = unknown> extends IngredientDefinition<T> {
 }
 
 interface PanelBaseConfig {
-  readonly title: () => ReactNode;
+  readonly title?: () => ReactNode;
 }
 
 interface PanelTextareaConfig extends PanelBaseConfig {
@@ -45,7 +45,7 @@ interface PanelTextareaConfig extends PanelBaseConfig {
 export interface PanelCustomConfig extends PanelBaseConfig {
   readonly mode: 'custom';
   readonly actions?: (defaultActions: ReadonlyArray<ReactNode>) => ReadonlyArray<ReactNode>;
-  readonly content: () => ReactNode;
+  readonly content?: () => ReactNode;
 }
 
 export type OutputPanelConfig = PanelTextareaConfig | PanelCustomConfig;

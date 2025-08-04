@@ -55,7 +55,7 @@ export const TextareaInput = memo<TextareaInputProps>(
 
     const { isDragOver, dropZoneProps } = useDropZone<File, HTMLDivElement>({
       disabled: disabled || !onFileDrop,
-      onValidate: (dt) => [...dt.items].some((item) => item.kind === 'file' && item.type.startsWith('text/')),
+      onValidate: (dt) => [...dt.items].some((item) => item.kind === 'file'),
       onExtract: (dt) => dt.files?.[0],
       onDrop: handleDrop,
     });
@@ -106,7 +106,7 @@ export const TextareaInput = memo<TextareaInputProps>(
           onChange={handleChange}
           onScroll={handleScroll}
         />
-        {isDragOver && <DropZoneLayout mode="overlay" text="Drop text file" variant="add" />}
+        {isDragOver && <DropZoneLayout mode="overlay" text="Drop file" variant="add" />}
       </div>
     );
   },

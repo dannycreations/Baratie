@@ -1,7 +1,7 @@
 import { array, intersect, nonEmpty, number, object, optional, pipe, record, string, union } from 'valibot';
 
 import { ingredientRegistry, logger } from '../app/container';
-import { isObjectLike } from '../utilities/appUtil';
+import { isObjectLike } from '../utilities/objectUtil';
 
 import type { InferInput } from 'valibot';
 import type { IngredientDefinition, IngredientRegistry } from '../core/IngredientRegistry';

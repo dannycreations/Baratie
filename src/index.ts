@@ -10,7 +10,6 @@ import { LogLevel } from './core/Logger';
 import { useNotificationStore } from './stores/useNotificationStore';
 import { useRecipeStore } from './stores/useRecipeStore';
 import { useThemeStore } from './stores/useThemeStore';
-import { readAsBase64, readAsText, triggerDownload } from './utilities/fileUtil';
 
 import type { BaratieOptions } from './app/Baratie';
 import type { NotificationType } from './components/main/NotificationPanel';
@@ -28,11 +27,6 @@ const BARATIE_API = {
   error: errorHandler,
   ingredient: ingredientRegistry,
   helpers: {
-    file: {
-      download: triggerDownload,
-      readAsBase64,
-      readAsText,
-    },
     notification: {
       clear: () => getNotificationState().clear(),
       remove: (id: string) => getNotificationState().remove(id),
