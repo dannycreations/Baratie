@@ -32,9 +32,7 @@ export const StringInput = memo<StringInputProps>(
 
     const handleClear = (): void => {
       onClear?.();
-      if (document.activeElement !== inputRef?.current) {
-        inputRef?.current?.focus();
-      }
+      inputRef?.current?.focus();
     };
 
     const clearButtonClass = [

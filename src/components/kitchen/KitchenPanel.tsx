@@ -14,7 +14,7 @@ import { TextareaInput } from '../shared/input/TextareaInput';
 import { SectionLayout } from '../shared/layout/SectionLayout';
 import { SpiceLayout } from '../shared/layout/SpiceLayout';
 
-import type { JSX, ReactNode } from 'react';
+import type { JSX, ReactNode, RefObject } from 'react';
 import type { IngredientItem, InputPanelConfig, OutputPanelConfig, SpiceValue } from '../../core/IngredientRegistry';
 
 interface KitchenPanelProps {
@@ -36,6 +36,7 @@ interface DefaultContentProps extends KitchenPanelSectionProps {
   readonly config: InputPanelConfig | null;
   readonly onDataChange: (data: string) => void;
   readonly onFileDrop: (file: File) => void;
+  readonly textareaRef?: RefObject<HTMLTextAreaElement | null>;
 }
 
 interface OutputContentProps extends KitchenPanelSectionProps {
@@ -65,7 +66,7 @@ const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient,
   );
 });
 
-const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, onFileDrop }) => {
+const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, onFileDrop, textareaRef }) => {
   const isTextareaDisabled = config?.mode === 'textarea' && (config.disabled ?? false);
   const placeholder = (config?.mode === 'textarea' && config.placeholder) || 'Place Raw Ingredients Here.';
 
@@ -78,6 +79,7 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, 
       wrapperClasses="flex-1 min-h-0"
       onChange={onDataChange}
       onFileDrop={onFileDrop}
+      textareaRef={textareaRef}
     />
   );
 });
@@ -98,6 +100,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const updateSpice = useRecipeStore((state) => state.updateSpice);
 
   const importOperationRef = useRef<number>(0);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const targetIngredient = useMemo((): IngredientItem | undefined => {
     if (inputPanelConfig?.mode === 'spiceEditor') {
@@ -135,6 +138,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const handleClearInput = useCallback((): void => {
     if (isInput) {
       handleSetInputData('');
+      inputRef.current?.focus();
     }
   }, [isInput, handleSetInputData]);
 
@@ -178,7 +182,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
             size="sm"
             variant="danger"
             disabled={data.length === 0}
-            tooltipContent="Clear Input Panel"
+            tooltipContent="Clear Input"
             tooltipPosition="left"
             onClick={handleClearInput}
           />,
@@ -225,7 +229,15 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
           />
         );
       }
-      return <DefaultContent config={inputPanelConfig} data={inputData} onDataChange={handleSetInputData} onFileDrop={handleFileRead} />;
+      return (
+        <DefaultContent
+          config={inputPanelConfig}
+          data={inputData}
+          onDataChange={handleSetInputData}
+          onFileDrop={handleFileRead}
+          textareaRef={inputRef}
+        />
+      );
     } else {
       if (outputPanelConfig?.mode === 'custom' && typeof outputPanelConfig.content === 'function') {
         return outputPanelConfig.content();

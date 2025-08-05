@@ -5,7 +5,7 @@ import { useLineNumber } from '../../../hooks/useLineNumber';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { DropZoneLayout } from '../layout/DropZoneLayout';
 
-import type { ChangeEvent, JSX, UIEvent } from 'react';
+import type { ChangeEvent, JSX, RefObject, UIEvent } from 'react';
 
 interface TextareaInputProps {
   readonly value: string;
@@ -19,6 +19,7 @@ interface TextareaInputProps {
   readonly readOnly?: boolean;
   readonly rows?: number;
   readonly id?: string;
+  readonly textareaRef?: RefObject<HTMLTextAreaElement | null>;
 }
 
 export const TextareaInput = memo<TextareaInputProps>(
@@ -34,11 +35,13 @@ export const TextareaInput = memo<TextareaInputProps>(
     readOnly,
     rows,
     id,
+    textareaRef: externalRef,
   }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
 
     const lineNumbersRef = useRef<HTMLDivElement>(null);
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
+    const textareaRef = externalRef || internalTextareaRef;
 
     const [scrollTop, setScrollTop] = useState(0);
 
