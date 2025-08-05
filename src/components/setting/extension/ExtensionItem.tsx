@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 import { useCopyAction } from '../../../hooks/useCopyAction';
@@ -73,33 +73,39 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
     onRefresh(id);
   }, [onRefresh, id]);
 
-  const leftContent = (
-    <div className="flex flex-col">
-      <h3 className={`font-medium text-${theme.contentPrimary} cursor-default`}>{displayName}</h3>
-      <Tooltip content={isCopied ? 'Copied URL!' : 'Click to copy URL'} position="top">
-        <button
-          className={`rounded-sm text-left text-xs text-${theme.contentTertiary} cursor-pointer transition-colors duration-150 hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}`}
-          onClick={handleCopyId}
-        >
-          {id}
-        </button>
-      </Tooltip>
-    </div>
+  const leftContent = useMemo(
+    () => (
+      <div className="flex flex-col">
+        <h3 className={`font-medium text-${theme.contentPrimary} cursor-default`}>{displayName}</h3>
+        <Tooltip content={isCopied ? 'Copied URL!' : 'Click to copy URL'} position="top">
+          <button
+            className={`rounded-sm text-left text-xs text-${theme.contentTertiary} cursor-pointer transition-colors duration-150 hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}`}
+            onClick={handleCopyId}
+          >
+            {id}
+          </button>
+        </Tooltip>
+      </div>
+    ),
+    [theme, displayName, isCopied, handleCopyId, id],
   );
 
-  const rightContent = (
-    <div className="flex items-center gap-2">
-      <ExtensionItemStatus status={status} errors={errors} />
-      <TooltipButton
-        icon={<RefreshCwIcon size={ICON_SIZES.SM} />}
-        size="sm"
-        variant="stealth"
-        disabled={isLoading}
-        tooltipContent="Refresh & Check for Updates"
-        onClick={handleRefresh}
-      />
-      <ConfirmButton actionName="Remove" itemType="Extension" onConfirm={handleConfirmDelete} />
-    </div>
+  const rightContent = useMemo(
+    () => (
+      <div className="flex items-center gap-2">
+        <ExtensionItemStatus status={status} errors={errors} />
+        <TooltipButton
+          icon={<RefreshCwIcon size={ICON_SIZES.SM} />}
+          size="sm"
+          variant="stealth"
+          disabled={isLoading}
+          tooltipContent="Refresh & Check for Updates"
+          onClick={handleRefresh}
+        />
+        <ConfirmButton actionName="Remove" itemType="Extension" onConfirm={handleConfirmDelete} />
+      </div>
+    ),
+    [status, errors, isLoading, handleRefresh, handleConfirmDelete],
   );
 
   return (

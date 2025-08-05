@@ -18,21 +18,31 @@ export interface GroupListItem {
   readonly description: string;
 }
 
-export interface GroupListProps {
-  readonly itemsByCategory: ReadonlyArray<readonly [string, ReadonlyArray<GroupListItem>]>;
+interface GroupListPropsBase {
   readonly query: string;
-  readonly emptyMessage?: string;
   readonly isItemDisabled?: (item: GroupListItem) => boolean;
-  readonly noResultsMessage?: (query: string) => string;
   readonly onItemDragStart?: (event: DragEvent<HTMLElement>, item: GroupListItem) => void;
-  readonly renderHeader?: (category: string, items: ReadonlyArray<GroupListItem>) => JSX.Element;
   readonly renderItemActions?: (item: GroupListItem) => ReactNode;
   readonly renderItemPrefix?: (item: GroupListItem) => ReactNode;
 }
 
-type GroupItemProps = Pick<GroupListProps, 'isItemDisabled' | 'onItemDragStart' | 'renderItemActions' | 'renderItemPrefix'> & {
+export interface GroupListProps extends GroupListPropsBase {
+  readonly itemsByCategory: ReadonlyArray<readonly [string, ReadonlyArray<GroupListItem>]>;
+  readonly emptyMessage?: string;
+  readonly noResultsMessage?: (query: string) => string;
+  readonly renderHeader?: (category: string, items: ReadonlyArray<GroupListItem>) => JSX.Element;
+}
+
+type GroupItemProps = GroupListPropsBase & {
   readonly item: GroupListItem;
-  readonly query: string;
+};
+
+type CategorySectionProps = GroupListPropsBase & {
+  readonly category: string;
+  readonly items: ReadonlyArray<GroupListItem>;
+  readonly isExpanded: boolean;
+  readonly onToggle: (category: string) => void;
+  readonly renderHeader?: (category: string, items: ReadonlyArray<GroupListItem>) => JSX.Element;
 };
 
 const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItemPrefix, renderItemActions, onItemDragStart, query }) => {
@@ -92,6 +102,50 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
   );
 });
 
+const CategorySection = memo<CategorySectionProps>((props) => {
+  const { category, items, isExpanded, onToggle, query, isItemDisabled, renderItemActions, renderItemPrefix, onItemDragStart, renderHeader } = props;
+  const theme = useThemeStore((state) => state.theme);
+
+  const handleToggle = useCallback(() => {
+    onToggle(category);
+  }, [onToggle, category]);
+
+  const header = (
+    <button
+      className={`flex h-12 w-full items-center justify-between p-2 text-${theme.contentSecondary} bg-${theme.surfaceTertiary} outline-none hover:bg-${theme.surfaceHover} focus-visible:ring-2 focus-visible:ring-${theme.ring}`}
+      onClick={handleToggle}
+    >
+      {renderHeader ? renderHeader(category, items) : <p className="truncate font-medium">{category}</p>}
+      <ChevronRightIcon className={`transform transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`} size={20} />
+    </button>
+  );
+
+  return (
+    <section className="overflow-hidden rounded-md">
+      {header}
+      <div className={`accordion-grid ${isExpanded ? 'expanded' : ''}`}>
+        <div className="accordion-content">
+          <div className={`p-2 bg-${theme.surfaceMuted}`}>
+            <ul className="space-y-2">
+              {items.map((item) => (
+                <GroupItemLayout
+                  key={item.id}
+                  item={item}
+                  query={query}
+                  isItemDisabled={isItemDisabled}
+                  renderItemActions={renderItemActions}
+                  renderItemPrefix={renderItemPrefix}
+                  onItemDragStart={onItemDragStart}
+                />
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+});
+
 export const GroupListLayout = memo<GroupListProps>(
   ({
     itemsByCategory,
@@ -106,8 +160,6 @@ export const GroupListLayout = memo<GroupListProps>(
   }): JSX.Element => {
     const { multipleOpen } = useSettingStore((state) => state);
     const [expandedCategories, setExpandedCategories] = useState<ReadonlySet<string>>(new Set());
-
-    const theme = useThemeStore((state) => state.theme);
 
     const handleCategoryToggle = useCallback(
       (category: string): void => {
@@ -140,42 +192,20 @@ export const GroupListLayout = memo<GroupListProps>(
         {itemsByCategory.map(([category, items]) => {
           const isExpanded = !!query.trim() || expandedCategories.has(category);
 
-          const header = (
-            <button
-              className={`flex h-12 w-full items-center justify-between p-2 text-${theme.contentSecondary} bg-${theme.surfaceTertiary} outline-none hover:bg-${theme.surfaceHover} focus-visible:ring-2 focus-visible:ring-${theme.ring}`}
-              onClick={() => handleCategoryToggle(category)}
-            >
-              {renderHeader ? renderHeader(category, items) : <p className="truncate font-medium">{category}</p>}
-              <ChevronRightIcon
-                className={`transform transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
-                size={20}
-              />
-            </button>
-          );
-
           return (
-            <section key={category} className="overflow-hidden rounded-md">
-              {header}
-              <div className={`accordion-grid ${isExpanded ? 'expanded' : ''}`}>
-                <div className="accordion-content">
-                  <div className={`p-2 bg-${theme.surfaceMuted}`}>
-                    <ul className="space-y-2">
-                      {items.map((item) => (
-                        <GroupItemLayout
-                          key={item.id}
-                          item={item}
-                          query={query}
-                          isItemDisabled={isItemDisabled}
-                          renderItemActions={renderItemActions}
-                          renderItemPrefix={renderItemPrefix}
-                          onItemDragStart={onItemDragStart}
-                        />
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </section>
+            <CategorySection
+              key={category}
+              category={category}
+              items={items}
+              isExpanded={isExpanded}
+              onToggle={handleCategoryToggle}
+              query={query}
+              renderHeader={renderHeader}
+              isItemDisabled={isItemDisabled}
+              onItemDragStart={onItemDragStart}
+              renderItemActions={renderItemActions}
+              renderItemPrefix={renderItemPrefix}
+            />
           );
         })}
       </div>

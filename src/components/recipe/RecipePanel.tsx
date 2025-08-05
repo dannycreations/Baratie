@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useId, useMemo, useRef } from 'react';
 
-import { ICON_SIZES } from '../../app/constants';
+import { DATA_TYPE_INGREDIENT, DATA_TYPE_RECIPE_ITEM, ICON_SIZES } from '../../app/constants';
 import { ingredientRegistry, kitchen } from '../../app/container';
 import { useDragMove } from '../../hooks/useDragMove';
 import { useDropZone } from '../../hooks/useDropZone';
@@ -62,8 +62,8 @@ export const RecipePanel = memo((): JSX.Element => {
   );
 
   const { isDragOver: isDraggingIngredient, dropZoneProps } = useDropZone<string, HTMLDivElement>({
-    onValidate: (dt) => dt.types.includes('application/x-baratie-ingredient-type'),
-    onExtract: (dt) => dt.getData('application/x-baratie-ingredient-type'),
+    onValidate: (dt) => dt.types.includes(DATA_TYPE_INGREDIENT),
+    onExtract: (dt) => dt.getData(DATA_TYPE_INGREDIENT),
     onDrop: handleDropIngredient,
   });
 
@@ -99,7 +99,7 @@ export const RecipePanel = memo((): JSX.Element => {
         clearEditingIds();
       }
       onMoveStart(event, ingredient.id);
-      event.dataTransfer.setData('application/x-baratie-recipe-item-id', ingredient.id);
+      event.dataTransfer.setData(DATA_TYPE_RECIPE_ITEM, ingredient.id);
     },
     [editingIds.size, onMoveStart, clearEditingIds],
   );

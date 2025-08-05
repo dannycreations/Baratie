@@ -143,7 +143,7 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
 export const TooltipButton = memo<TooltipButtonProps>(
   ({ tooltipContent, tooltipPosition, tooltipClasses, tooltipDisabled, ...buttonProps }): JSX.Element => {
     return (
-      <Tooltip content={tooltipContent} position={tooltipPosition} tooltipClasses={tooltipClasses} disabled={tooltipDisabled || buttonProps.disabled}>
+      <Tooltip content={tooltipContent} position={tooltipPosition} tooltipClasses={tooltipClasses} disabled={tooltipDisabled}>
         <Button {...buttonProps} />
       </Tooltip>
     );

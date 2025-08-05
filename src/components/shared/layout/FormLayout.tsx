@@ -9,7 +9,7 @@ interface FormLayoutProps {
   readonly children: (id: string) => ReactNode;
   readonly inputId: string;
   readonly className?: string;
-  readonly description?: string;
+  readonly description?: ReactNode;
   readonly direction?: 'col' | 'row';
   readonly inputWrapperClasses?: string;
   readonly label?: string;

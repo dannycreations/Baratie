@@ -9,7 +9,7 @@ import { ItemListLayout } from '../shared/layout/ListLayout';
 import { SpiceLayout } from '../shared/layout/SpiceLayout';
 import { Tooltip } from '../shared/Tooltip';
 
-import type { DragEvent, JSX } from 'react';
+import type { DragEvent, JSX, ReactNode } from 'react';
 import type { AppTheme } from '../../app/themes';
 import type { IngredientDefinition, IngredientItem, SpiceValue } from '../../core/IngredientRegistry';
 import type { CookingStatusType } from '../../core/Kitchen';
@@ -108,7 +108,7 @@ interface InfoMessageProps {
 const InfoMessage = memo<InfoMessageProps>(({ type, message }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   return (
-    <p className={`p-2 mx-2 text-center text-xs italic rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover}`}>
+    <p className={`p-2 text-center text-xs italic rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover}`}>
       {type === 'spiceInInput' ? 'Options are managed in the Input panel.' : message}
     </p>
   );
@@ -173,6 +173,13 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
   const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
   const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
 
+  let infoContent: ReactNode = null;
+  if (hasWarning) {
+    infoContent = <InfoMessage type="warning" message={warning} />;
+  } else if (hasSpices && isSpiceInInput) {
+    infoContent = <InfoMessage type="spiceInInput" />;
+  }
+
   const itemClass = [
     'group',
     'flex',
@@ -186,7 +193,6 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
     'ease-in-out',
     isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100',
     statusBorderClass,
-    isSpiceInInput || hasWarning ? 'pb-2' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -241,22 +247,21 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
         leftContent={leftColumn}
         rightContent={rightColumn}
       />
-      {hasWarning && <InfoMessage type="warning" message={warning} />}
+
+      {infoContent && <div className="p-2 pt-0">{infoContent}</div>}
+
       {hasSpices && (
-        <>
-          {!hasWarning && isSpiceInInput && <InfoMessage type="spiceInInput" />}
-          <div className={`accordion-grid ${isEditorVisible ? 'expanded' : ''}`}>
-            <div className="accordion-content">
-              <RecipeSpiceEditor
-                ingredient={ingredientItem}
-                definition={definition}
-                onSpiceChange={onSpiceChange}
-                onLongPressStart={onLongPressStart}
-                onLongPressEnd={onLongPressEnd}
-              />
-            </div>
+        <div className={`accordion-grid ${isEditorVisible ? 'expanded' : ''}`}>
+          <div className="accordion-content">
+            <RecipeSpiceEditor
+              ingredient={ingredientItem}
+              definition={definition}
+              onSpiceChange={onSpiceChange}
+              onLongPressStart={onLongPressStart}
+              onLongPressEnd={onLongPressEnd}
+            />
           </div>
-        </>
+        </div>
       )}
     </li>
   );

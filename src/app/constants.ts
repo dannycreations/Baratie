@@ -12,6 +12,9 @@ export const KEY_CUSTOM_INPUT = 'Custom Input';
 export const KEY_CUSTOM_OUTPUT = 'Custom Output';
 export const KEY_REPEAT_STEP = 'Repeat Step';
 
+export const DATA_TYPE_INGREDIENT = 'application/x-baratie-ingredient-type';
+export const DATA_TYPE_RECIPE_ITEM = 'application/x-baratie-recipe-item-id';
+
 export const CONFIRM_SHOW_MS = 2000;
 export const COPY_SHOW_MS = 1500;
 export const MODAL_SHOW_MS = 200;

@@ -27,6 +27,8 @@ interface LoadHeaderActionsProps {
   readonly onExportAll: () => void;
 }
 
+const SEARCH_KEYS: ReadonlyArray<keyof RecipebookItem> = ['name'];
+
 const SaveHeaderActions = memo<SaveHeaderActionsProps>(({ isSaveDisabled, onExportCurrent, onSave }) => (
   <>
     <TooltipButton
@@ -100,7 +102,6 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   useAutoFocus(focusRef, isModalOpen);
 
   const deferredQuery = useDeferredValue(query);
-  const searchKeys = useMemo<Array<keyof RecipebookItem>>(() => ['name'], []);
 
   const filteredRecipes = useMemo(() => {
     const lowerQuery = deferredQuery.toLowerCase().trim();
@@ -109,12 +110,12 @@ export const CookbookPanel = memo((): JSX.Element | null => {
     }
 
     return recipes.filter((item) => {
-      return searchKeys.some((key) => {
+      return SEARCH_KEYS.some((key) => {
         const value = item[key];
         return typeof value === 'string' && value.toLowerCase().includes(lowerQuery);
       });
     });
-  }, [recipes, deferredQuery, searchKeys]);
+  }, [recipes, deferredQuery]);
 
   const handleSave = useCallback((): void => {
     upsert();

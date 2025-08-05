@@ -1,6 +1,6 @@
 import { memo, useCallback, useDeferredValue, useId, useMemo, useState } from 'react';
 
-import { CATEGORY_FAVORITES, ICON_SIZES } from '../../app/constants';
+import { CATEGORY_FAVORITES, DATA_TYPE_INGREDIENT, DATA_TYPE_RECIPE_ITEM, ICON_SIZES } from '../../app/constants';
 import { errorHandler, ingredientRegistry } from '../../app/container';
 import { createIngredientSearchPredicate, groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
 import { useDropZone } from '../../hooks/useDropZone';
@@ -52,8 +52,8 @@ export const IngredientPanel = memo((): JSX.Element => {
 
   const { isDragOver: isDragOverRecipe, dropZoneProps: recipeDropZoneProps } = useDropZone<string, HTMLDivElement>({
     effect: 'move',
-    onValidate: (dt) => dt.types.includes('application/x-baratie-recipe-item-id'),
-    onExtract: (dt) => dt.getData('application/x-baratie-recipe-item-id'),
+    onValidate: (dt) => dt.types.includes(DATA_TYPE_RECIPE_ITEM),
+    onExtract: (dt) => dt.getData(DATA_TYPE_RECIPE_ITEM),
     onDrop: handleDropRecipe,
   });
 
@@ -107,31 +107,34 @@ export const IngredientPanel = memo((): JSX.Element => {
 
   const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: GroupListItem): void => {
     errorHandler.assert(item.id, 'Ingredient unique name not found on dragged element.', 'Ingredient Drag');
-    event.dataTransfer.setData('application/x-baratie-ingredient-type', item.id);
+    event.dataTransfer.setData(DATA_TYPE_INGREDIENT, item.id);
     event.dataTransfer.effectAllowed = 'copy';
   }, []);
 
-  const headerActions = (
-    <>
-      <TooltipButton
-        icon={<PreferencesIcon size={ICON_SIZES.SM} />}
-        size="sm"
-        variant="stealth"
-        tooltipContent={`Manage Ingredients\n${visibleIngredients} of ${totalIngredients} visible`}
-        tooltipDisabled={isIngredientOpen}
-        tooltipPosition="bottom"
-        onClick={() => openModal({ type: 'ingredient', props: undefined })}
-      />
-      <TooltipButton
-        icon={<SettingsIcon size={ICON_SIZES.SM} />}
-        size="sm"
-        variant="stealth"
-        tooltipContent="Settings, Appearance & Extensions"
-        tooltipDisabled={isSettingOpen}
-        tooltipPosition="bottom"
-        onClick={() => openModal({ type: 'settings', props: undefined })}
-      />
-    </>
+  const headerActions = useMemo(
+    () => (
+      <>
+        <TooltipButton
+          icon={<PreferencesIcon size={ICON_SIZES.SM} />}
+          size="sm"
+          variant="stealth"
+          tooltipContent={`Manage Ingredients\n${visibleIngredients} of ${totalIngredients} visible`}
+          tooltipDisabled={isIngredientOpen}
+          tooltipPosition="bottom"
+          onClick={() => openModal({ type: 'ingredient', props: undefined })}
+        />
+        <TooltipButton
+          icon={<SettingsIcon size={ICON_SIZES.SM} />}
+          size="sm"
+          variant="stealth"
+          tooltipContent="Settings"
+          tooltipDisabled={isSettingOpen}
+          tooltipPosition="bottom"
+          onClick={() => openModal({ type: 'settings', props: undefined })}
+        />
+      </>
+    ),
+    [isIngredientOpen, isSettingOpen, openModal, totalIngredients, visibleIngredients],
   );
 
   const renderItemActions = useCallback(
