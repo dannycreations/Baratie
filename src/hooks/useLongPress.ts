@@ -9,7 +9,7 @@ interface LongPressOptions {
 
 export function useLongPress(
   callback: () => void,
-  { delay = 300, interval = 100, onStart, onEnd }: LongPressOptions = {},
+  { delay = 300, onStart, onEnd }: LongPressOptions = {},
 ): {
   readonly onMouseDown: () => void;
   readonly onMouseUp: () => void;
@@ -38,7 +38,7 @@ export function useLongPress(
       timeoutRef.current = null;
     }
     if (intervalRef.current) {
-      clearInterval(intervalRef.current);
+      clearTimeout(intervalRef.current);
       intervalRef.current = null;
     }
     if (shouldCallOnEnd) {
@@ -50,12 +50,21 @@ export function useLongPress(
     onStartRef.current?.();
     stop(false);
     callbackRef.current();
-    timeoutRef.current = window.setTimeout(() => {
-      intervalRef.current = window.setInterval(() => {
-        callbackRef.current();
-      }, interval);
-    }, delay);
-  }, [delay, interval, stop]);
+
+    const initialInterval = 120;
+    const minInterval = 30;
+    const acceleration = 1.1;
+
+    let currentInterval = initialInterval;
+
+    const repeater = (): void => {
+      callbackRef.current();
+      currentInterval = Math.max(minInterval, currentInterval / acceleration);
+      intervalRef.current = window.setTimeout(repeater, currentInterval);
+    };
+
+    timeoutRef.current = window.setTimeout(repeater, delay);
+  }, [delay, stop]);
 
   useEffect(() => {
     return () => stop(true);
