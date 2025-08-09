@@ -32,22 +32,22 @@ export class InputType<T = unknown> {
     this.warningMessage = warning;
   }
 
-  public cast<T = unknown>(type: 'array', options?: { readonly value?: Array<T> }): InputType<Array<T>>;
-  public cast(type: 'arraybuffer', options?: { readonly value?: ArrayBuffer }): InputType<ArrayBuffer>;
-  public cast(type: 'base64', options?: { readonly value?: string }): InputType<string>;
-  public cast(type: 'boolean', options?: { readonly value?: boolean }): InputType<boolean>;
-  public cast(type: 'bytearray', options?: { readonly value?: Uint8Array }): InputType<Uint8Array>;
-  public cast(type: 'hex', options?: { readonly value?: string }): InputType<string>;
-  public cast(type: 'number', options?: { readonly max?: number; readonly min?: number; readonly value?: number }): InputType<number>;
-  public cast(type: 'object', options?: { readonly value?: object }): InputType<object>;
-  public cast(type: 'string', options?: { readonly value?: string }): InputType<string>;
+  public cast<T = unknown>(type: 'array', options?: Readonly<{ value?: Array<T> }>): InputType<Array<T>>;
+  public cast(type: 'arraybuffer', options?: Readonly<{ value?: ArrayBuffer }>): InputType<ArrayBuffer>;
+  public cast(type: 'base64', options?: Readonly<{ value?: string }>): InputType<string>;
+  public cast(type: 'boolean', options?: Readonly<{ value?: boolean }>): InputType<boolean>;
+  public cast(type: 'bytearray', options?: Readonly<{ value?: Uint8Array }>): InputType<Uint8Array>;
+  public cast(type: 'hex', options?: Readonly<{ value?: string }>): InputType<string>;
+  public cast(type: 'number', options?: Readonly<{ max?: number; min?: number; value?: number }>): InputType<number>;
+  public cast(type: 'object', options?: Readonly<{ value?: object }>): InputType<object>;
+  public cast(type: 'string', options?: Readonly<{ value?: string }>): InputType<string>;
   public cast(
     type: InputDataType,
-    options?: {
-      readonly max?: number;
-      readonly min?: number;
-      readonly value?: unknown;
-    },
+    options?: Readonly<{
+      max?: number;
+      min?: number;
+      value?: unknown;
+    }>,
   ): InputType<unknown> {
     const handleFailure = <U>(e?: string): InputType<U> => {
       if (typeof options?.value !== 'undefined') {
@@ -244,10 +244,10 @@ export class InputType<T = unknown> {
 
   private castToNumber(
     handleFailure: HandleFailure,
-    options?: {
-      readonly max?: number;
-      readonly min?: number;
-    },
+    options?: Readonly<{
+      max?: number;
+      min?: number;
+    }>,
   ): InputType<number> {
     const stringValue = String(this.value ?? '').trim();
     let numericValue = Number(stringValue);

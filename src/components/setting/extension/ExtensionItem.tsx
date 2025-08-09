@@ -70,7 +70,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
   }, [onRemove, id]);
 
   const handleRefresh = useCallback((): void => {
-    onRefresh(id);
+    onRefresh(id, { context: 'refresh' });
   }, [onRefresh, id]);
 
   const leftContent = useMemo(
@@ -99,7 +99,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
           size="sm"
           variant="stealth"
           disabled={isLoading}
-          tooltipContent="Refresh & Check for Updates"
+          tooltipContent="Refresh"
           onClick={handleRefresh}
         />
         <ConfirmButton actionName="Remove" itemType="Extension" onConfirm={handleConfirmDelete} />

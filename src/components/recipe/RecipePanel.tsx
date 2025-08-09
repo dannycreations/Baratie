@@ -105,7 +105,7 @@ export const RecipePanel = memo((): JSX.Element => {
   );
 
   const openCookbook = useCallback(
-    (args: { readonly mode: 'save' | 'load' }): void => {
+    (args: Readonly<{ mode: 'save' | 'load' }>): void => {
       const props: CookbookModalProps = args.mode === 'save' ? { mode: 'save', ingredients, activeRecipeId } : { mode: 'load' };
 
       prepareCookbook(props);

@@ -51,6 +51,6 @@ export function getObjectHash(obj: object, namespace?: string): string {
   return (hash >>> 0).toString(36);
 }
 
-export function isObjectLike(value?: unknown): value is object {
+export function isObjectLike(value?: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }

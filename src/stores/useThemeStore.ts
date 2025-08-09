@@ -17,7 +17,7 @@ interface ThemeState {
 
 const DEFAULT_THEME = APP_THEMES[0];
 
-function getInitialTheme(): { readonly id: ThemeId; readonly theme: AppTheme } {
+function getInitialTheme(): Readonly<{ id: ThemeId; theme: AppTheme }> {
   try {
     const storedThemeId = storage.get<ThemeId>(STORAGE_THEME, 'Theme');
     const themeConfig = APP_THEMES.find((theme) => theme.id === storedThemeId);

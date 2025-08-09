@@ -46,9 +46,9 @@ interface CookbookState {
 export const useCookbookStore = create<CookbookState>()((set, get) => ({
   nameInput: '',
   query: '',
-  recipes: [] as ReadonlyArray<RecipebookItem>,
-  recipeIdMap: new Map<string, RecipebookItem>(),
-  recipeContentHashMap: new Map<string, string>(),
+  recipes: [],
+  recipeIdMap: new Map(),
+  recipeContentHashMap: new Map(),
 
   computeInitialName: (ingredients, activeRecipeId) => {
     if (ingredients.length === 0) {

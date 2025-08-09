@@ -10,7 +10,7 @@ interface IngredientState {
   readonly registryVersion: number;
   readonly init: () => void;
   readonly refreshRegistry: () => void;
-  readonly setFilters: (filters: { readonly categories: ReadonlyArray<string>; readonly ingredients: ReadonlyArray<string> }) => void;
+  readonly setFilters: (filters: Readonly<{ categories: ReadonlyArray<string>; ingredients: ReadonlyArray<string> }>) => void;
   readonly toggleCategory: (category: string) => void;
   readonly toggleIngredient: (id: string) => void;
 }

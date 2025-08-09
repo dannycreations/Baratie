@@ -66,7 +66,7 @@ function executeScript(scriptContent: string, api: typeof window.Baratie): void 
   }
 }
 
-async function fetchProvider(repoInfo: { readonly owner: string; readonly repo: string; readonly ref: string }, path: string): Promise<Response> {
+async function fetchProvider(repoInfo: Readonly<{ owner: string; repo: string; ref: string }>, path: string): Promise<Response> {
   const primaryUrl = `https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.ref}/${path}`;
   const fallbackUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}/${path}`;
 
@@ -92,7 +92,7 @@ export function isCacheValid(fetchedAt?: number): boolean {
   return Date.now() - fetchedAt < EXTENSION_CACHE_MS;
 }
 
-export function parseGitHubUrl(url: string): { readonly owner: string; readonly repo: string; readonly ref: string } | null {
+export function parseGitHubUrl(url: string): Readonly<{ owner: string; repo: string; ref: string }> | null {
   const trimmedUrl = url.trim();
 
   const GH_URL_SHORTHAND_REGEX =
