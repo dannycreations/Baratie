@@ -27,8 +27,7 @@ export const NumberInput = memo<NumberInputProps>(
     const [internalValue, setInternalValue] = useState(String(value));
 
     useEffect(() => {
-      const numericInternal = Number(internalValue);
-      if (isNaN(numericInternal) || numericInternal !== value) {
+      if (value !== parseFloat(internalValue)) {
         setInternalValue(String(value));
       }
     }, [value, internalValue]);
@@ -47,39 +46,50 @@ export const NumberInput = memo<NumberInputProps>(
       [min, max],
     );
 
-    const handleValueChange = useCallback(
-      (newValue: number): void => {
-        onChange(clamp(newValue));
+    const handleInputChange = useCallback(
+      (event: ChangeEvent<HTMLInputElement>): void => {
+        const val = event.target.value;
+        if (val === '' || val === '-' || /^-?\d*\.?\d*$/.test(val)) {
+          setInternalValue(val);
+
+          const numericValue = parseFloat(val);
+          if (isFinite(numericValue)) {
+            const clampedValue = clamp(numericValue);
+            if (clampedValue !== value) {
+              onChange(clampedValue);
+            }
+          }
+        }
       },
-      [clamp, onChange],
+      [clamp, onChange, value],
     );
 
-    const handleInputChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
-      setInternalValue(event.target.value);
-    }, []);
-
     const handleBlur = useCallback((): void => {
-      const trimmedValue = internalValue.trim();
-      if (trimmedValue === '') {
-        setInternalValue(String(value));
-        return;
-      }
-      const numericValue = Number(trimmedValue);
-      if (!isNaN(numericValue) && isFinite(numericValue)) {
-        handleValueChange(numericValue);
+      const numericValue = parseFloat(internalValue);
+      if (isFinite(numericValue)) {
+        const clampedValue = clamp(numericValue);
+        setInternalValue(String(clampedValue));
+        if (clampedValue !== value) {
+          onChange(clampedValue);
+        }
       } else {
         setInternalValue(String(value));
       }
-    }, [handleValueChange, value, internalValue]);
+    }, [internalValue, clamp, onChange, value]);
 
     const handleStep = useCallback(
       (direction: 'up' | 'down'): void => {
-        const currentValue = Number(internalValue);
-        const numericValue = isNaN(currentValue) ? value : currentValue;
+        const currentValue = parseFloat(internalValue);
+        const numericValue = isFinite(currentValue) ? currentValue : value;
         const change = direction === 'up' ? step : -step;
-        handleValueChange(numericValue + change);
+        const finalValue = clamp(numericValue + change);
+
+        setInternalValue(String(finalValue));
+        if (finalValue !== value) {
+          onChange(finalValue);
+        }
       },
-      [internalValue, value, step, handleValueChange],
+      [internalValue, value, step, clamp, onChange],
     );
 
     const handleKeyDown = useCallback(
@@ -91,20 +101,18 @@ export const NumberInput = memo<NumberInputProps>(
           event.preventDefault();
           handleStep('down');
         } else if (event.key === 'Enter') {
-          handleBlur();
+          (event.target as HTMLInputElement).blur();
         }
       },
-      [handleStep, handleBlur],
+      [handleStep],
     );
 
     const handleWheel = useCallback(
       (event: WheelEvent<HTMLInputElement>) => {
-        if (document.activeElement !== event.currentTarget) {
-          return;
+        if (document.activeElement === event.currentTarget) {
+          event.preventDefault();
+          handleStep(event.deltaY < 0 ? 'up' : 'down');
         }
-        event.preventDefault();
-        const direction = event.deltaY < 0 ? 'up' : 'down';
-        handleStep(direction);
       },
       [handleStep],
     );
