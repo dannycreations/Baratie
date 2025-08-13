@@ -45,11 +45,7 @@ export const useRecipeStore = create<RecipeState>()(
         spices: validSpices,
       };
 
-      set((state) => {
-        return {
-          ingredients: [...state.ingredients, newIngredient],
-        };
-      });
+      set((state) => ({ ingredients: [...state.ingredients, newIngredient] }));
     },
 
     clearEditingIds: () => {

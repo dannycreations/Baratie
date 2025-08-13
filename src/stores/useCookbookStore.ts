@@ -211,7 +211,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     }
   },
 
-  merge: (recipesToImport: ReadonlyArray<RecipebookItem>) => {
+  merge: (recipesToImport) => {
     const { show } = useNotificationStore.getState();
     const { recipes, setRecipes } = get();
     logger.info('Merging imported recipes...', {
@@ -219,7 +219,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       existingCount: recipes.length,
     });
 
-    const recipeMap: Map<string, RecipebookItem> = new Map(recipes.map((r) => [r.id, r]));
+    const recipeMap = new Map(recipes.map((r) => [r.id, r]));
     let added = 0;
     let updated = 0;
     let skipped = 0;
@@ -268,38 +268,27 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
   },
 
   resetModal: () => {
-    set({
-      nameInput: '',
-      query: '',
-    });
+    set({ nameInput: '', query: '' });
   },
 
   setName: (nameInput) => {
-    set({
-      nameInput: nameInput,
-    });
+    set({ nameInput });
   },
 
   setQuery: (query) => {
-    set({
-      query: query,
-    });
+    set({ query });
   },
 
-  setRecipes: (newRecipes: ReadonlyArray<RecipebookItem>) => {
+  setRecipes: (newRecipes) => {
     const recipes = [...newRecipes].sort((a, b) => b.updatedAt - a.updatedAt);
-    const idMap = new Map(recipes.map((recipe) => [recipe.id, recipe]));
-    const contentHashMap = new Map<string, string>();
+    const recipeIdMap = new Map(recipes.map((recipe) => [recipe.id, recipe]));
+    const recipeContentHashMap = new Map<string, string>();
 
     for (const recipe of recipes) {
-      contentHashMap.set(createRecipeHash(recipe.ingredients), recipe.id);
+      recipeContentHashMap.set(createRecipeHash(recipe.ingredients), recipe.id);
     }
 
-    set({
-      recipes: recipes,
-      recipeIdMap: idMap,
-      recipeContentHashMap: contentHashMap,
-    });
+    set({ recipes, recipeIdMap, recipeContentHashMap });
   },
 
   upsert: () => {

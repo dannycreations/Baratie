@@ -42,11 +42,7 @@ export const useIngredientStore = create<IngredientState>()(
     },
 
     refreshRegistry: () => {
-      set((state) => {
-        return {
-          registryVersion: state.registryVersion + 1,
-        };
-      });
+      set((state) => ({ registryVersion: state.registryVersion + 1 }));
     },
 
     setFilters: ({ categories, ingredients }) => {
@@ -58,29 +54,25 @@ export const useIngredientStore = create<IngredientState>()(
 
     toggleCategory: (category) => {
       set((state) => {
-        const newSet = new Set(state.disabledCategories);
-        if (newSet.has(category)) {
-          newSet.delete(category);
+        const disabledCategories = new Set(state.disabledCategories);
+        if (disabledCategories.has(category)) {
+          disabledCategories.delete(category);
         } else {
-          newSet.add(category);
+          disabledCategories.add(category);
         }
-        return {
-          disabledCategories: newSet,
-        };
+        return { disabledCategories };
       });
     },
 
     toggleIngredient: (id) => {
       set((state) => {
-        const newSet = new Set(state.disabledIngredients);
-        if (newSet.has(id)) {
-          newSet.delete(id);
+        const disabledIngredients = new Set(state.disabledIngredients);
+        if (disabledIngredients.has(id)) {
+          disabledIngredients.delete(id);
         } else {
-          newSet.add(id);
+          disabledIngredients.add(id);
         }
-        return {
-          disabledIngredients: newSet,
-        };
+        return { disabledIngredients };
       });
     },
   })),

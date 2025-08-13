@@ -105,12 +105,10 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
         return {};
       }
 
-      const newMap = new Map(state.map);
-      newMap.set(id, { ...notification, duration, resetAt });
+      const map = new Map(state.map);
+      map.set(id, { ...notification, duration, resetAt });
 
-      return {
-        map: newMap,
-      };
+      return { map };
     });
   },
 }));

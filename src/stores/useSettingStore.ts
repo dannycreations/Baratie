@@ -30,15 +30,15 @@ export const useSettingStore = create<SettingState>()(
       }
     },
 
-    setMultipleOpen: (value) => {
-      set({ multipleOpen: value });
+    setMultipleOpen: (multipleOpen) => {
+      set({ multipleOpen });
     },
 
-    setPersistRecipe: (value) => {
-      if (!value) {
+    setPersistRecipe: (persistRecipe) => {
+      if (!persistRecipe) {
         storage.remove(STORAGE_RECIPE, 'Current Recipe');
       }
-      set({ persistRecipe: value });
+      set({ persistRecipe });
     },
   })),
 );

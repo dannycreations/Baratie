@@ -15,17 +15,12 @@ export const useTaskStore = create<TaskState>()(
     loadingHasError: false,
     loadingMessage: 'Firing up the galley...',
 
-    setInitialized: (isReady) => {
-      set({
-        isInitialized: isReady,
-      });
+    setInitialized: (isInitialized) => {
+      set({ isInitialized });
     },
 
-    setLoadingMessage: (message, hasError = false) => {
-      set({
-        loadingMessage: message,
-        loadingHasError: hasError,
-      });
+    setLoadingMessage: (loadingMessage, loadingHasError = false) => {
+      set({ loadingMessage, loadingHasError });
     },
   })),
 );

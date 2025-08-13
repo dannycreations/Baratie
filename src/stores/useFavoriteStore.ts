@@ -35,30 +35,23 @@ export const useFavoriteStore = create<FavoriteState>()(
         }
       }
 
-      set({
-        favorites: new Set(favorites),
-      });
+      set({ favorites: new Set(favorites) });
     },
 
     setFavorites: (favorites) => {
-      set({
-        favorites: favorites,
-      });
+      set({ favorites });
     },
 
     toggle: (type) => {
-      const { favorites } = get();
-      const newFavorites = new Set(favorites);
+      const favorites = new Set(get().favorites);
 
-      if (newFavorites.has(type)) {
-        newFavorites.delete(type);
+      if (favorites.has(type)) {
+        favorites.delete(type);
       } else {
-        newFavorites.add(type);
+        favorites.add(type);
       }
 
-      set({
-        favorites: newFavorites,
-      });
+      set({ favorites });
     },
   })),
 );
