@@ -10,6 +10,7 @@ import { NotificationPanel } from '../components/main/NotificationPanel';
 import { RecipePanel } from '../components/recipe/RecipePanel';
 import { SettingPanel } from '../components/setting/SettingPanel';
 import { parseGitHubUrl } from '../helpers/extensionHelper';
+import { useOverflow } from '../hooks/useOverflow';
 import { internalIngredients } from '../ingredients';
 import { useExtensionStore } from '../stores/useExtensionStore';
 import { useTaskStore } from '../stores/useTaskStore';
@@ -27,6 +28,7 @@ export interface BaratieOptions {
 
 const BaratieView = memo((): JSX.Element => {
   const isAppReady = useTaskStore((state) => state.isInitialized);
+  const { ref: rootScrollRef, hasOverflowY } = useOverflow<HTMLDivElement>();
 
   useEffect(() => {
     if (isAppReady) {
@@ -35,12 +37,13 @@ const BaratieView = memo((): JSX.Element => {
   }, [isAppReady]);
 
   const mainContentClass = `h-screen w-screen overflow-hidden transition-opacity duration-300 ${isAppReady ? 'opacity-100' : 'opacity-0'}`;
+  const rootLayoutClass = `flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden ${hasOverflowY ? 'pr-1' : ''}`.trim();
 
   return (
     <>
       <LoadingScreen />
       <main className={mainContentClass}>
-        <div className="flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden">
+        <div ref={rootScrollRef} className={rootLayoutClass}>
           <section className="flex w-full flex-col gap-3 md:flex-1 md:flex-row md:overflow-hidden">
             <IngredientPanel />
             <RecipePanel />
