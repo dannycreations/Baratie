@@ -263,7 +263,7 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
     listId,
     search,
   }): JSX.Element => {
-    const { ref: listScrollRef, hasOverflowY } = useOverflow<HTMLDivElement>();
+    const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
     const onQueryChange = search?.onQueryChange;
 
@@ -298,7 +298,7 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
             />
           </div>
         )}
-        <div id={listId} ref={listScrollRef} className={`${listWrapperClasses} ${hasOverflowY ? 'pr-1' : ''}`.trim()}>
+        <div id={listId} ref={scrollRef} className={`${listWrapperClasses} ${scrollClasses}`.trim()}>
           {listContent}
         </div>
       </div>

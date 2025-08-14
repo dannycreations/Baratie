@@ -28,7 +28,7 @@ export interface BaratieOptions {
 
 const BaratieView = memo((): JSX.Element => {
   const isAppReady = useTaskStore((state) => state.isInitialized);
-  const { ref: rootScrollRef, hasOverflowY } = useOverflow<HTMLDivElement>();
+  const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   useEffect(() => {
     if (isAppReady) {
@@ -37,13 +37,13 @@ const BaratieView = memo((): JSX.Element => {
   }, [isAppReady]);
 
   const mainContentClass = `h-screen w-screen overflow-hidden transition-opacity duration-300 ${isAppReady ? 'opacity-100' : 'opacity-0'}`;
-  const rootLayoutClass = `flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden ${hasOverflowY ? 'pr-1' : ''}`.trim();
+  const rootLayoutClass = `flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden ${scrollClasses}`.trim();
 
   return (
     <>
       <LoadingScreen />
       <main className={mainContentClass}>
-        <div ref={rootScrollRef} className={rootLayoutClass}>
+        <div ref={scrollRef} className={rootLayoutClass}>
           <section className="flex w-full flex-col gap-3 md:flex-1 md:flex-row md:overflow-hidden">
             <IngredientPanel />
             <RecipePanel />

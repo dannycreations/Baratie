@@ -1,16 +1,15 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import type { RefObject } from 'react';
-
-interface OverflowReturn<T extends HTMLElement> {
-  readonly ref: RefObject<T | null>;
-  readonly hasOverflowX: boolean;
-  readonly hasOverflowY: boolean;
-}
 
 interface OverflowStatus {
   readonly hasOverflowX: boolean;
   readonly hasOverflowY: boolean;
+}
+
+interface OverflowReturn<T extends HTMLElement> {
+  readonly ref: RefObject<T | null>;
+  readonly className: string;
 }
 
 const INITIAL_STATUS: OverflowStatus = {
@@ -18,9 +17,22 @@ const INITIAL_STATUS: OverflowStatus = {
   hasOverflowY: false,
 };
 
+function isTouchDevice(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+}
+
 export function useOverflow<T extends HTMLElement>(): OverflowReturn<T> {
   const ref = useRef<T>(null);
   const [status, setStatus] = useState<OverflowStatus>(INITIAL_STATUS);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(isTouchDevice());
+  }, []);
 
   useLayoutEffect(() => {
     const element = ref.current;
@@ -59,5 +71,22 @@ export function useOverflow<T extends HTMLElement>(): OverflowReturn<T> {
     };
   }, [ref]);
 
-  return { ref, ...status };
+  const className = useMemo(() => {
+    const classParts: string[] = [];
+    if (isMobile) {
+      classParts.push('scrollbar-hidden');
+    } else {
+      if (status.hasOverflowY && !status.hasOverflowX) {
+        classParts.push('overflow-x-hidden');
+      } else if (status.hasOverflowX && !status.hasOverflowY) {
+        classParts.push('overflow-y-hidden');
+      }
+      if (classParts.length > 0) {
+        classParts.push('pr-1');
+      }
+    }
+    return classParts.join(' ');
+  }, [isMobile, status.hasOverflowX, status.hasOverflowY]);
+
+  return { ref, className };
 }

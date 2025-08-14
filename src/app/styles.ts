@@ -19,13 +19,13 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-@media screen and (max-width: 767px) {
-  html {
-    scrollbar-width: none;
-  }
-  ::-webkit-scrollbar {
-    display: none;
-  }
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
 }
 
 input[type="search"]::-webkit-search-cancel-button {

@@ -49,7 +49,7 @@ export const RecipePanel = memo((): JSX.Element => {
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
 
   const prevIngredientsCount = useRef(ingredients.length);
-  const { ref: listScrollRef, hasOverflowY } = useOverflow<HTMLDivElement>();
+  const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
   const listId = useId();
 
   const handleDropIngredient = useCallback(
@@ -249,8 +249,8 @@ export const RecipePanel = memo((): JSX.Element => {
       headerLeft="Recipe"
       headerRight={headerActions}
       className="h-[50vh] min-h-0 md:h-auto md:flex-1"
-      contentClasses={`relative flex h-full flex-col text-${theme.contentTertiary} ${hasOverflowY ? 'pr-1' : ''}`.trim()}
-      contentRef={listScrollRef}
+      contentClasses={`relative flex h-full flex-col text-${theme.contentTertiary} ${scrollClasses}`.trim()}
+      contentRef={scrollRef}
     >
       <div className="flex h-full flex-col" {...dropZoneProps}>
         <SearchListLayout listId={listId} listContent={content} listWrapperClasses={listClass} />

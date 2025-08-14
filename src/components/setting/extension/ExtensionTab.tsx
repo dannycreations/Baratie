@@ -26,7 +26,7 @@ export const ExtensionTab = memo((): JSX.Element => {
   const [isLoading, setIsLoading] = useState(false);
   const [validationStatus, setValidationStatus] = useState<'empty' | 'valid' | 'invalid'>('empty');
 
-  const { ref: listScrollRef, hasOverflowY } = useOverflow<HTMLDivElement>();
+  const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   useEffect(() => {
     const pendingInstall = extensions.find((ext) => ext.status === 'awaiting');
@@ -108,7 +108,7 @@ export const ExtensionTab = memo((): JSX.Element => {
 
       <div className="flex flex-1 flex-col min-h-0">
         <h4 className={`mb-3 font-medium text-base text-${theme.contentSecondary}`}>Installed Extensions</h4>
-        <div ref={listScrollRef} className={`grow overflow-y-auto ${hasOverflowY ? 'pr-1' : ''}`}>
+        <div ref={scrollRef} className={`grow overflow-y-auto ${scrollClasses}`}>
           {extensions.length === 0 ? (
             <EmptyView>No extensions have been installed yet.</EmptyView>
           ) : (
