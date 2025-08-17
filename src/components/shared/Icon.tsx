@@ -38,13 +38,6 @@ export function createIcon<P extends IconProps = IconProps>({ iconName, defaultP
     const { size = ICON_SIZES.LG, className = '', ...rest } = props;
     const computedDefaultProps = typeof defaultProps === 'function' ? defaultProps(props as P) : defaultProps;
 
-    const svgRest: Partial<SvgIconAttributes> = {};
-    for (const key of svgAttributeKeys) {
-      if (key in rest) {
-        (svgRest as any)[key] = rest[key as keyof typeof rest];
-      }
-    }
-
     const finalProps: SvgIconAttributes = {
       fill: 'none',
       stroke: 'currentColor',
@@ -52,8 +45,14 @@ export function createIcon<P extends IconProps = IconProps>({ iconName, defaultP
       strokeLinecap: 'round',
       strokeLinejoin: 'round',
       ...computedDefaultProps,
-      ...svgRest,
     };
+
+    for (const key of svgAttributeKeys) {
+      const propValue = rest[key as keyof typeof rest];
+      if (propValue !== undefined) {
+        (finalProps as any)[key] = propValue;
+      }
+    }
 
     return (
       <svg

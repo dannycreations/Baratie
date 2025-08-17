@@ -1,4 +1,4 @@
-import { memo, StrictMode, useEffect } from 'react';
+import { memo, StrictMode, useEffect, useMemo } from 'react';
 import { createRoot as createReactRoot } from 'react-dom/client';
 
 import { CookbookPanel } from '../components/cookbook/CookbookPanel';
@@ -36,8 +36,14 @@ const BaratieView = memo((): JSX.Element => {
     }
   }, [isAppReady]);
 
-  const mainContentClass = `h-screen w-screen overflow-hidden transition-opacity duration-300 ${isAppReady ? 'opacity-100' : 'opacity-0'}`;
-  const rootLayoutClass = `flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden ${scrollClasses}`.trim();
+  const mainContentClass = useMemo(
+    () => `h-screen w-screen overflow-hidden transition-opacity duration-300 ${isAppReady ? 'opacity-100' : 'opacity-0'}`,
+    [isAppReady],
+  );
+  const rootLayoutClass = useMemo(
+    () => `flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden ${scrollClasses}`.trim(),
+    [scrollClasses],
+  );
 
   return (
     <>

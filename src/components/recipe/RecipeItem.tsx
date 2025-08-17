@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { ingredientRegistry } from '../../app/container';
@@ -14,16 +14,6 @@ import type { AppTheme } from '../../app/themes';
 import type { IngredientDefinition, IngredientItem, SpiceValue } from '../../core/IngredientRegistry';
 import type { CookingStatusType } from '../../core/Kitchen';
 
-interface RecipeItemUIState {
-  readonly isAutoCook: boolean;
-  readonly isDragged: boolean;
-  readonly isEditing: boolean;
-  readonly isPaused: boolean;
-  readonly isSpiceInInput: boolean;
-  readonly status: CookingStatusType;
-  readonly warning: string | null;
-}
-
 export interface RecipeItemHandlers {
   readonly onRemove: (id: string) => void;
   readonly onSpiceChange: (ingredientId: string, spiceId: string, newValue: SpiceValue) => void;
@@ -37,10 +27,16 @@ export interface RecipeItemHandlers {
   readonly onTogglePause: (id: string) => void;
 }
 
-interface RecipeItemProps {
+export interface RecipeItemProps {
   readonly ingredientItem: IngredientItem;
-  readonly uiState: RecipeItemUIState;
   readonly handlers: RecipeItemHandlers;
+  readonly isAutoCook: boolean;
+  readonly isDragged: boolean;
+  readonly isEditing: boolean;
+  readonly isPaused: boolean;
+  readonly isSpiceInInput: boolean;
+  readonly status: CookingStatusType;
+  readonly warning: string | null;
 }
 
 interface MissingRecipeItemProps {
@@ -140,145 +136,146 @@ const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition
   );
 });
 
-export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, handlers }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
-  const definition = ingredientRegistry.get(ingredientItem.ingredientId);
-  const { isAutoCook, isDragged, isEditing, isPaused, isSpiceInInput, status, warning } = uiState;
-  const { onRemove, onSpiceChange, onDragStart, onDragEnd, onDragOver, onDragEnter, onEditToggle, onLongPressStart, onLongPressEnd, onTogglePause } =
-    handlers;
+export const RecipeItem = memo<RecipeItemProps>(
+  ({ ingredientItem, handlers, isAutoCook, isDragged, isEditing, isPaused, isSpiceInInput, status, warning }): JSX.Element => {
+    const theme = useThemeStore((state) => state.theme);
+    const definition = ingredientRegistry.get(ingredientItem.ingredientId);
+    const {
+      onRemove,
+      onSpiceChange,
+      onDragStart,
+      onDragEnd,
+      onDragOver,
+      onDragEnter,
+      onEditToggle,
+      onLongPressStart,
+      onLongPressEnd,
+      onTogglePause,
+    } = handlers;
 
-  if (!definition) {
-    return <MissingRecipeItem ingredientItem={ingredientItem} onRemove={onRemove} />;
-  }
+    if (!definition) {
+      return <MissingRecipeItem ingredientItem={ingredientItem} onRemove={onRemove} />;
+    }
 
-  const handleEditToggleCallback = useCallback(() => {
-    onEditToggle(ingredientItem.id);
-  }, [onEditToggle, ingredientItem.id]);
+    const handleEditToggleCallback = useCallback(() => {
+      onEditToggle(ingredientItem.id);
+    }, [onEditToggle, ingredientItem.id]);
 
-  const handleTogglePauseCallback = useCallback(() => {
-    onTogglePause(ingredientItem.id);
-  }, [onTogglePause, ingredientItem.id]);
+    const handleTogglePauseCallback = useCallback(() => {
+      onTogglePause(ingredientItem.id);
+    }, [onTogglePause, ingredientItem.id]);
 
-  const handleDragStart = useCallback(
-    (event: DragEvent<HTMLElement>): void => {
-      onDragStart(event, ingredientItem);
-    },
-    [onDragStart, ingredientItem],
-  );
+    const handleDragStart = useCallback(
+      (event: DragEvent<HTMLElement>): void => {
+        onDragStart(event, ingredientItem);
+      },
+      [onDragStart, ingredientItem],
+    );
 
-  const handleDragEnter = useCallback(
-    (event: DragEvent<HTMLElement>): void => {
-      onDragEnter(event, ingredientItem.id);
-    },
-    [onDragEnter, ingredientItem.id],
-  );
+    const handleDragEnter = useCallback(
+      (event: DragEvent<HTMLElement>): void => {
+        onDragEnter(event, ingredientItem.id);
+      },
+      [onDragEnter, ingredientItem.id],
+    );
 
-  const hasSpices = !!definition.spices && definition.spices.length > 0;
-  const isEditorVisible = isEditing && !isSpiceInInput && !isDragged;
-  const settingsTooltip = isSpiceInInput ? 'Options are in the Input panel' : isEditing ? 'Hide Options' : 'Edit Options';
-  const hasWarning = status === 'warning' && typeof warning === 'string' && warning.length > 0;
-  const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
-  const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
+    const hasSpices = !!definition.spices && definition.spices.length > 0;
+    const isEditorVisible = isEditing && !isSpiceInInput && !isDragged;
+    const settingsTooltip = isSpiceInInput ? 'Options are in the Input panel' : isEditing ? 'Hide Options' : 'Edit Options';
+    const hasWarning = status === 'warning' && typeof warning === 'string' && warning.length > 0;
 
-  let infoContent: ReactNode = null;
-  if (hasWarning) {
-    infoContent = <InfoMessage type="warning" message={warning} />;
-  } else if (hasSpices && isSpiceInInput) {
-    infoContent = <InfoMessage type="spiceInInput" />;
-  }
+    let infoContent: ReactNode = null;
+    if (hasWarning) {
+      infoContent = <InfoMessage type="warning" message={warning} />;
+    } else if (hasSpices && isSpiceInInput) {
+      infoContent = <InfoMessage type="spiceInInput" />;
+    }
 
-  const itemClass = [
-    'group',
-    'flex',
-    'flex-col',
-    'rounded-md',
-    `bg-${theme.surfaceTertiary}`,
-    'text-sm',
-    'outline-none',
-    'transition-all',
-    'duration-200',
-    'ease-in-out',
-    isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100',
-    statusBorderClass,
-  ]
-    .filter(Boolean)
-    .join(' ');
+    const itemClass = useMemo(() => {
+      const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
+      const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
 
-  const grabHandleClass = `mr-2 text-${theme.contentTertiary} cursor-grab transition-colors group-hover:text-${theme.contentSecondary}`;
+      return `group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm outline-none transition-all duration-200 ease-in-out ${
+        isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'
+      } ${statusBorderClass}`.trim();
+    }, [isAutoCook, isDragged, status, theme]);
 
-  const leftColumn = (
-    <>
-      <Tooltip content="Drag to reorder" position="top">
-        <span className={grabHandleClass} draggable onDragStart={handleDragStart} onDragEnd={onDragEnd}>
-          <GrabIcon size={ICON_SIZES.MD} />
-        </span>
-      </Tooltip>
-      <div className="min-w-0 flex-1">
-        <Tooltip content={definition.description} position="top" className="inline-block max-w-full">
-          <h3 className={`block truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default outline-none`}>{definition.name}</h3>
+    const grabHandleClass = `mr-2 text-${theme.contentTertiary} cursor-grab transition-colors group-hover:text-${theme.contentSecondary}`;
+
+    const leftColumn = (
+      <>
+        <Tooltip content="Drag to reorder" position="top">
+          <span className={grabHandleClass} draggable onDragStart={handleDragStart} onDragEnd={onDragEnd}>
+            <GrabIcon size={ICON_SIZES.MD} />
+          </span>
         </Tooltip>
-      </div>
-    </>
-  );
-
-  const rightColumn = (
-    <>
-      <TooltipButton
-        icon={isPaused ? <PlayIcon size={ICON_SIZES.SM} /> : <PauseIcon size={ICON_SIZES.SM} />}
-        size="sm"
-        variant="stealth"
-        className={`opacity-50 group-hover:opacity-100 ${isPaused ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : `text-${theme.warningFg} hover:!bg-${theme.warningBg}`}`}
-        tooltipContent={isPaused ? 'Resume' : 'Pause'}
-        tooltipPosition="top"
-        onClick={handleTogglePauseCallback}
-      />
-      {hasSpices && (
-        <TooltipButton
-          icon={<PreferencesIcon size={ICON_SIZES.SM} />}
-          size="sm"
-          variant={isEditorVisible ? 'primary' : 'stealth'}
-          className={isEditorVisible ? '' : `text-${theme.contentTertiary} hover:text-${theme.infoFg}`}
-          tooltipContent={settingsTooltip}
-          tooltipPosition="top"
-          onClick={handleEditToggleCallback}
-        />
-      )}
-      <TooltipButton
-        icon={<XIcon size={ICON_SIZES.SM} />}
-        size="sm"
-        variant="danger"
-        className="opacity-50 group-hover:opacity-100"
-        tooltipContent="Remove Ingredient"
-        tooltipPosition="top"
-        onClick={() => onRemove(ingredientItem.id)}
-      />
-    </>
-  );
-
-  return (
-    <li className={itemClass} onDragEnter={handleDragEnter} onDragOver={onDragOver}>
-      <ItemListLayout
-        className="h-12 p-2 cursor-default"
-        leftClasses="flex grow items-center min-w-0"
-        leftContent={leftColumn}
-        rightContent={rightColumn}
-      />
-
-      {infoContent && <div className="p-2 pt-0">{infoContent}</div>}
-
-      {hasSpices && (
-        <div className={`accordion-grid ${isEditorVisible ? 'expanded' : ''}`}>
-          <div className="accordion-content">
-            <RecipeSpiceEditor
-              ingredient={ingredientItem}
-              definition={definition}
-              onSpiceChange={onSpiceChange}
-              onLongPressStart={onLongPressStart}
-              onLongPressEnd={onLongPressEnd}
-            />
-          </div>
+        <div className="min-w-0 flex-1">
+          <Tooltip content={definition.description} position="top" className="inline-block max-w-full">
+            <h3 className={`block truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default outline-none`}>{definition.name}</h3>
+          </Tooltip>
         </div>
-      )}
-    </li>
-  );
-});
+      </>
+    );
+
+    const rightColumn = (
+      <>
+        <TooltipButton
+          icon={isPaused ? <PlayIcon size={ICON_SIZES.SM} /> : <PauseIcon size={ICON_SIZES.SM} />}
+          size="sm"
+          variant="stealth"
+          className={`opacity-50 group-hover:opacity-100 ${isPaused ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : `text-${theme.warningFg} hover:!bg-${theme.warningBg}`}`}
+          tooltipContent={isPaused ? 'Resume' : 'Pause'}
+          tooltipPosition="top"
+          onClick={handleTogglePauseCallback}
+        />
+        {hasSpices && (
+          <TooltipButton
+            icon={<PreferencesIcon size={ICON_SIZES.SM} />}
+            size="sm"
+            variant={isEditorVisible ? 'primary' : 'stealth'}
+            className={isEditorVisible ? '' : `text-${theme.contentTertiary} hover:text-${theme.infoFg}`}
+            tooltipContent={settingsTooltip}
+            tooltipPosition="top"
+            onClick={handleEditToggleCallback}
+          />
+        )}
+        <TooltipButton
+          icon={<XIcon size={ICON_SIZES.SM} />}
+          size="sm"
+          variant="danger"
+          className="opacity-50 group-hover:opacity-100"
+          tooltipContent="Remove Ingredient"
+          tooltipPosition="top"
+          onClick={() => onRemove(ingredientItem.id)}
+        />
+      </>
+    );
+
+    return (
+      <li className={itemClass} onDragEnter={handleDragEnter} onDragOver={onDragOver}>
+        <ItemListLayout
+          className="h-12 p-2 cursor-default"
+          leftClasses="flex grow items-center min-w-0"
+          leftContent={leftColumn}
+          rightContent={rightColumn}
+        />
+
+        {infoContent && <div className="p-2 pt-0">{infoContent}</div>}
+
+        {hasSpices && (
+          <div className={`accordion-grid ${isEditorVisible ? 'expanded' : ''}`}>
+            <div className="accordion-content">
+              <RecipeSpiceEditor
+                ingredient={ingredientItem}
+                definition={definition}
+                onSpiceChange={onSpiceChange}
+                onLongPressStart={onLongPressStart}
+                onLongPressEnd={onLongPressEnd}
+              />
+            </div>
+          </div>
+        )}
+      </li>
+    );
+  },
+);

@@ -67,12 +67,17 @@ export const IngredientPanel = memo((): JSX.Element => {
     return allIngredients.filter((ing) => !disabledCategories.has(ing.category) && !disabledIngredients.has(ing.id));
   }, [allIngredients, disabledCategories, disabledIngredients]);
 
-  const favoritesList = useMemo(() => {
-    return visibleIngredientsList.filter((ing) => favorites.has(ing.id));
-  }, [visibleIngredientsList, favorites]);
-
-  const regularList = useMemo(() => {
-    return visibleIngredientsList.filter((ing) => !favorites.has(ing.id));
+  const { favoritesList, regularList } = useMemo(() => {
+    const favs: IngredientProps[] = [];
+    const regs: IngredientProps[] = [];
+    for (const ing of visibleIngredientsList) {
+      if (favorites.has(ing.id)) {
+        favs.push(ing);
+      } else {
+        regs.push(ing);
+      }
+    }
+    return { favoritesList: favs, regularList: regs };
   }, [visibleIngredientsList, favorites]);
 
   const groupedRegular = useMemo(() => groupAndSortIngredients(regularList), [regularList]);

@@ -185,9 +185,7 @@ export class Kitchen {
 
     const { pausedIngredientIds } = useRecipeStore.getState();
 
-    for (let index = 0; index < recipe.length; index++) {
-      const ingredient = recipe[index];
-
+    for (const [index, ingredient] of recipe.entries()) {
       if (pausedIngredientIds.has(ingredient.id)) {
         logger.info(`Skipping paused ingredient: ${ingredient.name}`);
         state.localStatuses[ingredient.id] = 'idle';

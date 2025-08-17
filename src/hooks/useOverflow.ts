@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import type { RefObject } from 'react';
 
@@ -25,14 +25,11 @@ function isTouchDevice(): boolean {
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 }
 
+const isMobile = isTouchDevice();
+
 export function useOverflow<T extends HTMLElement>(): OverflowReturn<T> {
   const ref = useRef<T>(null);
   const [status, setStatus] = useState<OverflowStatus>(INITIAL_STATUS);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    setIsMobile(isTouchDevice());
-  }, []);
 
   useLayoutEffect(() => {
     const element = ref.current;
@@ -86,7 +83,7 @@ export function useOverflow<T extends HTMLElement>(): OverflowReturn<T> {
       }
     }
     return classParts.join(' ');
-  }, [isMobile, status.hasOverflowX, status.hasOverflowY]);
+  }, [status.hasOverflowX, status.hasOverflowY]);
 
   return { ref, className };
 }

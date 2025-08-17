@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useId, useMemo, useRef } from 'react';
 
 import { DATA_TYPE_INGREDIENT, DATA_TYPE_RECIPE_ITEM, ICON_SIZES } from '../../app/constants';
-import { ingredientRegistry, kitchen } from '../../app/container';
+import { kitchen } from '../../app/container';
 import { useDragMove } from '../../hooks/useDragMove';
 import { useDropZone } from '../../hooks/useDropZone';
 import { useOverflow } from '../../hooks/useOverflow';
@@ -55,9 +55,9 @@ export const RecipePanel = memo((): JSX.Element => {
   const listId = useId();
 
   const handleDropIngredient = useCallback(
-    (typeString: string): void => {
-      if (typeString && ingredientRegistry.get(typeString)) {
-        addIngredient(typeString);
+    (ingredientId: string): void => {
+      if (ingredientId) {
+        addIngredient(ingredientId);
       }
     },
     [addIngredient],
@@ -235,18 +235,20 @@ export const RecipePanel = memo((): JSX.Element => {
       <ul className="space-y-2 pb-3">
         {ingredients.map((ingredient: IngredientItem) => {
           const isSpiceInInput = inputPanelId === ingredient.id;
-          const isEditingItem = editingIds.has(ingredient.id);
-          const uiState = {
-            isAutoCook: isAutoCookEnabled,
-            isDragged: dragId === ingredient.id,
-            isEditing: !isSpiceInInput && isEditingItem,
-            isSpiceInInput: isSpiceInInput,
-            isPaused: pausedIngredientIds.has(ingredient.id),
-            status: ingredientStatuses[ingredient.id] || 'idle',
-            warning: ingredientWarnings[ingredient.id] || null,
-          };
-
-          return <RecipeItem key={ingredient.id} ingredientItem={ingredient} uiState={uiState} handlers={recipeItemHandlers} />;
+          return (
+            <RecipeItem
+              key={ingredient.id}
+              ingredientItem={ingredient}
+              handlers={recipeItemHandlers}
+              isAutoCook={isAutoCookEnabled}
+              isDragged={dragId === ingredient.id}
+              isEditing={!isSpiceInInput && editingIds.has(ingredient.id)}
+              isPaused={pausedIngredientIds.has(ingredient.id)}
+              isSpiceInInput={isSpiceInInput}
+              status={ingredientStatuses[ingredient.id] || 'idle'}
+              warning={ingredientWarnings[ingredient.id] || null}
+            />
+          );
         })}
         {isDraggingIngredient && (
           <li>

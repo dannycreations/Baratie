@@ -65,9 +65,19 @@ export function saveAllRecipes(recipes: ReadonlyArray<RecipebookItem>): boolean 
 }
 
 export function sanitizeIngredient(rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientItem | null {
-  const definition = rawIngredient.ingredientId
-    ? ingredientRegistry.get(rawIngredient.ingredientId)
-    : ingredientRegistry.getByName(rawIngredient.name);
+  let definition = rawIngredient.ingredientId ? ingredientRegistry.get(rawIngredient.ingredientId) : null;
+
+  if (!definition) {
+    const definitionByName = ingredientRegistry.getByName(rawIngredient.name);
+    if (definitionByName) {
+      if (rawIngredient.ingredientId) {
+        logger.warn(
+          `Ingredient '${rawIngredient.name}' in recipe '${recipeName}' from ${source} had a stale ID ('${rawIngredient.ingredientId}'). It has been matched by name and updated to the new ID ('${definitionByName.id}').`,
+        );
+      }
+      definition = definitionByName;
+    }
+  }
 
   if (!definition) {
     logger.warn(`Skipping unknown ingredient '${rawIngredient.name}' from ${source} for recipe '${recipeName}'. Its definition could not be found.`);

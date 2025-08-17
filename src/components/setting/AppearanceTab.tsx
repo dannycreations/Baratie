@@ -33,6 +33,47 @@ const PalettePreview = memo<PalettePreviewProps>(({ theme }): JSX.Element => {
   );
 });
 
+interface ThemeItemProps {
+  readonly item: (typeof APP_THEMES)[number];
+  readonly isChecked: boolean;
+  readonly onSelect: (id: ThemeId) => void;
+}
+
+const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Element => {
+  const theme = useThemeStore((state) => state.theme);
+
+  const handleClick = useCallback(() => {
+    onSelect(item.id);
+  }, [onSelect, item.id]);
+
+  const liClass = `list-none rounded-md cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-${theme.ring}`;
+
+  const itemLayoutClass = `h-16 p-2 border-2 rounded-md transition-colors duration-150 ${
+    isChecked
+      ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
+      : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`
+  }`.trim();
+
+  const leftContent = (
+    <div className="flex flex-col justify-center gap-1">
+      <h3 className={`font-medium text-sm ${isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`}`}>{item.name}</h3>
+      <PalettePreview theme={item.theme} />
+    </div>
+  );
+
+  const rightContent = isChecked ? (
+    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-500/20">
+      <CheckIcon className={`text-${theme.infoFg}`} size={ICON_SIZES.XS} />
+    </div>
+  ) : null;
+
+  return (
+    <li className={liClass} onClick={handleClick}>
+      <ItemListLayout className={itemLayoutClass} leftContent={leftContent} rightClasses="flex shrink-0 items-center" rightContent={rightContent} />
+    </li>
+  );
+});
+
 export const AppearanceTab = memo((): JSX.Element => {
   const id = useThemeStore((state) => state.id);
   const theme = useThemeStore((state) => state.theme);
@@ -49,54 +90,9 @@ export const AppearanceTab = memo((): JSX.Element => {
     <div className="flex h-full flex-col gap-3">
       <p className={`text-sm text-${theme.contentTertiary}`}>Select a color theme for the application.</p>
       <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {APP_THEMES.map((item) => {
-          const isChecked = id === item.id;
-          const liClass = `list-none rounded-md cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-${theme.ring}`;
-
-          const itemLayoutClass = [
-            'h-16',
-            'p-2',
-            'border-2',
-            'rounded-md',
-            'transition-colors',
-            'duration-150',
-            isChecked
-              ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
-              : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
-          ]
-            .join(' ')
-            .trim();
-
-          const leftContent = (
-            <div className="flex flex-col justify-center gap-1">
-              <h3 className={`font-medium text-sm ${isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`}`}>{item.name}</h3>
-              <PalettePreview theme={item.theme} />
-            </div>
-          );
-
-          const rightContent = isChecked ? (
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-500/20">
-              <CheckIcon className={`text-${theme.infoFg}`} size={ICON_SIZES.XS} />
-            </div>
-          ) : null;
-
-          return (
-            <li
-              key={item.id}
-              className={liClass}
-              onClick={() => {
-                handleSelectTheme(item.id);
-              }}
-            >
-              <ItemListLayout
-                className={itemLayoutClass}
-                leftContent={leftContent}
-                rightClasses="flex shrink-0 items-center"
-                rightContent={rightContent}
-              />
-            </li>
-          );
-        })}
+        {APP_THEMES.map((item) => (
+          <ThemeItem key={item.id} item={item} isChecked={id === item.id} onSelect={handleSelectTheme} />
+        ))}
       </ul>
     </div>
   );

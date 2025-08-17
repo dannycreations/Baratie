@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useThemeStore } from '../../stores/useThemeStore';
 
@@ -13,11 +13,18 @@ export const HighlightText = memo<HighlightTextProps>(({ text, highlight }): JSX
   const theme = useThemeStore((state) => state.theme);
   const trimmedHighlight = highlight.trim();
 
-  if (!trimmedHighlight || !text) {
+  const regex = useMemo(() => {
+    if (!trimmedHighlight) {
+      return null;
+    }
+    const escaped = trimmedHighlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(${escaped})`, 'gi');
+  }, [trimmedHighlight]);
+
+  if (!regex || !text) {
     return <>{text}</>;
   }
 
-  const regex = new RegExp(`(${trimmedHighlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
   const parts = text.split(regex);
 
   return (

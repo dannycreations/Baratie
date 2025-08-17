@@ -4,7 +4,6 @@ import { ICON_SIZES } from '../../app/constants';
 import { errorHandler, ingredientRegistry, kitchen } from '../../app/container';
 import { InputType } from '../../core/InputType';
 import { useKitchenStore } from '../../stores/useKitchenStore';
-import { useNotificationStore } from '../../stores/useNotificationStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { readFile, triggerDownload } from '../../utilities/fileUtil';
 import { CopyButton, TooltipButton } from '../shared/Button';
@@ -119,7 +118,6 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const handleFileRead = useCallback(
     async (file: File): Promise<void> => {
       const operationId = ++importOperationRef.current;
-      useNotificationStore.getState();
 
       const { result: buffer, error } = await errorHandler.attemptAsync<ArrayBuffer>(() => {
         return readFile(file, 'readAsArrayBuffer', 'File to ArrayBuffer');

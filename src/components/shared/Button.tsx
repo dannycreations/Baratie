@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { CONFIRM_SHOW_MS, ICON_SIZES } from '../../app/constants';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
@@ -95,14 +95,17 @@ export const Button = memo<ButtonProps>(
     const theme = useThemeStore((state) => state.theme);
     const finalVariant = variant ?? 'primary';
 
-    const baseClass = `inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-${theme.ring}`;
-    const shapeClass = children ? 'rounded-md' : 'rounded-full';
-    const variantClass = getVariantClasses(finalVariant, theme);
-    const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
-    const finalClassName =
-      `${baseClass} ${shapeClass} ${variantClass} ${sizeClass} ${loading ? ' opacity-60' : ''} ${fullWidth ? ' w-full' : ''} ${className}`.trim();
-    const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
-    const loadingSpinner = <Loader2Icon size={ICON_SIZES.XS} className={`animate-spin ${iconMarginClass}`} />;
+    const finalClassName = useMemo(() => {
+      const baseClass = `inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-${theme.ring}`;
+      const shapeClass = children ? 'rounded-md' : 'rounded-full';
+      const variantClass = getVariantClasses(finalVariant, theme);
+      const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
+      return `${baseClass} ${shapeClass} ${variantClass} ${sizeClass} ${loading ? ' opacity-60' : ''} ${fullWidth ? ' w-full' : ''} ${className}`.trim();
+    }, [theme, children, finalVariant, size, loading, fullWidth, className]);
+
+    const iconMarginClass = useMemo(() => (children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : ''), [children, icon, iconPosition]);
+    const loadingSpinner = useMemo(() => <Loader2Icon size={ICON_SIZES.XS} className={`animate-spin ${iconMarginClass}`} />, [iconMarginClass]);
+
     const showIconLeft = iconPosition === 'left';
     const showIconRight = iconPosition === 'right';
 

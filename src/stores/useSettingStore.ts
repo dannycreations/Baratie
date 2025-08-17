@@ -43,9 +43,16 @@ export const useSettingStore = create<SettingState>()(
   })),
 );
 
-useSettingStore.subscribe(
-  (state) => ({ allowMultipleOpen: state.multipleOpen, persistRecipe: state.persistRecipe }),
-  (settings) => {
-    storage.set(STORAGE_SETTINGS, settings, 'App Settings');
-  },
-);
+let lastSettings = {
+  multipleOpen: useSettingStore.getState().multipleOpen,
+  persistRecipe: useSettingStore.getState().persistRecipe,
+};
+
+useSettingStore.subscribe((state) => {
+  const { multipleOpen, persistRecipe } = state;
+  if (multipleOpen !== lastSettings.multipleOpen || persistRecipe !== lastSettings.persistRecipe) {
+    const newSettings = { multipleOpen, persistRecipe };
+    storage.set(STORAGE_SETTINGS, newSettings, 'App Settings');
+    lastSettings = newSettings;
+  }
+});

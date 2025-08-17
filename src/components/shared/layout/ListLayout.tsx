@@ -1,4 +1,4 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useOverflow } from '../../../hooks/useOverflow';
 import { useSettingStore } from '../../../stores/useSettingStore';
@@ -51,27 +51,23 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
   const isDisabled = isItemDisabled?.(item) ?? false;
   const isDraggable = !isDisabled && !!onItemDragStart;
 
-  const nameClass = [
-    'block',
-    'truncate',
-    'pr-2',
-    'text-sm',
-    `text-${theme.contentSecondary}`,
-    'transition-colors',
-    'duration-150',
-    'cursor-default',
-    `group-hover:text-${theme.infoFg}`,
-    isDisabled ? 'line-through' : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const nameClass = useMemo(
+    () =>
+      `block truncate pr-2 text-sm text-${theme.contentSecondary} transition-colors duration-150 cursor-default group-hover:text-${theme.infoFg} ${
+        isDisabled ? 'line-through' : ''
+      }`.trim(),
+    [theme, isDisabled],
+  );
 
-  const handleDragStart = (event: DragEvent<HTMLElement>): void => {
-    if (!isDraggable) {
-      return;
-    }
-    onItemDragStart?.(event, item);
-  };
+  const handleDragStart = useCallback(
+    (event: DragEvent<HTMLElement>): void => {
+      if (!isDraggable) {
+        return;
+      }
+      onItemDragStart?.(event, item);
+    },
+    [isDraggable, onItemDragStart, item],
+  );
 
   const leftColumn = (
     <div className="flex min-w-0 items-center gap-2">
@@ -158,8 +154,9 @@ export const GroupListLayout = memo<GroupListProps>(
     onItemDragStart,
     isItemDisabled,
   }): JSX.Element => {
-    const { multipleOpen } = useSettingStore((state) => state);
+    const multipleOpen = useSettingStore((state) => state.multipleOpen);
     const [expandedCategories, setExpandedCategories] = useState<ReadonlySet<string>>(new Set());
+    const hasQuery = !!query.trim();
 
     const handleCategoryToggle = useCallback(
       (category: string): void => {
@@ -183,14 +180,14 @@ export const GroupListLayout = memo<GroupListProps>(
 
     if (itemsByCategory.length === 0) {
       return (
-        <EmptyView className="flex grow flex-col items-center justify-center py-3">{query.trim() ? noResultsMessage(query) : emptyMessage}</EmptyView>
+        <EmptyView className="flex grow flex-col items-center justify-center py-3">{hasQuery ? noResultsMessage(query) : emptyMessage}</EmptyView>
       );
     }
 
     return (
       <div className="space-y-2">
         {itemsByCategory.map(([category, items]) => {
-          const isExpanded = !!query.trim() || expandedCategories.has(category);
+          const isExpanded = hasQuery || expandedCategories.has(category);
 
           return (
             <CategorySection

@@ -57,30 +57,27 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
 
     const { recipeIdMap, recipeContentHashMap } = get();
 
-    const getRecipeNameById = (id: string | null | undefined): string | null => {
-      if (!id) {
-        return null;
+    // 1. If there's an active recipe, use its name.
+    if (activeRecipeId) {
+      const activeRecipe = recipeIdMap.get(activeRecipeId);
+      if (activeRecipe) {
+        return activeRecipe.name;
       }
-      return recipeIdMap.get(id)?.name ?? null;
-    };
-
-    const activeRecipeName = getRecipeNameById(activeRecipeId);
-    if (activeRecipeName) {
-      return activeRecipeName;
     }
 
+    // 2. Check if a saved recipe has the exact same content.
     const currentHash = createRecipeHash(ingredients);
     const existingRecipeIdByContent = recipeContentHashMap.get(currentHash);
-    const existingRecipeName = getRecipeNameById(existingRecipeIdByContent);
-    if (existingRecipeName) {
-      return existingRecipeName;
+    if (existingRecipeIdByContent) {
+      const existingRecipe = recipeIdMap.get(existingRecipeIdByContent);
+      if (existingRecipe) {
+        return existingRecipe.name;
+      }
     }
 
+    // 3. Fallback to a generated name.
     const date = new Date();
-    const dateString = date.toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-    });
+    const dateString = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     return `My Recipe ${dateString}`;
   },
 
@@ -281,10 +278,11 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
 
   setRecipes: (newRecipes) => {
     const recipes = [...newRecipes].sort((a, b) => b.updatedAt - a.updatedAt);
-    const recipeIdMap = new Map(recipes.map((recipe) => [recipe.id, recipe]));
+    const recipeIdMap = new Map<string, RecipebookItem>();
     const recipeContentHashMap = new Map<string, string>();
 
     for (const recipe of recipes) {
+      recipeIdMap.set(recipe.id, recipe);
       recipeContentHashMap.set(createRecipeHash(recipe.ingredients), recipe.id);
     }
 

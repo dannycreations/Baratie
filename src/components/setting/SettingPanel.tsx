@@ -23,16 +23,21 @@ let persistentActiveTab: SettingTab = 'general';
 interface TabButtonProps {
   readonly children: string;
   readonly isActive: boolean;
-  readonly onClick: () => void;
+  readonly onClick: (id: SettingTab) => void;
+  readonly id: SettingTab;
 }
 
-const TabButton = memo<TabButtonProps>(({ children, isActive, onClick }): JSX.Element => {
+const TabButton = memo<TabButtonProps>(({ children, isActive, onClick, id }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
+
+  const handleClick = useCallback(() => {
+    onClick(id);
+  }, [id, onClick]);
 
   const tabClass = `p-2 font-medium text-sm rounded-t-md border-b-2 outline-none transition-colors duration-150 ${isActive ? `border-${theme.infoBorder} text-${theme.infoFg}` : `border-transparent text-${theme.contentTertiary} hover:bg-${theme.surfaceMuted} hover:text-${theme.contentPrimary}`}`;
 
   return (
-    <button className={tabClass} onClick={onClick}>
+    <button className={tabClass} onClick={handleClick}>
       {children}
     </button>
   );
@@ -55,13 +60,7 @@ export const SettingPanel = memo((): JSX.Element => {
       <Modal isOpen={isModalOpen} size="xl" title="Settings" contentClasses="flex flex-col max-h-[80vh]" onClose={closeModal}>
         <nav className={`flex gap-1 border-b border-${theme.borderPrimary}`}>
           {SETTING_TABS.map((tab) => (
-            <TabButton
-              key={tab.id}
-              isActive={activeTab === tab.id}
-              onClick={() => {
-                handleTabSelect(tab.id);
-              }}
-            >
+            <TabButton key={tab.id} id={tab.id} isActive={activeTab === tab.id} onClick={handleTabSelect}>
               {tab.label}
             </TabButton>
           ))}
