@@ -212,7 +212,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
     return defaultOutputActions;
   }, [data, handleClearInput, handleDownloadOutput, handleFileRead, inputPanelConfig, isInput, outputPanelConfig]);
 
-  const renderContent = (): ReactNode => {
+  const renderContent = useMemo((): ReactNode => {
     if (isInput) {
       if (inputPanelConfig?.mode === 'custom' && typeof inputPanelConfig.content === 'function') {
         return inputPanelConfig.content();
@@ -242,11 +242,23 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
       }
       return <OutputContent config={outputPanelConfig} data={outputData} />;
     }
-  };
+  }, [
+    isInput,
+    inputPanelConfig,
+    targetIngredient,
+    handleSpiceChange,
+    startUpdateBatch,
+    endUpdateBatch,
+    inputData,
+    handleSetInputData,
+    handleFileRead,
+    outputPanelConfig,
+    outputData,
+  ]);
 
   return (
     <SectionLayout headerLeft={title} headerRight={renderActions} className="h-[50vh] min-h-0 md:h-1/2" contentClasses="flex flex-col">
-      {renderContent()}
+      {renderContent}
     </SectionLayout>
   );
 });

@@ -139,27 +139,47 @@ export const CookbookPanel = memo((): JSX.Element | null => {
 
   const title = persistedModalMode === 'save' ? 'Add to Cookbook' : 'Open from Cookbook';
 
-  const headerActions =
-    persistedModalMode === 'save' ? (
-      <SaveHeaderActions isSaveDisabled={isSaveDisabled} onExportCurrent={exportCurrent} onSave={handleSave} />
-    ) : (
-      <LoadHeaderActions isExportDisabled={recipes.length === 0} onExportAll={exportAll} onFileImport={handleFileImport} />
-    );
+  const headerActions = useMemo(
+    () =>
+      persistedModalMode === 'save' ? (
+        <SaveHeaderActions isSaveDisabled={isSaveDisabled} onExportCurrent={exportCurrent} onSave={handleSave} />
+      ) : (
+        <LoadHeaderActions isExportDisabled={recipes.length === 0} onExportAll={exportAll} onFileImport={handleFileImport} />
+      ),
+    [persistedModalMode, isSaveDisabled, exportCurrent, handleSave, recipes.length, exportAll, handleFileImport],
+  );
 
-  const bodyContent =
-    persistedModalMode === 'save' ? (
-      <CookbookSave isRecipeEmpty={isRecipeEmpty} nameRef={nameRef} nameInput={nameInput} onNameChange={setName} onSave={handleSave} />
-    ) : (
-      <CookbookLoad
-        query={query}
-        recipes={filteredRecipes}
-        searchRef={searchRef}
-        totalRecipes={recipes.length}
-        onDelete={deleteRecipe}
-        onLoad={handleLoad}
-        onQueryChange={setQuery}
-      />
-    );
+  const bodyContent = useMemo(
+    () =>
+      persistedModalMode === 'save' ? (
+        <CookbookSave isRecipeEmpty={isRecipeEmpty} nameRef={nameRef} nameInput={nameInput} onNameChange={setName} onSave={handleSave} />
+      ) : (
+        <CookbookLoad
+          query={query}
+          recipes={filteredRecipes}
+          searchRef={searchRef}
+          totalRecipes={recipes.length}
+          onDelete={deleteRecipe}
+          onLoad={handleLoad}
+          onQueryChange={setQuery}
+        />
+      ),
+    [
+      persistedModalMode,
+      isRecipeEmpty,
+      nameRef,
+      nameInput,
+      setName,
+      handleSave,
+      query,
+      filteredRecipes,
+      searchRef,
+      recipes.length,
+      deleteRecipe,
+      handleLoad,
+      setQuery,
+    ],
+  );
 
   return (
     <Modal

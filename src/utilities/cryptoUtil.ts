@@ -26,10 +26,11 @@ export function uint8ArrayToHex(bytes: Uint8Array): string {
 }
 
 export function uint8ArrayToBase64(bytes: Uint8Array): string {
+  const CHUNK_SIZE = 8192;
   let binary = '';
-  const length = bytes.byteLength;
-  for (let i = 0; i < length; i++) {
-    binary += String.fromCharCode(bytes[i]);
+  for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
+    const chunk = bytes.subarray(i, i + CHUNK_SIZE);
+    binary += String.fromCharCode.apply(null, chunk as unknown as number[]);
   }
   return btoa(binary);
 }

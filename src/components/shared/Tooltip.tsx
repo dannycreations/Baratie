@@ -35,6 +35,15 @@ const INITIAL_TOOLTIP_STYLE: TooltipPositionStyle = {
   isPositioned: false,
 };
 
+function getTooltipArrowStyles(backdrop: string): Readonly<Record<TooltipPosition, string>> {
+  return {
+    top: `absolute top-full h-0 w-0 border-x-transparent border-b-transparent border-t-${backdrop}`,
+    bottom: `absolute bottom-full h-0 w-0 border-x-transparent border-t-transparent border-b-${backdrop}`,
+    left: `absolute left-full h-0 w-0 border-y-transparent border-r-transparent border-l-${backdrop}`,
+    right: `absolute right-full h-0 w-0 border-y-transparent border-l-transparent border-r-${backdrop}`,
+  };
+}
+
 export const Tooltip = memo<TooltipProps>(
   ({ content, children, position = 'top', delay = 200, className = '', tooltipClasses = '', disabled = false }): JSX.Element => {
     const { activeId, setActiveId } = useTooltipStore();
@@ -75,15 +84,7 @@ export const Tooltip = memo<TooltipProps>(
       }
     }, [clearTimer, activeId, tooltipId, setActiveId]);
 
-    const tooltipArrows: Readonly<Record<TooltipPosition, string>> = useMemo(
-      () => ({
-        top: `absolute top-full h-0 w-0 border-x-transparent border-b-transparent border-t-${theme.backdrop}`,
-        bottom: `absolute bottom-full h-0 w-0 border-x-transparent border-t-transparent border-b-${theme.backdrop}`,
-        left: `absolute left-full h-0 w-0 border-y-transparent border-r-transparent border-l-${theme.backdrop}`,
-        right: `absolute right-full h-0 w-0 border-y-transparent border-l-transparent border-r-${theme.backdrop}`,
-      }),
-      [theme.backdrop],
-    );
+    const tooltipArrows = useMemo(() => getTooltipArrowStyles(theme.backdrop), [theme.backdrop]);
 
     useEffect(() => {
       return clearTimer;

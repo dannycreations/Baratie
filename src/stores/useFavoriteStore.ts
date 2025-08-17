@@ -61,4 +61,17 @@ useFavoriteStore.subscribe(
   (favorites) => {
     storage.set(STORAGE_FAVORITES, [...favorites], 'Favorite Ingredients');
   },
+  {
+    equalityFn: (a, b) => {
+      if (a.size !== b.size) {
+        return false;
+      }
+      for (const item of a) {
+        if (!b.has(item)) {
+          return false;
+        }
+      }
+      return true;
+    },
+  },
 );

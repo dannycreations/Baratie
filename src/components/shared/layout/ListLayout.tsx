@@ -69,23 +69,26 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
     [isDraggable, onItemDragStart, item],
   );
 
-  const leftColumn = (
-    <div className="flex min-w-0 items-center gap-2">
-      {renderItemPrefix?.(item)}
-      <Tooltip
-        className="min-w-0 flex-1"
-        content={<HighlightText highlight={query} text={item.description} />}
-        position="top"
-        tooltipClasses="max-w-xs"
-      >
-        <h3 className={`${nameClass} outline-none`}>
-          <HighlightText highlight={query} text={item.name} />
-        </h3>
-      </Tooltip>
-    </div>
+  const leftColumn = useMemo(
+    () => (
+      <div className="flex min-w-0 items-center gap-2">
+        {renderItemPrefix?.(item)}
+        <Tooltip
+          className="min-w-0 flex-1"
+          content={<HighlightText highlight={query} text={item.description} />}
+          position="top"
+          tooltipClasses="max-w-xs"
+        >
+          <h3 className={`${nameClass} outline-none`}>
+            <HighlightText highlight={query} text={item.name} />
+          </h3>
+        </Tooltip>
+      </div>
+    ),
+    [item, nameClass, query, renderItemPrefix],
   );
 
-  const rightColumn = renderItemActions?.(item);
+  const rightColumn = useMemo(() => renderItemActions?.(item), [item, renderItemActions]);
 
   return (
     <li data-item-id={item.id} draggable={isDraggable} onDragStart={handleDragStart}>

@@ -342,9 +342,8 @@ export const useExtensionStore = create<ExtensionState>()(
 );
 
 useExtensionStore.subscribe(
-  (state) => state.extensions,
-  (extensions) => {
-    const storable = extensions
+  (state) =>
+    state.extensions
       .filter(
         (ext) =>
           (ext.status === 'loaded' || ext.status === 'partial') &&
@@ -361,7 +360,11 @@ useExtensionStore.subscribe(
           scripts: { ...scripts },
           entry: entry,
         };
-      });
+      }),
+  (storable) => {
     storage.set(STORAGE_EXTENSIONS, storable, 'Extensions');
+  },
+  {
+    equalityFn: (a, b) => JSON.stringify(a) === JSON.stringify(b),
   },
 );

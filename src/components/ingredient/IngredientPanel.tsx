@@ -63,22 +63,22 @@ export const IngredientPanel = memo((): JSX.Element => {
 
   const deferredQuery = useDeferredValue(query);
 
-  const visibleIngredientsList = useMemo(() => {
-    return allIngredients.filter((ing) => !disabledCategories.has(ing.category) && !disabledIngredients.has(ing.id));
-  }, [allIngredients, disabledCategories, disabledIngredients]);
-
-  const { favoritesList, regularList } = useMemo(() => {
+  const { favoritesList, regularList, visibleIngredientsCount } = useMemo(() => {
     const favs: IngredientProps[] = [];
     const regs: IngredientProps[] = [];
-    for (const ing of visibleIngredientsList) {
-      if (favorites.has(ing.id)) {
-        favs.push(ing);
-      } else {
-        regs.push(ing);
+    let visibleCount = 0;
+    for (const ing of allIngredients) {
+      if (!disabledCategories.has(ing.category) && !disabledIngredients.has(ing.id)) {
+        visibleCount++;
+        if (favorites.has(ing.id)) {
+          favs.push(ing);
+        } else {
+          regs.push(ing);
+        }
       }
     }
-    return { favoritesList: favs, regularList: regs };
-  }, [visibleIngredientsList, favorites]);
+    return { favoritesList: favs, regularList: regs, visibleIngredientsCount: visibleCount };
+  }, [allIngredients, disabledCategories, disabledIngredients, favorites]);
 
   const groupedRegular = useMemo(() => groupAndSortIngredients(regularList), [regularList]);
 
@@ -105,8 +105,6 @@ export const IngredientPanel = memo((): JSX.Element => {
   }, [deferredQuery, favoritesList, groupedRegular]);
 
   const allIngredientsCount = allIngredients.length;
-  const visibleIngredientsCount = visibleIngredientsList.length;
-
   const visibleIngredients = visibleIngredientsCount;
   const totalIngredients = allIngredientsCount;
 

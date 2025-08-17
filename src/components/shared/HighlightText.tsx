@@ -11,16 +11,16 @@ interface HighlightTextProps {
 
 export const HighlightText = memo<HighlightTextProps>(({ text, highlight }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
-  const trimmedHighlight = highlight.trim();
 
   const parts = useMemo(() => {
+    const trimmedHighlight = highlight.trim();
     if (!trimmedHighlight || !text) {
       return null;
     }
     const escaped = trimmedHighlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`(${escaped})`, 'gi');
     return text.split(regex);
-  }, [text, trimmedHighlight]);
+  }, [text, highlight]);
 
   if (!parts) {
     return <>{text}</>;

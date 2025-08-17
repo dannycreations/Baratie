@@ -1,14 +1,14 @@
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 import { parseGitHubUrl } from '../../../helpers/extensionHelper';
-import { useOverflow } from '../../../hooks/useOverflow';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { Button } from '../../shared/Button';
 import { GitMergeIcon } from '../../shared/Icon';
 import { StringInput } from '../../shared/input/StringInput';
+import { SearchListLayout } from '../../shared/layout/ListLayout';
 import { EmptyView } from '../../shared/View';
 import { ExtensionItem } from './ExtensionItem';
 
@@ -26,7 +26,7 @@ export const ExtensionTab = memo((): JSX.Element => {
   const [isLoading, setIsLoading] = useState(false);
   const [validationStatus, setValidationStatus] = useState<'empty' | 'valid' | 'invalid'>('empty');
 
-  const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
+  const listId = useId();
 
   useEffect(() => {
     const pendingInstall = extensions.find((ext) => ext.status === 'awaiting');
@@ -77,6 +77,29 @@ export const ExtensionTab = memo((): JSX.Element => {
     [handleAdd],
   );
 
+  const listContent = useMemo(
+    () =>
+      extensions.length > 0 ? (
+        <ul className="space-y-2">
+          {extensions.map((extension) => (
+            <ExtensionItem
+              key={extension.id}
+              id={extension.id}
+              displayName={extension.name || extension.id}
+              status={extension.status}
+              errors={extension.errors}
+              isLoading={extension.status === 'loading'}
+              onRefresh={refreshExtension}
+              onRemove={removeExtension}
+            />
+          ))}
+        </ul>
+      ) : (
+        <EmptyView>No extensions have been installed yet.</EmptyView>
+      ),
+    [extensions, refreshExtension, removeExtension],
+  );
+
   return (
     <div className="flex h-full flex-col gap-3">
       <p className={`text-sm text-${theme.contentTertiary}`}>
@@ -108,26 +131,7 @@ export const ExtensionTab = memo((): JSX.Element => {
 
       <div className="flex flex-1 flex-col min-h-0">
         <h4 className={`mb-3 font-medium text-base text-${theme.contentSecondary}`}>Installed Extensions</h4>
-        <div ref={scrollRef} className={`grow overflow-y-auto ${scrollClasses}`}>
-          {extensions.length === 0 ? (
-            <EmptyView>No extensions have been installed yet.</EmptyView>
-          ) : (
-            <ul className="space-y-2">
-              {extensions.map((extension) => (
-                <ExtensionItem
-                  key={extension.id}
-                  id={extension.id}
-                  displayName={extension.name || extension.id}
-                  status={extension.status}
-                  errors={extension.errors}
-                  isLoading={extension.status === 'loading'}
-                  onRefresh={refreshExtension}
-                  onRemove={removeExtension}
-                />
-              ))}
-            </ul>
-          )}
-        </div>
+        <SearchListLayout listId={listId} listContent={listContent} />
       </div>
     </div>
   );

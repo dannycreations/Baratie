@@ -32,13 +32,17 @@ interface NotificationTheme {
 }
 
 function getNotificationTheme(theme: AppTheme, type: NotificationType): NotificationTheme {
-  const map: Record<NotificationType, NotificationTheme> = {
-    error: { barColor: theme.dangerBg, borderColor: theme.dangerBorder, iconColor: theme.dangerFg },
-    info: { barColor: theme.infoBg, borderColor: theme.infoBorder, iconColor: theme.infoFg },
-    success: { barColor: theme.successBg, borderColor: theme.successBorder, iconColor: theme.successFg },
-    warning: { barColor: theme.warningBg, borderColor: theme.warningBorder, iconColor: theme.warningFg },
-  };
-  return map[type] ?? map.info;
+  switch (type) {
+    case 'error':
+      return { barColor: theme.dangerBg, borderColor: theme.dangerBorder, iconColor: theme.dangerFg };
+    case 'success':
+      return { barColor: theme.successBg, borderColor: theme.successBorder, iconColor: theme.successFg };
+    case 'warning':
+      return { barColor: theme.warningBg, borderColor: theme.warningBorder, iconColor: theme.warningFg };
+    case 'info':
+    default:
+      return { barColor: theme.infoBg, borderColor: theme.infoBorder, iconColor: theme.infoFg };
+  }
 }
 
 const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Element => {
@@ -82,7 +86,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
 
   const { iconColor, borderColor, barColor } = getNotificationTheme(theme, notification.type);
 
-  const renderIcon = (): JSX.Element => {
+  const renderedIcon = useMemo(() => {
     switch (notification.type) {
       case 'success':
         return <CheckIcon className={`text-${iconColor}`} size={ICON_SIZES.MD} />;
@@ -93,7 +97,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
       default:
         return <InfoIcon className={`text-${iconColor}`} size={ICON_SIZES.MD} />;
     }
-  };
+  }, [notification.type, iconColor]);
 
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
   const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
@@ -106,7 +110,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   return (
     <li className={containerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="flex items-start gap-2 p-3">
-        <div className="flex-shrink-0">{renderIcon()}</div>
+        <div className="flex-shrink-0">{renderedIcon}</div>
         <div className="flex-1">
           {notification.title && <h3 className={`font-semibold text-sm text-${theme.contentPrimary}`}>{notification.title}</h3>}
           <p className={messageClass}>{notification.message}</p>

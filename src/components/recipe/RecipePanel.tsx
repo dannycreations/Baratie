@@ -75,7 +75,7 @@ export const RecipePanel = memo((): JSX.Element => {
       listElement?.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
     prevIngredientsCount.current = ingredients.length;
-  }, [ingredients, listId]);
+  }, [ingredients.length, listId]);
 
   const handleReorder = useCallback(
     (draggedId: string, targetId: string): void => {
@@ -215,12 +215,12 @@ export const RecipePanel = memo((): JSX.Element => {
     ],
   );
 
-  let content: JSX.Element;
-  if (ingredients.length === 0) {
-    if (isDraggingIngredient) {
-      content = <DropZoneLayout mode="overlay" text="Drop to add ingredient" variant="add" />;
-    } else {
-      content = (
+  const content = useMemo((): JSX.Element => {
+    if (ingredients.length === 0) {
+      if (isDraggingIngredient) {
+        return <DropZoneLayout mode="overlay" text="Drop to add ingredient" variant="add" />;
+      }
+      return (
         <EmptyView className="flex h-full flex-col items-center justify-center p-3">
           No ingredients have been added.
           <br />
@@ -228,8 +228,7 @@ export const RecipePanel = memo((): JSX.Element => {
         </EmptyView>
       );
     }
-  } else {
-    content = (
+    return (
       <ul className="space-y-2 pb-3">
         {ingredients.map((ingredient: IngredientItem) => {
           const isSpiceInInput = inputPanelId === ingredient.id;
@@ -255,7 +254,18 @@ export const RecipePanel = memo((): JSX.Element => {
         )}
       </ul>
     );
-  }
+  }, [
+    ingredients,
+    isDraggingIngredient,
+    inputPanelId,
+    recipeItemHandlers,
+    isAutoCookEnabled,
+    dragId,
+    editingIds,
+    pausedIngredientIds,
+    ingredientStatuses,
+    ingredientWarnings,
+  ]);
 
   const listClass = `grow transition-colors duration-200 ${isDraggingIngredient ? `bg-${theme.surfaceMuted}` : ''}`.trim();
 

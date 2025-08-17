@@ -1,5 +1,6 @@
 import { logger } from '../app/container';
 import { useNotificationStore } from '../stores/useNotificationStore';
+import { objectStringify } from '../utilities/errorUtil';
 
 export class AppError extends Error {
   public readonly context?: string;
@@ -115,7 +116,7 @@ export class ErrorHandler {
 
     let errorMessage: string;
     try {
-      errorMessage = `Unknown error: ${JSON.stringify(error)}`;
+      errorMessage = `Unknown error: ${objectStringify(error)}`;
     } catch {
       errorMessage = `Unknown error: ${String(error)}`;
     }

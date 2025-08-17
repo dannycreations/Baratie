@@ -28,13 +28,16 @@ export interface ExtensionItemProps extends ExtensionItemStatusProps, ExtensionI
 const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
-  const statusMap = {
-    loading: { icon: <Loader2Icon className="animate-spin" size={ICON_SIZES.XS} />, text: 'Loading...', color: theme.contentTertiary },
-    loaded: { icon: <CheckIcon size={ICON_SIZES.XS} />, text: 'Loaded', color: theme.successFg },
-    error: { icon: <AlertTriangleIcon size={ICON_SIZES.XS} />, text: 'Error', color: theme.dangerFg },
-    partial: { icon: <AlertTriangleIcon size={ICON_SIZES.XS} />, text: 'Partial', color: theme.warningFg },
-    awaiting: { icon: <Loader2Icon className="animate-spin" size={ICON_SIZES.XS} />, text: 'Awaiting Install...', color: theme.infoFg },
-  };
+  const statusMap = useMemo(
+    () => ({
+      loading: { icon: <Loader2Icon className="animate-spin" size={ICON_SIZES.XS} />, text: 'Loading...', color: theme.contentTertiary },
+      loaded: { icon: <CheckIcon size={ICON_SIZES.XS} />, text: 'Loaded', color: theme.successFg },
+      error: { icon: <AlertTriangleIcon size={ICON_SIZES.XS} />, text: 'Error', color: theme.dangerFg },
+      partial: { icon: <AlertTriangleIcon size={ICON_SIZES.XS} />, text: 'Partial', color: theme.warningFg },
+      awaiting: { icon: <Loader2Icon className="animate-spin" size={ICON_SIZES.XS} />, text: 'Awaiting Install...', color: theme.infoFg },
+    }),
+    [theme],
+  );
 
   const current = statusMap[status] || statusMap.error;
   const content = (

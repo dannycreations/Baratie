@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { errorHandler } from '../app/container';
 
@@ -18,6 +18,12 @@ export interface DragMoveHookReturn {
 }
 
 export function useDragMove<T extends { id: string }>({ dragId, setDragId, onDragMove, items }: DragMoveHookProps<T>): DragMoveHookReturn {
+  const itemsRef = useRef(items);
+
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+
   useEffect(() => {
     if (dragId) {
       document.body.classList.add('grabbing');
@@ -64,8 +70,9 @@ export function useDragMove<T extends { id: string }>({ dragId, setDragId, onDra
         return;
       }
 
-      const draggedIndex = items.findIndex((item) => item.id === dragId);
-      const targetIndex = items.findIndex((item) => item.id === targetItemId);
+      const currentItems = itemsRef.current;
+      const draggedIndex = currentItems.findIndex((item) => item.id === dragId);
+      const targetIndex = currentItems.findIndex((item) => item.id === targetItemId);
 
       if (draggedIndex === -1 || targetIndex === -1) {
         return;
@@ -87,7 +94,7 @@ export function useDragMove<T extends { id: string }>({ dragId, setDragId, onDra
 
       onDragMove(dragId, targetItemId);
     },
-    [dragId, onDragMove, items],
+    [dragId, onDragMove],
   );
 
   const handleDragEnd = useCallback((): void => {

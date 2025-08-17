@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { APP_THEMES } from '../../app/themes';
@@ -15,14 +15,17 @@ interface PalettePreviewProps {
 }
 
 const PalettePreview = memo<PalettePreviewProps>(({ theme }): JSX.Element => {
-  const swatchColors = [
-    { color: theme.surfacePrimary, title: 'Page BG' },
-    { color: theme.surfaceSecondary, title: 'Card BG' },
-    { color: theme.accentBg, title: 'Accent' },
-    { color: theme.contentPrimary, title: 'Text' },
-    { color: theme.successFg, title: 'Success' },
-    { color: theme.dangerFg, title: 'Error' },
-  ];
+  const swatchColors = useMemo(
+    () => [
+      { color: theme.surfacePrimary, title: 'Page BG' },
+      { color: theme.surfaceSecondary, title: 'Card BG' },
+      { color: theme.accentBg, title: 'Accent' },
+      { color: theme.contentPrimary, title: 'Text' },
+      { color: theme.successFg, title: 'Success' },
+      { color: theme.dangerFg, title: 'Error' },
+    ],
+    [theme],
+  );
 
   return (
     <div className="flex items-center space-x-1">
@@ -46,13 +49,20 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
     onSelect(item.id);
   }, [onSelect, item.id]);
 
-  const liClass = `list-none rounded-md cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-${theme.ring}`;
+  const liClass = useMemo(
+    () => `list-none rounded-md cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-${theme.ring}`,
+    [theme.ring],
+  );
 
-  const itemLayoutClass = `h-16 p-2 border-2 rounded-md transition-colors duration-150 ${
-    isChecked
-      ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
-      : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`
-  }`.trim();
+  const itemLayoutClass = useMemo(
+    () =>
+      `h-16 p-2 border-2 rounded-md transition-colors duration-150 ${
+        isChecked
+          ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
+          : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`
+      }`.trim(),
+    [isChecked, theme],
+  );
 
   const leftContent = (
     <div className="flex flex-col justify-center gap-1">

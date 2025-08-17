@@ -52,13 +52,17 @@ interface RecipeSpiceEditorProps {
 }
 
 function getStatusBorder(theme: AppTheme, status: CookingStatusType): string {
-  const statusBorders: Readonly<Record<CookingStatusType, string>> = {
-    idle: '',
-    error: theme.dangerBorder,
-    success: theme.successBorder,
-    warning: theme.warningBorder,
-  };
-  return statusBorders[status];
+  switch (status) {
+    case 'error':
+      return theme.dangerBorder;
+    case 'success':
+      return theme.successBorder;
+    case 'warning':
+      return theme.warningBorder;
+    case 'idle':
+    default:
+      return '';
+  }
 }
 
 const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemove }): JSX.Element => {

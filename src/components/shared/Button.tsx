@@ -66,16 +66,15 @@ const TEXT_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
   lg: 'p-3 text-base',
 };
 
-const getVariantClasses = (variant: ButtonVariant, theme: AppTheme): string => {
-  const variantMap: Record<ButtonVariant, string> = {
+function getVariantMap(theme: AppTheme): Record<ButtonVariant, string> {
+  return {
     danger: `border-${theme.dangerBorder} bg-transparent text-${theme.dangerFg} hover:bg-${theme.dangerBgHover}`,
     outline: `border-${theme.borderPrimary} bg-transparent text-${theme.contentSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
     primary: `border-transparent bg-${theme.accentBg} text-${theme.accentFg} hover:bg-${theme.accentBgHover}`,
     secondary: `border-transparent bg-${theme.surfaceTertiary} text-${theme.contentSecondary} hover:bg-${theme.surfaceHover} hover:text-${theme.contentPrimary}`,
     stealth: `border-transparent bg-transparent text-${theme.contentTertiary} hover:bg-${theme.surfaceMuted} hover:text-${theme.contentPrimary}`,
   };
-  return variantMap[variant];
-};
+}
 
 export const Button = memo<ButtonProps>(
   ({
@@ -98,13 +97,14 @@ export const Button = memo<ButtonProps>(
     const finalClassName = useMemo(() => {
       const baseClass = `inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-${theme.ring}`;
       const shapeClass = children ? 'rounded-md' : 'rounded-full';
-      const variantClass = getVariantClasses(finalVariant, theme);
+      const variantMap = getVariantMap(theme);
+      const variantClass = variantMap[finalVariant];
       const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
       return `${baseClass} ${shapeClass} ${variantClass} ${sizeClass} ${loading ? ' opacity-60' : ''} ${fullWidth ? ' w-full' : ''} ${className}`.trim();
     }, [theme, children, finalVariant, size, loading, fullWidth, className]);
 
-    const iconMarginClass = useMemo(() => (children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : ''), [children, icon, iconPosition]);
-    const loadingSpinner = useMemo(() => <Loader2Icon size={ICON_SIZES.XS} className={`animate-spin ${iconMarginClass}`} />, [iconMarginClass]);
+    const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
+    const loadingSpinner = <Loader2Icon size={ICON_SIZES.XS} className={`animate-spin ${iconMarginClass}`} />;
 
     const showIconLeft = iconPosition === 'left';
     const showIconRight = iconPosition === 'right';

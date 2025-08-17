@@ -69,10 +69,8 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     const currentHash = createRecipeHash(ingredients);
     const existingRecipeIdByContent = recipeContentHashMap.get(currentHash);
     if (existingRecipeIdByContent) {
-      const existingRecipe = recipeIdMap.get(existingRecipeIdByContent);
-      if (existingRecipe) {
-        return existingRecipe.name;
-      }
+      // The recipe is guaranteed to exist in recipeIdMap due to store invariants.
+      return recipeIdMap.get(existingRecipeIdByContent)!.name;
     }
 
     // 3. Fallback to a generated name.
@@ -181,7 +179,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
 
   init: () => {
     const { show } = useNotificationStore.getState();
-    const storedRecipes = storage.get<Array<unknown>>(STORAGE_COOKBOOK, 'Saved Recipes');
+    const storedRecipes = storage.get<ReadonlyArray<unknown>>(STORAGE_COOKBOOK, 'Saved Recipes');
 
     if (!Array.isArray(storedRecipes)) {
       get().setRecipes([]);

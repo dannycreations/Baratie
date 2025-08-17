@@ -10,9 +10,9 @@ import type { IngredientItem, SpiceValue } from '../core/IngredientRegistry';
 
 interface RecipeState {
   readonly activeRecipeId: string | null;
-  readonly editingIds: ReadonlySet<string>;
+  readonly editingIds: Set<string>;
   readonly ingredients: ReadonlyArray<IngredientItem>;
-  readonly pausedIngredientIds: ReadonlySet<string>;
+  readonly pausedIngredientIds: Set<string>;
   readonly addIngredient: (ingredientId: string, initialSpices?: Readonly<Record<string, unknown>>) => void;
   readonly clearEditingIds: () => void;
   readonly clearRecipe: () => void;
@@ -92,16 +92,22 @@ export const useRecipeStore = create<RecipeState>()(
 
         const newIngredients = [...state.ingredients];
         newIngredients.splice(index, 1);
-        const newEditingIds = new Set(state.editingIds);
-        newEditingIds.delete(id);
-        const newPausedIds = new Set(state.pausedIngredientIds);
-        newPausedIds.delete(id);
+
+        let { editingIds, pausedIngredientIds } = state;
+        if (editingIds.has(id)) {
+          editingIds = new Set(editingIds);
+          editingIds.delete(id);
+        }
+        if (pausedIngredientIds.has(id)) {
+          pausedIngredientIds = new Set(pausedIngredientIds);
+          pausedIngredientIds.delete(id);
+        }
 
         return {
           ingredients: newIngredients,
           activeRecipeId: state.activeRecipeId === id ? null : state.activeRecipeId,
-          editingIds: newEditingIds,
-          pausedIngredientIds: newPausedIds,
+          editingIds,
+          pausedIngredientIds,
         };
       });
     },
