@@ -9,6 +9,7 @@ import {
   isCacheValid,
   loadAndExecuteExtension,
   parseGitHubUrl,
+  shallowExtensionStorable,
   StorableExtensionSchema,
   updateStateWithExtensions,
 } from '../helpers/extensionHelper';
@@ -356,15 +357,15 @@ useExtensionStore.subscribe(
         return {
           id: id,
           name: name,
-          fetchedAt: fetchedAt,
-          scripts: { ...scripts },
           entry: entry,
+          scripts: { ...scripts },
+          fetchedAt: fetchedAt!,
         };
       }),
   (storable) => {
     storage.set(STORAGE_EXTENSIONS, storable, 'Extensions');
   },
   {
-    equalityFn: (a, b) => JSON.stringify(a) === JSON.stringify(b),
+    equalityFn: shallowExtensionStorable,
   },
 );

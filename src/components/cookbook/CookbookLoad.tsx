@@ -39,21 +39,19 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
           {totalRecipes === 0 ? 'Build a recipe and save it to your cookbook!' : `No recipes found for "${query}".`}
         </EmptyView>
       ),
-    [recipes, onDelete, onLoad],
+    [recipes, onDelete, onLoad, query, totalRecipes],
   );
 
   return (
     <SearchListLayout
       listId={listId}
       listContent={listContent}
-      search={{
-        query,
-        onQueryChange,
-        id: 'recipe-search',
-        inputRef: searchRef,
-        placeholder: 'Search Saved Recipes...',
-        wrapperClasses: `pb-2 border-b border-${theme.borderPrimary}`,
-      }}
+      searchQuery={query}
+      searchOnQuery={onQueryChange}
+      searchId="recipe-search"
+      searchInputRef={searchRef}
+      searchPlaceholder="Search Saved Recipes..."
+      searchWrapperClasses={`pb-2 border-b border-${theme.borderPrimary}`}
     />
   );
 });

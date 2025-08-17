@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -43,6 +43,8 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete,
     onLoad(recipe.id);
   }, [onLoad, recipe.id]);
 
+  const formattedTimestamp = useMemo(() => formatTimestamp(recipe.updatedAt), [recipe.updatedAt]);
+
   return (
     <li className="list-none">
       <ItemListLayout
@@ -54,7 +56,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete,
               <HighlightText text={recipe.name} highlight={query} />
             </h3>
             <p className={`text-xs text-${theme.contentTertiary}`}>
-              Last Updated: {formatTimestamp(recipe.updatedAt)} ({recipe.ingredients.length} steps)
+              Last Updated: {formattedTimestamp} ({recipe.ingredients.length} steps)
             </p>
           </>
         }

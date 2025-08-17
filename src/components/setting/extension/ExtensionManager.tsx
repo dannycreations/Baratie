@@ -196,13 +196,11 @@ export const ExtensionManager = memo((): JSX.Element | null => {
       <SearchListLayout
         listId={listId}
         listContent={content}
-        search={{
-          query,
-          onQueryChange: setQuery,
-          id: 'module-install-search',
-          inputRef: searchRef,
-          placeholder: 'Search Modules...',
-        }}
+        searchQuery={query}
+        searchOnQuery={setQuery}
+        searchId="module-install-search"
+        searchInputRef={searchRef}
+        searchPlaceholder="Search Modules..."
       />
     </Modal>
   );

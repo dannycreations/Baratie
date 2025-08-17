@@ -109,13 +109,11 @@ export const IngredientManager = memo((): JSX.Element => {
       <SearchListLayout
         listId={listId}
         listContent={content}
-        search={{
-          query,
-          onQueryChange: setQuery,
-          id: 'ingredient-manager-search',
-          inputRef: searchRef,
-          placeholder: 'Search Ingredients...',
-        }}
+        searchQuery={query}
+        searchOnQuery={setQuery}
+        searchId="ingredient-manager-search"
+        searchInputRef={searchRef}
+        searchPlaceholder="Search Ingredients..."
       />
     </Modal>
   );

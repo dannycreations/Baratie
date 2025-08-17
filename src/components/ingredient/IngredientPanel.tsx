@@ -193,12 +193,10 @@ export const IngredientPanel = memo((): JSX.Element => {
               onItemDragStart={handleItemDragStart}
             />
           }
-          search={{
-            query,
-            onQueryChange: setQuery,
-            id: 'ingredient-search',
-            placeholder: 'Search Ingredients...',
-          }}
+          searchQuery={query}
+          searchOnQuery={setQuery}
+          searchId="ingredient-search"
+          searchPlaceholder="Search Ingredients..."
         />
       </div>
       <IngredientManager />

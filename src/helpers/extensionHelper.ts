@@ -221,3 +221,81 @@ export async function loadAndExecuteExtension(extension: Readonly<Extension>, de
     logger.error(`Extension '${nameForLog}' failed to load with ${errorLogs.length} error(s).`, errorLogs);
   }
 }
+
+function shallowObject(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  const keysA = Object.keys(a);
+  if (keysA.length !== Object.keys(b).length) {
+    return false;
+  }
+  for (const key of keysA) {
+    if (!Object.prototype.hasOwnProperty.call(b, key) || a[key] !== b[key]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function shallowExtensionObject(a: ReadonlyArray<unknown>, b: ReadonlyArray<unknown>): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    const itemA = a[i];
+    const itemB = b[i];
+    const typeA = typeof itemA;
+
+    if (typeA !== typeof itemB) {
+      return false;
+    }
+
+    if (typeA === 'object' && itemA !== null && itemB !== null) {
+      if (!shallowObject(itemA as Record<string, unknown>, itemB as Record<string, unknown>)) {
+        return false;
+      }
+    } else if (itemA !== itemB) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function shallowExtensionStorable(a: ReadonlyArray<StorableExtension>, b: ReadonlyArray<StorableExtension>): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  for (let i = 0; i < a.length; i++) {
+    const extA = a[i];
+    const extB = b[i];
+
+    if (extA.id !== extB.id || extA.name !== extB.name || extA.fetchedAt !== extB.fetchedAt) {
+      return false;
+    }
+
+    if (!shallowObject(extA.scripts, extB.scripts)) {
+      return false;
+    }
+
+    const entryA = extA.entry;
+    const entryB = extB.entry;
+    const typeA = typeof entryA;
+
+    if (typeA !== typeof entryB) {
+      return false;
+    }
+
+    if (typeA === 'string') {
+      if (entryA !== entryB) {
+        return false;
+      }
+    } else if (Array.isArray(entryA) && Array.isArray(entryB)) {
+      if (!shallowExtensionObject(entryA, entryB)) {
+        return false;
+      }
+    } else if (entryA !== undefined || entryB !== undefined) {
+      return false;
+    }
+  }
+
+  return true;
+}

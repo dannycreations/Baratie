@@ -240,21 +240,17 @@ export const ItemListLayout = memo<ItemListLayoutProps>(
   },
 );
 
-interface SearchProps {
-  readonly query: string;
-  readonly onQueryChange: (query: string) => void;
-  readonly id: string;
-  readonly inputRef?: RefObject<HTMLInputElement | null>;
-  readonly placeholder?: string;
-  readonly wrapperClasses?: string;
-}
-
 interface SearchListLayoutProps {
   readonly listContent: ReactNode;
   readonly listId: string;
   readonly containerClasses?: string;
   readonly listWrapperClasses?: string;
-  readonly search?: SearchProps;
+  readonly searchQuery?: string;
+  readonly searchOnQuery?: (query: string) => void;
+  readonly searchId?: string;
+  readonly searchInputRef?: RefObject<HTMLInputElement | null>;
+  readonly searchPlaceholder?: string;
+  readonly searchWrapperClasses?: string;
 }
 
 export const SearchListLayout = memo<SearchListLayoutProps>(
@@ -263,37 +259,42 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
     listWrapperClasses = 'grow overflow-y-auto',
     listContent,
     listId,
-    search,
+    searchQuery,
+    searchOnQuery,
+    searchId,
+    searchInputRef,
+    searchPlaceholder,
+    searchWrapperClasses,
   }): JSX.Element => {
     const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
-    const onQueryChange = search?.onQueryChange;
-
-    const handleChange = search
+    const handleChange = searchOnQuery
       ? useCallback(
           (event: ChangeEvent<HTMLInputElement>): void => {
-            onQueryChange?.(event.target.value);
+            searchOnQuery?.(event.target.value);
           },
-          [onQueryChange],
+          [searchOnQuery],
         )
       : undefined;
 
-    const handleClear = search
+    const handleClear = searchOnQuery
       ? useCallback((): void => {
-          onQueryChange?.('');
-        }, [onQueryChange])
+          searchOnQuery?.('');
+        }, [searchOnQuery])
       : undefined;
+
+    const showSearch = typeof searchQuery === 'string' && searchId;
 
     return (
       <div className={containerClasses}>
-        {search && (
-          <div className={search.wrapperClasses}>
+        {showSearch && (
+          <div className={searchWrapperClasses}>
             <StringInput
-              id={search.id}
+              id={searchId}
               type="search"
-              value={search.query}
-              inputRef={search.inputRef}
-              placeholder={search.placeholder}
+              value={searchQuery}
+              inputRef={searchInputRef}
+              placeholder={searchPlaceholder}
               showClearButton
               onChange={handleChange!}
               onClear={handleClear}

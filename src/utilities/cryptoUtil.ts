@@ -22,7 +22,12 @@ export function hexToUint8Array(hex: string): Uint8Array {
 }
 
 export function uint8ArrayToHex(bytes: Uint8Array): string {
-  return [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('');
+  let hex = '';
+  for (let i = 0; i < bytes.length; i++) {
+    const byte = bytes[i];
+    hex += byte.toString(16).padStart(2, '0');
+  }
+  return hex;
 }
 
 export function uint8ArrayToBase64(bytes: Uint8Array): string {
