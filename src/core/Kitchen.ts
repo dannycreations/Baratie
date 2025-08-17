@@ -56,7 +56,11 @@ export class Kitchen {
     };
 
     const unsubscribeKitchen = useKitchenStore.subscribe((state) => state.inputData, handleStateChange);
-    const unsubscribeRecipe = useRecipeStore.subscribe((state) => state.ingredients, handleStateChange);
+    const unsubscribeRecipe = useRecipeStore.subscribe(
+      (state) => ({ ingredients: state.ingredients, pausedIds: state.pausedIngredientIds }),
+      handleStateChange,
+      { equalityFn: (a, b) => a.ingredients === b.ingredients && a.pausedIds === b.pausedIds },
+    );
     const unsubscribeBatching = useKitchenStore.subscribe((state) => state.isBatchingUpdates, handleStateChange);
 
     return () => {
@@ -179,8 +183,18 @@ export class Kitchen {
       localWarnings: {},
     };
 
+    const { pausedIngredientIds } = useRecipeStore.getState();
+
     for (let index = 0; index < recipe.length; index++) {
       const ingredient = recipe[index];
+
+      if (pausedIngredientIds.has(ingredient.id)) {
+        logger.info(`Skipping paused ingredient: ${ingredient.name}`);
+        state.localStatuses[ingredient.id] = 'idle';
+        state.localWarnings[ingredient.id] = null;
+        continue;
+      }
+
       const definition = ingredientRegistry.get(ingredient.ingredientId);
 
       if (!definition) {

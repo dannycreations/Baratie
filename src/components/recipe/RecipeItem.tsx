@@ -4,7 +4,7 @@ import { ICON_SIZES } from '../../app/constants';
 import { ingredientRegistry } from '../../app/container';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
-import { AlertTriangleIcon, GrabIcon, PreferencesIcon, XIcon } from '../shared/Icon';
+import { AlertTriangleIcon, GrabIcon, PauseIcon, PlayIcon, PreferencesIcon, XIcon } from '../shared/Icon';
 import { ItemListLayout } from '../shared/layout/ListLayout';
 import { SpiceLayout } from '../shared/layout/SpiceLayout';
 import { Tooltip } from '../shared/Tooltip';
@@ -18,6 +18,7 @@ interface RecipeItemUIState {
   readonly isAutoCook: boolean;
   readonly isDragged: boolean;
   readonly isEditing: boolean;
+  readonly isPaused: boolean;
   readonly isSpiceInInput: boolean;
   readonly status: CookingStatusType;
   readonly warning: string | null;
@@ -33,6 +34,7 @@ export interface RecipeItemHandlers {
   readonly onEditToggle: (id: string) => void;
   readonly onLongPressStart: () => void;
   readonly onLongPressEnd: () => void;
+  readonly onTogglePause: (id: string) => void;
 }
 
 interface RecipeItemProps {
@@ -141,8 +143,9 @@ const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition
 export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, handlers }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   const definition = ingredientRegistry.get(ingredientItem.ingredientId);
-  const { isAutoCook, isDragged, isEditing, isSpiceInInput, status, warning } = uiState;
-  const { onRemove, onSpiceChange, onDragStart, onDragEnd, onDragOver, onDragEnter, onEditToggle, onLongPressStart, onLongPressEnd } = handlers;
+  const { isAutoCook, isDragged, isEditing, isPaused, isSpiceInInput, status, warning } = uiState;
+  const { onRemove, onSpiceChange, onDragStart, onDragEnd, onDragOver, onDragEnter, onEditToggle, onLongPressStart, onLongPressEnd, onTogglePause } =
+    handlers;
 
   if (!definition) {
     return <MissingRecipeItem ingredientItem={ingredientItem} onRemove={onRemove} />;
@@ -151,6 +154,10 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
   const handleEditToggleCallback = useCallback(() => {
     onEditToggle(ingredientItem.id);
   }, [onEditToggle, ingredientItem.id]);
+
+  const handleTogglePauseCallback = useCallback(() => {
+    onTogglePause(ingredientItem.id);
+  }, [onTogglePause, ingredientItem.id]);
 
   const handleDragStart = useCallback(
     (event: DragEvent<HTMLElement>): void => {
@@ -216,6 +223,15 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, uiState, hand
 
   const rightColumn = (
     <>
+      <TooltipButton
+        icon={isPaused ? <PlayIcon size={ICON_SIZES.SM} /> : <PauseIcon size={ICON_SIZES.SM} />}
+        size="sm"
+        variant="stealth"
+        className={`opacity-50 group-hover:opacity-100 ${isPaused ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : `text-${theme.warningFg} hover:!bg-${theme.warningBg}`}`}
+        tooltipContent={isPaused ? 'Resume' : 'Pause'}
+        tooltipPosition="top"
+        onClick={handleTogglePauseCallback}
+      />
       {hasSpices && (
         <TooltipButton
           icon={<PreferencesIcon size={ICON_SIZES.SM} />}

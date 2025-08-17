@@ -28,12 +28,14 @@ export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
   const editingIds = useRecipeStore((state) => state.editingIds);
   const activeRecipeId = useRecipeStore((state) => state.activeRecipeId);
+  const pausedIngredientIds = useRecipeStore((state) => state.pausedIngredientIds);
   const addIngredient = useRecipeStore((state) => state.addIngredient);
   const clearRecipe = useRecipeStore((state) => state.clearRecipe);
   const removeIngredient = useRecipeStore((state) => state.removeIngredient);
   const reorderIngredients = useRecipeStore((state) => state.reorderIngredients);
   const toggleEditingId = useRecipeStore((state) => state.toggleEditingId);
   const clearEditingIds = useRecipeStore((state) => state.clearEditingIds);
+  const toggleIngredientPause = useRecipeStore((state) => state.toggleIngredientPause);
   const updateSpice = useRecipeStore((state) => state.updateSpice);
   const openModal = useModalStore((state) => state.openModal);
   const isCookbookOpen = useModalStore((state) => state.currentModal?.type === 'cookbook');
@@ -199,8 +201,20 @@ export const RecipePanel = memo((): JSX.Element => {
       onEditToggle: handleEditToggle,
       onLongPressStart: startUpdateBatch,
       onLongPressEnd: endUpdateBatch,
+      onTogglePause: toggleIngredientPause,
     }),
-    [handleRemove, handleSpiceChange, handleDragStart, onMoveEnter, onDragEnd, onMoveOver, handleEditToggle, startUpdateBatch, endUpdateBatch],
+    [
+      handleRemove,
+      handleSpiceChange,
+      handleDragStart,
+      onMoveEnter,
+      onDragEnd,
+      onMoveOver,
+      handleEditToggle,
+      startUpdateBatch,
+      endUpdateBatch,
+      toggleIngredientPause,
+    ],
   );
 
   let content: JSX.Element;
@@ -227,6 +241,7 @@ export const RecipePanel = memo((): JSX.Element => {
             isDragged: dragId === ingredient.id,
             isEditing: !isSpiceInInput && isEditingItem,
             isSpiceInInput: isSpiceInInput,
+            isPaused: pausedIngredientIds.has(ingredient.id),
             status: ingredientStatuses[ingredient.id] || 'idle',
             warning: ingredientWarnings[ingredient.id] || null,
           };

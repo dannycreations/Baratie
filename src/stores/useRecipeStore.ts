@@ -12,6 +12,7 @@ interface RecipeState {
   readonly activeRecipeId: string | null;
   readonly editingIds: ReadonlySet<string>;
   readonly ingredients: ReadonlyArray<IngredientItem>;
+  readonly pausedIngredientIds: ReadonlySet<string>;
   readonly addIngredient: (ingredientId: string, initialSpices?: Readonly<Record<string, unknown>>) => void;
   readonly clearEditingIds: () => void;
   readonly clearRecipe: () => void;
@@ -22,6 +23,7 @@ interface RecipeState {
   readonly setActiveRecipeId: (id: string | null) => void;
   readonly toggleEditingId: (id: string) => void;
   readonly setRecipe: (ingredients: ReadonlyArray<IngredientItem>, activeRecipeId: string | null) => void;
+  readonly toggleIngredientPause: (id: string) => void;
   readonly updateSpice: (id: string, spiceId: string, rawValue: SpiceValue) => void;
 }
 
@@ -30,6 +32,7 @@ export const useRecipeStore = create<RecipeState>()(
     activeRecipeId: null,
     editingIds: new Set(),
     ingredients: [],
+    pausedIngredientIds: new Set(),
 
     addIngredient: (ingredientId, initialSpices) => {
       const ingredientDefinition = ingredientRegistry.get(ingredientId);
@@ -57,6 +60,7 @@ export const useRecipeStore = create<RecipeState>()(
         activeRecipeId: null,
         ingredients: [],
         editingIds: new Set(),
+        pausedIngredientIds: new Set(),
       });
     },
 
@@ -90,11 +94,14 @@ export const useRecipeStore = create<RecipeState>()(
         newIngredients.splice(index, 1);
         const newEditingIds = new Set(state.editingIds);
         newEditingIds.delete(id);
+        const newPausedIds = new Set(state.pausedIngredientIds);
+        newPausedIds.delete(id);
 
         return {
           ingredients: newIngredients,
           activeRecipeId: state.activeRecipeId === id ? null : state.activeRecipeId,
           editingIds: newEditingIds,
+          pausedIngredientIds: newPausedIds,
         };
       });
     },
@@ -125,6 +132,27 @@ export const useRecipeStore = create<RecipeState>()(
       });
     },
 
+    setRecipe: (ingredients, activeRecipeId = null) => {
+      const validIngredients = ingredients.map((ingredient) => {
+        const ingredientDefinition = ingredientRegistry.get(ingredient.ingredientId);
+        if (ingredientDefinition) {
+          const validatedSpices = validateSpices(ingredientDefinition, ingredient.spices);
+          return { ...ingredient, spices: validatedSpices };
+        }
+        logger.warn(
+          `Ingredient definition not found for ID "${ingredient.ingredientId}" (${ingredient.name}) during setRecipe. Options may not be correctly validated.`,
+        );
+        return ingredient;
+      });
+
+      set({
+        activeRecipeId: activeRecipeId,
+        ingredients: validIngredients,
+        editingIds: new Set(),
+        pausedIngredientIds: new Set(),
+      });
+    },
+
     toggleEditingId: (id) => {
       set((state) => {
         const { multipleOpen } = useSettingStore.getState();
@@ -144,23 +172,15 @@ export const useRecipeStore = create<RecipeState>()(
       });
     },
 
-    setRecipe: (ingredients, activeRecipeId = null) => {
-      const validIngredients = ingredients.map((ingredient) => {
-        const ingredientDefinition = ingredientRegistry.get(ingredient.ingredientId);
-        if (ingredientDefinition) {
-          const validatedSpices = validateSpices(ingredientDefinition, ingredient.spices);
-          return { ...ingredient, spices: validatedSpices };
+    toggleIngredientPause: (id) => {
+      set((state) => {
+        const newPausedIds = new Set(state.pausedIngredientIds);
+        if (newPausedIds.has(id)) {
+          newPausedIds.delete(id);
+        } else {
+          newPausedIds.add(id);
         }
-        logger.warn(
-          `Ingredient definition not found for ID "${ingredient.ingredientId}" (${ingredient.name}) during setRecipe. Options may not be correctly validated.`,
-        );
-        return ingredient;
-      });
-
-      set({
-        activeRecipeId: activeRecipeId,
-        ingredients: validIngredients,
-        editingIds: new Set(),
+        return { pausedIngredientIds: newPausedIds };
       });
     },
 
