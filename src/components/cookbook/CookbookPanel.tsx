@@ -164,7 +164,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
           onQueryChange={setQuery}
         />
       ),
-    [persistedModalMode, isRecipeEmpty, nameRef, nameInput, query, filteredRecipes, searchRef, recipes.length],
+    [persistedModalMode, isRecipeEmpty, nameInput, setName, handleSave, query, filteredRecipes, recipes.length, deleteRecipe, handleLoad, setQuery],
   );
 
   return (

@@ -15,6 +15,7 @@ import { SpiceLayout } from '../shared/layout/SpiceLayout';
 
 import type { JSX, ReactNode, RefObject } from 'react';
 import type { IngredientItem, InputPanelConfig, OutputPanelConfig, SpiceValue } from '../../core/IngredientRegistry';
+import type { FilePickerRenderProps } from '../shared/input/FilePicker';
 
 interface KitchenPanelProps {
   readonly type: 'input' | 'output';
@@ -153,22 +154,27 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
     [updateSpice],
   );
 
+  const renderFilePickerTrigger = useCallback(
+    ({ trigger }: FilePickerRenderProps) => (
+      <TooltipButton
+        icon={<FileTextIcon size={ICON_SIZES.SM} />}
+        size="sm"
+        variant="stealth"
+        tooltipContent="Open File..."
+        tooltipPosition="left"
+        onClick={trigger}
+      />
+    ),
+    [],
+  );
+
   const renderActions = useMemo(() => {
     if (isInput) {
       const showClearButton = !inputPanelConfig || (inputPanelConfig.mode === 'textarea' && inputPanelConfig.showClear);
 
       const defaultInputActions: ReactNode[] = [
         <FilePicker key="file-picker" accept="*/*" onFileSelect={handleFileRead}>
-          {({ trigger }) => (
-            <TooltipButton
-              icon={<FileTextIcon size={ICON_SIZES.SM} />}
-              size="sm"
-              variant="stealth"
-              tooltipContent="Open File..."
-              tooltipPosition="left"
-              onClick={trigger}
-            />
-          )}
+          {renderFilePickerTrigger}
         </FilePicker>,
       ];
 
@@ -210,7 +216,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
       return outputPanelConfig.actions(defaultOutputActions);
     }
     return defaultOutputActions;
-  }, [data, handleClearInput, handleDownloadOutput, handleFileRead, inputPanelConfig, isInput, outputPanelConfig]);
+  }, [data, handleClearInput, handleDownloadOutput, handleFileRead, inputPanelConfig, isInput, outputPanelConfig, renderFilePickerTrigger]);
 
   const renderContent = useMemo((): ReactNode => {
     if (isInput) {

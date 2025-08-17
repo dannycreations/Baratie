@@ -50,8 +50,8 @@ export class Logger {
       level >= LogLevel.ERROR ? console.error : level >= LogLevel.WARN ? console.warn : level >= LogLevel.INFO ? console.info : console.debug;
 
     const prefix = `[${LogLevel[level]}]`;
-    const data = [message, ...args].map((arg) => objectStringify(arg));
+    const data = args.map((arg) => objectStringify(arg));
 
-    consoleMethod(prefix, ...data);
+    consoleMethod(prefix, message, ...data);
   }
 }

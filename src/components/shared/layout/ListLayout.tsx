@@ -114,7 +114,7 @@ const CategorySection = memo<CategorySectionProps>((props) => {
       className={`flex h-12 w-full items-center justify-between p-2 text-${theme.contentSecondary} bg-${theme.surfaceTertiary} outline-none hover:bg-${theme.surfaceHover} focus-visible:ring-2 focus-visible:ring-${theme.ring}`}
       onClick={handleToggle}
     >
-      {renderHeader ? renderHeader(category, items) : <p className="truncate font-medium">{category}</p>}
+      {renderHeader ? renderHeader(category, items) : <span className="truncate font-medium">{category}</span>}
       <ChevronRightIcon className={`transform transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`} size={20} />
     </button>
   );

@@ -113,14 +113,15 @@ body.grabbing * {
 
 @keyframes progressBarDecrease {
   from {
-    width: 100%;
+    transform: scaleX(1);
   }
   to {
-    width: 0%;
+    transform: scaleX(0);
   }
 }
 
 .progress-bar-fill {
+  transform-origin: left;
   animation-name: progressBarDecrease;
   animation-timing-function: linear;
   animation-fill-mode: forwards;

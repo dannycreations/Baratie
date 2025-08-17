@@ -28,10 +28,6 @@ const timestampFormatter = new Intl.DateTimeFormat(undefined, {
   minute: '2-digit',
 });
 
-function formatTimestamp(timestamp: number): string {
-  return timestampFormatter.format(new Date(timestamp));
-}
-
 export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete, query }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
@@ -43,7 +39,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete,
     onLoad(recipe.id);
   }, [onLoad, recipe.id]);
 
-  const formattedTimestamp = useMemo(() => formatTimestamp(recipe.updatedAt), [recipe.updatedAt]);
+  const formattedTimestamp = useMemo(() => timestampFormatter.format(recipe.updatedAt), [recipe.updatedAt]);
 
   return (
     <li className="list-none">

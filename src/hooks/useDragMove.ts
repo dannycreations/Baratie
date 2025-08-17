@@ -18,10 +18,14 @@ export interface DragMoveHookReturn {
 }
 
 export function useDragMove<T extends { id: string }>({ dragId, setDragId, onDragMove, items }: DragMoveHookProps<T>): DragMoveHookReturn {
-  const itemsRef = useRef(items);
+  const itemIndexMapRef = useRef(new Map<string, number>());
 
   useEffect(() => {
-    itemsRef.current = items;
+    const newMap = new Map<string, number>();
+    items.forEach((item, index) => {
+      newMap.set(item.id, index);
+    });
+    itemIndexMapRef.current = newMap;
   }, [items]);
 
   useEffect(() => {
@@ -70,11 +74,11 @@ export function useDragMove<T extends { id: string }>({ dragId, setDragId, onDra
         return;
       }
 
-      const currentItems = itemsRef.current;
-      const draggedIndex = currentItems.findIndex((item) => item.id === dragId);
-      const targetIndex = currentItems.findIndex((item) => item.id === targetItemId);
+      const itemIndexMap = itemIndexMapRef.current;
+      const draggedIndex = itemIndexMap.get(dragId);
+      const targetIndex = itemIndexMap.get(targetItemId);
 
-      if (draggedIndex === -1 || targetIndex === -1) {
+      if (draggedIndex === undefined || targetIndex === undefined) {
         return;
       }
 
