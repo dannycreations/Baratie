@@ -78,12 +78,9 @@ export const useIngredientStore = create<IngredientState>()(
   })),
 );
 
-let lastCategories = useIngredientStore.getState().disabledCategories;
-let lastIngredients = useIngredientStore.getState().disabledIngredients;
-
-useIngredientStore.subscribe((state) => {
-  const { disabledCategories, disabledIngredients } = state;
-  if (disabledCategories !== lastCategories || disabledIngredients !== lastIngredients) {
+useIngredientStore.subscribe(
+  (state) => ({ disabledCategories: state.disabledCategories, disabledIngredients: state.disabledIngredients }),
+  ({ disabledCategories, disabledIngredients }) => {
     storage.set(
       STORAGE_FILTERS,
       {
@@ -92,7 +89,8 @@ useIngredientStore.subscribe((state) => {
       },
       'Ingredient Filters',
     );
-    lastCategories = disabledCategories;
-    lastIngredients = disabledIngredients;
-  }
-});
+  },
+  {
+    equalityFn: (a, b) => a.disabledCategories === b.disabledCategories && a.disabledIngredients === b.disabledIngredients,
+  },
+);

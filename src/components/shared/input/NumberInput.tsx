@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 import { useLongPress } from '../../../hooks/useLongPress';
@@ -23,13 +23,19 @@ interface NumberInputProps {
 
 export const NumberInput = memo<NumberInputProps>(
   ({ id, value, onChange, min, max, step = 1, placeholder, disabled, className = '', onLongPressStart, onLongPressEnd }): JSX.Element => {
+    const valueRef = useRef(value);
     const theme = useThemeStore((state) => state.theme);
     const [internalValue, setInternalValue] = useState(String(value));
 
     useEffect(() => {
-      if (value !== parseFloat(internalValue)) {
+      if (valueRef.current !== value) {
         setInternalValue(String(value));
+      } else {
+        if (internalValue !== '' && internalValue !== '-' && value !== parseFloat(internalValue)) {
+          setInternalValue(String(value));
+        }
       }
+      valueRef.current = value;
     }, [value, internalValue]);
 
     const clamp = useCallback(

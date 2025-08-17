@@ -15,7 +15,7 @@ import type { IngredientDefinition, SpiceDefinition, SpiceValue } from '../../..
 interface SpiceRendererProps {
   readonly spice: SpiceDefinition;
   readonly value: SpiceValue | undefined | null;
-  readonly onSpiceChange: (newValue: SpiceValue) => void;
+  readonly onSpiceChange: (spiceId: string, newValue: SpiceValue) => void;
   readonly onLongPressEnd?: () => void;
   readonly onLongPressStart?: () => void;
 }
@@ -30,39 +30,41 @@ interface SpiceLayoutProps {
 }
 
 const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpiceChange, onLongPressStart, onLongPressEnd }): JSX.Element => {
+  const { id: spiceId } = spice;
+
   const handleBooleanChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>): void => {
-      onSpiceChange(event.target.checked);
+      onSpiceChange(spiceId, event.target.checked);
     },
-    [onSpiceChange],
+    [onSpiceChange, spiceId],
   );
 
   const handleValueChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>): void => {
-      onSpiceChange(event.target.value);
+      onSpiceChange(spiceId, event.target.value);
     },
-    [onSpiceChange],
+    [onSpiceChange, spiceId],
   );
 
   const handleTextareaChange = useCallback(
     (newValue: string): void => {
-      onSpiceChange(newValue);
+      onSpiceChange(spiceId, newValue);
     },
-    [onSpiceChange],
+    [onSpiceChange, spiceId],
   );
 
   const handleNumberChange = useCallback(
     (newValue: number): void => {
-      onSpiceChange(newValue);
+      onSpiceChange(spiceId, newValue);
     },
-    [onSpiceChange],
+    [onSpiceChange, spiceId],
   );
 
   const handleSelectChange = useCallback(
     (newValue: SpiceValue): void => {
-      onSpiceChange(newValue);
+      onSpiceChange(spiceId, newValue);
     },
-    [onSpiceChange],
+    [onSpiceChange, spiceId],
   );
 
   const renderInput = (id: string): ReactNode => {
@@ -143,15 +145,12 @@ export const SpiceLayout = memo<SpiceLayoutProps>(
       <form className={finalContainerClass} onSubmit={handleSubmit}>
         {visibleSpices.map((spice) => {
           const rawValue = currentSpices[spice.id];
-          const handleSpiceChange = (newValue: SpiceValue): void => {
-            onSpiceChange(spice.id, newValue);
-          };
           return (
             <SpiceRenderer
               key={spice.id}
               spice={spice}
               value={rawValue}
-              onSpiceChange={handleSpiceChange}
+              onSpiceChange={onSpiceChange}
               onLongPressStart={onLongPressStart}
               onLongPressEnd={onLongPressEnd}
             />

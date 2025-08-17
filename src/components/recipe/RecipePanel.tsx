@@ -86,10 +86,10 @@ export const RecipePanel = memo((): JSX.Element => {
 
   const {
     onDragStart: onMoveStart,
-    onDragEnter: onMoveEnter,
     onDragOver: onMoveOver,
     onDragEnd,
   } = useDragMove({
+    items: ingredients,
     dragId,
     setDragId: setDraggedItemId,
     onDragMove: handleReorder,
@@ -195,9 +195,8 @@ export const RecipePanel = memo((): JSX.Element => {
       onRemove: handleRemove,
       onSpiceChange: handleSpiceChange,
       onDragStart: handleDragStart,
-      onDragEnter: onMoveEnter,
-      onDragEnd: onDragEnd,
       onDragOver: onMoveOver,
+      onDragEnd: onDragEnd,
       onEditToggle: handleEditToggle,
       onLongPressStart: startUpdateBatch,
       onLongPressEnd: endUpdateBatch,
@@ -207,9 +206,8 @@ export const RecipePanel = memo((): JSX.Element => {
       handleRemove,
       handleSpiceChange,
       handleDragStart,
-      onMoveEnter,
-      onDragEnd,
       onMoveOver,
+      onDragEnd,
       handleEditToggle,
       startUpdateBatch,
       endUpdateBatch,

@@ -221,18 +221,14 @@ export const useRecipeStore = create<RecipeState>()(
   })),
 );
 
-let lastIngredients = useRecipeStore.getState().ingredients;
-let lastActiveRecipeId = useRecipeStore.getState().activeRecipeId;
-
-useRecipeStore.subscribe((state) => {
-  if (!useSettingStore.getState().persistRecipe) {
-    return;
-  }
-
-  const { ingredients, activeRecipeId } = state;
-  if (ingredients !== lastIngredients || activeRecipeId !== lastActiveRecipeId) {
-    storage.set(STORAGE_RECIPE, { ingredients, activeRecipeId }, 'Current Recipe');
-    lastIngredients = ingredients;
-    lastActiveRecipeId = activeRecipeId;
-  }
-});
+useRecipeStore.subscribe(
+  (state) => ({ ingredients: state.ingredients, activeRecipeId: state.activeRecipeId }),
+  ({ ingredients, activeRecipeId }) => {
+    if (useSettingStore.getState().persistRecipe) {
+      storage.set(STORAGE_RECIPE, { ingredients, activeRecipeId }, 'Current Recipe');
+    }
+  },
+  {
+    equalityFn: (a, b) => a.ingredients === b.ingredients && a.activeRecipeId === b.activeRecipeId,
+  },
+);

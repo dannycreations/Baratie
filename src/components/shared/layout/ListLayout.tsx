@@ -142,13 +142,15 @@ const CategorySection = memo<CategorySectionProps>((props) => {
   );
 });
 
+const defaultNoResultsMessage = (term: string): string => `No items match search for "${term}".`;
+
 export const GroupListLayout = memo<GroupListProps>(
   ({
     itemsByCategory,
     query,
     renderHeader,
     emptyMessage = 'No items available.',
-    noResultsMessage = (term) => `No items match search for "${term}".`,
+    noResultsMessage = defaultNoResultsMessage,
     renderItemActions,
     renderItemPrefix,
     onItemDragStart,

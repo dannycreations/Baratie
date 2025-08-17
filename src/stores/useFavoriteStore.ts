@@ -56,12 +56,9 @@ export const useFavoriteStore = create<FavoriteState>()(
   })),
 );
 
-let lastFavorites = useFavoriteStore.getState().favorites;
-
-useFavoriteStore.subscribe((state) => {
-  const { favorites } = state;
-  if (favorites !== lastFavorites) {
+useFavoriteStore.subscribe(
+  (state) => state.favorites,
+  (favorites) => {
     storage.set(STORAGE_FAVORITES, [...favorites], 'Favorite Ingredients');
-    lastFavorites = favorites;
-  }
-});
+  },
+);

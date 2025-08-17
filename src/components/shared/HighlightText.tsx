@@ -13,19 +13,18 @@ export const HighlightText = memo<HighlightTextProps>(({ text, highlight }): JSX
   const theme = useThemeStore((state) => state.theme);
   const trimmedHighlight = highlight.trim();
 
-  const regex = useMemo(() => {
-    if (!trimmedHighlight) {
+  const parts = useMemo(() => {
+    if (!trimmedHighlight || !text) {
       return null;
     }
     const escaped = trimmedHighlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return new RegExp(`(${escaped})`, 'gi');
-  }, [trimmedHighlight]);
+    const regex = new RegExp(`(${escaped})`, 'gi');
+    return text.split(regex);
+  }, [text, trimmedHighlight]);
 
-  if (!regex || !text) {
+  if (!parts) {
     return <>{text}</>;
   }
-
-  const parts = text.split(regex);
 
   return (
     <>

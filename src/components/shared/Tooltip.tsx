@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { useTooltipStore } from '../../stores/useTooltipStore';
 
@@ -38,6 +39,7 @@ export const Tooltip = memo<TooltipProps>(
   ({ content, children, position = 'top', delay = 200, className = '', tooltipClasses = '', disabled = false }): JSX.Element => {
     const { activeId, setActiveId } = useTooltipStore();
     const theme = useThemeStore((state) => state.theme);
+    const isDragging = useDragMoveStore((state) => !!state.draggedItemId);
 
     const [style, setStyle] = useState<TooltipPositionStyle>(INITIAL_TOOLTIP_STYLE);
 
@@ -47,6 +49,7 @@ export const Tooltip = memo<TooltipProps>(
     const tooltipId = useId();
 
     const isVisible = activeId === tooltipId;
+    const finalDisabled = disabled || isDragging;
 
     const clearTimer = useCallback((): void => {
       if (timeoutRef.current) {
@@ -56,14 +59,14 @@ export const Tooltip = memo<TooltipProps>(
     }, []);
 
     const handleMouseEnter = useCallback((): void => {
-      if (disabled || !content) {
+      if (finalDisabled || !content) {
         return;
       }
       clearTimer();
       timeoutRef.current = window.setTimeout(() => {
         setActiveId(tooltipId);
       }, delay);
-    }, [disabled, content, clearTimer, delay, tooltipId, setActiveId]);
+    }, [finalDisabled, content, clearTimer, delay, tooltipId, setActiveId]);
 
     const handleMouseLeave = useCallback((): void => {
       clearTimer();
@@ -189,7 +192,7 @@ export const Tooltip = memo<TooltipProps>(
       </div>
     );
 
-    if (disabled || !content) {
+    if (finalDisabled || !content) {
       return triggerElement;
     }
 

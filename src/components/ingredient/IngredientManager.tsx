@@ -1,4 +1,4 @@
-import { memo, useCallback, useId, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useDeferredValue, useId, useMemo, useRef, useState } from 'react';
 
 import { ingredientRegistry } from '../../app/container';
 import { groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
@@ -28,6 +28,7 @@ export const IngredientManager = memo((): JSX.Element => {
 
   const listId = useId();
   const searchRef = useRef<HTMLInputElement>(null);
+  const deferredQuery = useDeferredValue(query);
 
   useAutoFocus(searchRef, isModalOpen);
 
@@ -40,8 +41,8 @@ export const IngredientManager = memo((): JSX.Element => {
   }, [allIngredients]);
 
   const filteredList = useMemo(() => {
-    return searchGroupedIngredients(ingredientsByCategory, query);
-  }, [ingredientsByCategory, query]);
+    return searchGroupedIngredients(ingredientsByCategory, deferredQuery);
+  }, [ingredientsByCategory, deferredQuery]);
 
   const renderHeader = useCallback(
     (category: string, _items: ReadonlyArray<GroupListItem>): JSX.Element => {
@@ -96,7 +97,7 @@ export const IngredientManager = memo((): JSX.Element => {
   const content = (
     <GroupListLayout
       itemsByCategory={filteredList}
-      query={query}
+      query={deferredQuery}
       isItemDisabled={isItemDisabled}
       renderHeader={renderHeader}
       renderItemPrefix={renderItemPrefix}

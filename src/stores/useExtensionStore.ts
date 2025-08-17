@@ -341,11 +341,9 @@ export const useExtensionStore = create<ExtensionState>()(
   })),
 );
 
-let lastExtensions = useExtensionStore.getState().extensions;
-
-useExtensionStore.subscribe((state) => {
-  const { extensions } = state;
-  if (extensions !== lastExtensions) {
+useExtensionStore.subscribe(
+  (state) => state.extensions,
+  (extensions) => {
     const storable = extensions
       .filter(
         (ext) =>
@@ -365,6 +363,5 @@ useExtensionStore.subscribe((state) => {
         };
       });
     storage.set(STORAGE_EXTENSIONS, storable, 'Extensions');
-    lastExtensions = extensions;
-  }
-});
+  },
+);

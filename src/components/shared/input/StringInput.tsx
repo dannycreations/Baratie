@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 import { useThemeStore } from '../../../stores/useThemeStore';
@@ -33,10 +33,10 @@ export const StringInput = memo<StringInputProps>(
       return `${baseInputStyle} ${paddingClass}`;
     }, [theme, hasClearButton]);
 
-    const handleClear = (): void => {
+    const handleClear = useCallback((): void => {
       onClear?.();
       inputRef?.current?.focus();
-    };
+    }, [onClear, inputRef]);
 
     const clearButtonClass = useMemo(
       () =>

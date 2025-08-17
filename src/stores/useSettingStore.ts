@@ -43,16 +43,13 @@ export const useSettingStore = create<SettingState>()(
   })),
 );
 
-let lastSettings = {
-  multipleOpen: useSettingStore.getState().multipleOpen,
-  persistRecipe: useSettingStore.getState().persistRecipe,
-};
-
-useSettingStore.subscribe((state) => {
-  const { multipleOpen, persistRecipe } = state;
-  if (multipleOpen !== lastSettings.multipleOpen || persistRecipe !== lastSettings.persistRecipe) {
+useSettingStore.subscribe(
+  (state) => ({ multipleOpen: state.multipleOpen, persistRecipe: state.persistRecipe }),
+  ({ multipleOpen, persistRecipe }) => {
     const newSettings = { multipleOpen, persistRecipe };
     storage.set(STORAGE_SETTINGS, newSettings, 'App Settings');
-    lastSettings = newSettings;
-  }
-});
+  },
+  {
+    equalityFn: (a, b) => a.multipleOpen === b.multipleOpen && a.persistRecipe === b.persistRecipe,
+  },
+);

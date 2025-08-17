@@ -18,9 +18,8 @@ export interface RecipeItemHandlers {
   readonly onRemove: (id: string) => void;
   readonly onSpiceChange: (ingredientId: string, spiceId: string, newValue: SpiceValue) => void;
   readonly onDragStart: (event: DragEvent<HTMLElement>, ingredient: IngredientItem) => void;
-  readonly onDragEnter: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
+  readonly onDragOver: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   readonly onDragEnd: (event: DragEvent<HTMLElement>) => void;
-  readonly onDragOver: (event: DragEvent<HTMLElement>) => void;
   readonly onEditToggle: (id: string) => void;
   readonly onLongPressStart: () => void;
   readonly onLongPressEnd: () => void;
@@ -140,18 +139,7 @@ export const RecipeItem = memo<RecipeItemProps>(
   ({ ingredientItem, handlers, isAutoCook, isDragged, isEditing, isPaused, isSpiceInInput, status, warning }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const definition = ingredientRegistry.get(ingredientItem.ingredientId);
-    const {
-      onRemove,
-      onSpiceChange,
-      onDragStart,
-      onDragEnd,
-      onDragOver,
-      onDragEnter,
-      onEditToggle,
-      onLongPressStart,
-      onLongPressEnd,
-      onTogglePause,
-    } = handlers;
+    const { onRemove, onSpiceChange, onDragStart, onDragEnd, onDragOver, onEditToggle, onLongPressStart, onLongPressEnd, onTogglePause } = handlers;
 
     if (!definition) {
       return <MissingRecipeItem ingredientItem={ingredientItem} onRemove={onRemove} />;
@@ -172,12 +160,23 @@ export const RecipeItem = memo<RecipeItemProps>(
       [onDragStart, ingredientItem],
     );
 
-    const handleDragEnter = useCallback(
+    const handleDragEnd = useCallback(
       (event: DragEvent<HTMLElement>): void => {
-        onDragEnter(event, ingredientItem.id);
+        onDragEnd(event);
       },
-      [onDragEnter, ingredientItem.id],
+      [onDragEnd],
     );
+
+    const handleDragOver = useCallback(
+      (event: DragEvent<HTMLElement>): void => {
+        onDragOver(event, ingredientItem.id);
+      },
+      [onDragOver, ingredientItem.id],
+    );
+
+    const handleRemoveCallback = useCallback(() => {
+      onRemove(ingredientItem.id);
+    }, [onRemove, ingredientItem.id]);
 
     const hasSpices = !!definition.spices && definition.spices.length > 0;
     const isEditorVisible = isEditing && !isSpiceInInput && !isDragged;
@@ -202,57 +201,63 @@ export const RecipeItem = memo<RecipeItemProps>(
 
     const grabHandleClass = `mr-2 text-${theme.contentTertiary} cursor-grab transition-colors group-hover:text-${theme.contentSecondary}`;
 
-    const leftColumn = (
-      <>
-        <Tooltip content="Drag to reorder" position="top">
-          <span className={grabHandleClass} draggable onDragStart={handleDragStart} onDragEnd={onDragEnd}>
-            <GrabIcon size={ICON_SIZES.MD} />
-          </span>
-        </Tooltip>
-        <div className="min-w-0 flex-1">
-          <Tooltip content={definition.description} position="top" className="inline-block max-w-full">
-            <h3 className={`block truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default outline-none`}>{definition.name}</h3>
+    const leftColumn = useMemo(
+      () => (
+        <>
+          <Tooltip content="Drag to reorder" position="top">
+            <span className={grabHandleClass} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+              <GrabIcon size={ICON_SIZES.MD} />
+            </span>
           </Tooltip>
-        </div>
-      </>
+          <div className="min-w-0 flex-1">
+            <Tooltip content={definition.description} position="top" className="inline-block max-w-full">
+              <h3 className={`block truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default outline-none`}>{definition.name}</h3>
+            </Tooltip>
+          </div>
+        </>
+      ),
+      [grabHandleClass, handleDragStart, handleDragEnd, definition, theme],
     );
 
-    const rightColumn = (
-      <>
-        <TooltipButton
-          icon={isPaused ? <PlayIcon size={ICON_SIZES.SM} /> : <PauseIcon size={ICON_SIZES.SM} />}
-          size="sm"
-          variant="stealth"
-          className={`opacity-50 group-hover:opacity-100 ${isPaused ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : `text-${theme.warningFg} hover:!bg-${theme.warningBg}`}`}
-          tooltipContent={isPaused ? 'Resume' : 'Pause'}
-          tooltipPosition="top"
-          onClick={handleTogglePauseCallback}
-        />
-        {hasSpices && (
+    const rightColumn = useMemo(
+      () => (
+        <>
           <TooltipButton
-            icon={<PreferencesIcon size={ICON_SIZES.SM} />}
+            icon={isPaused ? <PlayIcon size={ICON_SIZES.SM} /> : <PauseIcon size={ICON_SIZES.SM} />}
             size="sm"
-            variant={isEditorVisible ? 'primary' : 'stealth'}
-            className={isEditorVisible ? '' : `text-${theme.contentTertiary} hover:text-${theme.infoFg}`}
-            tooltipContent={settingsTooltip}
+            variant="stealth"
+            className={`opacity-50 group-hover:opacity-100 ${isPaused ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : `text-${theme.warningFg} hover:!bg-${theme.warningBg}`}`}
+            tooltipContent={isPaused ? 'Resume' : 'Pause'}
             tooltipPosition="top"
-            onClick={handleEditToggleCallback}
+            onClick={handleTogglePauseCallback}
           />
-        )}
-        <TooltipButton
-          icon={<XIcon size={ICON_SIZES.SM} />}
-          size="sm"
-          variant="danger"
-          className="opacity-50 group-hover:opacity-100"
-          tooltipContent="Remove Ingredient"
-          tooltipPosition="top"
-          onClick={() => onRemove(ingredientItem.id)}
-        />
-      </>
+          {hasSpices && (
+            <TooltipButton
+              icon={<PreferencesIcon size={ICON_SIZES.SM} />}
+              size="sm"
+              variant={isEditorVisible ? 'primary' : 'stealth'}
+              className={isEditorVisible ? '' : `text-${theme.contentTertiary} hover:text-${theme.infoFg}`}
+              tooltipContent={settingsTooltip}
+              tooltipPosition="top"
+              onClick={handleEditToggleCallback}
+            />
+          )}
+          <TooltipButton
+            icon={<XIcon size={ICON_SIZES.SM} />}
+            size="sm"
+            variant="danger"
+            className="opacity-50 group-hover:opacity-100"
+            tooltipContent="Remove Ingredient"
+            tooltipPosition="top"
+            onClick={handleRemoveCallback}
+          />
+        </>
+      ),
+      [isPaused, theme, handleTogglePauseCallback, hasSpices, isEditorVisible, settingsTooltip, handleEditToggleCallback, handleRemoveCallback],
     );
 
     return (
-      <li className={itemClass} onDragEnter={handleDragEnter} onDragOver={onDragOver}>
+      <li className={itemClass} onDragOver={handleDragOver}>
         <ItemListLayout
           className="h-12 p-2 cursor-default"
           leftClasses="flex grow items-center min-w-0"
