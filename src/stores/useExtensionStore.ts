@@ -215,18 +215,19 @@ export const useExtensionStore = create<ExtensionState>()(
         if (!validationResult.success) {
           throw new Error(`Invalid manifest file: ${validationResult.issues[0].message}`);
         }
+
         const manifest: ExtensionManifest = validationResult.output;
         upsert({ id, manifest });
 
-        const isModuleBased = Array.isArray(manifest.entry) && typeof manifest.entry[0] === 'object';
-        if (isModuleBased && !(options?.force ?? false)) {
-          upsert({ id: id, name: manifest.name, status: 'awaiting', manifest: manifest });
-        } else {
-          if (storeExtension?.ingredients) {
-            ingredientRegistry.unregister(storeExtension.ingredients);
-            setIngredients(id, []);
-          }
+        if (storeExtension?.ingredients) {
+          ingredientRegistry.unregister(storeExtension.ingredients);
+          setIngredients(id, []);
+        }
 
+        const isModuleBased = Array.isArray(manifest.entry) && typeof manifest.entry[0] === 'object';
+        if (isModuleBased && !options?.force) {
+          upsert({ id: id, name: manifest.name, status: 'awaiting', manifest: manifest, scripts: {} });
+        } else {
           const entryToUse = isModuleBased && storeExtension?.entry ? storeExtension.entry : manifest.entry;
           upsert({ id: id, entry: entryToUse, scripts: {} });
           const currentExtState = get().extensionMap.get(id)!;
