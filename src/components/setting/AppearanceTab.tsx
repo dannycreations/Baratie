@@ -86,7 +86,6 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
 
 export const AppearanceTab = memo((): JSX.Element => {
   const id = useThemeStore((state) => state.id);
-  const theme = useThemeStore((state) => state.theme);
   const setTheme = useThemeStore((state) => state.setTheme);
 
   const handleSelectTheme = useCallback(
@@ -97,13 +96,10 @@ export const AppearanceTab = memo((): JSX.Element => {
   );
 
   return (
-    <div className="flex h-full flex-col gap-3">
-      <p className={`text-sm text-${theme.contentTertiary}`}>Select a color theme for the application.</p>
-      <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {APP_THEMES.map((item) => (
-          <ThemeItem key={item.id} item={item} isChecked={id === item.id} onSelect={handleSelectTheme} />
-        ))}
-      </ul>
-    </div>
+    <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      {APP_THEMES.map((item) => (
+        <ThemeItem key={item.id} item={item} isChecked={id === item.id} onSelect={handleSelectTheme} />
+      ))}
+    </ul>
   );
 });

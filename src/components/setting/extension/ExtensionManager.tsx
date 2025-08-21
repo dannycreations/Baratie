@@ -146,12 +146,13 @@ export const ExtensionManager = memo((): JSX.Element | null => {
       <BooleanInput
         id={`module-select-${item.id}`}
         checked={selectedEntries.has(item.id)}
+        disabled={isLoading}
         onChange={() => {
           handleToggleModule(item.id);
         }}
       />
     ),
-    [selectedEntries, handleToggleModule],
+    [selectedEntries, handleToggleModule, isLoading],
   );
 
   const renderHeader = useCallback(
@@ -161,12 +162,12 @@ export const ExtensionManager = memo((): JSX.Element | null => {
 
       return (
         <div className="flex min-w-0 items-center gap-2">
-          <BooleanInput id={`${categoryId}-toggle`} checked={areAllSelected} onChange={() => handleToggleCategory(items)} />
+          <BooleanInput id={`${categoryId}-toggle`} checked={areAllSelected} disabled={isLoading} onChange={() => handleToggleCategory(items)} />
           <span className={`truncate font-medium text-${theme.contentSecondary} cursor-pointer`}>{category}</span>
         </div>
       );
     },
-    [selectedEntries, handleToggleCategory, theme],
+    [selectedEntries, handleToggleCategory, theme, isLoading],
   );
 
   if (!isModalOpen) {
@@ -180,7 +181,13 @@ export const ExtensionManager = memo((): JSX.Element | null => {
   );
 
   const content = (
-    <GroupListLayout itemsByCategory={filteredGroupedModules} query={deferredQuery} renderHeader={renderHeader} renderItemPrefix={renderItemPrefix} />
+    <GroupListLayout
+      itemsByCategory={filteredGroupedModules}
+      query={deferredQuery}
+      renderHeader={renderHeader}
+      renderItemPrefix={renderItemPrefix}
+      disabled={isLoading}
+    />
   );
 
   return (
@@ -188,7 +195,6 @@ export const ExtensionManager = memo((): JSX.Element | null => {
       isOpen={isModalOpen}
       size="xl"
       title={pendingSelection?.manifest.name || 'Install Extension'}
-      contentClasses="flex flex-col max-h-[80vh]"
       headerActions={headerActions}
       onClose={handleClose}
       onExited={resetState}
@@ -201,6 +207,7 @@ export const ExtensionManager = memo((): JSX.Element | null => {
         searchId="module-install-search"
         searchInputRef={searchRef}
         searchPlaceholder="Search Modules..."
+        disabled={isLoading}
       />
     </Modal>
   );

@@ -54,7 +54,7 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
     set((state) => {
       const notification = state.map.get(id);
       if (!notification) {
-        return {};
+        return state;
       }
 
       const newMap = new Map(state.map);
@@ -102,7 +102,7 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
     set((state) => {
       const notification = state.map.get(id);
       if (!notification) {
-        return {};
+        return state;
       }
 
       const map = new Map(state.map);

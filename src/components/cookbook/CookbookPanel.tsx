@@ -168,15 +168,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   );
 
   return (
-    <Modal
-      isOpen={isModalOpen}
-      size="lg"
-      title={title}
-      contentClasses="max-h-[80vh]"
-      headerActions={headerActions}
-      onClose={closeModal}
-      onExited={resetModal}
-    >
+    <Modal isOpen={isModalOpen} size="lg" title={title} headerActions={headerActions} onClose={closeModal} onExited={resetModal}>
       {bodyContent}
     </Modal>
   );

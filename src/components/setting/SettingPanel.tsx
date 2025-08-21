@@ -8,12 +8,33 @@ import { ExtensionManager } from './extension/ExtensionManager';
 import { ExtensionTab } from './extension/ExtensionTab';
 import { GeneralTab } from './GeneralTab';
 
-import type { JSX } from 'react';
+import type { JSX, ReactNode } from 'react';
+import type { AppTheme } from '../../app/themes';
 
 const SETTING_TABS = [
-  { id: 'general', label: 'General', component: <GeneralTab /> },
-  { id: 'appearance', label: 'Appearance', component: <AppearanceTab /> },
-  { id: 'extensions', label: 'Extensions', component: <ExtensionTab /> },
+  {
+    id: 'general',
+    label: 'General',
+    description: (): ReactNode => 'Manage general application behavior and user interface preferences.',
+    component: <GeneralTab />,
+  },
+  {
+    id: 'appearance',
+    label: 'Appearance',
+    description: (): ReactNode => 'Select a color theme for the application.',
+    component: <AppearanceTab />,
+  },
+  {
+    id: 'extensions',
+    label: 'Extensions',
+    description: (theme: AppTheme): ReactNode => (
+      <>
+        Add external ingredients by providing a link to a public GitHub repository. The repository must contain a{' '}
+        <code className={`p-1 rounded-md bg-${theme.surfaceHover} text-xs text-${theme.contentSecondary}`}>manifest.json</code> file.
+      </>
+    ),
+    component: <ExtensionTab />,
+  },
 ] as const;
 
 type SettingTab = (typeof SETTING_TABS)[number]['id'];
@@ -21,10 +42,10 @@ type SettingTab = (typeof SETTING_TABS)[number]['id'];
 let persistentActiveTab: SettingTab = 'general';
 
 interface TabButtonProps {
+  readonly id: SettingTab;
   readonly children: string;
   readonly isActive: boolean;
   readonly onClick: (id: SettingTab) => void;
-  readonly id: SettingTab;
 }
 
 const TabButton = memo<TabButtonProps>(({ children, isActive, onClick, id }): JSX.Element => {
@@ -57,7 +78,7 @@ export const SettingPanel = memo((): JSX.Element => {
 
   return (
     <>
-      <Modal isOpen={isModalOpen} size="xl" title="Settings" contentClasses="flex flex-col max-h-[80vh]" onClose={closeModal}>
+      <Modal isOpen={isModalOpen} size="xl" title="Settings" onClose={closeModal}>
         <nav className={`flex gap-1 border-b border-${theme.borderPrimary}`}>
           {SETTING_TABS.map((tab) => (
             <TabButton key={tab.id} id={tab.id} isActive={activeTab === tab.id} onClick={handleTabSelect}>
@@ -65,9 +86,10 @@ export const SettingPanel = memo((): JSX.Element => {
             </TabButton>
           ))}
         </nav>
-        <div className="grow min-h-0 pt-3">
+        <div className="pt-3">
           {SETTING_TABS.map((tab) => (
-            <div key={tab.id} className={activeTab === tab.id ? 'h-full' : 'hidden'}>
+            <div key={tab.id} className={activeTab === tab.id ? 'flex h-full flex-col gap-3' : 'hidden'}>
+              {tab.description && <p className={`text-sm text-${theme.contentTertiary}`}>{tab.description(theme)}</p>}
               {tab.component}
             </div>
           ))}

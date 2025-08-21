@@ -87,7 +87,7 @@ export const useRecipeStore = create<RecipeState>()(
 
         if (index === -1) {
           logger.warn(`Attempted to remove non-existent ingredient with id: ${id}`);
-          return {};
+          return state;
         }
 
         const newIngredients = [...state.ingredients];
@@ -119,7 +119,7 @@ export const useRecipeStore = create<RecipeState>()(
         const targetIndex = ingredients.findIndex((ingredient) => ingredient.id === targetId);
 
         if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) {
-          return {};
+          return state;
         }
 
         const newIngredients = [...ingredients];

@@ -31,6 +31,7 @@ export interface GroupListProps extends GroupListPropsBase {
   readonly emptyMessage?: string;
   readonly noResultsMessage?: (query: string) => string;
   readonly renderHeader?: (category: string, items: ReadonlyArray<GroupListItem>) => JSX.Element;
+  readonly disabled?: boolean;
 }
 
 type GroupItemProps = GroupListPropsBase & {
@@ -43,6 +44,7 @@ type CategorySectionProps = GroupListPropsBase & {
   readonly isExpanded: boolean;
   readonly onToggle: (category: string) => void;
   readonly renderHeader?: (category: string, items: ReadonlyArray<GroupListItem>) => JSX.Element;
+  readonly disabled?: boolean;
 };
 
 const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItemPrefix, renderItemActions, onItemDragStart, query }) => {
@@ -102,7 +104,19 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
 });
 
 const CategorySection = memo<CategorySectionProps>((props) => {
-  const { category, items, isExpanded, onToggle, query, isItemDisabled, renderItemActions, renderItemPrefix, onItemDragStart, renderHeader } = props;
+  const {
+    category,
+    items,
+    isExpanded,
+    onToggle,
+    query,
+    isItemDisabled,
+    renderItemActions,
+    renderItemPrefix,
+    onItemDragStart,
+    renderHeader,
+    disabled,
+  } = props;
   const theme = useThemeStore((state) => state.theme);
 
   const handleToggle = useCallback(() => {
@@ -111,8 +125,9 @@ const CategorySection = memo<CategorySectionProps>((props) => {
 
   const header = (
     <button
-      className={`flex h-12 w-full items-center justify-between p-2 text-${theme.contentSecondary} bg-${theme.surfaceTertiary} outline-none hover:bg-${theme.surfaceHover} focus-visible:ring-2 focus-visible:ring-${theme.ring}`}
+      className={`flex h-12 w-full items-center justify-between p-2 text-${theme.contentSecondary} bg-${theme.surfaceTertiary} outline-none hover:bg-${theme.surfaceHover} focus-visible:ring-2 focus-visible:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`}
       onClick={handleToggle}
+      disabled={disabled}
     >
       {renderHeader ? renderHeader(category, items) : <span className="truncate font-medium">{category}</span>}
       <ChevronRightIcon className={`transform transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`} size={20} />
@@ -158,6 +173,7 @@ export const GroupListLayout = memo<GroupListProps>(
     renderItemPrefix,
     onItemDragStart,
     isItemDisabled,
+    disabled,
   }): JSX.Element => {
     const multipleOpen = useSettingStore((state) => state.multipleOpen);
     const [expandedCategories, setExpandedCategories] = useState<ReadonlySet<string>>(new Set());
@@ -207,6 +223,7 @@ export const GroupListLayout = memo<GroupListProps>(
               onItemDragStart={onItemDragStart}
               renderItemActions={renderItemActions}
               renderItemPrefix={renderItemPrefix}
+              disabled={disabled}
             />
           );
         })}
@@ -251,6 +268,7 @@ interface SearchListLayoutProps {
   readonly searchInputRef?: RefObject<HTMLInputElement | null>;
   readonly searchPlaceholder?: string;
   readonly searchWrapperClasses?: string;
+  readonly disabled?: boolean;
 }
 
 export const SearchListLayout = memo<SearchListLayoutProps>(
@@ -265,6 +283,7 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
     searchInputRef,
     searchPlaceholder,
     searchWrapperClasses,
+    disabled,
   }): JSX.Element => {
     const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
@@ -296,6 +315,7 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
               inputRef={searchInputRef}
               placeholder={searchPlaceholder}
               showClearButton
+              disabled={disabled}
               onChange={handleChange!}
               onClear={handleClear}
             />

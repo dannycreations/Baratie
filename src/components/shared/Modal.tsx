@@ -32,7 +32,7 @@ const MODAL_SIZE_MAP: Readonly<Record<ModalSize, string>> = {
 };
 
 export const Modal = memo<ModalProps>(
-  ({ isOpen, onClose, onExited, title, children, headerActions, size = 'lg', contentClasses = '' }): JSX.Element | null => {
+  ({ isOpen, onClose, onExited, title, children, headerActions, size = 'lg', contentClasses = 'max-h-[80vh]' }): JSX.Element | null => {
     const [isRendered, setIsRendered] = useState(false);
 
     const theme = useThemeStore((state) => state.theme);

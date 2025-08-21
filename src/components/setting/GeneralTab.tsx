@@ -29,35 +29,30 @@ export const GeneralTab = memo((): JSX.Element => {
   );
 
   return (
-    <div className="flex h-full flex-col gap-3">
-      <p className={`text-sm text-${theme.contentTertiary}`}>Manage general application behavior and user interface preferences.</p>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <div className={`p-3 rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary}`}>
-          <FormLayout
-            inputId="allow-multiple-open"
-            label="Multi-Expand Accordions"
-            description="Allows multiple categories or ingredient options to be open at the same time."
-            direction="row"
-            labelWrapperClasses="flex-1 order-2"
-            inputWrapperClasses="order-1 flex items-center"
-          >
-            {(id) => (
-              <BooleanInput id={id} checked={allowMultipleOpen} offBackgroundColor={theme.borderPrimary} onChange={handleToggleMultipleOpen} />
-            )}
-          </FormLayout>
-        </div>
-        <div className={`p-3 rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary}`}>
-          <FormLayout
-            inputId="persist-recipe"
-            label="Persist Current Recipe"
-            description="Automatically save the current recipe to your browser's local storage to prevent data loss."
-            direction="row"
-            labelWrapperClasses="flex-1 order-2"
-            inputWrapperClasses="order-1 flex items-center"
-          >
-            {(id) => <BooleanInput id={id} checked={persistRecipe} offBackgroundColor={theme.borderPrimary} onChange={handleTogglePersistRecipe} />}
-          </FormLayout>
-        </div>
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className={`p-3 rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary}`}>
+        <FormLayout
+          inputId="allow-multiple-open"
+          label="Multi-Expand Accordions"
+          description="Allows multiple categories or ingredient options to be open at the same time."
+          direction="row"
+          labelWrapperClasses="flex-1 order-2"
+          inputWrapperClasses="order-1 flex items-center"
+        >
+          {(id) => <BooleanInput id={id} checked={allowMultipleOpen} offBackgroundColor={theme.borderPrimary} onChange={handleToggleMultipleOpen} />}
+        </FormLayout>
+      </div>
+      <div className={`p-3 rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary}`}>
+        <FormLayout
+          inputId="persist-recipe"
+          label="Persist Current Recipe"
+          description="Automatically save the current recipe to your browser's local storage to prevent data loss."
+          direction="row"
+          labelWrapperClasses="flex-1 order-2"
+          inputWrapperClasses="order-1 flex items-center"
+        >
+          {(id) => <BooleanInput id={id} checked={persistRecipe} offBackgroundColor={theme.borderPrimary} onChange={handleTogglePersistRecipe} />}
+        </FormLayout>
       </div>
     </div>
   );
