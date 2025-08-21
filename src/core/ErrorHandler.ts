@@ -30,6 +30,7 @@ interface AttemptResult<T> {
 }
 
 export class ErrorHandler {
+  // @internal
   private static readonly DEFAULT_ERROR_CONFIG: Readonly<ErrorOptions> = {
     defaultMessage: 'An unexpected error occurred. Please try again, or check the console for details.',
     shouldLog: true,
@@ -99,10 +100,12 @@ export class ErrorHandler {
     }
   }
 
+  // @internal
   private getOptions(options: Partial<ErrorOptions> = {}): Readonly<ErrorOptions> {
     return { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
   }
 
+  // @internal
   private buildError(error: unknown, callerContext?: string, defaultMessage?: string, genericMessage?: string): AppError {
     if (error instanceof AppError) {
       const finalContext = callerContext ?? error.context;

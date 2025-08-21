@@ -14,8 +14,11 @@ interface InitializationTask {
 }
 
 export class TaskRegistry {
+  // @internal
   private readonly systemTasks: ReadonlyArray<InitializationTask>;
+  // @internal
   private readonly userTasks: Array<InitializationTask> = [];
+  // @internal
   private isRunning = false;
 
   public constructor() {

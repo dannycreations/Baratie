@@ -21,6 +21,23 @@ export function hexToUint8Array(hex: string): Uint8Array {
   return bytes;
 }
 
+export function stringToUint8Array(str: string): Uint8Array {
+  const cleanValue = str.trim();
+  if (!cleanValue) {
+    return new Uint8Array();
+  }
+
+  try {
+    return hexToUint8Array(cleanValue);
+  } catch {}
+
+  try {
+    return base64ToUint8Array(cleanValue);
+  } catch {}
+
+  return new TextEncoder().encode(str);
+}
+
 export function uint8ArrayToHex(bytes: Uint8Array): string {
   let hex = '';
   for (let i = 0; i < bytes.length; i++) {

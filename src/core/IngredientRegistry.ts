@@ -115,9 +115,13 @@ type StringSpice = BaseSpice<'string' | 'textarea', string>;
 export type SpiceDefinition = StringSpice | NumberSpice | BooleanSpice | SelectSpice;
 
 export class IngredientRegistry {
+  // @internal
   private ingredients: Map<string, IngredientProps> = new Map();
+  // @internal
   private nameToIdMap: Map<string, string> = new Map();
+  // @internal
   private categories: ReadonlySet<string> | null = null;
+  // @internal
   private isBatching = false;
 
   public startBatch(): void {
@@ -188,6 +192,7 @@ export class IngredientRegistry {
     }
   }
 
+  // @internal
   private resort(): void {
     const sortedEntries = [...this.ingredients.entries()].sort(([, a], [, b]) => a.name.localeCompare(b.name));
     this.ingredients = new Map(sortedEntries);
