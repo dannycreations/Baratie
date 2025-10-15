@@ -49,5 +49,11 @@
     "@types/react",
     "@types/react-dom"
   ],
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@tailwindcss/oxide",
+      "esbuild"
+    ]
+  },
   "packageManager": "pnpm@10.18.2"
 }

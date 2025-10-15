@@ -5,8 +5,8 @@ import checker from 'vite-plugin-checker';
 
 export default defineConfig({
   plugins: [
-    tailwindcss(),
     react(),
+    tailwindcss(),
     checker({
       typescript: true,
       enableBuild: true,
