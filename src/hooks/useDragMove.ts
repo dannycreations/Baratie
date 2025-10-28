@@ -28,18 +28,6 @@ export function useDragMove<T extends { id: string }>({ dragId, setDragId, onDra
     itemIndexMapRef.current = newMap;
   }, [items]);
 
-  useEffect(() => {
-    if (dragId) {
-      document.body.classList.add('grabbing');
-    } else {
-      document.body.classList.remove('grabbing');
-    }
-
-    return () => {
-      document.body.classList.remove('grabbing');
-    };
-  }, [dragId]);
-
   const handleDragStart = useCallback(
     (event: DragEvent<HTMLElement>, itemId: string): void => {
       setDragId(itemId);

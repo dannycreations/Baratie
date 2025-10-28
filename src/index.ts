@@ -16,8 +16,8 @@ import type { NotificationType } from './components/main/NotificationPanel';
 import type { IngredientContext, IngredientDefinition, IngredientItem, RecipebookItem, SpiceDefinition, SpiceValue } from './core/IngredientRegistry';
 import type { InputType } from './core/InputType';
 
-const { getState: getNotificationState } = useNotificationStore;
-const { getState: getRecipeState } = useRecipeStore;
+const getNotificationState = useNotificationStore.getState;
+const getRecipeState = useRecipeStore.getState;
 
 const BARATIE_API = {
   LogLevel,
@@ -35,8 +35,8 @@ const BARATIE_API = {
       },
     },
     recipe: {
-      add: (type: string, initialSpices?: Readonly<Record<string, unknown>>) => {
-        return getRecipeState().addIngredient(type, initialSpices);
+      add: (ingredientId: string, initialSpices?: Readonly<Record<string, unknown>>) => {
+        return getRecipeState().addIngredient(ingredientId, initialSpices);
       },
       clear: () => getRecipeState().clearRecipe(),
       getActiveId: () => getRecipeState().getActiveRecipeId(),

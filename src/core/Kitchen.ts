@@ -80,6 +80,21 @@ export class Kitchen {
       return;
     }
 
+    const recipe = useRecipeStore.getState().ingredients;
+    const inputData = useKitchenStore.getState().inputData;
+    if (recipe.length === 0) {
+      useKitchenStore.getState().setCookingResult({
+        cookingStatus: inputData ? 'success' : 'idle',
+        ingredientStatuses: {},
+        ingredientWarnings: {},
+        inputPanelConfig: null,
+        inputPanelId: null,
+        outputData: inputData,
+        outputPanelConfig: null,
+      });
+      return;
+    }
+
     this.isCooking = true;
     this.hasPendingCook = false;
     logger.info('Starting cook.');
@@ -90,8 +105,6 @@ export class Kitchen {
         this.timeoutId = null;
       }
 
-      const { inputData } = useKitchenStore.getState();
-      const recipe = useRecipeStore.getState().ingredients;
       const hasIntervalSetter = recipe.some((ing) => ing.name === KEY_REPEAT_STEP);
 
       if (!hasIntervalSetter && this.intervalMs > 0) {
@@ -144,18 +157,6 @@ export class Kitchen {
   }
 
   private async cookRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeCookResult> {
-    if (recipe.length === 0) {
-      return {
-        cookingStatus: initialInput ? 'success' : 'idle',
-        ingredientStatuses: {},
-        ingredientWarnings: {},
-        inputPanelConfig: null,
-        inputPanelId: null,
-        outputData: initialInput,
-        outputPanelConfig: null,
-      };
-    }
-
     const loopResult = await this.executeRecipeLoop(recipe, initialInput);
     const finalStatus: CookingStatusType = loopResult.globalError ? 'error' : loopResult.hasWarnings ? 'warning' : 'success';
     logger.info(`Cook finished with status: ${finalStatus}.`);

@@ -4,6 +4,8 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { STORAGE_RECIPE } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger, storage } from '../app/container';
 import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
+import { useIngredientStore } from './useIngredientStore';
+import { useNotificationStore } from './useNotificationStore';
 import { useSettingStore } from './useSettingStore';
 
 import type { IngredientItem, SpiceValue } from '../core/IngredientRegistry';
@@ -83,31 +85,24 @@ export const useRecipeStore = create<RecipeState>()(
 
     removeIngredient: (id) => {
       set((state) => {
-        const index = state.ingredients.findIndex((ingredient) => ingredient.id === id);
-
-        if (index === -1) {
+        if (!state.ingredients.some((ingredient) => ingredient.id === id)) {
           logger.warn(`Attempted to remove non-existent ingredient with id: ${id}`);
           return state;
         }
 
-        const newIngredients = [...state.ingredients];
-        newIngredients.splice(index, 1);
+        const newIngredients = state.ingredients.filter((ingredient) => ingredient.id !== id);
 
-        let { editingIds, pausedIngredientIds } = state;
-        if (editingIds.has(id)) {
-          editingIds = new Set(editingIds);
-          editingIds.delete(id);
-        }
-        if (pausedIngredientIds.has(id)) {
-          pausedIngredientIds = new Set(pausedIngredientIds);
-          pausedIngredientIds.delete(id);
-        }
+        const newEditingIds = new Set(state.editingIds);
+        newEditingIds.delete(id);
+
+        const newPausedIds = new Set(state.pausedIngredientIds);
+        newPausedIds.delete(id);
 
         return {
           ingredients: newIngredients,
           activeRecipeId: state.activeRecipeId === id ? null : state.activeRecipeId,
-          editingIds,
-          pausedIngredientIds,
+          editingIds: newEditingIds,
+          pausedIngredientIds: newPausedIds,
         };
       });
     },
@@ -225,6 +220,25 @@ export const useRecipeStore = create<RecipeState>()(
       });
     },
   })),
+);
+
+useIngredientStore.subscribe(
+  (state) => state.registryVersion,
+  () => {
+    const { ingredients, setRecipe, activeRecipeId } = useRecipeStore.getState();
+    const updatedIngredients = ingredients.filter((ing) => !!ingredientRegistry.get(ing.ingredientId));
+
+    if (updatedIngredients.length < ingredients.length) {
+      useNotificationStore
+        .getState()
+        .show(
+          `${ingredients.length - updatedIngredients.length} ingredient(s) were removed from your recipe because their extension was uninstalled.`,
+          'info',
+          'Recipe Updated',
+        );
+      setRecipe(updatedIngredients, activeRecipeId);
+    }
+  },
 );
 
 useRecipeStore.subscribe(

@@ -3,9 +3,7 @@ import { memo } from 'react';
 import { useThemeStore } from '../../../stores/useThemeStore';
 
 import type { JSX } from 'react';
-
-type DropZoneMode = 'overlay' | 'placeholder';
-type DropZoneVariant = 'add' | 'remove';
+import type { DropZoneMode, DropZoneVariant } from '../../../app/constants';
 
 interface DropZoneProps {
   readonly text: string;

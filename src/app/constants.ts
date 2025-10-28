@@ -29,3 +29,9 @@ export const ICON_SIZES = {
   LG: 24,
   XXL: 48,
 } as const;
+
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'stealth' | 'outline';
+export type ButtonSize = 'xs' | 'sm' | 'lg';
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'full';
+export type DropZoneMode = 'overlay' | 'placeholder';
+export type DropZoneVariant = 'add' | 'remove';

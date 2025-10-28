@@ -8,11 +8,9 @@ import { AlertTriangleIcon, CheckIcon, CopyIcon, Loader2Icon, Trash2Icon } from 
 import { Tooltip } from './Tooltip';
 
 import type { JSX, MouseEvent, ReactNode } from 'react';
+import type { ButtonSize, ButtonVariant } from '../../app/constants';
 import type { AppTheme } from '../../app/themes';
 import type { TooltipProps } from './Tooltip';
-
-type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'stealth' | 'outline';
-type ButtonSize = 'xs' | 'sm' | 'lg';
 
 export interface ButtonProps {
   readonly children?: ReactNode;

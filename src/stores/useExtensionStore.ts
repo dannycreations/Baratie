@@ -14,9 +14,7 @@ import {
   updateStateWithExtensions,
 } from '../helpers/extensionHelper';
 import { isObjectLike } from '../utilities/objectUtil';
-import { useFavoriteStore } from './useFavoriteStore';
 import { useNotificationStore } from './useNotificationStore';
-import { useRecipeStore } from './useRecipeStore';
 
 import type { Extension, ExtensionManifest, ManifestModule } from '../helpers/extensionHelper';
 
@@ -268,36 +266,12 @@ export const useExtensionStore = create<ExtensionState>()(
       const ingredientsToRemove = extension.ingredients || [];
 
       if (ingredientsToRemove.length > 0) {
-        const ingredientsToRemoveSet = new Set(ingredientsToRemove);
         ingredientRegistry.unregister(ingredientsToRemove);
-
-        const { ingredients: recipe, setRecipe, activeRecipeId } = useRecipeStore.getState();
-        const updatedRecipe = recipe.filter((ing) => !ingredientsToRemoveSet.has(ing.ingredientId));
-        if (updatedRecipe.length < recipe.length) {
-          show(`${recipe.length - updatedRecipe.length} ingredient(s) from '${displayName}' removed from your recipe.`, 'info');
-          setRecipe(updatedRecipe, activeRecipeId);
-        }
-
-        const { favorites, setFavorites } = useFavoriteStore.getState();
-        const newFavorites = new Set(favorites);
-        let favoritesChanged = false;
-        for (const ingId of ingredientsToRemove) {
-          if (newFavorites.delete(ingId)) {
-            favoritesChanged = true;
-          }
-        }
-        if (favoritesChanged) {
-          setFavorites(newFavorites);
-        }
       }
 
       const currentExtensions = get().extensions;
-      const indexToRemove = currentExtensions.findIndex((ext) => ext.id === id);
-      if (indexToRemove !== -1) {
-        const newExtensions = [...currentExtensions];
-        newExtensions.splice(indexToRemove, 1);
-        setExtensions(newExtensions);
-      }
+      const newExtensions = currentExtensions.filter((ext) => ext.id !== id);
+      setExtensions(newExtensions);
 
       show(`Extension '${displayName}' has been successfully uninstalled.`, 'success', 'Extension Manager');
     },

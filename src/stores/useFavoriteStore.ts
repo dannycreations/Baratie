@@ -4,6 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { STORAGE_FAVORITES } from '../app/constants';
 import { errorHandler, ingredientRegistry, storage } from '../app/container';
 import { AppError } from '../core/ErrorHandler';
+import { useIngredientStore } from './useIngredientStore';
 
 interface FavoriteState {
   readonly favorites: ReadonlySet<string>;
@@ -54,6 +55,25 @@ export const useFavoriteStore = create<FavoriteState>()(
       set({ favorites });
     },
   })),
+);
+
+useIngredientStore.subscribe(
+  (state) => state.registryVersion,
+  () => {
+    const { favorites, setFavorites } = useFavoriteStore.getState();
+    const newFavorites = new Set<string>();
+    let changed = false;
+    for (const fav of favorites) {
+      if (ingredientRegistry.get(fav)) {
+        newFavorites.add(fav);
+      } else {
+        changed = true;
+      }
+    }
+    if (changed) {
+      setFavorites(newFavorites);
+    }
+  },
 );
 
 useFavoriteStore.subscribe(

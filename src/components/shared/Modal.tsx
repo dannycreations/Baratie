@@ -8,8 +8,7 @@ import { Button } from './Button';
 import { XIcon } from './Icon';
 
 import type { JSX, MouseEvent, ReactNode } from 'react';
-
-type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'full';
+import type { ModalSize } from '../../app/constants';
 
 interface ModalProps {
   readonly children: ReactNode;

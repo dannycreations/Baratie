@@ -12,6 +12,7 @@ import { SettingPanel } from '../components/setting/SettingPanel';
 import { parseGitHubUrl } from '../helpers/extensionHelper';
 import { useOverflow } from '../hooks/useOverflow';
 import { internalIngredients } from '../ingredients';
+import { useDragMoveStore } from '../stores/useDragMoveStore';
 import { useExtensionStore } from '../stores/useExtensionStore';
 import { useTaskStore } from '../stores/useTaskStore';
 import { errorHandler, ingredientRegistry, kitchen, logger, taskRegistry } from './container';
@@ -29,6 +30,18 @@ export interface BaratieOptions {
 const BaratieView = memo((): JSX.Element => {
   const isAppReady = useTaskStore((state) => state.isInitialized);
   const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
+  const isDragging = useDragMoveStore((state) => !!state.draggedItemId);
+
+  useEffect(() => {
+    if (isDragging) {
+      document.body.classList.add('grabbing');
+    } else {
+      document.body.classList.remove('grabbing');
+    }
+    return () => {
+      document.body.classList.remove('grabbing');
+    };
+  }, [isDragging]);
 
   useEffect(() => {
     if (isAppReady) {
