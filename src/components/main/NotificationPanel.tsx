@@ -1,25 +1,16 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ICON_SIZES, NOTIFICATION_EXIT_MS, NOTIFICATION_SHOW_MS } from '../../app/constants';
+import { AppTheme } from '../../app/themes';
+import { NotificationMessage, NotificationType } from '../../app/types';
 import { useControlTimer } from '../../hooks/useControlTimer';
 import { useNotificationStore } from '../../stores/useNotificationStore';
 import { useThemeStore } from '../../stores/useThemeStore';
+import { cn } from '../../utilities/styleUtil';
 import { Button } from '../shared/Button';
 import { AlertTriangleIcon, CheckIcon, InfoIcon, XIcon } from '../shared/Icon';
 
 import type { JSX } from 'react';
-import type { AppTheme } from '../../app/themes';
-
-export type NotificationType = 'success' | 'error' | 'info' | 'warning';
-
-export interface NotificationMessage {
-  readonly id: string;
-  readonly type: NotificationType;
-  readonly message: string;
-  readonly title?: string;
-  readonly duration?: number;
-  readonly resetAt?: number;
-}
 
 interface NotificationItemProps {
   readonly notification: NotificationMessage;
@@ -102,17 +93,22 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
   const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
 
-  const containerClass =
-    `relative w-full overflow-hidden rounded-lg border-l-4 border-${borderColor} bg-${theme.surfaceSecondary} shadow-lg ${animationClass} ${isPaused ? 'notification-paused' : ''}`.trim();
+  const containerClass = cn(
+    'relative w-full overflow-hidden rounded-lg border-l-4 shadow-lg',
+    `border-${borderColor}`,
+    `bg-${theme.surfaceSecondary}`,
+    animationClass,
+    isPaused && 'notification-paused',
+  );
 
-  const messageClass = `allow-text-selection text-sm text-${theme.contentSecondary} ${notification.title ? 'mt-1' : ''}`.trim();
+  const messageClass = cn('allow-text-selection text-sm', `text-${theme.contentSecondary}`, notification.title && 'mt-1');
 
   return (
     <li className={containerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="flex items-start gap-2 p-3">
         <div className="flex-shrink-0">{renderedIcon}</div>
         <div className="flex-1">
-          {notification.title && <h3 className={`font-semibold text-sm text-${theme.contentPrimary}`}>{notification.title}</h3>}
+          {notification.title && <h3 className={cn('font-semibold text-sm', `text-${theme.contentPrimary}`)}>{notification.title}</h3>}
           <p className={messageClass}>{notification.message}</p>
         </div>
         <div className="flex-shrink-0">
@@ -120,10 +116,10 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
         </div>
       </div>
       {!isExiting && (
-        <div className={`absolute inset-x-0 bottom-0 h-1 bg-${theme.surfaceTertiary}`}>
+        <div className={cn('absolute inset-x-0 bottom-0 h-1', `bg-${theme.surfaceTertiary}`)}>
           <div
             key={`${notification.id}-${notification.resetAt ?? 0}`}
-            className={`h-full progress-bar-fill bg-${barColor}`}
+            className={cn('h-full progress-bar-fill', `bg-${barColor}`)}
             style={{
               animationDuration: `${duration}ms`,
             }}

@@ -2,6 +2,7 @@ import { memo, useCallback, useMemo } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { useThemeStore } from '../../stores/useThemeStore';
+import { cn } from '../../utilities/styleUtil';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
 import { HighlightText } from '../shared/HighlightText';
 import { UploadCloudIcon } from '../shared/Icon';
@@ -44,14 +45,14 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete,
   return (
     <li className="list-none">
       <ItemListLayout
-        className={`h-16 p-2 rounded-md bg-${theme.surfaceTertiary} transition-colors duration-150 hover:bg-${theme.surfaceHover}`}
+        className={cn('h-16 p-2 rounded-md transition-colors duration-150', `bg-${theme.surfaceTertiary}`, `hover:bg-${theme.surfaceHover}`)}
         leftClasses="grow min-w-0 mr-2"
         leftContent={
           <>
-            <h3 className={`block truncate font-medium text-sm text-${theme.contentPrimary} cursor-default outline-none`}>
+            <h3 className={cn('block truncate font-medium text-sm cursor-default outline-none', `text-${theme.contentPrimary}`)}>
               <HighlightText text={recipe.name} highlight={query} />
             </h3>
-            <p className={`text-xs text-${theme.contentTertiary}`}>
+            <p className={cn('text-xs', `text-${theme.contentTertiary}`)}>
               Last Updated: {formattedTimestamp} ({recipe.ingredients.length} steps)
             </p>
           </>

@@ -3,6 +3,7 @@ import { memo, useCallback, useMemo } from 'react';
 import { ICON_SIZES } from '../../app/constants';
 import { APP_THEMES } from '../../app/themes';
 import { useThemeStore } from '../../stores/useThemeStore';
+import { cn } from '../../utilities/styleUtil';
 import { CheckIcon } from '../shared/Icon';
 import { ItemListLayout } from '../shared/layout/ListLayout';
 
@@ -30,7 +31,7 @@ const PalettePreview = memo<PalettePreviewProps>(({ theme }): JSX.Element => {
   return (
     <div className="flex items-center space-x-1">
       {swatchColors.map(({ color, title }, index) => (
-        <div key={`${title}-${index}`} className={`h-4 w-4 rounded-full border border-${theme.borderPrimary} bg-${color}`} title={title} />
+        <div key={`${title}-${index}`} className={cn('h-4 w-4 rounded-full border', `border-${theme.borderPrimary}`, `bg-${color}`)} title={title} />
       ))}
     </div>
   );
@@ -50,23 +51,24 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
   }, [onSelect, item.id]);
 
   const liClass = useMemo(
-    () => `list-none rounded-md cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-${theme.ring}`,
+    () => cn('list-none rounded-md cursor-pointer outline-none focus-visible:ring-2', `focus-visible:ring-${theme.ring}`),
     [theme.ring],
   );
 
   const itemLayoutClass = useMemo(
     () =>
-      `h-16 p-2 border-2 rounded-md transition-colors duration-150 ${
+      cn(
+        'h-16 p-2 border-2 rounded-md transition-colors duration-150',
         isChecked
           ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
-          : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`
-      }`.trim(),
+          : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
+      ),
     [isChecked, theme],
   );
 
   const leftContent = (
     <div className="flex flex-col justify-center gap-1">
-      <h3 className={`font-medium text-sm ${isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`}`}>{item.name}</h3>
+      <h3 className={cn('font-medium text-sm', isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`)}>{item.name}</h3>
       <PalettePreview theme={item.theme} />
     </div>
   );

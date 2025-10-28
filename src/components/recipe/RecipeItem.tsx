@@ -3,6 +3,7 @@ import { memo, useCallback, useMemo } from 'react';
 import { ICON_SIZES } from '../../app/constants';
 import { ingredientRegistry } from '../../app/container';
 import { useThemeStore } from '../../stores/useThemeStore';
+import { cn } from '../../utilities/styleUtil';
 import { TooltipButton } from '../shared/Button';
 import { AlertTriangleIcon, GrabIcon, PauseIcon, PlayIcon, PreferencesIcon, XIcon } from '../shared/Icon';
 import { ItemListLayout } from '../shared/layout/ListLayout';
@@ -72,14 +73,14 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
   }, [onRemove, ingredientItem.id]);
 
   return (
-    <li className={`group flex flex-col rounded-md bg-${theme.dangerBg} text-sm outline-none`}>
+    <li className={cn('group flex flex-col rounded-md text-sm outline-none', `bg-${theme.dangerBg}`)}>
       <div className="p-2">
         <ItemListLayout
           leftClasses="flex min-w-0 grow items-center"
           leftContent={
             <div className="flex items-center gap-1">
               <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={ICON_SIZES.MD} />
-              <h3 className={`truncate pr-2 font-medium text-${theme.dangerFg}`}>{ingredientItem.name} (Missing)</h3>
+              <h3 className={cn('truncate pr-2 font-medium', `text-${theme.dangerFg}`)}>{ingredientItem.name} (Missing)</h3>
             </div>
           }
           rightContent={
@@ -93,7 +94,7 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
             />
           }
         />
-        <p className={`mt-1 text-xs text-${theme.dangerFg}`}>
+        <p className={cn('mt-1 text-xs', `text-${theme.dangerFg}`)}>
           This ingredient could not be found. It may be from a disabled or uninstalled extension.
         </p>
       </div>
@@ -109,7 +110,7 @@ interface InfoMessageProps {
 const InfoMessage = memo<InfoMessageProps>(({ type, message }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   return (
-    <p className={`p-2 text-center text-xs italic rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover}`}>
+    <p className={cn('p-2 text-center text-xs italic rounded-md border', `border-${theme.borderSecondary}`, `bg-${theme.surfaceHover}`)}>
       {type === 'spiceInInput' ? 'Options are managed in the Input panel.' : message}
     </p>
   );
@@ -126,7 +127,7 @@ const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition
 
   return (
     <div className="max-h-96 p-1 overflow-y-auto">
-      <div className={`p-2 rounded-md border border-${theme.borderSecondary} bg-${theme.surfaceHover}`}>
+      <div className={cn('p-2 rounded-md border', `border-${theme.borderSecondary}`, `bg-${theme.surfaceHover}`)}>
         <SpiceLayout
           ingredient={definition}
           currentSpices={ingredient.spices}
@@ -198,12 +199,15 @@ export const RecipeItem = memo<RecipeItemProps>(
       const statusBorder = isAutoCook ? getStatusBorder(theme, status) : '';
       const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
 
-      return `group flex flex-col rounded-md bg-${theme.surfaceTertiary} text-sm outline-none transition-all duration-200 ease-in-out ${
-        isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100'
-      } ${statusBorderClass}`.trim();
+      return cn(
+        'group flex flex-col rounded-md text-sm outline-none transition-all duration-200 ease-in-out',
+        `bg-${theme.surfaceTertiary}`,
+        isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100',
+        statusBorderClass,
+      );
     }, [isAutoCook, isDragged, status, theme]);
 
-    const grabHandleClass = `mr-2 text-${theme.contentTertiary} cursor-grab transition-colors group-hover:text-${theme.contentSecondary}`;
+    const grabHandleClass = cn('mr-2 cursor-grab transition-colors group-hover:text-${theme.contentSecondary}', `text-${theme.contentTertiary}`);
 
     const leftColumn = useMemo(
       () => (
@@ -215,7 +219,7 @@ export const RecipeItem = memo<RecipeItemProps>(
           </Tooltip>
           <div className="min-w-0 flex-1">
             <Tooltip content={definition.description} position="top" className="inline-block max-w-full">
-              <h3 className={`block truncate pr-2 font-medium text-${theme.contentPrimary} cursor-default outline-none`}>{definition.name}</h3>
+              <h3 className={cn('block truncate pr-2 font-medium cursor-default outline-none', `text-${theme.contentPrimary}`)}>{definition.name}</h3>
             </Tooltip>
           </div>
         </>
@@ -230,7 +234,10 @@ export const RecipeItem = memo<RecipeItemProps>(
             icon={isPaused ? <PlayIcon size={ICON_SIZES.SM} /> : <PauseIcon size={ICON_SIZES.SM} />}
             size="sm"
             variant="stealth"
-            className={`opacity-50 group-hover:opacity-100 ${isPaused ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : `text-${theme.warningFg} hover:!bg-${theme.warningBg}`}`}
+            className={cn(
+              'opacity-50 group-hover:opacity-100',
+              isPaused ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : `text-${theme.warningFg} hover:!bg-${theme.warningBg}`,
+            )}
             tooltipContent={isPaused ? 'Resume' : 'Pause'}
             tooltipPosition="top"
             onClick={handleTogglePauseCallback}
@@ -240,7 +247,7 @@ export const RecipeItem = memo<RecipeItemProps>(
               icon={<PreferencesIcon size={ICON_SIZES.SM} />}
               size="sm"
               variant={isEditorVisible ? 'primary' : 'stealth'}
-              className={isEditorVisible ? '' : `text-${theme.contentTertiary} hover:text-${theme.infoFg}`}
+              className={!isEditorVisible ? cn(`text-${theme.contentTertiary}`, `hover:text-${theme.infoFg}`) : undefined}
               tooltipContent={settingsTooltip}
               tooltipPosition="top"
               onClick={handleEditToggleCallback}
@@ -272,7 +279,7 @@ export const RecipeItem = memo<RecipeItemProps>(
         {infoContent && <div className="p-2 pt-0">{infoContent}</div>}
 
         {hasSpices && (
-          <div className={`accordion-grid ${isEditorVisible ? 'expanded' : ''}`}>
+          <div className={cn('accordion-grid', isEditorVisible && 'expanded')}>
             <div className="accordion-content">
               <RecipeSpiceEditor
                 ingredient={ingredientItem}

@@ -3,6 +3,7 @@ import { Component } from 'react';
 import { ICON_SIZES } from '../../app/constants';
 import { logger } from '../../app/container';
 import { useThemeStore } from '../../stores/useThemeStore';
+import { cn } from '../../utilities/styleUtil';
 import { Button } from '../shared/Button';
 import { RefreshCwIcon } from '../shared/Icon';
 import { ErrorView } from '../shared/View';
@@ -24,15 +25,19 @@ type ErrorDisplayProps = Omit<ErrorBoundaryState, 'hasError'>;
 function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);
 
-  const backdropClass = `fixed inset-0 z-[800] flex items-center justify-center p-3 bg-${theme.backdrop} backdrop-blur-sm`;
-  const dialogClass = `w-full max-w-md p-3 text-center rounded-lg border border-${theme.dangerBorder} bg-${theme.surfaceSecondary} sm:max-w-lg md:max-w-2xl`;
+  const backdropClass = cn('fixed inset-0 z-[800] flex items-center justify-center p-3 backdrop-blur-sm', `bg-${theme.backdrop}`);
+  const dialogClass = cn(
+    'w-full max-w-md p-3 text-center rounded-lg border sm:max-w-lg md:max-w-2xl',
+    `border-${theme.dangerBorder}`,
+    `bg-${theme.surfaceSecondary}`,
+  );
 
   return (
     <div className={backdropClass}>
       <div className={dialogClass}>
-        <div className={`mb-3 text-5xl text-${theme.dangerFg}`}>⚠️</div>
-        <h2 className={`mb-2 font-bold text-2xl text-${theme.dangerFg}`}>A Kitchen Catastrophe!</h2>
-        <p className={`mb-3 text-${theme.contentSecondary}`}>A sudden squall has hit the galley! Reloading might calm the seas.</p>
+        <div className={cn('mb-3 text-5xl', `text-${theme.dangerFg}`)}>⚠️</div>
+        <h2 className={cn('mb-2 font-bold text-2xl', `text-${theme.dangerFg}`)}>A Kitchen Catastrophe!</h2>
+        <p className={cn('mb-3', `text-${theme.contentSecondary}`)}>A sudden squall has hit the galley! Reloading might calm the seas.</p>
         <Button icon={<RefreshCwIcon size={ICON_SIZES.MD} />} size="sm" variant="primary" onClick={() => window.location.reload()}>
           Batten Down the Hatches!
         </Button>
@@ -43,15 +48,10 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  public state: ErrorBoundaryState;
+  public state: ErrorBoundaryState = { hasError: false, error: null, errorInfo: null };
 
-  public constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
-  }
-
-  public static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error, errorInfo: null };
+  public static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+    return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {

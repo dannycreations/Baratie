@@ -3,6 +3,7 @@ import { memo, useCallback, useRef, useState } from 'react';
 import { useDropZone } from '../../../hooks/useDropZone';
 import { useLineNumber } from '../../../hooks/useLineNumber';
 import { useThemeStore } from '../../../stores/useThemeStore';
+import { cn } from '../../../utilities/styleUtil';
 import { DropZoneLayout } from '../layout/DropZoneLayout';
 
 import type { ChangeEvent, JSX, RefObject, UIEvent } from 'react';
@@ -78,11 +79,22 @@ export const TextareaInput = memo<TextareaInputProps>(
       setScrollTop(newScrollTop);
     }, []);
 
-    const containerClass =
-      `relative flex overflow-hidden rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} focus-within:ring-2 focus-within:ring-${theme.ring} ${disabled ? 'opacity-50' : ''} ${wrapperClasses}`.trim();
-    const gutterClass = `shrink-0 p-2 overflow-hidden select-none text-right text-${theme.contentTertiary} bg-${theme.surfaceSecondary} border-r border-${theme.borderPrimary}`;
+    const containerClass = cn(
+      'relative flex overflow-hidden rounded-md border focus-within:ring-2',
+      `border-${theme.borderPrimary}`,
+      `bg-${theme.surfaceSecondary}`,
+      `focus-within:ring-${theme.ring}`,
+      disabled && 'opacity-50',
+      wrapperClasses,
+    );
+    const gutterClass = cn(
+      'shrink-0 p-2 overflow-hidden select-none text-right border-r',
+      `text-${theme.contentTertiary}`,
+      `bg-${theme.surfaceSecondary}`,
+      `border-${theme.borderPrimary}`,
+    );
     const commonStyles = `h-full w-full resize-none p-2 font-mono text-${theme.contentPrimary} outline-none allow-text-selection placeholder:text-${theme.contentTertiary}`;
-    const textareaClass = `${commonStyles} bg-transparent ${textareaClasses}`;
+    const textareaClass = cn(commonStyles, 'bg-transparent', textareaClasses);
 
     return (
       <div className={containerClass} {...dropZoneProps}>

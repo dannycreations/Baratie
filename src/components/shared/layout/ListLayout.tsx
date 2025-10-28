@@ -3,6 +3,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { useOverflow } from '../../../hooks/useOverflow';
 import { useSettingStore } from '../../../stores/useSettingStore';
 import { useThemeStore } from '../../../stores/useThemeStore';
+import { cn } from '../../../utilities/styleUtil';
 import { HighlightText } from '../HighlightText';
 import { ChevronRightIcon } from '../Icon';
 import { StringInput } from '../input/StringInput';
@@ -55,9 +56,11 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
 
   const nameClass = useMemo(
     () =>
-      `block truncate pr-2 text-sm text-${theme.contentSecondary} transition-colors duration-150 cursor-default group-hover:text-${theme.infoFg} ${
-        isDisabled ? 'line-through' : ''
-      }`.trim(),
+      cn(
+        'block truncate pr-2 text-sm transition-colors duration-150 cursor-default group-hover:text-${theme.infoFg}',
+        `text-${theme.contentSecondary}`,
+        isDisabled && 'line-through',
+      ),
     [theme, isDisabled],
   );
 
@@ -95,7 +98,7 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
   return (
     <li data-item-id={item.id} draggable={isDraggable} onDragStart={handleDragStart}>
       <ItemListLayout
-        className={`group h-12 p-2 rounded-md bg-${theme.surfaceTertiary} transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
+        className={cn('group h-12 p-2 rounded-md transition-colors duration-150', `bg-${theme.surfaceTertiary}`, `hover:bg-${theme.surfaceMuted}`)}
         leftContent={leftColumn}
         rightContent={rightColumn}
       />
@@ -125,21 +128,27 @@ const CategorySection = memo<CategorySectionProps>((props) => {
 
   const header = (
     <button
-      className={`flex h-12 w-full items-center justify-between p-2 text-${theme.contentSecondary} bg-${theme.surfaceTertiary} outline-none hover:bg-${theme.surfaceHover} focus-visible:ring-2 focus-visible:ring-${theme.ring} disabled:cursor-not-allowed disabled:opacity-50`}
+      className={cn(
+        'flex h-12 w-full items-center justify-between p-2 outline-none disabled:cursor-not-allowed disabled:opacity-50',
+        `text-${theme.contentSecondary}`,
+        `bg-${theme.surfaceTertiary}`,
+        `hover:bg-${theme.surfaceHover}`,
+        `focus-visible:ring-2 focus-visible:ring-${theme.ring}`,
+      )}
       onClick={handleToggle}
       disabled={disabled}
     >
       {renderHeader ? renderHeader(category, items) : <span className="truncate font-medium">{category}</span>}
-      <ChevronRightIcon className={`transform transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`} size={20} />
+      <ChevronRightIcon className={cn('transform transition-transform duration-200 ease-in-out', isExpanded ? 'rotate-90' : 'rotate-0')} size={20} />
     </button>
   );
 
   return (
     <section className="overflow-hidden rounded-md">
       {header}
-      <div className={`accordion-grid ${isExpanded ? 'expanded' : ''}`}>
+      <div className={cn('accordion-grid', isExpanded && 'expanded')}>
         <div className="accordion-content">
-          <div className={`p-2 bg-${theme.surfaceMuted}`}>
+          <div className={cn('p-2', `bg-${theme.surfaceMuted}`)}>
             <ul className="space-y-2">
               {items.map((item) => (
                 <GroupItemLayout
@@ -244,7 +253,7 @@ interface ItemListLayoutProps {
 
 export const ItemListLayout = memo<ItemListLayoutProps>(
   ({ leftContent, rightContent, leftClasses, rightClasses, className, onDragEnter, onDragOver }): JSX.Element => {
-    const containerClass = `flex w-full items-center justify-between ${className || ''}`.trim();
+    const containerClass = cn('flex w-full items-center justify-between', className);
     const leftWrapClass = leftClasses || 'min-w-0 grow';
     const rightWrapClass = rightClasses || 'flex shrink-0 items-center gap-1';
 
@@ -321,7 +330,7 @@ export const SearchListLayout = memo<SearchListLayoutProps>(
             />
           </div>
         )}
-        <div id={listId} ref={scrollRef} className={`${listWrapperClasses} ${scrollClasses}`.trim()}>
+        <div id={listId} ref={scrollRef} className={cn(listWrapperClasses, scrollClasses)}>
           {listContent}
         </div>
       </div>

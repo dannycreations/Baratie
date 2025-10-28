@@ -1,15 +1,16 @@
 import { memo, useCallback, useMemo } from 'react';
 
 import { CONFIRM_SHOW_MS, ICON_SIZES } from '../../app/constants';
+import { AppTheme } from '../../app/themes';
+import { ButtonSize, ButtonVariant } from '../../app/types';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { useCopyAction } from '../../hooks/useCopyAction';
 import { useThemeStore } from '../../stores/useThemeStore';
+import { cn } from '../../utilities/styleUtil';
 import { AlertTriangleIcon, CheckIcon, CopyIcon, Loader2Icon, Trash2Icon } from './Icon';
 import { Tooltip } from './Tooltip';
 
 import type { JSX, MouseEvent, ReactNode } from 'react';
-import type { ButtonSize, ButtonVariant } from '../../app/constants';
-import type { AppTheme } from '../../app/themes';
 import type { TooltipProps } from './Tooltip';
 
 export interface ButtonProps {
@@ -98,7 +99,7 @@ export const Button = memo<ButtonProps>(
       const variantMap = getVariantMap(theme);
       const variantClass = variantMap[finalVariant];
       const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
-      return `${baseClass} ${shapeClass} ${variantClass} ${sizeClass} ${loading ? ' opacity-60' : ''} ${fullWidth ? ' w-full' : ''} ${className}`.trim();
+      return cn(baseClass, shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className);
     }, [theme, children, finalVariant, size, loading, fullWidth, className]);
 
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
@@ -172,7 +173,7 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
     const defaultConfirmTooltip = `Confirm ${actionName}`;
     const tooltipContent = isConfirm ? (customConfirmTooltip ?? defaultConfirmTooltip) : (customTooltip ?? defaultTooltip);
 
-    const buttonClass = `${className} ${isConfirm ? `bg-${theme.dangerBg} text-${theme.accentFg}` : ''}`.trim();
+    const buttonClass = cn(className, isConfirm && `bg-${theme.dangerBg} text-${theme.accentFg}`);
 
     const defaultIcon = icon ?? <Trash2Icon size={ICON_SIZES.SM} />;
     const defaultConfirmIcon = confirmIcon ?? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={ICON_SIZES.SM} />;

@@ -11,6 +11,7 @@ import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { useThemeStore } from '../../stores/useThemeStore';
+import { cn } from '../../utilities/styleUtil';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
 import { FolderOpenIcon, PauseIcon, PlayIcon, SaveIcon } from '../shared/Icon';
 import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
@@ -267,14 +268,14 @@ export const RecipePanel = memo((): JSX.Element => {
     ingredientWarnings,
   ]);
 
-  const listClass = `grow transition-colors duration-200 ${isDraggingIngredient ? `bg-${theme.surfaceMuted}` : ''}`.trim();
+  const listClass = cn('grow transition-colors duration-200', isDraggingIngredient && `bg-${theme.surfaceMuted}`);
 
   return (
     <SectionLayout
       headerLeft="Recipe"
       headerRight={headerActions}
       className="h-[50vh] min-h-0 md:h-auto md:flex-1"
-      contentClasses={`relative flex h-full flex-col text-${theme.contentTertiary} ${scrollClasses}`.trim()}
+      contentClasses={cn('relative flex h-full flex-col', `text-${theme.contentTertiary}`, scrollClasses)}
       contentRef={scrollRef}
     >
       <div className="flex h-full flex-col" {...dropZoneProps}>

@@ -2,6 +2,7 @@ import { memo, useCallback } from 'react';
 
 import { useSettingStore } from '../../stores/useSettingStore';
 import { useThemeStore } from '../../stores/useThemeStore';
+import { cn } from '../../utilities/styleUtil';
 import { BooleanInput } from '../shared/input/BooleanInput';
 import { FormLayout } from '../shared/layout/FormLayout';
 
@@ -30,7 +31,7 @@ export const GeneralTab = memo((): JSX.Element => {
 
   return (
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-      <div className={`p-3 rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary}`}>
+      <div className={cn('p-3 rounded-md border', `border-${theme.borderPrimary}`, `bg-${theme.surfaceTertiary}`)}>
         <FormLayout
           inputId="allow-multiple-open"
           label="Multi-Expand Accordions"
@@ -42,7 +43,7 @@ export const GeneralTab = memo((): JSX.Element => {
           {(id) => <BooleanInput id={id} checked={allowMultipleOpen} offBackgroundColor={theme.borderPrimary} onChange={handleToggleMultipleOpen} />}
         </FormLayout>
       </div>
-      <div className={`p-3 rounded-md border border-${theme.borderPrimary} bg-${theme.surfaceTertiary}`}>
+      <div className={cn('p-3 rounded-md border', `border-${theme.borderPrimary}`, `bg-${theme.surfaceTertiary}`)}>
         <FormLayout
           inputId="persist-recipe"
           label="Persist Current Recipe"

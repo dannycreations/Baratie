@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 import { NOTIFICATION_SHOW_MS } from '../app/constants';
 
-import type { NotificationMessage, NotificationType } from '../components/main/NotificationPanel';
+import type { NotificationMessage, NotificationType } from '../app/types';
 
 interface NotificationState {
   readonly order: ReadonlyArray<string>;

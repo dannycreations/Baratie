@@ -3,6 +3,7 @@ import { memo, useCallback, useMemo } from 'react';
 import { ICON_SIZES } from '../../../app/constants';
 import { useCopyAction } from '../../../hooks/useCopyAction';
 import { useThemeStore } from '../../../stores/useThemeStore';
+import { cn } from '../../../utilities/styleUtil';
 import { ConfirmButton, TooltipButton } from '../../shared/Button';
 import { AlertTriangleIcon, CheckIcon, Loader2Icon, RefreshCwIcon } from '../../shared/Icon';
 import { ItemListLayout } from '../../shared/layout/ListLayout';
@@ -41,7 +42,7 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
 
   const current = statusMap[status] || statusMap.error;
   const content = (
-    <div className={`flex items-center gap-2 font-medium text-xs text-${current.color}`}>
+    <div className={cn('flex items-center gap-2 font-medium text-xs', `text-${current.color}`)}>
       {current.icon}
       <span>{current.text}</span>
     </div>
@@ -79,10 +80,15 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
   const leftContent = useMemo(
     () => (
       <div className="flex flex-col">
-        <h3 className={`font-medium text-${theme.contentPrimary} cursor-default`}>{displayName}</h3>
+        <h3 className={cn('font-medium cursor-default', `text-${theme.contentPrimary}`)}>{displayName}</h3>
         <Tooltip content={isCopied ? 'Copied URL!' : 'Click to copy URL'} position="top">
           <button
-            className={`rounded-sm text-left text-xs text-${theme.contentTertiary} cursor-pointer transition-colors duration-150 hover:bg-${theme.surfaceMuted} hover:text-${theme.infoFg}`}
+            className={cn(
+              'rounded-sm text-left text-xs cursor-pointer transition-colors duration-150',
+              `text-${theme.contentTertiary}`,
+              `hover:bg-${theme.surfaceMuted}`,
+              `hover:text-${theme.infoFg}`,
+            )}
             onClick={handleCopyId}
           >
             {id}
@@ -114,7 +120,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
   return (
     <li className="list-none">
       <ItemListLayout
-        className={`h-16 p-2 text-sm rounded-md bg-${theme.surfaceTertiary} transition-colors duration-150 hover:bg-${theme.surfaceMuted}`}
+        className={cn('h-16 p-2 text-sm rounded-md transition-colors duration-150', `bg-${theme.surfaceTertiary}`, `hover:bg-${theme.surfaceMuted}`)}
         leftClasses="min-w-0 grow mr-2"
         leftContent={leftContent}
         rightClasses="flex shrink-0 items-center"

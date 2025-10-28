@@ -3,12 +3,13 @@ import { createPortal } from 'react-dom';
 
 import { ICON_SIZES, MODAL_SHOW_MS } from '../../app/constants';
 import { errorHandler } from '../../app/container';
+import { ModalSize } from '../../app/types';
 import { useThemeStore } from '../../stores/useThemeStore';
+import { cn } from '../../utilities/styleUtil';
 import { Button } from './Button';
 import { XIcon } from './Icon';
 
 import type { JSX, MouseEvent, ReactNode } from 'react';
-import type { ModalSize } from '../../app/constants';
 
 interface ModalProps {
   readonly children: ReactNode;
@@ -89,17 +90,27 @@ export const Modal = memo<ModalProps>(
     const modalSizeClass = MODAL_SIZE_MAP[size] || MODAL_SIZE_MAP.lg;
     const backdropAnimation = isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active';
     const contentAnimation = isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active';
-    const backdropClass = `fixed inset-0 z-[500] flex items-center justify-center p-3 bg-${theme.backdrop} backdrop-blur-sm ${backdropAnimation}`;
-    const modalClass =
-      `flex w-full flex-col rounded-lg border border-${theme.borderPrimary} bg-${theme.surfaceSecondary} ${modalSizeClass} ${contentClasses} ${contentAnimation}`.trim();
+    const backdropClass = cn(
+      'fixed inset-0 z-[500] flex items-center justify-center p-3 backdrop-blur-sm',
+      `bg-${theme.backdrop}`,
+      backdropAnimation,
+    );
+    const modalClass = cn(
+      'flex w-full flex-col rounded-lg border',
+      `border-${theme.borderPrimary}`,
+      `bg-${theme.surfaceSecondary}`,
+      modalSizeClass,
+      contentClasses,
+      contentAnimation,
+    );
 
     errorHandler.assert(document.body, 'document.body is not available for Modal portal.', 'Modal Creation');
 
     return createPortal(
       <div ref={backdropRef} className={backdropClass} onClick={handleBackdropClick}>
         <div ref={modalContentRef} className={modalClass}>
-          <header className={`flex h-12 shrink-0 items-center justify-between border-b border-${theme.borderPrimary} px-2`}>
-            <h2 className={`grow truncate pr-2 font-semibold text-xl text-${theme.contentPrimary}`}>{title}</h2>
+          <header className={cn('flex h-12 shrink-0 items-center justify-between border-b px-2', `border-${theme.borderPrimary}`)}>
+            <h2 className={cn('grow truncate pr-2 font-semibold text-xl', `text-${theme.contentPrimary}`)}>{title}</h2>
             <div className="flex shrink-0 items-center gap-2">
               {headerActions && <div className="flex shrink-0 items-center gap-1">{headerActions}</div>}
               <Button icon={<XIcon size={ICON_SIZES.MD} />} size="sm" variant="stealth" onClick={onClose} />

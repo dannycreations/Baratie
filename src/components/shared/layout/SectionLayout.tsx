@@ -1,6 +1,7 @@
 import { memo, useId } from 'react';
 
 import { useThemeStore } from '../../../stores/useThemeStore';
+import { cn } from '../../../utilities/styleUtil';
 
 import type { JSX, ReactNode, RefObject } from 'react';
 
@@ -18,10 +19,14 @@ export const SectionLayout = memo<SectionLayoutProps>(
     const titleId = useId();
     const theme = useThemeStore((state) => state.theme);
 
-    const panelClass = `flex flex-col overflow-hidden rounded-lg bg-${theme.surfaceSecondary} ${className}`.trim();
-    const headerClass =
-      `flex h-12 shrink-0 items-center justify-between p-2 text-${theme.contentPrimary} border-b border-${theme.borderPrimary} bg-${theme.surfaceTertiary}`.trim();
-    const contentClass = `grow p-3 overflow-auto ${contentClasses}`.trim();
+    const panelClass = cn('flex flex-col overflow-hidden rounded-lg', `bg-${theme.surfaceSecondary}`, className);
+    const headerClass = cn(
+      'flex h-12 shrink-0 items-center justify-between p-2 border-b',
+      `text-${theme.contentPrimary}`,
+      `border-${theme.borderPrimary}`,
+      `bg-${theme.surfaceTertiary}`,
+    );
+    const contentClass = cn('grow p-3 overflow-auto', contentClasses);
 
     return (
       <section className={panelClass}>
