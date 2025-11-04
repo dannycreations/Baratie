@@ -1,4 +1,4 @@
-import { memo, useId } from 'react';
+import { memo } from 'react';
 
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { cn } from '../../../utilities/styleUtil';
@@ -16,7 +16,6 @@ interface SectionLayoutProps {
 
 export const SectionLayout = memo<SectionLayoutProps>(
   ({ headerLeft, headerRight, children, className = '', contentClasses = '', contentRef }): JSX.Element => {
-    const titleId = useId();
     const theme = useThemeStore((state) => state.theme);
 
     const panelClass = cn('flex flex-col overflow-hidden rounded-lg', `bg-${theme.surfaceSecondary}`, className);
@@ -31,9 +30,7 @@ export const SectionLayout = memo<SectionLayoutProps>(
     return (
       <section className={panelClass}>
         <header className={headerClass}>
-          <h2 id={titleId} className="min-w-0 truncate pr-2 font-semibold text-lg">
-            {headerLeft}
-          </h2>
+          <h2 className="min-w-0 truncate pr-2 font-semibold text-lg">{headerLeft}</h2>
           {headerRight && <div className="flex shrink-0 items-center gap-1">{headerRight}</div>}
         </header>
         <div ref={contentRef} className={contentClass}>

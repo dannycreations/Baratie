@@ -4,7 +4,7 @@ import { ingredientRegistry, logger, storage } from '../app/container';
 import { getSortedSpices, validateSpices } from './spiceHelper';
 
 import type { InferInput } from 'valibot';
-import type { IngredientItem, RecipebookItem } from '../core/IngredientRegistry';
+import type { IngredientItem, IngredientProps, RecipebookItem } from '../core/IngredientRegistry';
 
 const SpiceValueSchema = union([string(), number(), boolean()]);
 
@@ -38,6 +38,63 @@ export interface SanitizedRecipesResult {
   readonly hasCorruption: boolean;
 }
 
+const recipeNameFormatter = new Intl.DateTimeFormat(undefined, {
+  month: 'short',
+  day: 'numeric',
+});
+
+function findIngredientDefinition(rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientProps | null {
+  if (rawIngredient.ingredientId) {
+    const defById = ingredientRegistry.get(rawIngredient.ingredientId);
+    if (defById) {
+      return defById;
+    }
+  }
+
+  const defByName = ingredientRegistry.getByName(rawIngredient.name);
+  if (defByName) {
+    if (rawIngredient.ingredientId) {
+      logger.warn(
+        `Ingredient '${rawIngredient.name}' in recipe '${recipeName}' from ${source} had a stale ID ('${rawIngredient.ingredientId}'). It has been matched by name and updated to the new ID ('${defByName.id}').`,
+      );
+    }
+    return defByName;
+  }
+
+  logger.warn(`Skipping unknown ingredient '${rawIngredient.name}' from ${source} for recipe '${recipeName}'. Its definition could not be found.`);
+  return null;
+}
+
+export function computeInitialRecipeName(
+  ingredients: ReadonlyArray<IngredientItem>,
+  activeRecipeId: string | null,
+  recipeIdMap: ReadonlyMap<string, RecipebookItem>,
+  recipeContentHashMap: ReadonlyMap<string, string>,
+): string {
+  if (ingredients.length === 0) {
+    return '';
+  }
+
+  if (activeRecipeId) {
+    const activeRecipe = recipeIdMap.get(activeRecipeId);
+    if (activeRecipe) {
+      return activeRecipe.name;
+    }
+  }
+
+  const currentHash = createRecipeHash(ingredients);
+  const existingRecipeIdByContent = recipeContentHashMap.get(currentHash);
+  if (existingRecipeIdByContent) {
+    const existingRecipe = recipeIdMap.get(existingRecipeIdByContent);
+    if (existingRecipe) {
+      return existingRecipe.name;
+    }
+  }
+
+  const dateString = recipeNameFormatter.format(new Date());
+  return `My Recipe ${dateString}`;
+}
+
 export function createRecipeHash(ingredients: ReadonlyArray<IngredientItem>): string {
   const canonicalParts = ingredients.map((ing) => {
     const definition = ingredientRegistry.get(ing.ingredientId);
@@ -65,22 +122,9 @@ export function saveAllRecipes(recipes: ReadonlyArray<RecipebookItem>): boolean 
 }
 
 export function sanitizeIngredient(rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientItem | null {
-  let definition = rawIngredient.ingredientId ? ingredientRegistry.get(rawIngredient.ingredientId) : null;
+  const definition = findIngredientDefinition(rawIngredient, source, recipeName);
 
   if (!definition) {
-    const definitionByName = ingredientRegistry.getByName(rawIngredient.name);
-    if (definitionByName) {
-      if (rawIngredient.ingredientId) {
-        logger.warn(
-          `Ingredient '${rawIngredient.name}' in recipe '${recipeName}' from ${source} had a stale ID ('${rawIngredient.ingredientId}'). It has been matched by name and updated to the new ID ('${definitionByName.id}').`,
-        );
-      }
-      definition = definitionByName;
-    }
-  }
-
-  if (!definition) {
-    logger.warn(`Skipping unknown ingredient '${rawIngredient.name}' from ${source} for recipe '${recipeName}'. Its definition could not be found.`);
     return null;
   }
 

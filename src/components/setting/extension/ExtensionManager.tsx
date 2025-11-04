@@ -1,15 +1,18 @@
 import { memo, useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { useAutoFocus } from '../../../hooks/useAutoFocus';
+import { useOverflow } from '../../../hooks/useOverflow';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
 import { useThemeStore } from '../../../stores/useThemeStore';
+import { cn } from '../../../utilities/styleUtil';
 import { Button } from '../../shared/Button';
 import { BooleanInput } from '../../shared/input/BooleanInput';
-import { GroupListLayout, SearchListLayout } from '../../shared/layout/ListLayout';
+import { StringInput } from '../../shared/input/StringInput';
+import { GroupListLayout } from '../../shared/layout/ListLayout';
 import { Modal } from '../../shared/Modal';
 
-import type { JSX } from 'react';
+import type { ChangeEvent, JSX } from 'react';
 import type { ManifestModule } from '../../../helpers/extensionHelper';
 import type { GroupListItem } from '../../shared/layout/ListLayout';
 
@@ -45,6 +48,7 @@ export const ExtensionManager = memo((): JSX.Element | null => {
   const listId = useId();
   const searchRef = useRef<HTMLInputElement>(null);
   const deferredQuery = useDeferredValue(query);
+  const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   const isModalOpen = currentModal?.type === 'extension';
   const pendingSelection = isModalOpen ? currentModal.props : null;
@@ -90,6 +94,14 @@ export const ExtensionManager = memo((): JSX.Element | null => {
     return result;
   }, [groupedModules, deferredQuery]);
 
+  const handleQueryChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setQuery(event.target.value);
+  }, []);
+
+  const handleClearQuery = useCallback(() => {
+    setQuery('');
+  }, []);
+
   const handleToggleModule = useCallback((entry: string): void => {
     setSelectedEntries((prev) => {
       const newSet = new Set(prev);
@@ -129,7 +141,7 @@ export const ExtensionManager = memo((): JSX.Element | null => {
     await installSelectedModules(pendingSelection.id, modulesToInstall);
     setIsLoading(false);
     closeModal();
-  }, [pendingSelection, selectedEntries, manifestModules, installSelectedModules, closeModal]);
+  }, [closeModal, installSelectedModules, manifestModules, pendingSelection, selectedEntries]);
 
   const handleClose = useCallback((): void => {
     cancelPendingInstall();
@@ -163,7 +175,7 @@ export const ExtensionManager = memo((): JSX.Element | null => {
       return (
         <div className="flex min-w-0 items-center gap-2">
           <BooleanInput id={`${categoryId}-toggle`} checked={areAllSelected} disabled={isLoading} onChange={() => handleToggleCategory(items)} />
-          <span className={`truncate font-medium text-${theme.contentSecondary} cursor-pointer`}>{category}</span>
+          <span className={cn('truncate font-medium cursor-pointer', `text-${theme.contentSecondary}`)}>{category}</span>
         </div>
       );
     },
@@ -199,16 +211,24 @@ export const ExtensionManager = memo((): JSX.Element | null => {
       onClose={handleClose}
       onExited={resetState}
     >
-      <SearchListLayout
-        listId={listId}
-        listContent={content}
-        searchQuery={query}
-        searchOnQuery={setQuery}
-        searchId="module-install-search"
-        searchInputRef={searchRef}
-        searchPlaceholder="Search Modules..."
-        disabled={isLoading}
-      />
+      <div className="flex h-full flex-col gap-2 min-h-0">
+        <div>
+          <StringInput
+            id="module-install-search"
+            type="search"
+            inputRef={searchRef}
+            value={query}
+            placeholder="Search Modules..."
+            showClearButton
+            disabled={isLoading}
+            onChange={handleQueryChange}
+            onClear={handleClearQuery}
+          />
+        </div>
+        <div id={listId} ref={scrollRef} className={cn('grow overflow-y-auto', scrollClasses)}>
+          {content}
+        </div>
+      </div>
     </Modal>
   );
 });

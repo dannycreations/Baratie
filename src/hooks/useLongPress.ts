@@ -70,13 +70,11 @@ export function useLongPress(
     return () => stop(true);
   }, [stop]);
 
-  const stopHandler = useCallback(() => stop(true), [stop]);
-
   return {
     onMouseDown: start,
-    onMouseUp: stopHandler,
-    onMouseLeave: stopHandler,
+    onMouseUp: stop,
+    onMouseLeave: stop,
     onTouchStart: start,
-    onTouchEnd: stopHandler,
+    onTouchEnd: stop,
   };
 }

@@ -46,8 +46,21 @@ export class Logger {
       return;
     }
 
-    const consoleMethod =
-      level >= LogLevel.ERROR ? console.error : level >= LogLevel.WARN ? console.warn : level >= LogLevel.INFO ? console.info : console.debug;
+    let consoleMethod: (...data: Array<unknown>) => void;
+    switch (true) {
+      case level >= LogLevel.ERROR:
+        consoleMethod = console.error;
+        break;
+      case level >= LogLevel.WARN:
+        consoleMethod = console.warn;
+        break;
+      case level >= LogLevel.INFO:
+        consoleMethod = console.info;
+        break;
+      default:
+        consoleMethod = console.debug;
+        break;
+    }
 
     const prefix = `[${LogLevel[level]}]`;
     const data = args.map((arg) => objectStringify(arg));

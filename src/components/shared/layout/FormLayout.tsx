@@ -1,6 +1,7 @@
 import { memo } from 'react';
 
 import { useThemeStore } from '../../../stores/useThemeStore';
+import { cn } from '../../../utilities/styleUtil';
 import { Tooltip } from '../Tooltip';
 
 import type { JSX, ReactNode } from 'react';
@@ -22,10 +23,10 @@ export const FormLayout = memo<FormLayoutProps>(
     const theme = useThemeStore((state) => state.theme);
     const isRow = direction === 'row';
 
-    const containerClass = className ?? (isRow ? 'flex items-center justify-start gap-2' : 'flex flex-col gap-2');
-    const finalLabelWrapClass = labelWrapperClasses ?? (isRow ? 'min-w-0' : '');
-    const finalInputWrapClass = inputWrapperClasses ?? (isRow ? 'flex h-8 shrink-0 items-center' : 'w-full');
-    const finalLabelClass = labelClasses ?? `font-medium text-sm text-${theme.contentSecondary}`;
+    const containerClass = cn(isRow ? 'flex items-center justify-start gap-2' : 'flex flex-col gap-2', className);
+    const finalLabelWrapClass = cn(isRow ? 'min-w-0' : '', labelWrapperClasses);
+    const finalInputWrapClass = cn(isRow ? 'flex h-8 shrink-0 items-center' : 'w-full', inputWrapperClasses);
+    const finalLabelClass = cn('font-medium text-sm', `text-${theme.contentSecondary}`, labelClasses);
 
     const labelText = <span className="block truncate">{label}</span>;
 

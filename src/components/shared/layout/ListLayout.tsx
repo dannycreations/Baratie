@@ -1,16 +1,14 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 
-import { useOverflow } from '../../../hooks/useOverflow';
 import { useSettingStore } from '../../../stores/useSettingStore';
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { cn } from '../../../utilities/styleUtil';
 import { HighlightText } from '../HighlightText';
 import { ChevronRightIcon } from '../Icon';
-import { StringInput } from '../input/StringInput';
 import { Tooltip } from '../Tooltip';
 import { EmptyView } from '../View';
 
-import type { ChangeEvent, DragEvent, JSX, ReactNode, RefObject } from 'react';
+import type { DragEvent, JSX, ReactNode } from 'react';
 
 export interface GroupListItem {
   readonly id: string;
@@ -54,14 +52,11 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
   const isDisabled = isItemDisabled?.(item) ?? false;
   const isDraggable = !isDisabled && !!onItemDragStart;
 
-  const nameClass = useMemo(
-    () =>
-      cn(
-        'block truncate pr-2 text-sm transition-colors duration-150 cursor-default group-hover:text-${theme.infoFg}',
-        `text-${theme.contentSecondary}`,
-        isDisabled && 'line-through',
-      ),
-    [theme, isDisabled],
+  const nameClass = cn(
+    'block truncate pr-2 text-sm transition-colors duration-150 cursor-default outline-none',
+    `group-hover:text-${theme.infoFg}`,
+    `text-${theme.contentSecondary}`,
+    isDisabled && 'line-through',
   );
 
   const handleDragStart = useCallback(
@@ -74,34 +69,32 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
     [isDraggable, onItemDragStart, item],
   );
 
-  const leftColumn = useMemo(
-    () => (
-      <div className="flex min-w-0 items-center gap-2">
-        {renderItemPrefix?.(item)}
-        <Tooltip
-          className="min-w-0 flex-1"
-          content={<HighlightText highlight={query} text={item.description} />}
-          position="top"
-          tooltipClasses="max-w-xs"
-        >
-          <h3 className={`${nameClass} outline-none`}>
-            <HighlightText highlight={query} text={item.name} />
-          </h3>
-        </Tooltip>
-      </div>
-    ),
-    [item, nameClass, query, renderItemPrefix],
-  );
-
-  const rightColumn = useMemo(() => renderItemActions?.(item), [item, renderItemActions]);
+  const rightColumn = renderItemActions?.(item);
 
   return (
     <li data-item-id={item.id} draggable={isDraggable} onDragStart={handleDragStart}>
-      <ItemListLayout
-        className={cn('group h-12 p-2 rounded-md transition-colors duration-150', `bg-${theme.surfaceTertiary}`, `hover:bg-${theme.surfaceMuted}`)}
-        leftContent={leftColumn}
-        rightContent={rightColumn}
-      />
+      <div
+        className={cn(
+          'flex w-full items-center justify-between group h-12 p-2 rounded-md transition-colors duration-150',
+          `bg-${theme.surfaceTertiary}`,
+          `hover:bg-${theme.surfaceMuted}`,
+        )}
+      >
+        <div className="flex min-w-0 grow items-center gap-2">
+          {renderItemPrefix?.(item)}
+          <Tooltip
+            className="min-w-0 flex-1"
+            content={<HighlightText highlight={query} text={item.description} />}
+            position="top"
+            tooltipClasses="max-w-xs"
+          >
+            <h3 className={nameClass}>
+              <HighlightText highlight={query} text={item.name} />
+            </h3>
+          </Tooltip>
+        </div>
+        {rightColumn && <div className="flex shrink-0 items-center gap-1">{rightColumn}</div>}
+      </div>
     </li>
   );
 });
@@ -133,7 +126,6 @@ const CategorySection = memo<CategorySectionProps>((props) => {
         `text-${theme.contentSecondary}`,
         `bg-${theme.surfaceTertiary}`,
         `hover:bg-${theme.surfaceHover}`,
-        `focus-visible:ring-2 focus-visible:ring-${theme.ring}`,
       )}
       onClick={handleToggle}
       disabled={disabled}
@@ -185,7 +177,7 @@ export const GroupListLayout = memo<GroupListProps>(
     disabled,
   }): JSX.Element => {
     const multipleOpen = useSettingStore((state) => state.multipleOpen);
-    const [expandedCategories, setExpandedCategories] = useState<ReadonlySet<string>>(new Set());
+    const [expandedCategories, setExpandedCategories] = useState<ReadonlySet<string>>(() => new Set());
     const hasQuery = !!query.trim();
 
     const handleCategoryToggle = useCallback(
@@ -236,103 +228,6 @@ export const GroupListLayout = memo<GroupListProps>(
             />
           );
         })}
-      </div>
-    );
-  },
-);
-
-interface ItemListLayoutProps {
-  readonly leftContent: ReactNode;
-  readonly leftClasses?: string;
-  readonly rightContent?: ReactNode;
-  readonly rightClasses?: string;
-  readonly className?: string;
-  readonly onDragEnter?: (event: DragEvent<HTMLDivElement>) => void;
-  readonly onDragOver?: (event: DragEvent<HTMLDivElement>) => void;
-}
-
-export const ItemListLayout = memo<ItemListLayoutProps>(
-  ({ leftContent, rightContent, leftClasses, rightClasses, className, onDragEnter, onDragOver }): JSX.Element => {
-    const containerClass = cn('flex w-full items-center justify-between', className);
-    const leftWrapClass = leftClasses || 'min-w-0 grow';
-    const rightWrapClass = rightClasses || 'flex shrink-0 items-center gap-1';
-
-    return (
-      <div className={containerClass} onDragEnter={onDragEnter} onDragOver={onDragOver}>
-        <div className={leftWrapClass}>{leftContent}</div>
-        {rightContent && <div className={rightWrapClass}>{rightContent}</div>}
-      </div>
-    );
-  },
-);
-
-interface SearchListLayoutProps {
-  readonly listContent: ReactNode;
-  readonly listId: string;
-  readonly containerClasses?: string;
-  readonly listWrapperClasses?: string;
-  readonly searchQuery?: string;
-  readonly searchOnQuery?: (query: string) => void;
-  readonly searchId?: string;
-  readonly searchInputRef?: RefObject<HTMLInputElement | null>;
-  readonly searchPlaceholder?: string;
-  readonly searchWrapperClasses?: string;
-  readonly disabled?: boolean;
-}
-
-export const SearchListLayout = memo<SearchListLayoutProps>(
-  ({
-    containerClasses = 'flex h-full flex-col gap-2 min-h-0',
-    listWrapperClasses = 'grow overflow-y-auto',
-    listContent,
-    listId,
-    searchQuery,
-    searchOnQuery,
-    searchId,
-    searchInputRef,
-    searchPlaceholder,
-    searchWrapperClasses,
-    disabled,
-  }): JSX.Element => {
-    const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
-
-    const handleChange = searchOnQuery
-      ? useCallback(
-          (event: ChangeEvent<HTMLInputElement>): void => {
-            searchOnQuery?.(event.target.value);
-          },
-          [searchOnQuery],
-        )
-      : undefined;
-
-    const handleClear = searchOnQuery
-      ? useCallback((): void => {
-          searchOnQuery?.('');
-        }, [searchOnQuery])
-      : undefined;
-
-    const showSearch = typeof searchQuery === 'string' && searchId;
-
-    return (
-      <div className={containerClasses}>
-        {showSearch && (
-          <div className={searchWrapperClasses}>
-            <StringInput
-              id={searchId}
-              type="search"
-              value={searchQuery}
-              inputRef={searchInputRef}
-              placeholder={searchPlaceholder}
-              showClearButton
-              disabled={disabled}
-              onChange={handleChange!}
-              onClear={handleClear}
-            />
-          </div>
-        )}
-        <div id={listId} ref={scrollRef} className={cn(listWrapperClasses, scrollClasses)}>
-          {listContent}
-        </div>
       </div>
     );
   },

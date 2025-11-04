@@ -15,13 +15,12 @@ import { cn } from '../../utilities/styleUtil';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
 import { FolderOpenIcon, PauseIcon, PlayIcon, SaveIcon } from '../shared/Icon';
 import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
-import { SearchListLayout } from '../shared/layout/ListLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
 import { EmptyView } from '../shared/View';
 import { RecipeItem } from './RecipeItem';
 
 import type { DragEvent, JSX } from 'react';
-import type { IngredientItem, SpiceValue } from '../../core/IngredientRegistry';
+import type { IngredientItem } from '../../core/IngredientRegistry';
 import type { CookbookModalProps } from '../../stores/useCookbookStore';
 import type { RecipeItemHandlers } from './RecipeItem';
 
@@ -29,23 +28,13 @@ export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
   const editingIds = useRecipeStore((state) => state.editingIds);
   const activeRecipeId = useRecipeStore((state) => state.activeRecipeId);
-  const pausedIngredientIds = useRecipeStore((state) => state.pausedIngredientIds);
   const addIngredient = useRecipeStore((state) => state.addIngredient);
   const clearRecipe = useRecipeStore((state) => state.clearRecipe);
-  const removeIngredient = useRecipeStore((state) => state.removeIngredient);
   const reorderIngredients = useRecipeStore((state) => state.reorderIngredients);
-  const toggleEditingId = useRecipeStore((state) => state.toggleEditingId);
   const clearEditingIds = useRecipeStore((state) => state.clearEditingIds);
-  const toggleIngredientPause = useRecipeStore((state) => state.toggleIngredientPause);
-  const updateSpice = useRecipeStore((state) => state.updateSpice);
   const openModal = useModalStore((state) => state.openModal);
   const isCookbookOpen = useModalStore((state) => state.currentModal?.type === 'cookbook');
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
-  const ingredientStatuses = useKitchenStore((state) => state.ingredientStatuses);
-  const ingredientWarnings = useKitchenStore((state) => state.ingredientWarnings);
-  const inputPanelId = useKitchenStore((state) => state.inputPanelId);
-  const startUpdateBatch = useKitchenStore((state) => state.startUpdateBatch);
-  const endUpdateBatch = useKitchenStore((state) => state.endUpdateBatch);
   const theme = useThemeStore((state) => state.theme);
   const prepareCookbook = useCookbookStore((state) => state.prepareToOpen);
   const dragId = useDragMoveStore((state) => state.draggedItemId);
@@ -104,7 +93,7 @@ export const RecipePanel = memo((): JSX.Element => {
       onMoveStart(event, ingredient.id);
       event.dataTransfer.setData(DATA_TYPE_RECIPE_ITEM, ingredient.id);
     },
-    [editingIds.size, onMoveStart, clearEditingIds],
+    [clearEditingIds, editingIds.size, onMoveStart],
   );
 
   const openCookbook = useCallback(
@@ -114,7 +103,7 @@ export const RecipePanel = memo((): JSX.Element => {
       prepareCookbook(props);
       openModal({ type: 'cookbook', props });
     },
-    [openModal, prepareCookbook, ingredients, activeRecipeId],
+    [activeRecipeId, ingredients, openModal, prepareCookbook],
   );
 
   const handleClearRecipe = useCallback((): void => clearRecipe(), [clearRecipe]);
@@ -166,54 +155,13 @@ export const RecipePanel = memo((): JSX.Element => {
     );
   }, [ingredients.length, isCookbookOpen, isAutoCookEnabled, theme, openCookbook, handleClearRecipe]);
 
-  const handleRemove = useCallback(
-    (id: string): void => {
-      removeIngredient(id);
-    },
-    [removeIngredient],
-  );
-
-  const handleSpiceChange = useCallback(
-    (id: string, spiceId: string, rawValue: SpiceValue): void => {
-      updateSpice(id, spiceId, rawValue);
-    },
-    [updateSpice],
-  );
-
-  const handleEditToggle = useCallback(
-    (id: string): void => {
-      const isSpiceInInput = useKitchenStore.getState().inputPanelId === id;
-      if (isSpiceInInput) {
-        return;
-      }
-      toggleEditingId(id);
-    },
-    [toggleEditingId],
-  );
-
   const recipeItemHandlers: RecipeItemHandlers = useMemo(
     () => ({
-      onRemove: handleRemove,
-      onSpiceChange: handleSpiceChange,
       onDragStart: handleDragStart,
       onDragOver: onMoveOver,
       onDragEnd: onDragEnd,
-      onEditToggle: handleEditToggle,
-      onLongPressStart: startUpdateBatch,
-      onLongPressEnd: endUpdateBatch,
-      onTogglePause: toggleIngredientPause,
     }),
-    [
-      handleRemove,
-      handleSpiceChange,
-      handleDragStart,
-      onMoveOver,
-      onDragEnd,
-      handleEditToggle,
-      startUpdateBatch,
-      endUpdateBatch,
-      toggleIngredientPause,
-    ],
+    [handleDragStart, onMoveOver, onDragEnd],
   );
 
   const content = useMemo((): JSX.Element => {
@@ -231,23 +179,9 @@ export const RecipePanel = memo((): JSX.Element => {
     }
     return (
       <ul className="space-y-2 pb-3">
-        {ingredients.map((ingredient: IngredientItem) => {
-          const isSpiceInInput = inputPanelId === ingredient.id;
-          return (
-            <RecipeItem
-              key={ingredient.id}
-              ingredientItem={ingredient}
-              handlers={recipeItemHandlers}
-              isAutoCook={isAutoCookEnabled}
-              isDragged={dragId === ingredient.id}
-              isEditing={!isSpiceInInput && editingIds.has(ingredient.id)}
-              isPaused={pausedIngredientIds.has(ingredient.id)}
-              isSpiceInInput={isSpiceInInput}
-              status={ingredientStatuses[ingredient.id] || 'idle'}
-              warning={ingredientWarnings[ingredient.id] || null}
-            />
-          );
-        })}
+        {ingredients.map((ingredient: IngredientItem) => (
+          <RecipeItem key={ingredient.id} ingredientItem={ingredient} handlers={recipeItemHandlers} />
+        ))}
         {isDraggingIngredient && (
           <li>
             <DropZoneLayout mode="placeholder" text="Drop to add ingredient" variant="add" />
@@ -255,18 +189,7 @@ export const RecipePanel = memo((): JSX.Element => {
         )}
       </ul>
     );
-  }, [
-    ingredients,
-    isDraggingIngredient,
-    inputPanelId,
-    recipeItemHandlers,
-    isAutoCookEnabled,
-    dragId,
-    editingIds,
-    pausedIngredientIds,
-    ingredientStatuses,
-    ingredientWarnings,
-  ]);
+  }, [ingredients, isDraggingIngredient, recipeItemHandlers]);
 
   const listClass = cn('grow transition-colors duration-200', isDraggingIngredient && `bg-${theme.surfaceMuted}`);
 
@@ -279,7 +202,9 @@ export const RecipePanel = memo((): JSX.Element => {
       contentRef={scrollRef}
     >
       <div className="flex h-full flex-col" {...dropZoneProps}>
-        <SearchListLayout listId={listId} listContent={content} listWrapperClasses={listClass} />
+        <div id={listId} className={cn('grow overflow-y-auto', listClass, scrollClasses)}>
+          {content}
+        </div>
       </div>
     </SectionLayout>
   );

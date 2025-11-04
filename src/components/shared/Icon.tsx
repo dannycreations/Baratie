@@ -1,6 +1,7 @@
-import { forwardRef, memo } from 'react';
+import { memo } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
+import { cn } from '../../utilities/styleUtil';
 
 import type { JSX, ReactNode } from 'react';
 
@@ -20,8 +21,6 @@ export interface StarIconProps extends IconProps {
 
 type SvgIconAttributes = Omit<IconProps, 'size' | 'className'>;
 
-const svgAttributeKeys: ReadonlyArray<keyof SvgIconAttributes> = ['fill', 'stroke', 'strokeWidth', 'strokeLinecap', 'strokeLinejoin'];
-
 export interface CreateIconProps<P extends IconProps = IconProps> {
   readonly iconName: string;
   readonly path: ReactNode;
@@ -29,37 +28,25 @@ export interface CreateIconProps<P extends IconProps = IconProps> {
 }
 
 export function createIcon<P extends IconProps = IconProps>({ iconName, defaultProps = {}, path }: Readonly<CreateIconProps<P>>) {
-  const componentName = iconName
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
-
-  const Component = forwardRef<SVGSVGElement, P>((props, ref): JSX.Element => {
+  return memo((props: P): JSX.Element => {
     const { size = ICON_SIZES.LG, className = '', ...rest } = props;
     const computedDefaultProps = typeof defaultProps === 'function' ? defaultProps(props as P) : defaultProps;
 
-    const finalProps: SvgIconAttributes = {
+    const finalProps = {
       fill: 'none',
       stroke: 'currentColor',
       strokeWidth: '2',
       strokeLinecap: 'round',
       strokeLinejoin: 'round',
       ...computedDefaultProps,
+      ...rest,
     };
-
-    for (const key of svgAttributeKeys) {
-      const propValue = rest[key as keyof typeof rest];
-      if (propValue !== undefined) {
-        (finalProps as any)[key] = propValue;
-      }
-    }
 
     return (
       <svg
-        ref={ref}
         width={size}
         height={size}
-        className={`flex-shrink-0 icon-${iconName} ${className}`}
+        className={cn('flex-shrink-0', `icon-${iconName}`, className)}
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
         {...finalProps}
@@ -68,9 +55,6 @@ export function createIcon<P extends IconProps = IconProps>({ iconName, defaultP
       </svg>
     );
   });
-
-  Component.displayName = `${componentName}Icon`;
-  return memo(Component);
 }
 
 export const AlertTriangleIcon = createIcon({
@@ -195,13 +179,13 @@ export const PauseIcon = createIcon({
       <rect x="14" y="4" width="4" height="16" />
     </>
   ),
-  defaultProps: { fill: 'currentColor', stroke: 'none', strokeWidth: '1' },
+  defaultProps: { fill: 'currentColor', stroke: 'none' },
 });
 
 export const PlayIcon = createIcon({
   iconName: 'play',
   path: <polygon points="5 3 19 12 5 21 5 3" />,
-  defaultProps: { fill: 'currentColor', stroke: 'none', strokeWidth: '1' },
+  defaultProps: { fill: 'currentColor', stroke: 'none' },
 });
 
 export const PlusIcon = createIcon({

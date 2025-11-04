@@ -19,16 +19,20 @@ type InputDataType = keyof InputTypeMap;
 
 type InputRenderProps = Omit<PanelControlConfig, 'config'> & Omit<PanelCustomConfig, 'mode'>;
 
-type HandleFailure = <T>(e?: string) => InputType<T>;
-
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder('utf-8', { fatal: true });
 
+function toUtf8OrHex(data: Uint8Array): string {
+  try {
+    return textDecoder.decode(data);
+  } catch {
+    return uint8ArrayToHex(data);
+  }
+}
+
 export class InputType<T = unknown> {
   public readonly value: T;
-  // @internal
   public readonly panelControl?: PanelControlConfig;
-  // @internal
   public readonly warningMessage?: string | null;
 
   public constructor(value: T, panelControl?: PanelControlConfig, warning?: string | null) {
@@ -54,35 +58,28 @@ export class InputType<T = unknown> {
       value?: unknown;
     }>,
   ): InputType<unknown> {
-    const handleFailure = <U>(e?: string): InputType<U> => {
-      if (typeof options?.value !== 'undefined') {
-        return new InputType(options.value as U, this.panelControl, this.warningMessage);
-      }
-      throw new Error(e);
-    };
-
     switch (type) {
       case 'array':
-        return this.castToArray(handleFailure);
+        return this.castToArray(options);
       case 'arraybuffer':
-        return this.castToArrayBuffer(handleFailure);
+        return this.castToArrayBuffer(options);
       case 'base64':
-        return this.castToBase64(handleFailure);
+        return this.castToBase64(options);
       case 'boolean':
-        return this.castToBoolean(handleFailure);
+        return this.castToBoolean(options);
       case 'bytearray':
-        return this.castToByteArray(handleFailure);
+        return this.castToByteArray(options);
       case 'hex':
-        return this.castToHex(handleFailure);
+        return this.castToHex(options);
       case 'number':
-        return this.castToNumber(handleFailure, options);
+        return this.castToNumber(options);
       case 'object':
-        return this.castToObject(handleFailure);
+        return this.castToObject(options);
       case 'string':
         return this.castToString();
       default: {
         const unhandled = String(type);
-        return handleFailure(`Cannot cast to unknown type: ${unhandled}`);
+        return this.handleFailure(options, `Cannot cast to unknown type: ${unhandled}`);
       }
     }
   }
@@ -136,8 +133,14 @@ export class InputType<T = unknown> {
     return new InputType(this.value, this.panelControl, message || null);
   }
 
-  // @internal
-  private castToArray(handleFailure: HandleFailure): InputType<ReadonlyArray<unknown>> {
+  private handleFailure<U>(options: Readonly<{ value?: unknown }> | undefined, e?: string): InputType<U> {
+    if (typeof options?.value !== 'undefined') {
+      return new InputType(options.value as U, this.panelControl, this.warningMessage);
+    }
+    throw new Error(e);
+  }
+
+  private castToArray(options?: Readonly<{ value?: unknown }>): InputType<ReadonlyArray<unknown>> {
     if (Array.isArray(this.value)) {
       return this.cloneValue(this.value);
     }
@@ -149,11 +152,10 @@ export class InputType<T = unknown> {
         }
       } catch {}
     }
-    return handleFailure(`Cannot cast to array: Invalid type (${typeof this.value})`);
+    return this.handleFailure(options, `Cannot cast to array: Invalid type (${typeof this.value})`);
   }
 
-  // @internal
-  private castToArrayBuffer(handleFailure: HandleFailure): InputType<ArrayBuffer> {
+  private castToArrayBuffer(options?: Readonly<{ value?: unknown }>): InputType<ArrayBuffer> {
     if (this.value instanceof ArrayBuffer) {
       return this.cloneValue(this.value);
     }
@@ -163,11 +165,10 @@ export class InputType<T = unknown> {
     if (typeof this.value === 'string') {
       return this.cloneValue(stringToUint8Array(this.value).slice().buffer);
     }
-    return handleFailure(`Cannot cast to ArrayBuffer: Invalid type (${typeof this.value})`);
+    return this.handleFailure(options, `Cannot cast to ArrayBuffer: Invalid type (${typeof this.value})`);
   }
 
-  // @internal
-  private castToBase64(handleFailure: HandleFailure): InputType<string> {
+  private castToBase64(options?: Readonly<{ value?: unknown }>): InputType<string> {
     if (this.value instanceof Uint8Array) {
       return this.cloneValue(uint8ArrayToBase64(this.value));
     }
@@ -178,11 +179,10 @@ export class InputType<T = unknown> {
       const utf8Bytes = textEncoder.encode(this.value);
       return this.cloneValue(uint8ArrayToBase64(utf8Bytes));
     }
-    return handleFailure(`Cannot cast to Base64: Invalid type (${typeof this.value})`);
+    return this.handleFailure(options, `Cannot cast to Base64: Invalid type (${typeof this.value})`);
   }
 
-  // @internal
-  private castToBoolean(handleFailure: HandleFailure): InputType<boolean> {
+  private castToBoolean(options?: Readonly<{ value?: unknown }>): InputType<boolean> {
     if (typeof this.value === 'boolean') {
       return this.cloneValue(this.value);
     }
@@ -198,12 +198,11 @@ export class InputType<T = unknown> {
       case '':
         return this.cloneValue(false);
       default:
-        return handleFailure(`Cannot cast to boolean: Ambiguous value (${String(this.value)})`);
+        return this.handleFailure(options, `Cannot cast to boolean: Ambiguous value (${String(this.value)})`);
     }
   }
 
-  // @internal
-  private castToByteArray(handleFailure: HandleFailure): InputType<Uint8Array> {
+  private castToByteArray(options?: Readonly<{ value?: unknown }>): InputType<Uint8Array> {
     if (this.value instanceof Uint8Array) {
       return this.cloneValue(this.value);
     }
@@ -213,11 +212,10 @@ export class InputType<T = unknown> {
     if (typeof this.value === 'string') {
       return this.cloneValue(stringToUint8Array(this.value));
     }
-    return handleFailure(`Cannot cast to Uint8Array: Invalid type (${typeof this.value})`);
+    return this.handleFailure(options, `Cannot cast to Uint8Array: Invalid type (${typeof this.value})`);
   }
 
-  // @internal
-  private castToHex(handleFailure: HandleFailure): InputType<string> {
+  private castToHex(options?: Readonly<{ value?: unknown }>): InputType<string> {
     if (this.value instanceof Uint8Array) {
       return this.cloneValue(uint8ArrayToHex(this.value));
     }
@@ -228,22 +226,21 @@ export class InputType<T = unknown> {
       const utf8Bytes = textEncoder.encode(this.value);
       return this.cloneValue(uint8ArrayToHex(utf8Bytes));
     }
-    return handleFailure(`Cannot cast to Hex: Invalid type (${typeof this.value})`);
+    return this.handleFailure(options, `Cannot cast to Hex: Invalid type (${typeof this.value})`);
   }
 
-  // @internal
   private castToNumber(
-    handleFailure: HandleFailure,
     options?: Readonly<{
       max?: number;
       min?: number;
+      value?: unknown;
     }>,
   ): InputType<number> {
     const stringValue = String(this.value ?? '').trim();
     let numericValue = Number(stringValue);
 
     if (isNaN(numericValue) || !isFinite(numericValue)) {
-      return handleFailure(`Cannot cast to number: Invalid value (${stringValue})`);
+      return this.handleFailure(options, `Cannot cast to number: Invalid value (${stringValue})`);
     }
 
     const { min, max } = options || {};
@@ -256,8 +253,7 @@ export class InputType<T = unknown> {
     return this.cloneValue(numericValue);
   }
 
-  // @internal
-  private castToObject(handleFailure: HandleFailure): InputType<object> {
+  private castToObject(options?: Readonly<{ value?: unknown }>): InputType<object> {
     if (isObjectLike(this.value) && !Array.isArray(this.value)) {
       return this.cloneValue<object>(this.value);
     }
@@ -269,19 +265,10 @@ export class InputType<T = unknown> {
         }
       } catch {}
     }
-    return handleFailure(`Cannot cast to object: Invalid type (${typeof this.value})`);
+    return this.handleFailure(options, `Cannot cast to object: Invalid type (${typeof this.value})`);
   }
 
-  // @internal
   private castToString(): InputType<string> {
-    const toUtf8OrHex = (data: Uint8Array): string => {
-      try {
-        return textDecoder.decode(data);
-      } catch {
-        return uint8ArrayToHex(data);
-      }
-    };
-
     if (this.value instanceof ArrayBuffer) {
       return this.cloneValue(toUtf8OrHex(new Uint8Array(this.value)));
     }
@@ -296,7 +283,6 @@ export class InputType<T = unknown> {
     return this.cloneValue(String(this.value ?? ''));
   }
 
-  // @internal
   private cloneValue<U>(newValue: U): InputType<U> {
     return new InputType(newValue, this.panelControl, this.warningMessage);
   }

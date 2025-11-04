@@ -2,13 +2,14 @@ import { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 import { parseGitHubUrl } from '../../../helpers/extensionHelper';
+import { useOverflow } from '../../../hooks/useOverflow';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
 import { useThemeStore } from '../../../stores/useThemeStore';
+import { cn } from '../../../utilities/styleUtil';
 import { Button } from '../../shared/Button';
 import { GitMergeIcon } from '../../shared/Icon';
 import { StringInput } from '../../shared/input/StringInput';
-import { SearchListLayout } from '../../shared/layout/ListLayout';
 import { EmptyView } from '../../shared/View';
 import { ExtensionItem } from './ExtensionItem';
 
@@ -24,9 +25,9 @@ export const ExtensionTab = memo((): JSX.Element => {
 
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [validationStatus, setValidationStatus] = useState<'empty' | 'valid' | 'invalid'>('empty');
 
   const listId = useId();
+  const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   useEffect(() => {
     const pendingInstall = extensions.find((ext) => ext.status === 'awaiting');
@@ -41,14 +42,12 @@ export const ExtensionTab = memo((): JSX.Element => {
     }
   }, [extensions, openModal]);
 
-  useEffect(() => {
+  const validationStatus = useMemo<'empty' | 'valid' | 'invalid'>(() => {
     const trimmedUrl = url.trim();
     if (!trimmedUrl) {
-      setValidationStatus('empty');
-      return;
+      return 'empty';
     }
-    const isValid = parseGitHubUrl(trimmedUrl);
-    setValidationStatus(isValid ? 'valid' : 'invalid');
+    return parseGitHubUrl(trimmedUrl) ? 'valid' : 'invalid';
   }, [url]);
 
   const handleAdd = useCallback(async (): Promise<void> => {
@@ -62,7 +61,7 @@ export const ExtensionTab = memo((): JSX.Element => {
     } finally {
       setIsLoading(false);
     }
-  }, [url, isLoading, addExtension, validationStatus]);
+  }, [addExtension, isLoading, url, validationStatus]);
 
   const handleUrlChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
     setUrl(event.target.value);
@@ -126,8 +125,10 @@ export const ExtensionTab = memo((): JSX.Element => {
       </div>
 
       <div className="flex flex-1 flex-col min-h-0">
-        <h4 className={`mb-3 font-medium text-base text-${theme.contentSecondary}`}>Installed Extensions</h4>
-        <SearchListLayout listId={listId} listContent={listContent} />
+        <h4 className={cn('mb-3 font-medium text-base', `text-${theme.contentSecondary}`)}>Installed Extensions</h4>
+        <div id={listId} ref={scrollRef} className={cn('grow overflow-y-auto', scrollClasses)}>
+          {listContent}
+        </div>
       </div>
     </>
   );

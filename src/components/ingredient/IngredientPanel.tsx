@@ -4,20 +4,23 @@ import { CATEGORY_FAVORITES, DATA_TYPE_INGREDIENT, DATA_TYPE_RECIPE_ITEM, ICON_S
 import { errorHandler, ingredientRegistry } from '../../app/container';
 import { createIngredientSearchPredicate, groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
 import { useDropZone } from '../../hooks/useDropZone';
+import { useOverflow } from '../../hooks/useOverflow';
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useFavoriteStore } from '../../stores/useFavoriteStore';
 import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { useThemeStore } from '../../stores/useThemeStore';
+import { cn } from '../../utilities/styleUtil';
 import { TooltipButton } from '../shared/Button';
 import { PlusIcon, PreferencesIcon, SettingsIcon, StarIcon } from '../shared/Icon';
+import { StringInput } from '../shared/input/StringInput';
 import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
-import { GroupListLayout, SearchListLayout } from '../shared/layout/ListLayout';
+import { GroupListLayout } from '../shared/layout/ListLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
 import { IngredientManager } from './IngredientManager';
 
-import type { DragEvent, JSX } from 'react';
+import type { ChangeEvent, DragEvent, JSX } from 'react';
 import type { IngredientProps } from '../../core/IngredientRegistry';
 import type { GroupListItem } from '../shared/layout/ListLayout';
 
@@ -39,6 +42,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   const listId = useId();
   const isIngredientOpen = currentModal?.type === 'ingredient';
   const isSettingOpen = currentModal?.type === 'settings';
+  const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   const handleDropRecipe = useCallback(
     (id: string): void => {
@@ -114,6 +118,14 @@ export const IngredientPanel = memo((): JSX.Element => {
     event.dataTransfer.effectAllowed = 'copy';
   }, []);
 
+  const handleQueryChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setQuery(event.target.value);
+  }, []);
+
+  const handleClearQuery = useCallback(() => {
+    setQuery('');
+  }, []);
+
   const headerActions = useMemo(
     () => (
       <>
@@ -143,10 +155,10 @@ export const IngredientPanel = memo((): JSX.Element => {
   const renderItemActions = useCallback(
     (item: GroupListItem): JSX.Element => {
       const isFavorite = favorites.has(item.id);
-      const starClasses = [
+      const starClasses = cn(
         'opacity-70 group-hover:opacity-100',
         isFavorite ? `text-${theme.favoriteFg} hover:text-${theme.favoriteFgHover}` : `text-${theme.contentTertiary} hover:text-${theme.favoriteFg}`,
-      ].join(' ');
+      );
 
       return (
         <>
@@ -171,7 +183,7 @@ export const IngredientPanel = memo((): JSX.Element => {
         </>
       );
     },
-    [favorites, theme, toggleFavorite, addIngredient],
+    [addIngredient, favorites, theme, toggleFavorite],
   );
 
   return (
@@ -183,21 +195,27 @@ export const IngredientPanel = memo((): JSX.Element => {
     >
       <div className="flex h-full flex-col" {...recipeDropZoneProps}>
         {isDragOverRecipe && <DropZoneLayout mode="overlay" text="Drop to Remove from Recipe" variant="remove" />}
-        <SearchListLayout
-          listId={listId}
-          listContent={
+        <div className="flex h-full flex-col gap-2 min-h-0">
+          <div>
+            <StringInput
+              id="ingredient-search"
+              type="search"
+              value={query}
+              placeholder="Search Ingredients..."
+              showClearButton
+              onChange={handleQueryChange}
+              onClear={handleClearQuery}
+            />
+          </div>
+          <div id={listId} ref={scrollRef} className={cn('grow overflow-y-auto', scrollClasses)}>
             <GroupListLayout
               query={query}
               itemsByCategory={filteredIngredients}
               renderItemActions={renderItemActions}
               onItemDragStart={handleItemDragStart}
             />
-          }
-          searchQuery={query}
-          searchOnQuery={setQuery}
-          searchId="ingredient-search"
-          searchPlaceholder="Search Ingredients..."
-        />
+          </div>
+        </div>
       </div>
       <IngredientManager />
     </SectionLayout>

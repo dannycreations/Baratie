@@ -80,10 +80,9 @@ export const TextareaInput = memo<TextareaInputProps>(
     }, []);
 
     const containerClass = cn(
-      'relative flex overflow-hidden rounded-md border focus-within:ring-2',
+      'relative flex overflow-hidden rounded-md border',
       `border-${theme.borderPrimary}`,
       `bg-${theme.surfaceSecondary}`,
-      `focus-within:ring-${theme.ring}`,
       disabled && 'opacity-50',
       wrapperClasses,
     );

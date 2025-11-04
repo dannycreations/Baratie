@@ -30,7 +30,6 @@ interface AttemptResult<T> {
 }
 
 export class ErrorHandler {
-  // @internal
   private static readonly DEFAULT_ERROR_CONFIG: Readonly<ErrorOptions> = {
     defaultMessage: 'An unexpected error occurred. Please try again, or check the console for details.',
     shouldLog: true,
@@ -53,7 +52,7 @@ export class ErrorHandler {
       const result = fn();
       return { result, error: null };
     } catch (error: unknown) {
-      const handlerOptions = this.getOptions(options);
+      const handlerOptions = { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
       const newError = this.buildError(error, context || 'Sync Operation', handlerOptions.defaultMessage, handlerOptions.genericMessage);
       this.handle(newError, undefined, handlerOptions);
       return { result: null, error: newError };
@@ -65,7 +64,7 @@ export class ErrorHandler {
       const result = await fn();
       return { result, error: null };
     } catch (error: unknown) {
-      const handlerOptions = this.getOptions(options);
+      const handlerOptions = { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
       const newError = this.buildError(error, context || 'Async Operation', handlerOptions.defaultMessage, handlerOptions.genericMessage);
       this.handle(newError, undefined, handlerOptions);
       return { result: null, error: newError };
@@ -73,7 +72,7 @@ export class ErrorHandler {
   }
 
   public handle(error: unknown, callerContext?: string, options: Partial<ErrorOptions> = {}): void {
-    const handlerOptions = this.getOptions(options);
+    const handlerOptions = { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
     const newError = this.buildError(error, callerContext, handlerOptions.defaultMessage, handlerOptions.genericMessage);
     const effectiveContext = newError.context ?? 'Application';
     const displayMessage = newError.userMessage ?? ErrorHandler.DEFAULT_ERROR_CONFIG.defaultMessage!;
@@ -100,12 +99,6 @@ export class ErrorHandler {
     }
   }
 
-  // @internal
-  private getOptions(options: Partial<ErrorOptions> = {}): Readonly<ErrorOptions> {
-    return { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
-  }
-
-  // @internal
   private buildError(error: unknown, callerContext?: string, defaultMessage?: string, genericMessage?: string): AppError {
     if (error instanceof AppError) {
       const finalContext = callerContext ?? error.context;

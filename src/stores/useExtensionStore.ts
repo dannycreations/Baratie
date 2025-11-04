@@ -11,7 +11,6 @@ import {
   parseGitHubUrl,
   shallowExtensionStorable,
   StorableExtensionSchema,
-  updateStateWithExtensions,
 } from '../helpers/extensionHelper';
 import { isObjectLike } from '../utilities/objectUtil';
 import { useNotificationStore } from './useNotificationStore';
@@ -46,6 +45,23 @@ export interface LoadExtensionDependencies {
   readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
 }
 
+const fetchAndValidateManifest = async (repoInfo: {
+  readonly owner: string;
+  readonly repo: string;
+  readonly ref: string;
+}): Promise<ExtensionManifest> => {
+  const response = await fetch(`https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.ref}/manifest.json`);
+  if (!response.ok) {
+    throw new Error('Could not fetch manifest');
+  }
+  const manifestJson: unknown = await response.json();
+  const validationResult = safeParse(ExtensionManifestSchema, manifestJson);
+  if (!validationResult.success) {
+    throw new Error(`Invalid manifest file: ${validationResult.issues[0].message}`);
+  }
+  return validationResult.output;
+};
+
 export const useExtensionStore = create<ExtensionState>()(
   subscribeWithSelector((set, get) => ({
     extensions: [],
@@ -79,8 +95,7 @@ export const useExtensionStore = create<ExtensionState>()(
       if (pendingExtension) {
         const displayName = pendingExtension.name || pendingExtension.id;
         logger.info(`Installation cancelled for extension '${displayName}'. Removing from store.`);
-        const newExtensions = extensions.filter((ext) => ext.id !== pendingExtension.id);
-        setExtensions(newExtensions);
+        setExtensions(extensions.filter((ext) => ext.id !== pendingExtension.id));
       } else {
         logger.warn(`Attempted to cancel non-existent pending extension.`);
       }
@@ -170,51 +185,29 @@ export const useExtensionStore = create<ExtensionState>()(
       const { upsert, setIngredients, setExtensionStatus, extensionMap } = get();
       const storeExtension = extensionMap.get(id);
       const context = options?.context;
-
-      let displayName = storeExtension?.name;
       const isNew = !storeExtension;
 
-      if (context === 'refresh') {
+      const logMessage = context === 'refresh' || (context === 'add' && !isNew) ? 'Refreshing' : 'Fetching';
+      logger.info(`${logMessage} extension: ${storeExtension?.name || id}`);
+
+      let displayName = storeExtension?.name || id;
+      if (logMessage === 'Refreshing') {
         displayName = 'Refreshing...';
       } else if (isNew) {
         displayName = 'Fetching...';
-      } else if (context === 'add' && storeExtension) {
-        displayName = 'Refreshing...';
       }
 
-      if (!displayName) {
-        displayName = id;
-      }
-
-      const logMessage = context === 'refresh' || (context === 'add' && storeExtension) ? 'Refreshing' : 'Fetching';
-      logger.info(`${logMessage} extension: ${storeExtension?.name || id}`);
-
-      upsert({
-        id: id,
-        status: 'loading',
-        name: displayName,
-      });
+      upsert({ id, status: 'loading', name: displayName });
 
       const repoInfo = parseGitHubUrl(id);
       if (!repoInfo) {
         setExtensionStatus(id, 'error', ['Invalid GitHub URL format.']);
-        upsert({ id: id, name: storeExtension?.name || 'Error' });
+        upsert({ id, name: storeExtension?.name || 'Error' });
         return;
       }
 
       try {
-        const response = await fetch(`https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.ref}/manifest.json`);
-        if (!response.ok) {
-          throw new Error('Could not fetch manifest');
-        }
-        const manifestJson: unknown = await response.json();
-
-        const validationResult = safeParse(ExtensionManifestSchema, manifestJson);
-        if (!validationResult.success) {
-          throw new Error(`Invalid manifest file: ${validationResult.issues[0].message}`);
-        }
-
-        const manifest: ExtensionManifest = validationResult.output;
+        const manifest = await fetchAndValidateManifest(repoInfo);
         upsert({ id, manifest });
 
         if (storeExtension?.ingredients) {
@@ -224,10 +217,10 @@ export const useExtensionStore = create<ExtensionState>()(
 
         const isModuleBased = Array.isArray(manifest.entry) && typeof manifest.entry[0] === 'object';
         if (isModuleBased && !options?.force) {
-          upsert({ id: id, name: manifest.name, status: 'awaiting', manifest: manifest, scripts: {} });
+          upsert({ id, name: manifest.name, status: 'awaiting', manifest, scripts: {} });
         } else {
           const entryToUse = isModuleBased && storeExtension?.entry ? storeExtension.entry : manifest.entry;
-          upsert({ id: id, entry: entryToUse, scripts: {} });
+          upsert({ id, entry: entryToUse, scripts: {} });
           const currentExtState = get().extensionMap.get(id)!;
 
           await loadAndExecuteExtension(currentExtState, {
@@ -247,14 +240,14 @@ export const useExtensionStore = create<ExtensionState>()(
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         setExtensionStatus(id, 'error', [errorMessage]);
-        upsert({ id: id, name: storeExtension?.name || 'Error' });
+        upsert({ id, name: storeExtension?.name || 'Error' });
         logger.error(`Error refreshing extension ${id}:`, error);
       }
     },
 
     remove: (id) => {
       const { show } = useNotificationStore.getState();
-      const { extensionMap, setExtensions } = get();
+      const { extensionMap, setExtensions, extensions } = get();
       const extension = extensionMap.get(id);
 
       if (!extension) {
@@ -269,10 +262,7 @@ export const useExtensionStore = create<ExtensionState>()(
         ingredientRegistry.unregister(ingredientsToRemove);
       }
 
-      const currentExtensions = get().extensions;
-      const newExtensions = currentExtensions.filter((ext) => ext.id !== id);
-      setExtensions(newExtensions);
-
+      setExtensions(extensions.filter((ext) => ext.id !== id));
       show(`Extension '${displayName}' has been successfully uninstalled.`, 'success', 'Extension Manager');
     },
 
@@ -290,12 +280,14 @@ export const useExtensionStore = create<ExtensionState>()(
       if (status === 'error' && extension?.name === 'Refreshing...') {
         updates.name = 'Error';
       }
-      const newExtensions = extensions.map((ext) => (ext.id === id ? { ...ext, ...updates } : ext));
-      setExtensions(newExtensions);
+      setExtensions(extensions.map((ext) => (ext.id === id ? { ...ext, ...updates } : ext)));
     },
 
     setExtensions: (extensions) => {
-      set(updateStateWithExtensions(extensions));
+      set({
+        extensions,
+        extensionMap: new Map(extensions.map((ext) => [ext.id, ext])),
+      });
     },
 
     setIngredients: (id, ingredients) => {
@@ -303,16 +295,16 @@ export const useExtensionStore = create<ExtensionState>()(
       if (!extensionMap.has(id)) {
         return;
       }
-      const newExtensions = extensions.map((ext) => (ext.id === id ? { ...ext, ingredients: ingredients } : ext));
-      setExtensions(newExtensions);
+      setExtensions(extensions.map((ext) => (ext.id === id ? { ...ext, ingredients } : ext)));
     },
 
     upsert: (extension) => {
       const { extensions, extensionMap, setExtensions } = get();
-      const newExtensions = extensionMap.has(extension.id)
-        ? extensions.map((e) => (e.id === extension.id ? ({ ...e, ...extension } as Extension) : e))
-        : [...extensions, extension as Extension];
-      setExtensions(newExtensions);
+      setExtensions(
+        extensionMap.has(extension.id)
+          ? extensions.map((e) => (e.id === extension.id ? { ...e, ...extension } : e))
+          : [...extensions, extension as Extension],
+      );
     },
   })),
 );

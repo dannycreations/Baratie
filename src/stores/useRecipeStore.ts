@@ -85,12 +85,13 @@ export const useRecipeStore = create<RecipeState>()(
 
     removeIngredient: (id) => {
       set((state) => {
-        if (!state.ingredients.some((ingredient) => ingredient.id === id)) {
+        const originalLength = state.ingredients.length;
+        const newIngredients = state.ingredients.filter((ingredient) => ingredient.id !== id);
+
+        if (newIngredients.length === originalLength) {
           logger.warn(`Attempted to remove non-existent ingredient with id: ${id}`);
           return state;
         }
-
-        const newIngredients = state.ingredients.filter((ingredient) => ingredient.id !== id);
 
         const newEditingIds = new Set(state.editingIds);
         newEditingIds.delete(id);
@@ -98,9 +99,11 @@ export const useRecipeStore = create<RecipeState>()(
         const newPausedIds = new Set(state.pausedIngredientIds);
         newPausedIds.delete(id);
 
+        const newActiveRecipeId = newIngredients.length > 0 ? state.activeRecipeId : null;
+
         return {
           ingredients: newIngredients,
-          activeRecipeId: state.activeRecipeId === id ? null : state.activeRecipeId,
+          activeRecipeId: newActiveRecipeId,
           editingIds: newEditingIds,
           pausedIngredientIds: newPausedIds,
         };

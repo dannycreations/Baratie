@@ -69,19 +69,21 @@ export function useOverflow<T extends HTMLElement>(): OverflowReturn<T> {
   }, [ref]);
 
   const className = useMemo(() => {
-    const classParts: string[] = [];
     if (isMobile) {
-      classParts.push('scrollbar-hidden');
-    } else {
-      if (status.hasOverflowY && !status.hasOverflowX) {
-        classParts.push('overflow-x-hidden');
-      } else if (status.hasOverflowX && !status.hasOverflowY) {
-        classParts.push('overflow-y-hidden');
-      }
-      if (classParts.length > 0) {
-        classParts.push('pr-1');
-      }
+      return 'scrollbar-hidden';
     }
+
+    const classParts: string[] = [];
+    if (status.hasOverflowY && !status.hasOverflowX) {
+      classParts.push('overflow-x-hidden');
+    } else if (status.hasOverflowX && !status.hasOverflowY) {
+      classParts.push('overflow-y-hidden');
+    }
+
+    if (status.hasOverflowY) {
+      classParts.push('pr-1');
+    }
+
     return classParts.join(' ');
   }, [status.hasOverflowX, status.hasOverflowY]);
 

@@ -43,13 +43,9 @@ export const useModalStore = create<ModalState>()((set, get) => ({
   },
 
   closeModal: () => {
-    const { previousModals } = get();
-    const newPreviousModals = [...previousModals];
-    const lastPrevious = newPreviousModals.pop();
-
-    set({
-      currentModal: lastPrevious || null,
-      previousModals: newPreviousModals,
-    });
+    set((state) => ({
+      currentModal: state.previousModals[state.previousModals.length - 1] || null,
+      previousModals: state.previousModals.slice(0, -1),
+    }));
   },
 }));

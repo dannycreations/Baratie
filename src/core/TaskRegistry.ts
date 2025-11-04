@@ -14,59 +14,52 @@ interface InitializationTask {
 }
 
 export class TaskRegistry {
-  // @internal
-  private readonly systemTasks: ReadonlyArray<InitializationTask>;
-  // @internal
+  private readonly systemTasks: ReadonlyArray<InitializationTask> = [
+    {
+      message: 'Sharpening the cutlasses...',
+    },
+    {
+      message: 'Loading supplies from other vessels...',
+      handler: () => {
+        return useExtensionStore.getState().init();
+      },
+    },
+    {
+      message: 'Polishing the favorite knives...',
+      handler: () => {
+        return useFavoriteStore.getState().init();
+      },
+    },
+    {
+      message: 'Unfurling the recipe scrolls...',
+      handler: () => {
+        return useCookbookStore.getState().init();
+      },
+    },
+    {
+      message: 'Remembering the current recipe...',
+      handler: () => {
+        return useRecipeStore.getState().init();
+      },
+    },
+    {
+      message: "Consulting the ship's log...",
+      handler: () => {
+        return useIngredientStore.getState().init();
+      },
+    },
+    {
+      message: 'Adjusting the ship sails...',
+      handler: () => {
+        return useSettingStore.getState().init();
+      },
+    },
+    {
+      message: 'Prepping the Mise en Place...',
+    },
+  ];
   private readonly userTasks: Array<InitializationTask> = [];
-  // @internal
   private isRunning = false;
-
-  public constructor() {
-    this.systemTasks = [
-      {
-        message: 'Sharpening the cutlasses...',
-      },
-      {
-        message: 'Loading supplies from other vessels...',
-        handler: () => {
-          return useExtensionStore.getState().init();
-        },
-      },
-      {
-        message: 'Polishing the favorite knives...',
-        handler: () => {
-          return useFavoriteStore.getState().init();
-        },
-      },
-      {
-        message: 'Unfurling the recipe scrolls...',
-        handler: () => {
-          return useCookbookStore.getState().init();
-        },
-      },
-      {
-        message: 'Remembering the current recipe...',
-        handler: () => {
-          return useRecipeStore.getState().init();
-        },
-      },
-      {
-        message: "Consulting the ship's log...",
-        handler: () => {
-          return useIngredientStore.getState().init();
-        },
-      },
-      {
-        message: 'Adjusting the ship sails...',
-        handler: () => {
-          return useSettingStore.getState().init();
-        },
-      },
-      {
-        message: 'Prepping the Mise en Place...',
-      },
-    ];
-  }
 
   public async init(): Promise<void> {
     if (this.isRunning) {

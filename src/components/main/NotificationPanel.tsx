@@ -1,8 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ICON_SIZES, NOTIFICATION_EXIT_MS, NOTIFICATION_SHOW_MS } from '../../app/constants';
-import { AppTheme } from '../../app/themes';
-import { NotificationMessage, NotificationType } from '../../app/types';
 import { useControlTimer } from '../../hooks/useControlTimer';
 import { useNotificationStore } from '../../stores/useNotificationStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -10,7 +8,9 @@ import { cn } from '../../utilities/styleUtil';
 import { Button } from '../shared/Button';
 import { AlertTriangleIcon, CheckIcon, InfoIcon, XIcon } from '../shared/Icon';
 
-import type { JSX } from 'react';
+import type { ElementType, JSX } from 'react';
+import type { AppTheme } from '../../app/themes';
+import type { NotificationMessage, NotificationType } from '../../app/types';
 
 interface NotificationItemProps {
   readonly notification: NotificationMessage;
@@ -22,18 +22,22 @@ interface NotificationTheme {
   readonly iconColor: string;
 }
 
+const NOTIFICATION_THEME_MAP: Readonly<Record<NotificationType, (theme: AppTheme) => NotificationTheme>> = {
+  error: (theme) => ({ barColor: theme.dangerBg, borderColor: theme.dangerBorder, iconColor: theme.dangerFg }),
+  success: (theme) => ({ barColor: theme.successBg, borderColor: theme.successBorder, iconColor: theme.successFg }),
+  warning: (theme) => ({ barColor: theme.warningBg, borderColor: theme.warningBorder, iconColor: theme.warningFg }),
+  info: (theme) => ({ barColor: theme.infoBg, borderColor: theme.infoBorder, iconColor: theme.infoFg }),
+} as const;
+
+const NOTIFICATION_ICON_MAP: Readonly<Record<NotificationType, ElementType>> = {
+  success: CheckIcon,
+  error: AlertTriangleIcon,
+  warning: AlertTriangleIcon,
+  info: InfoIcon,
+} as const;
+
 function getNotificationTheme(theme: AppTheme, type: NotificationType): NotificationTheme {
-  switch (type) {
-    case 'error':
-      return { barColor: theme.dangerBg, borderColor: theme.dangerBorder, iconColor: theme.dangerFg };
-    case 'success':
-      return { barColor: theme.successBg, borderColor: theme.successBorder, iconColor: theme.successFg };
-    case 'warning':
-      return { barColor: theme.warningBg, borderColor: theme.warningBorder, iconColor: theme.warningFg };
-    case 'info':
-    default:
-      return { barColor: theme.infoBg, borderColor: theme.infoBorder, iconColor: theme.infoFg };
-  }
+  return (NOTIFICATION_THEME_MAP[type] || NOTIFICATION_THEME_MAP.info)(theme);
 }
 
 const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Element => {
@@ -76,19 +80,8 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   }, [isExiting, notification.id, removeNotification]);
 
   const { iconColor, borderColor, barColor } = getNotificationTheme(theme, notification.type);
-
-  const renderedIcon = useMemo(() => {
-    switch (notification.type) {
-      case 'success':
-        return <CheckIcon className={`text-${iconColor}`} size={ICON_SIZES.MD} />;
-      case 'error':
-      case 'warning':
-        return <AlertTriangleIcon className={`text-${iconColor}`} size={ICON_SIZES.MD} />;
-      case 'info':
-      default:
-        return <InfoIcon className={`text-${iconColor}`} size={ICON_SIZES.MD} />;
-    }
-  }, [notification.type, iconColor]);
+  const IconComponent = NOTIFICATION_ICON_MAP[notification.type] || InfoIcon;
+  const renderedIcon = <IconComponent className={`text-${iconColor}`} size={ICON_SIZES.MD} />;
 
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
   const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
@@ -112,7 +105,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
           <p className={messageClass}>{notification.message}</p>
         </div>
         <div className="flex-shrink-0">
-          <Button icon={<XIcon size={ICON_SIZES.MD} />} size="sm" variant="stealth" title="Close" onClick={handleExit} />
+          <Button icon={<XIcon size={ICON_SIZES.MD} />} size="sm" variant="stealth" onClick={handleExit} />
         </div>
       </div>
       {!isExiting && (

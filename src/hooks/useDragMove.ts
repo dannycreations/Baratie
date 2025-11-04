@@ -74,12 +74,10 @@ export function useDragMove<T extends { id: string }>({ dragId, setDragId, onDra
       const rect = targetElement.getBoundingClientRect();
       const threshold = rect.height * 0.25;
 
-      // Dragging downwards: only trigger reorder when cursor is in the bottom 75%
       if (draggedIndex < targetIndex && event.clientY < rect.top + threshold) {
         return;
       }
 
-      // Dragging upwards: only trigger reorder when cursor is in the top 75%
       if (draggedIndex > targetIndex && event.clientY > rect.bottom - threshold) {
         return;
       }

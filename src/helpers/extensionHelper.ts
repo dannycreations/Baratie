@@ -115,16 +115,6 @@ export function parseGitHubUrl(url: string): Readonly<{ owner: string; repo: str
   return { owner, repo, ref };
 }
 
-export function updateStateWithExtensions(extensions: ReadonlyArray<Extension>): {
-  readonly extensions: ReadonlyArray<Extension>;
-  readonly extensionMap: ReadonlyMap<string, Extension>;
-} {
-  return {
-    extensions,
-    extensionMap: new Map(extensions.map((ext) => [ext.id, ext])),
-  };
-}
-
 export async function loadAndExecuteExtension(extension: Readonly<Extension>, dependencies: Readonly<LoadExtensionDependencies>): Promise<void> {
   const { id, name, entry, scripts: cachedScripts } = extension;
   const { setExtensionStatus, setIngredients, upsert, getExtensionMap } = dependencies;
@@ -222,41 +212,50 @@ export async function loadAndExecuteExtension(extension: Readonly<Extension>, de
   }
 }
 
-function shallowObject(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+function areScriptsEqual(a: Record<string, string>, b: Record<string, string>): boolean {
   const keysA = Object.keys(a);
   if (keysA.length !== Object.keys(b).length) {
     return false;
   }
   for (const key of keysA) {
-    if (!Object.prototype.hasOwnProperty.call(b, key) || a[key] !== b[key]) {
+    if (a[key] !== b[key]) {
       return false;
     }
   }
   return true;
 }
 
-function shallowExtensionObject(a: ReadonlyArray<unknown>, b: ReadonlyArray<unknown>): boolean {
+function areModulesEqual(a: ReadonlyArray<ManifestModule>, b: ReadonlyArray<ManifestModule>): boolean {
   if (a.length !== b.length) {
     return false;
   }
   for (let i = 0; i < a.length; i++) {
-    const itemA = a[i];
-    const itemB = b[i];
-    const typeA = typeof itemA;
-
-    if (typeA !== typeof itemB) {
-      return false;
-    }
-
-    if (typeA === 'object' && itemA !== null && itemB !== null) {
-      if (!shallowObject(itemA as Record<string, unknown>, itemB as Record<string, unknown>)) {
-        return false;
-      }
-    } else if (itemA !== itemB) {
+    const modA = a[i];
+    const modB = b[i];
+    if (modA.name !== modB.name || modA.category !== modB.category || modA.description !== modB.description || modA.entry !== modB.entry) {
       return false;
     }
   }
   return true;
+}
+
+function areEntriesEqual(a: Extension['entry'], b: Extension['entry']): boolean {
+  if (typeof a !== typeof b) return false;
+  if (typeof a === 'string') return a === b;
+  if (a === undefined && b === undefined) return true;
+  if (!Array.isArray(a) || !Array.isArray(b)) return false;
+
+  if (a.length !== b.length) return false;
+  if (a.length === 0) return true;
+
+  if (typeof a[0] === 'string') {
+    return a.every((val, index) => val === b[index]);
+  }
+  if (isObjectLike(a[0])) {
+    return areModulesEqual(a as ReadonlyArray<ManifestModule>, b as ReadonlyArray<ManifestModule>);
+  }
+
+  return false;
 }
 
 export function shallowExtensionStorable(a: ReadonlyArray<StorableExtension>, b: ReadonlyArray<StorableExtension>): boolean {
@@ -267,35 +266,15 @@ export function shallowExtensionStorable(a: ReadonlyArray<StorableExtension>, b:
   for (let i = 0; i < a.length; i++) {
     const extA = a[i];
     const extB = b[i];
-
-    if (extA.id !== extB.id || extA.name !== extB.name || extA.fetchedAt !== extB.fetchedAt) {
-      return false;
-    }
-
-    if (!shallowObject(extA.scripts, extB.scripts)) {
-      return false;
-    }
-
-    const entryA = extA.entry;
-    const entryB = extB.entry;
-    const typeA = typeof entryA;
-
-    if (typeA !== typeof entryB) {
-      return false;
-    }
-
-    if (typeA === 'string') {
-      if (entryA !== entryB) {
-        return false;
-      }
-    } else if (Array.isArray(entryA) && Array.isArray(entryB)) {
-      if (!shallowExtensionObject(entryA, entryB)) {
-        return false;
-      }
-    } else if (entryA !== undefined || entryB !== undefined) {
+    if (
+      extA.id !== extB.id ||
+      extA.name !== extB.name ||
+      extA.fetchedAt !== extB.fetchedAt ||
+      !areScriptsEqual(extA.scripts, extB.scripts) ||
+      !areEntriesEqual(extA.entry, extB.entry)
+    ) {
       return false;
     }
   }
-
   return true;
 }

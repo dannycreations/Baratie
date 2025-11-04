@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 
 import { useThemeStore } from '../../stores/useThemeStore';
+import { cn } from '../../utilities/styleUtil';
 
 import type { JSX } from 'react';
 
@@ -30,7 +31,7 @@ export const HighlightText = memo<HighlightTextProps>(({ text, highlight }): JSX
     <>
       {parts.map((part, i) =>
         i % 2 === 1 ? (
-          <mark key={i} className={`px-1 rounded bg-${theme.highlightBg} text-${theme.highlightFg}`}>
+          <mark key={i} className={cn('px-1 rounded', `bg-${theme.highlightBg}`, `text-${theme.highlightFg}`)}>
             {part}
           </mark>
         ) : (

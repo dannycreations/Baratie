@@ -32,17 +32,14 @@ export function useDropZone<T, E extends HTMLElement>({
 
   const handleDragEnter = useCallback(
     (event: DragEvent<E>): void => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (disabled) {
+      if (disabled || !onValidate(event.dataTransfer)) {
         return;
       }
-      if (onValidate(event.dataTransfer)) {
-        event.dataTransfer.dropEffect = effect;
-        setIsDragOver(true);
-      }
+      event.preventDefault();
+      event.stopPropagation();
+      setIsDragOver(true);
     },
-    [disabled, onValidate, effect],
+    [disabled, onValidate],
   );
 
   const handleDragLeave = useCallback((event: DragEvent<E>): void => {

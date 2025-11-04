@@ -40,8 +40,6 @@ const SETTING_TABS = [
 
 type SettingTab = (typeof SETTING_TABS)[number]['id'];
 
-let persistentActiveTab: SettingTab = 'general';
-
 interface TabButtonProps {
   readonly id: SettingTab;
   readonly children: string;
@@ -75,10 +73,9 @@ export const SettingPanel = memo((): JSX.Element => {
   const closeModal = useModalStore((state) => state.closeModal);
   const theme = useThemeStore((state) => state.theme);
 
-  const [activeTab, setActiveTab] = useState<SettingTab>(persistentActiveTab);
+  const [activeTab, setActiveTab] = useState<SettingTab>('general');
 
   const handleTabSelect = useCallback((tab: SettingTab): void => {
-    persistentActiveTab = tab;
     setActiveTab(tab);
   }, []);
 

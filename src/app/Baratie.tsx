@@ -1,4 +1,4 @@
-import { memo, StrictMode, useEffect, useMemo } from 'react';
+import { StrictMode, useEffect } from 'react';
 import { createRoot as createReactRoot } from 'react-dom/client';
 
 import { CookbookPanel } from '../components/cookbook/CookbookPanel';
@@ -15,6 +15,7 @@ import { internalIngredients } from '../ingredients';
 import { useDragMoveStore } from '../stores/useDragMoveStore';
 import { useExtensionStore } from '../stores/useExtensionStore';
 import { useTaskStore } from '../stores/useTaskStore';
+import { cn } from '../utilities/styleUtil';
 import { errorHandler, ingredientRegistry, kitchen, logger, taskRegistry } from './container';
 import { APP_STYLES } from './styles';
 
@@ -27,17 +28,13 @@ export interface BaratieOptions {
   readonly defaultExtensions?: string | ReadonlyArray<string>;
 }
 
-const BaratieView = memo((): JSX.Element => {
+const Baratie = (): JSX.Element => {
   const isAppReady = useTaskStore((state) => state.isInitialized);
   const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
   const isDragging = useDragMoveStore((state) => !!state.draggedItemId);
 
   useEffect(() => {
-    if (isDragging) {
-      document.body.classList.add('grabbing');
-    } else {
-      document.body.classList.remove('grabbing');
-    }
+    document.body.classList.toggle('grabbing', isDragging);
     return () => {
       document.body.classList.remove('grabbing');
     };
@@ -49,14 +46,8 @@ const BaratieView = memo((): JSX.Element => {
     }
   }, [isAppReady]);
 
-  const mainContentClass = useMemo(
-    () => `h-screen w-screen overflow-hidden transition-opacity duration-300 ${isAppReady ? 'opacity-100' : 'opacity-0'}`,
-    [isAppReady],
-  );
-  const rootLayoutClass = useMemo(
-    () => `flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden ${scrollClasses}`.trim(),
-    [scrollClasses],
-  );
+  const mainContentClass = cn('h-screen w-screen overflow-hidden transition-opacity duration-300', isAppReady ? 'opacity-100' : 'opacity-0');
+  const rootLayoutClass = cn('flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden', scrollClasses);
 
   return (
     <>
@@ -80,7 +71,7 @@ const BaratieView = memo((): JSX.Element => {
       </main>
     </>
   );
-});
+};
 
 export function createRoot(element: HTMLElement | null, options: Readonly<BaratieOptions> = {}): void {
   errorHandler.assert(element, 'Could not find the root element to mount the application.', 'Baratie Mount');
@@ -143,7 +134,7 @@ export function createRoot(element: HTMLElement | null, options: Readonly<Barati
   root.render(
     <StrictMode>
       <ErrorBoundary>
-        <BaratieView />
+        <Baratie />
       </ErrorBoundary>
     </StrictMode>,
   );

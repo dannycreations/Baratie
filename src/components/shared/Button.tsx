@@ -1,8 +1,6 @@
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback } from 'react';
 
 import { CONFIRM_SHOW_MS, ICON_SIZES } from '../../app/constants';
-import { AppTheme } from '../../app/themes';
-import { ButtonSize, ButtonVariant } from '../../app/types';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { useCopyAction } from '../../hooks/useCopyAction';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -11,6 +9,8 @@ import { AlertTriangleIcon, CheckIcon, CopyIcon, Loader2Icon, Trash2Icon } from 
 import { Tooltip } from './Tooltip';
 
 import type { JSX, MouseEvent, ReactNode } from 'react';
+import type { AppTheme } from '../../app/themes';
+import type { ButtonSize, ButtonVariant } from '../../app/types';
 import type { TooltipProps } from './Tooltip';
 
 export interface ButtonProps {
@@ -24,7 +24,6 @@ export interface ButtonProps {
   readonly className?: string;
   readonly disabled?: boolean;
   readonly onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
-  readonly title?: string;
   readonly type?: 'button' | 'submit' | 'reset';
 }
 
@@ -53,17 +52,17 @@ interface ConfirmButtonProps {
   readonly tooltipPosition?: TooltipProps['position'];
 }
 
-const ICON_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
+const PADDING_MAP: Readonly<Record<ButtonSize, string>> = {
   xs: 'p-1',
   sm: 'p-2',
   lg: 'p-3',
-};
+} as const;
 
 const TEXT_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
-  xs: 'p-1 text-xs',
-  sm: 'p-2 text-sm',
-  lg: 'p-3 text-base',
-};
+  xs: 'text-xs',
+  sm: 'text-sm',
+  lg: 'text-base',
+} as const;
 
 function getVariantMap(theme: AppTheme): Record<ButtonVariant, string> {
   return {
@@ -88,32 +87,29 @@ export const Button = memo<ButtonProps>(
     size = 'sm',
     type = 'button',
     variant,
-    title,
   }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
     const finalVariant = variant ?? 'primary';
 
-    const finalClassName = useMemo(() => {
-      const baseClass = `inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-${theme.ring}`;
-      const shapeClass = children ? 'rounded-md' : 'rounded-full';
-      const variantMap = getVariantMap(theme);
-      const variantClass = variantMap[finalVariant];
-      const sizeClass = children ? TEXT_SIZE_MAP[size] : ICON_SIZE_MAP[size];
-      return cn(baseClass, shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className);
-    }, [theme, children, finalVariant, size, loading, fullWidth, className]);
+    const baseClass = `inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50`;
+    const shapeClass = children ? 'rounded-md' : 'rounded-full';
+    const variantMap = getVariantMap(theme);
+    const variantClass = variantMap[finalVariant];
+    const sizeClass = children ? cn(PADDING_MAP[size], TEXT_SIZE_MAP[size]) : PADDING_MAP[size];
+    const finalClassName = cn(baseClass, shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className);
 
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
-    const loadingSpinner = <Loader2Icon size={ICON_SIZES.XS} className={`animate-spin ${iconMarginClass}`} />;
+    const loadingSpinner = <Loader2Icon size={ICON_SIZES.XS} className={cn('animate-spin', iconMarginClass)} />;
 
     const showIconLeft = iconPosition === 'left';
     const showIconRight = iconPosition === 'right';
 
     return (
-      <button type={type} className={finalClassName.trim()} disabled={loading || disabled} onClick={onClick} title={title}>
+      <button type={type} className={finalClassName} disabled={loading || disabled} onClick={onClick}>
         {loading && showIconLeft && loadingSpinner}
-        {icon && showIconLeft && <span className={iconMarginClass}>{icon}</span>}
+        {icon && showIconLeft && <span className={cn(iconMarginClass)}>{icon}</span>}
         {children}
-        {icon && showIconRight && <span className={iconMarginClass}>{icon}</span>}
+        {icon && showIconRight && <span className={cn(iconMarginClass)}>{icon}</span>}
         {loading && (showIconRight || !children) && loadingSpinner}
       </button>
     );
@@ -176,7 +172,7 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
     const buttonClass = cn(className, isConfirm && `bg-${theme.dangerBg} text-${theme.accentFg}`);
 
     const defaultIcon = icon ?? <Trash2Icon size={ICON_SIZES.SM} />;
-    const defaultConfirmIcon = confirmIcon ?? <AlertTriangleIcon className={`text-${theme.dangerFg}`} size={ICON_SIZES.SM} />;
+    const defaultConfirmIcon = confirmIcon ?? <AlertTriangleIcon className={cn(`text-${theme.dangerFg}`)} size={ICON_SIZES.SM} />;
 
     return (
       <TooltipButton

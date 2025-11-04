@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 import { STORAGE_COOKBOOK } from '../app/constants';
 import { errorHandler, logger, storage } from '../app/container';
-import { createRecipeHash, processAndSanitizeRecipes, saveAllRecipes } from '../helpers/cookbookHelper';
+import { computeInitialRecipeName, createRecipeHash, processAndSanitizeRecipes, saveAllRecipes } from '../helpers/cookbookHelper';
 import { readFile, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
@@ -27,7 +27,6 @@ interface CookbookState {
   readonly recipes: ReadonlyArray<RecipebookItem>;
   readonly recipeIdMap: ReadonlyMap<string, RecipebookItem>;
   readonly recipeContentHashMap: ReadonlyMap<string, string>;
-  readonly computeInitialName: (ingredients: ReadonlyArray<IngredientItem>, activeRecipeId: string | null) => string;
   readonly delete: (id: string) => void;
   readonly exportAll: () => void;
   readonly exportCurrent: () => void;
@@ -49,35 +48,6 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
   recipes: [],
   recipeIdMap: new Map(),
   recipeContentHashMap: new Map(),
-
-  computeInitialName: (ingredients, activeRecipeId) => {
-    if (ingredients.length === 0) {
-      return '';
-    }
-
-    const { recipeIdMap, recipeContentHashMap } = get();
-
-    // 1. If there's an active recipe, use its name.
-    if (activeRecipeId) {
-      const activeRecipe = recipeIdMap.get(activeRecipeId);
-      if (activeRecipe) {
-        return activeRecipe.name;
-      }
-    }
-
-    // 2. Check if a saved recipe has the exact same content.
-    const currentHash = createRecipeHash(ingredients);
-    const existingRecipeIdByContent = recipeContentHashMap.get(currentHash);
-    if (existingRecipeIdByContent) {
-      // The recipe is guaranteed to exist in recipeIdMap due to store invariants.
-      return recipeIdMap.get(existingRecipeIdByContent)!.name;
-    }
-
-    // 3. Fallback to a generated name.
-    const date = new Date();
-    const dateString = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-    return `My Recipe ${dateString}`;
-  },
 
   delete: (id) => {
     const { show } = useNotificationStore.getState();
@@ -206,7 +176,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     }
   },
 
-  merge: (recipesToImport) => {
+  merge: (recipesToImport: ReadonlyArray<RecipebookItem>) => {
     const { show } = useNotificationStore.getState();
     const { recipes, setRecipes } = get();
     logger.info('Merging imported recipes...', {
@@ -214,18 +184,19 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       existingCount: recipes.length,
     });
 
-    const recipeMap = new Map(recipes.map((r) => [r.id, r]));
+    const recipeMap = new Map<string, RecipebookItem>(recipes.map((r) => [r.id, r]));
     let added = 0;
     let updated = 0;
     let skipped = 0;
 
     for (const item of recipesToImport) {
-      const existingItem = recipeMap.get(item.id);
+      const recipeItem = item as RecipebookItem;
+      const existingItem = recipeMap.get(recipeItem.id);
       if (!existingItem) {
-        recipeMap.set(item.id, item);
+        recipeMap.set(recipeItem.id, recipeItem);
         added++;
-      } else if (item.updatedAt > existingItem.updatedAt) {
-        recipeMap.set(item.id, item);
+      } else if (recipeItem.updatedAt > existingItem.updatedAt) {
+        recipeMap.set(recipeItem.id, recipeItem);
         updated++;
       } else {
         skipped++;
@@ -233,7 +204,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     }
 
     if (added > 0 || updated > 0) {
-      const mergedList = [...recipeMap.values()];
+      const mergedList: ReadonlyArray<RecipebookItem> = [...recipeMap.values()];
       if (saveAllRecipes(mergedList)) {
         const summary = [
           added > 0 ? `${added} new recipe${added > 1 ? 's' : ''} added.` : '',
@@ -254,11 +225,10 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
   },
 
   prepareToOpen: (args) => {
-    const { computeInitialName, setName } = get();
-
     if (args.mode === 'save') {
-      const initialName = args.name ?? computeInitialName(args.ingredients, args.activeRecipeId);
-      setName(initialName);
+      const { recipeIdMap, recipeContentHashMap } = get();
+      const initialName = args.name ?? computeInitialRecipeName(args.ingredients, args.activeRecipeId, recipeIdMap, recipeContentHashMap);
+      set({ nameInput: initialName });
     }
   },
 
@@ -274,7 +244,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
     set({ query });
   },
 
-  setRecipes: (newRecipes) => {
+  setRecipes: (newRecipes: ReadonlyArray<RecipebookItem>) => {
     const recipes = [...newRecipes].sort((a, b) => b.updatedAt - a.updatedAt);
     const recipeIdMap = new Map<string, RecipebookItem>();
     const recipeContentHashMap = new Map<string, string>();
@@ -298,40 +268,30 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
       return;
     }
 
-    const shouldForceCreate = ingredients.length === 0 || activeRecipeId === null;
     const recipeToUpdate = activeRecipeId ? recipeIdMap.get(activeRecipeId) : null;
-    const isUpdate = !shouldForceCreate && !!recipeToUpdate && recipeToUpdate.name.trim().toLowerCase() === trimmedName.toLowerCase();
-
+    const isNameMatching = recipeToUpdate?.name.trim().toLowerCase() === trimmedName.toLowerCase();
+    const isUpdateAction = !!recipeToUpdate && isNameMatching && ingredients.length > 0;
     const now = Date.now();
-    let finalRecipes: ReadonlyArray<RecipebookItem>;
-    let recipeToSave: RecipebookItem;
-    let userMessage: string;
 
-    if (isUpdate && recipeToUpdate) {
-      recipeToSave = { ...recipeToUpdate, name: trimmedName, ingredients: ingredients, updatedAt: now };
-      const recipeIndex = recipes.findIndex((r) => r.id === recipeToUpdate.id);
-      const updatedRecipes = [...recipes];
-      if (recipeIndex !== -1) {
-        updatedRecipes[recipeIndex] = recipeToSave;
+    if (isUpdateAction) {
+      const updatedRecipe = { ...recipeToUpdate, name: trimmedName, ingredients, updatedAt: now };
+      const finalRecipes = recipes.map((r) => (r.id === activeRecipeId ? updatedRecipe : r));
+
+      if (saveAllRecipes(finalRecipes)) {
+        setRecipes(finalRecipes);
+        setActiveRecipeId(updatedRecipe.id);
+        show(`Recipe '${trimmedName}' was updated.`, 'success', 'Cookbook Action');
       }
-      finalRecipes = updatedRecipes;
-      userMessage = `Recipe '${trimmedName}' was updated.`;
     } else {
-      recipeToSave = {
-        id: crypto.randomUUID(),
-        name: trimmedName,
-        ingredients: ingredients,
-        createdAt: now,
-        updatedAt: now,
-      };
-      finalRecipes = [recipeToSave, ...recipes];
-      userMessage = recipeToUpdate ? `Recipe '${trimmedName}' saved as a new copy.` : `Recipe '${trimmedName}' was saved.`;
-    }
+      const newRecipe = { id: crypto.randomUUID(), name: trimmedName, ingredients, createdAt: now, updatedAt: now };
+      const finalRecipes = [newRecipe, ...recipes];
 
-    if (saveAllRecipes(finalRecipes)) {
-      setRecipes(finalRecipes);
-      setActiveRecipeId(recipeToSave.id);
-      show(userMessage, 'success', 'Cookbook Action');
+      if (saveAllRecipes(finalRecipes)) {
+        setRecipes(finalRecipes);
+        setActiveRecipeId(newRecipe.id);
+        const message = recipeToUpdate ? `Recipe '${trimmedName}' saved as a new copy.` : `Recipe '${trimmedName}' was saved.`;
+        show(message, 'success', 'Cookbook Action');
+      }
     }
   },
 }));

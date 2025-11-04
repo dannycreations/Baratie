@@ -86,19 +86,18 @@ export const CookbookPanel = memo((): JSX.Element | null => {
 
   const nameRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const activeModeRef = useRef<'save' | 'load'>('load');
 
   const isModalOpen = currentModal?.type === 'cookbook';
-  const modalMode = isModalOpen ? currentModal.props.mode : null;
+  if (isModalOpen) {
+    activeModeRef.current = currentModal.props.mode;
+  }
+  const activeMode = activeModeRef.current;
+
   const isRecipeEmpty = ingredients.length === 0;
   const isSaveDisabled = !nameInput.trim() || isRecipeEmpty;
 
-  const persistedModalModeRef = useRef(modalMode);
-  if (isModalOpen) {
-    persistedModalModeRef.current = modalMode;
-  }
-  const persistedModalMode = persistedModalModeRef.current;
-
-  const focusRef = persistedModalMode === 'save' ? nameRef : searchRef;
+  const focusRef = activeMode === 'save' ? nameRef : searchRef;
   useAutoFocus(focusRef, isModalOpen);
 
   const deferredQuery = useDeferredValue(query);
@@ -120,14 +119,14 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const handleSave = useCallback((): void => {
     upsert();
     closeModal();
-  }, [upsert, closeModal]);
+  }, [closeModal, upsert]);
 
   const handleLoad = useCallback(
     (id: string): void => {
       load(id);
       closeModal();
     },
-    [load, closeModal],
+    [closeModal, load],
   );
 
   const handleFileImport = useCallback(
@@ -137,21 +136,21 @@ export const CookbookPanel = memo((): JSX.Element | null => {
     [importFromFile],
   );
 
-  const title = persistedModalMode === 'save' ? 'Add to Cookbook' : 'Open from Cookbook';
+  const title = activeMode === 'save' ? 'Add to Cookbook' : 'Open from Cookbook';
 
   const headerActions = useMemo(
     () =>
-      persistedModalMode === 'save' ? (
+      activeMode === 'save' ? (
         <SaveHeaderActions isSaveDisabled={isSaveDisabled} onExportCurrent={exportCurrent} onSave={handleSave} />
       ) : (
         <LoadHeaderActions isExportDisabled={recipes.length === 0} onExportAll={exportAll} onFileImport={handleFileImport} />
       ),
-    [persistedModalMode, isSaveDisabled, exportCurrent, handleSave, recipes.length, exportAll, handleFileImport],
+    [activeMode, isSaveDisabled, exportCurrent, handleSave, recipes.length, exportAll, handleFileImport],
   );
 
   const bodyContent = useMemo(
     () =>
-      persistedModalMode === 'save' ? (
+      activeMode === 'save' ? (
         <CookbookSave isRecipeEmpty={isRecipeEmpty} nameRef={nameRef} nameInput={nameInput} onNameChange={setName} onSave={handleSave} />
       ) : (
         <CookbookLoad
@@ -164,7 +163,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
           onQueryChange={setQuery}
         />
       ),
-    [persistedModalMode, isRecipeEmpty, nameInput, setName, handleSave, query, filteredRecipes, recipes.length, deleteRecipe, handleLoad, setQuery],
+    [activeMode, isRecipeEmpty, nameInput, setName, handleSave, query, filteredRecipes, recipes.length, deleteRecipe, handleLoad, setQuery],
   );
 
   return (

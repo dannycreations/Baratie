@@ -1,11 +1,10 @@
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { APP_THEMES } from '../../app/themes';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { cn } from '../../utilities/styleUtil';
 import { CheckIcon } from '../shared/Icon';
-import { ItemListLayout } from '../shared/layout/ListLayout';
 
 import type { JSX } from 'react';
 import type { AppTheme } from '../../app/themes';
@@ -16,17 +15,14 @@ interface PalettePreviewProps {
 }
 
 const PalettePreview = memo<PalettePreviewProps>(({ theme }): JSX.Element => {
-  const swatchColors = useMemo(
-    () => [
-      { color: theme.surfacePrimary, title: 'Page BG' },
-      { color: theme.surfaceSecondary, title: 'Card BG' },
-      { color: theme.accentBg, title: 'Accent' },
-      { color: theme.contentPrimary, title: 'Text' },
-      { color: theme.successFg, title: 'Success' },
-      { color: theme.dangerFg, title: 'Error' },
-    ],
-    [theme],
-  );
+  const swatchColors = [
+    { color: theme.surfacePrimary, title: 'Page BG' },
+    { color: theme.surfaceSecondary, title: 'Card BG' },
+    { color: theme.accentBg, title: 'Accent' },
+    { color: theme.contentPrimary, title: 'Text' },
+    { color: theme.successFg, title: 'Success' },
+    { color: theme.dangerFg, title: 'Error' },
+  ];
 
   return (
     <div className="flex items-center space-x-1">
@@ -50,20 +46,13 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
     onSelect(item.id);
   }, [onSelect, item.id]);
 
-  const liClass = useMemo(
-    () => cn('list-none rounded-md cursor-pointer outline-none focus-visible:ring-2', `focus-visible:ring-${theme.ring}`),
-    [theme.ring],
-  );
+  const liClass = cn('list-none rounded-md cursor-pointer outline-none');
 
-  const itemLayoutClass = useMemo(
-    () =>
-      cn(
-        'h-16 p-2 border-2 rounded-md transition-colors duration-150',
-        isChecked
-          ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
-          : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
-      ),
-    [isChecked, theme],
+  const itemLayoutClass = cn(
+    'flex w-full items-center justify-between h-16 p-2 border-2 rounded-md transition-colors duration-150',
+    isChecked
+      ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
+      : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
   );
 
   const leftContent = (
@@ -81,7 +70,10 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
 
   return (
     <li className={liClass} onClick={handleClick}>
-      <ItemListLayout className={itemLayoutClass} leftContent={leftContent} rightClasses="flex shrink-0 items-center" rightContent={rightContent} />
+      <div className={itemLayoutClass}>
+        <div className="min-w-0 grow">{leftContent}</div>
+        <div className="flex shrink-0 items-center">{rightContent}</div>
+      </div>
     </li>
   );
 });

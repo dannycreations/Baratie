@@ -55,18 +55,23 @@ export class Kitchen {
       }
     };
 
-    const unsubscribeKitchen = useKitchenStore.subscribe((state) => state.inputData, handleStateChange);
+    const unsubscribeKitchen = useKitchenStore.subscribe(
+      (state) => ({ inputData: state.inputData, isBatchingUpdates: state.isBatchingUpdates }),
+      handleStateChange,
+      {
+        equalityFn: (a, b) => a.inputData === b.inputData && a.isBatchingUpdates === b.isBatchingUpdates,
+      },
+    );
+
     const unsubscribeRecipe = useRecipeStore.subscribe(
       (state) => ({ ingredients: state.ingredients, pausedIds: state.pausedIngredientIds }),
       handleStateChange,
       { equalityFn: (a, b) => a.ingredients === b.ingredients && a.pausedIds === b.pausedIds },
     );
-    const unsubscribeBatching = useKitchenStore.subscribe((state) => state.isBatchingUpdates, handleStateChange);
 
     return () => {
       unsubscribeKitchen();
       unsubscribeRecipe();
-      unsubscribeBatching();
     };
   }
 
@@ -172,6 +177,66 @@ export class Kitchen {
     };
   }
 
+  private updateLoopStateFromResult(state: RecipeLoopState, result: IngredientRunResult, ingredientId: string): void {
+    state.cookedData = result.nextData;
+    state.localStatuses[ingredientId] = result.status;
+
+    if (result.warningMessage) {
+      state.localWarnings[ingredientId] = result.warningMessage;
+    }
+
+    if (result.panelInstruction) {
+      if (result.panelInstruction.panelType === 'input') {
+        state.lastInputConfig = result.panelInstruction.config;
+        state.lastInputPanelId = result.inputPanelId ?? null;
+      } else {
+        state.lastOutputConfig = result.panelInstruction.config;
+      }
+    }
+
+    if (result.hasError) {
+      state.globalError = true;
+    }
+    if (result.status === 'warning') {
+      state.hasWarnings = true;
+    }
+  }
+
+  private async processSingleIngredient(
+    ingredient: IngredientItem,
+    index: number,
+    recipe: ReadonlyArray<IngredientItem>,
+    initialInput: string,
+    loopState: RecipeLoopState,
+  ): Promise<boolean> {
+    const { pausedIngredientIds } = useRecipeStore.getState();
+
+    if (pausedIngredientIds.has(ingredient.id)) {
+      logger.info(`Skipping paused ingredient: ${ingredient.name}`);
+      loopState.localStatuses[ingredient.id] = 'idle';
+      loopState.localWarnings[ingredient.id] = null;
+      return false;
+    }
+
+    const definition = ingredientRegistry.get(ingredient.ingredientId);
+
+    if (!definition) {
+      const errorMessage = `Ingredient '${ingredient.name}' is misconfigured or from a removed extension.`;
+      errorHandler.handle(
+        new AppError(`Definition for ID '${ingredient.ingredientId}' (${ingredient.name}) not found.`, 'Recipe Cooking', errorMessage),
+      );
+      loopState.cookedData = `Error: ${errorMessage}`;
+      loopState.localStatuses[ingredient.id] = 'error';
+      loopState.globalError = true;
+      return true;
+    }
+
+    const result = await this.runIngredient(ingredient, definition, loopState.cookedData, recipe, index, initialInput);
+    this.updateLoopStateFromResult(loopState, result, ingredient.id);
+
+    return loopState.globalError;
+  }
+
   private async executeRecipeLoop(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeLoopState> {
     const state: RecipeLoopState = {
       cookedData: initialInput,
@@ -184,52 +249,10 @@ export class Kitchen {
       localWarnings: {},
     };
 
-    const { pausedIngredientIds } = useRecipeStore.getState();
-
     for (const [index, ingredient] of recipe.entries()) {
-      if (pausedIngredientIds.has(ingredient.id)) {
-        logger.info(`Skipping paused ingredient: ${ingredient.name}`);
-        state.localStatuses[ingredient.id] = 'idle';
-        state.localWarnings[ingredient.id] = null;
-        continue;
-      }
-
-      const definition = ingredientRegistry.get(ingredient.ingredientId);
-
-      if (!definition) {
-        const errorMessage = `Ingredient '${ingredient.name}' is misconfigured or from a removed extension.`;
-        errorHandler.handle(
-          new AppError(`Definition for ID '${ingredient.ingredientId}' (${ingredient.name}) not found.`, 'Recipe Cooking', errorMessage),
-        );
-        state.cookedData = `Error: ${errorMessage}`;
-        state.localStatuses[ingredient.id] = 'error';
-        state.globalError = true;
+      const shouldBreak = await this.processSingleIngredient(ingredient, index, recipe, initialInput, state);
+      if (shouldBreak) {
         break;
-      }
-
-      const result = await this.runIngredient(ingredient, definition, state.cookedData, recipe, index, initialInput);
-      state.cookedData = result.nextData;
-      state.localStatuses[ingredient.id] = result.status;
-
-      if (result.warningMessage) {
-        state.localWarnings[ingredient.id] = result.warningMessage;
-      }
-
-      if (result.panelInstruction) {
-        if (result.panelInstruction.panelType === 'input') {
-          state.lastInputConfig = result.panelInstruction.config;
-          state.lastInputPanelId = result.inputPanelId ?? null;
-        } else if (result.panelInstruction.panelType === 'output') {
-          state.lastOutputConfig = result.panelInstruction.config;
-        }
-      }
-
-      if (result.hasError) {
-        state.globalError = true;
-        break;
-      }
-      if (result.status === 'warning') {
-        state.hasWarnings = true;
       }
     }
     return state;

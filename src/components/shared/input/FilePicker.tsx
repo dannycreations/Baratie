@@ -1,5 +1,7 @@
 import { memo, useCallback, useRef } from 'react';
 
+import { cn } from '../../../utilities/styleUtil';
+
 import type { ChangeEvent, JSX, ReactNode } from 'react';
 
 export interface FilePickerRenderProps {
@@ -36,7 +38,7 @@ export const FilePicker = memo<FilePickerProps>(({ children, onFileSelect, accep
   return (
     <>
       {children({ trigger })}
-      <input ref={inputRef} id={inputId} type="file" className="hidden" accept={accept} onChange={handleFileChange} />
+      <input ref={inputRef} id={inputId} type="file" className={cn('hidden')} accept={accept} onChange={handleFileChange} />
     </>
   );
 });

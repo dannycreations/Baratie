@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { useTaskStore } from '../../stores/useTaskStore';
@@ -8,7 +8,7 @@ import { AlertTriangleIcon, Loader2Icon } from '../shared/Icon';
 
 import type { JSX } from 'react';
 
-export const LoadingScreen = memo((): JSX.Element | null => {
+export const LoadingScreen = (): JSX.Element | null => {
   const isAppReady = useTaskStore((state) => state.isInitialized);
   const message = useTaskStore((state) => state.loadingMessage);
   const isError = useTaskStore((state) => state.loadingHasError);
@@ -52,4 +52,4 @@ export const LoadingScreen = memo((): JSX.Element | null => {
       </div>
     </div>
   );
-});
+};

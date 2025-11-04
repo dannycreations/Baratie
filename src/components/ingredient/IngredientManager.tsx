@@ -3,14 +3,17 @@ import { memo, useCallback, useDeferredValue, useId, useMemo, useRef, useState }
 import { ingredientRegistry } from '../../app/container';
 import { groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
 import { useAutoFocus } from '../../hooks/useAutoFocus';
+import { useOverflow } from '../../hooks/useOverflow';
 import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useThemeStore } from '../../stores/useThemeStore';
+import { cn } from '../../utilities/styleUtil';
 import { BooleanInput } from '../shared/input/BooleanInput';
-import { GroupListLayout, SearchListLayout } from '../shared/layout/ListLayout';
+import { StringInput } from '../shared/input/StringInput';
+import { GroupListLayout } from '../shared/layout/ListLayout';
 import { Modal } from '../shared/Modal';
 
-import type { JSX } from 'react';
+import type { ChangeEvent, JSX } from 'react';
 import type { IngredientProps } from '../../core/IngredientRegistry';
 import type { GroupListItem } from '../shared/layout/ListLayout';
 
@@ -29,6 +32,7 @@ export const IngredientManager = memo((): JSX.Element => {
   const listId = useId();
   const searchRef = useRef<HTMLInputElement>(null);
   const deferredQuery = useDeferredValue(query);
+  const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   useAutoFocus(searchRef, isModalOpen);
 
@@ -44,6 +48,14 @@ export const IngredientManager = memo((): JSX.Element => {
     return searchGroupedIngredients(ingredientsByCategory, deferredQuery);
   }, [ingredientsByCategory, deferredQuery]);
 
+  const handleQueryChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setQuery(event.target.value);
+  }, []);
+
+  const handleClearQuery = useCallback(() => {
+    setQuery('');
+  }, []);
+
   const renderHeader = useCallback(
     (category: string, _items: ReadonlyArray<GroupListItem>): JSX.Element => {
       const categoryId = `manager-category-${category.replace(/\s+/g, '-').toLowerCase()}`;
@@ -58,14 +70,17 @@ export const IngredientManager = memo((): JSX.Element => {
             onChange={() => toggleCategory(category)}
           />
           <span
-            className={`truncate font-medium cursor-pointer ${isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`}`}
+            className={cn(
+              'truncate font-medium cursor-pointer',
+              isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`,
+            )}
           >
             {category}
           </span>
         </div>
       );
     },
-    [disabledCategories, toggleCategory, theme],
+    [disabledCategories, theme, toggleCategory],
   );
 
   const renderItemPrefix = useCallback(
@@ -84,7 +99,7 @@ export const IngredientManager = memo((): JSX.Element => {
         />
       );
     },
-    [disabledCategories, disabledIngredients, toggleIngredient, theme],
+    [disabledCategories, disabledIngredients, theme, toggleIngredient],
   );
 
   const isItemDisabled = useCallback(
@@ -106,15 +121,23 @@ export const IngredientManager = memo((): JSX.Element => {
 
   return (
     <Modal isOpen={isModalOpen} size="lg" title="Manage Ingredients" onClose={closeModal}>
-      <SearchListLayout
-        listId={listId}
-        listContent={content}
-        searchQuery={query}
-        searchOnQuery={setQuery}
-        searchId="ingredient-manager-search"
-        searchInputRef={searchRef}
-        searchPlaceholder="Search Ingredients..."
-      />
+      <div className="flex h-full flex-col gap-2 min-h-0">
+        <div>
+          <StringInput
+            id="ingredient-manager-search"
+            type="search"
+            inputRef={searchRef}
+            value={query}
+            placeholder="Search Ingredients..."
+            showClearButton
+            onChange={handleQueryChange}
+            onClear={handleClearQuery}
+          />
+        </div>
+        <div id={listId} ref={scrollRef} className={cn('grow overflow-y-auto', scrollClasses)}>
+          {content}
+        </div>
+      </div>
     </Modal>
   );
 });
