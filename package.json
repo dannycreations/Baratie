@@ -19,20 +19,20 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/dannycreations/baratie.git"
+    "url": "https://github.com/dannycreations/Baratie.git"
   },
-  "homepage": "https://github.com/dannycreations/baratie",
+  "homepage": "https://github.com/dannycreations/Baratie",
   "dependencies": {
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "valibot": "1.1.0",
-    "zustand": "5.0.8"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "valibot": "^1.1.0",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
     "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
     "@tailwindcss/vite": "^4.1.16",
-    "@types/node": "22.18.13",
+    "@types/node": "^22.18.13",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.1.0",
@@ -42,7 +42,7 @@
     "tailwindcss": "^4.1.16",
     "terser": "^5.44.0",
     "typescript": "^5.9.3",
-    "vite": "^7.1.12",
+    "vite": "^7.2.0",
     "vite-plugin-checker": "^0.11.0"
   },
   "bundleDependencies": [
