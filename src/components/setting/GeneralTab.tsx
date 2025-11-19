@@ -3,6 +3,7 @@ import { memo, useCallback } from 'react';
 import { useSettingStore } from '../../stores/useSettingStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { cn } from '../../utilities/styleUtil';
+import { ConfirmButton } from '../shared/Button';
 import { BooleanInput } from '../shared/input/BooleanInput';
 import { FormLayout } from '../shared/layout/FormLayout';
 
@@ -29,31 +30,57 @@ export const GeneralTab = memo((): JSX.Element => {
     [setPersistRecipe],
   );
 
+  const handleResetApp = useCallback((): void => {
+    localStorage.clear();
+    window.location.reload();
+  }, []);
+
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-      <div className={cn('p-3 rounded-md border', `border-${theme.borderPrimary}`, `bg-${theme.surfaceTertiary}`)}>
-        <FormLayout
-          inputId="allow-multiple-open"
-          label="Multi-Expand Accordions"
-          description="Allows multiple categories or ingredient options to be open at the same time."
-          direction="row"
-          labelWrapperClasses="flex-1 order-2"
-          inputWrapperClasses="order-1 flex items-center"
-        >
-          {(id) => <BooleanInput id={id} checked={allowMultipleOpen} offBackgroundColor={theme.borderPrimary} onChange={handleToggleMultipleOpen} />}
-        </FormLayout>
+    <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className={cn('p-3 rounded-md border', `border-${theme.borderPrimary}`, `bg-${theme.surfaceTertiary}`)}>
+          <FormLayout
+            inputId="allow-multiple-open"
+            label="Multi-Expand Accordions"
+            description="Allows multiple categories or ingredient options to be open at the same time."
+            direction="row"
+            labelWrapperClasses="flex-1 order-2"
+            inputWrapperClasses="order-1 flex items-center"
+          >
+            {(id) => (
+              <BooleanInput id={id} checked={allowMultipleOpen} offBackgroundColor={theme.borderPrimary} onChange={handleToggleMultipleOpen} />
+            )}
+          </FormLayout>
+        </div>
+        <div className={cn('p-3 rounded-md border', `border-${theme.borderPrimary}`, `bg-${theme.surfaceTertiary}`)}>
+          <FormLayout
+            inputId="persist-recipe"
+            label="Persist Current Recipe"
+            description="Automatically save the current recipe to your browser's local storage to prevent data loss."
+            direction="row"
+            labelWrapperClasses="flex-1 order-2"
+            inputWrapperClasses="order-1 flex items-center"
+          >
+            {(id) => <BooleanInput id={id} checked={persistRecipe} offBackgroundColor={theme.borderPrimary} onChange={handleTogglePersistRecipe} />}
+          </FormLayout>
+        </div>
       </div>
-      <div className={cn('p-3 rounded-md border', `border-${theme.borderPrimary}`, `bg-${theme.surfaceTertiary}`)}>
-        <FormLayout
-          inputId="persist-recipe"
-          label="Persist Current Recipe"
-          description="Automatically save the current recipe to your browser's local storage to prevent data loss."
-          direction="row"
-          labelWrapperClasses="flex-1 order-2"
-          inputWrapperClasses="order-1 flex items-center"
-        >
-          {(id) => <BooleanInput id={id} checked={persistRecipe} offBackgroundColor={theme.borderPrimary} onChange={handleTogglePersistRecipe} />}
-        </FormLayout>
+      <div className={cn('p-3 rounded-md border', `border-${theme.dangerBorder}`, `bg-${theme.surfaceTertiary}`)}>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h3 className={cn('font-medium text-sm', `text-${theme.dangerFg}`)}>Danger Zone</h3>
+            <p className={cn('text-xs', `text-${theme.contentSecondary}`)}>
+              Resetting the application will permanently delete all your recipes, extensions, settings, and local data. This action cannot be undone.
+            </p>
+          </div>
+          <ConfirmButton
+            actionName="Reset"
+            itemType="Application"
+            confirmTooltip="Confirm Reset Data"
+            tooltipPosition="left"
+            onConfirm={handleResetApp}
+          />
+        </div>
       </div>
     </div>
   );

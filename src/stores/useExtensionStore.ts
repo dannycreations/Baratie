@@ -20,7 +20,7 @@ import type { Extension, ExtensionManifest, ManifestModule } from '../helpers/ex
 export interface ExtensionState {
   readonly extensions: ReadonlyArray<Extension>;
   readonly extensionMap: ReadonlyMap<string, Extension>;
-  readonly add: (url: string, options?: Readonly<{ force?: boolean }>) => Promise<void>;
+  readonly add: (url: string, options?: Readonly<{ force?: boolean; onProgress?: (percentage: number) => void }>) => Promise<void>;
   readonly cancelPendingInstall: () => void;
   readonly init: () => Promise<void>;
   readonly installSelectedModules: (id: string, selectedModules: ReadonlyArray<ManifestModule>) => Promise<void>;
@@ -29,6 +29,7 @@ export interface ExtensionState {
     options?: Readonly<{
       force?: boolean;
       context?: 'add' | 'refresh';
+      onProgress?: (percentage: number) => void;
     }>,
   ) => Promise<void>;
   readonly remove: (id: string) => void;
@@ -50,10 +51,13 @@ const fetchAndValidateManifest = async (repoInfo: {
   readonly repo: string;
   readonly ref: string;
 }): Promise<ExtensionManifest> => {
-  const response = await fetch(`https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.ref}/manifest.json`);
+  const repo = `${repoInfo.owner}/${repoInfo.repo}`;
+  const targetUrl = `https://raw.githubusercontent.com/${repo}/${repoInfo.ref}/manifest.json?t=${Date.now()}`;
+  const response = await fetch(targetUrl, { cache: 'reload' });
   if (!response.ok) {
     throw new Error('Could not fetch manifest');
   }
+
   const manifestJson: unknown = await response.json();
   const validationResult = safeParse(ExtensionManifestSchema, manifestJson);
   if (!validationResult.success) {
@@ -173,12 +177,16 @@ export const useExtensionStore = create<ExtensionState>()(
       const updatedExtension: Extension = { ...extension, status: 'loading', entry: [...selectedModules] };
       upsert(updatedExtension);
 
-      await loadAndExecuteExtension(updatedExtension, {
-        getExtensionMap: () => get().extensionMap,
-        setExtensionStatus: setExtensionStatus,
-        setIngredients: setIngredients,
-        upsert: upsert,
-      });
+      await loadAndExecuteExtension(
+        updatedExtension,
+        {
+          getExtensionMap: () => get().extensionMap,
+          setExtensionStatus: setExtensionStatus,
+          setIngredients: setIngredients,
+          upsert: upsert,
+        },
+        undefined,
+      );
     },
 
     refresh: async (id, options) => {
@@ -197,7 +205,7 @@ export const useExtensionStore = create<ExtensionState>()(
         displayName = 'Fetching...';
       }
 
-      upsert({ id, status: 'loading', name: displayName });
+      upsert({ id, status: 'loading', name: displayName, fetchedAt: undefined });
 
       const repoInfo = parseGitHubUrl(id);
       if (!repoInfo) {
@@ -223,12 +231,16 @@ export const useExtensionStore = create<ExtensionState>()(
           upsert({ id, entry: entryToUse, scripts: {} });
           const currentExtState = get().extensionMap.get(id)!;
 
-          await loadAndExecuteExtension(currentExtState, {
-            getExtensionMap: () => get().extensionMap,
-            setExtensionStatus: get().setExtensionStatus,
-            setIngredients: get().setIngredients,
-            upsert: get().upsert,
-          });
+          await loadAndExecuteExtension(
+            currentExtState,
+            {
+              getExtensionMap: () => get().extensionMap,
+              setExtensionStatus: get().setExtensionStatus,
+              setIngredients: get().setIngredients,
+              upsert: get().upsert,
+            },
+            options?.onProgress,
+          );
 
           const finalState = get().extensionMap.get(id)!;
           if (finalState.status === 'loaded' || finalState.status === 'partial') {

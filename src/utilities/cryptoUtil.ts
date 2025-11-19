@@ -1,3 +1,5 @@
+const HEX_TABLE = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, '0'));
+
 export function base64ToUint8Array(base64: string): Uint8Array {
   const binaryString = atob(base64);
   const length = binaryString.length;
@@ -10,13 +12,20 @@ export function base64ToUint8Array(base64: string): Uint8Array {
 
 export function hexToUint8Array(hex: string): Uint8Array {
   const cleanHex = hex.startsWith('0x') ? hex.slice(2) : hex;
-  if (/[^0-9a-fA-F]/.test(cleanHex) || cleanHex.length % 2 !== 0) {
+  const length = cleanHex.length;
+
+  if (length % 2 !== 0) {
     throw new Error('Invalid hex string');
   }
 
-  const bytes = new Uint8Array(cleanHex.length / 2);
-  for (let i = 0; i < cleanHex.length; i += 2) {
-    bytes[i / 2] = parseInt(cleanHex.substring(i, i + 2), 16);
+  const bytes = new Uint8Array(length / 2);
+  for (let i = 0; i < length; i += 2) {
+    const high = parseInt(cleanHex[i], 16);
+    const low = parseInt(cleanHex[i + 1], 16);
+    if (isNaN(high) || isNaN(low)) {
+      throw new Error('Invalid hex string');
+    }
+    bytes[i / 2] = (high << 4) | low;
   }
   return bytes;
 }
@@ -39,20 +48,23 @@ export function stringToUint8Array(str: string): Uint8Array {
 }
 
 export function uint8ArrayToHex(bytes: Uint8Array): string {
-  let hex = '';
-  for (let i = 0; i < bytes.length; i++) {
-    const byte = bytes[i];
-    hex += byte.toString(16).padStart(2, '0');
+  const length = bytes.length;
+  const out = new Array(length);
+  for (let i = 0; i < length; i++) {
+    out[i] = HEX_TABLE[bytes[i]];
   }
-  return hex;
+  return out.join('');
 }
 
 export function uint8ArrayToBase64(bytes: Uint8Array): string {
   const CHUNK_SIZE = 8192;
-  let binary = '';
-  for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
+  const length = bytes.length;
+  const chunks: string[] = [];
+
+  for (let i = 0; i < length; i += CHUNK_SIZE) {
     const chunk = bytes.subarray(i, i + CHUNK_SIZE);
-    binary += String.fromCharCode.apply(null, chunk as unknown as number[]);
+    chunks.push(String.fromCharCode.apply(null, chunk as unknown as number[]));
   }
-  return btoa(binary);
+
+  return btoa(chunks.join(''));
 }

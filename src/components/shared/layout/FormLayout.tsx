@@ -1,5 +1,3 @@
-import { memo } from 'react';
-
 import { useThemeStore } from '../../../stores/useThemeStore';
 import { cn } from '../../../utilities/styleUtil';
 import { Tooltip } from '../Tooltip';
@@ -18,41 +16,49 @@ interface FormLayoutProps {
   readonly labelWrapperClasses?: string;
 }
 
-export const FormLayout = memo<FormLayoutProps>(
-  ({ label, inputId, children, description, direction = 'col', className, labelWrapperClasses, labelClasses, inputWrapperClasses }): JSX.Element => {
-    const theme = useThemeStore((state) => state.theme);
-    const isRow = direction === 'row';
+export const FormLayout = ({
+  label,
+  inputId,
+  children,
+  description,
+  direction = 'col',
+  className,
+  labelWrapperClasses,
+  labelClasses,
+  inputWrapperClasses,
+}: FormLayoutProps): JSX.Element => {
+  const theme = useThemeStore((state) => state.theme);
+  const isRow = direction === 'row';
 
-    const containerClass = cn(isRow ? 'flex items-center justify-start gap-2' : 'flex flex-col gap-2', className);
-    const finalLabelWrapClass = cn(isRow ? 'min-w-0' : '', labelWrapperClasses);
-    const finalInputWrapClass = cn(isRow ? 'flex h-8 shrink-0 items-center' : 'w-full', inputWrapperClasses);
-    const finalLabelClass = cn('font-medium text-sm', `text-${theme.contentSecondary}`, labelClasses);
+  const containerClass = cn(isRow ? 'flex items-center justify-start gap-2' : 'flex flex-col gap-2', className);
+  const finalLabelWrapClass = cn(isRow ? 'min-w-0' : '', labelWrapperClasses);
+  const finalInputWrapClass = cn(isRow ? 'flex h-8 shrink-0 items-center' : 'w-full', inputWrapperClasses);
+  const finalLabelClass = cn('font-medium text-sm', `text-${theme.contentSecondary}`, labelClasses);
 
-    const labelText = <span className="block truncate">{label}</span>;
+  const labelText = <span className="block truncate">{label}</span>;
 
-    return (
-      <div className={containerClass}>
-        {label ? (
-          <div className={finalLabelWrapClass}>
-            <label className={finalLabelClass}>
-              {description ? (
-                <Tooltip
-                  content={description}
-                  disabled={!description}
-                  position="top"
-                  tooltipClasses="max-w-[250px]"
-                  className="inline-block max-w-full"
-                >
-                  {labelText}
-                </Tooltip>
-              ) : (
-                labelText
-              )}
-            </label>
-          </div>
-        ) : null}
-        <div className={finalInputWrapClass}>{children(inputId)}</div>
-      </div>
-    );
-  },
-);
+  return (
+    <div className={containerClass}>
+      {label ? (
+        <div className={finalLabelWrapClass}>
+          <label className={finalLabelClass}>
+            {description ? (
+              <Tooltip
+                content={description}
+                disabled={!description}
+                position="top"
+                tooltipClasses="max-w-[250px]"
+                className="inline-block max-w-full"
+              >
+                {labelText}
+              </Tooltip>
+            ) : (
+              labelText
+            )}
+          </label>
+        </div>
+      ) : null}
+      <div className={finalInputWrapClass}>{children(inputId)}</div>
+    </div>
+  );
+};

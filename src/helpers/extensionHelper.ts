@@ -8,6 +8,8 @@ import type { IngredientDefinition, IngredientRegistry } from '../core/Ingredien
 import type { LoadExtensionDependencies } from '../stores/useExtensionStore';
 
 const EXTENSION_CACHE_MS = 86_400_000;
+const GH_URL_SHORTHAND_REGEX =
+  /^(?:https?:\/\/)?(?:www\.)?github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?(?:(?:\/tree\/|@|#)([\w.-]+))?\/?$|^([\w.-]+)\/([\w.-]+)(?:(?:@|#)([\w.-]+))?$/;
 
 const NonEmptyString = pipe(string(), nonEmpty());
 
@@ -67,22 +69,25 @@ function executeScript(scriptContent: string, api: typeof window.Baratie): void 
 }
 
 async function fetchProvider(repoInfo: Readonly<{ owner: string; repo: string; ref: string }>, path: string): Promise<Response> {
-  const primaryUrl = `https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.ref}/${path}`;
-  const fallbackUrl = `https://cdn.jsdelivr.net/gh/${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}/${path}`;
+  const repo = `${repoInfo.owner}/${repoInfo.repo}`;
+  const ref = `${repoInfo.ref}/${path}`;
+  const primaryUrl = `https://raw.githubusercontent.com/${repo}/${ref}?t=${Date.now()}`;
+  const fallbackUrl = `https://cdn.jsdelivr.net/gh/${repo}@${ref}?t=${Date.now()}`;
 
   try {
     logger.debug(`Fetching from primary provider: ${primaryUrl}`);
-    const response = await fetch(primaryUrl);
+    const response = await fetch(primaryUrl, { cache: 'reload' });
     if (response.ok) {
       return response;
     }
+
     logger.warn(`Primary provider fetch failed with status ${response.status}. Trying mirror.`);
   } catch (error) {
     logger.warn('Primary provider fetch failed with an error. Trying mirror.', error);
   }
 
   logger.debug(`Fetching from mirror provider: ${fallbackUrl}`);
-  return fetch(fallbackUrl);
+  return fetch(fallbackUrl, { cache: 'reload' });
 }
 
 export function isCacheValid(fetchedAt?: number): boolean {
@@ -94,12 +99,7 @@ export function isCacheValid(fetchedAt?: number): boolean {
 
 export function parseGitHubUrl(url: string): Readonly<{ owner: string; repo: string; ref: string }> | null {
   const trimmedUrl = url.trim();
-
-  const GH_URL_SHORTHAND_REGEX =
-    /^(?:https?:\/\/)?(?:www\.)?github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?(?:(?:\/tree\/|@|#)([\w.-]+))?\/?$|^([\w.-]+)\/([\w.-]+)(?:(?:@|#)([\w.-]+))?$/;
-
   const match = trimmedUrl.match(GH_URL_SHORTHAND_REGEX);
-
   if (!match) {
     return null;
   }
@@ -107,15 +107,17 @@ export function parseGitHubUrl(url: string): Readonly<{ owner: string; repo: str
   const owner = match[1] || match[4];
   const repo = match[2] || match[5];
   const ref = match[3] || match[6] || 'latest';
-
   if (match[4] && match[4].includes('.')) {
     return null;
   }
-
   return { owner, repo, ref };
 }
 
-export async function loadAndExecuteExtension(extension: Readonly<Extension>, dependencies: Readonly<LoadExtensionDependencies>): Promise<void> {
+export async function loadAndExecuteExtension(
+  extension: Readonly<Extension>,
+  dependencies: Readonly<LoadExtensionDependencies>,
+  onProgress?: (progress: number) => void,
+): Promise<void> {
   const { id, name, entry, scripts: cachedScripts } = extension;
   const { setExtensionStatus, setIngredients, upsert, getExtensionMap } = dependencies;
 
@@ -125,15 +127,26 @@ export async function loadAndExecuteExtension(extension: Readonly<Extension>, de
     return;
   }
 
-  const entryPointsOrModules = Array.isArray(entry) ? entry : entry ? [entry] : Object.keys(cachedScripts || {});
+  let entryPointsOrModules: string[] | ManifestModule[];
+  if (Array.isArray(entry)) {
+    entryPointsOrModules = entry;
+  } else if (entry) {
+    entryPointsOrModules = [entry];
+  } else {
+    entryPointsOrModules = Object.keys(cachedScripts || {});
+  }
+
   if (entryPointsOrModules.length === 0) {
     setExtensionStatus(id, 'error', ['Extension is missing entry point(s) in its manifest or cache.']);
     return;
   }
 
-  const entryPoints = isObjectLike(entryPointsOrModules[0])
-    ? (entryPointsOrModules as ReadonlyArray<ManifestModule>).map((m) => m.entry)
-    : (entryPointsOrModules as string[]);
+  let entryPoints: string[];
+  if (isObjectLike(entryPointsOrModules[0])) {
+    entryPoints = (entryPointsOrModules as ReadonlyArray<ManifestModule>).map((m) => m.entry);
+  } else {
+    entryPoints = entryPointsOrModules as string[];
+  }
 
   const newlyRegisteredKeys: Array<string> = [];
   const errorLogs: Array<string> = [];
@@ -152,33 +165,37 @@ export async function loadAndExecuteExtension(extension: Readonly<Extension>, de
     } as IngredientRegistry,
   };
 
+  let processedCount = 0;
+  const totalCount = entryPoints.length;
+
   try {
     ingredientRegistry.startBatch();
     for (const entryPoint of entryPoints) {
-      if (!entryPoint.trim()) {
-        continue;
-      }
+      if (entryPoint.trim()) {
+        try {
+          let scriptContent = cachedScripts?.[entryPoint];
+          if (!scriptContent) {
+            logger.debug(`Cache miss for script: ${entryPoint}`);
+            const response = await fetchProvider(repoInfo, entryPoint);
+            if (!response.ok) {
+              throw new Error(`Fetch failed: ${response.statusText}`);
+            }
 
-      try {
-        let scriptContent = cachedScripts?.[entryPoint];
-        if (!scriptContent) {
-          logger.debug(`Cache miss for script: ${entryPoint}`);
-          const response = await fetchProvider(repoInfo, entryPoint);
-          if (!response.ok) {
-            throw new Error(`Fetch failed: ${response.statusText}`);
+            scriptContent = await response.text();
+            fetchedScripts[entryPoint] = scriptContent;
+          } else {
+            logger.debug(`Cache hit for script: ${entryPoint}`);
           }
 
-          scriptContent = await response.text();
-          fetchedScripts[entryPoint] = scriptContent;
-        } else {
-          logger.debug(`Cache hit for script: ${entryPoint}`);
+          executeScript(scriptContent, customBaratieApi);
+          successCount++;
+        } catch (error) {
+          errorLogs.push(`Error in '${entryPoint}': ${error instanceof Error ? error.message : String(error)}`);
         }
-
-        executeScript(scriptContent, customBaratieApi);
-        successCount++;
-      } catch (error) {
-        errorLogs.push(`Error in '${entryPoint}': ${error instanceof Error ? error.message : String(error)}`);
       }
+
+      processedCount++;
+      onProgress?.(processedCount / totalCount);
     }
   } finally {
     ingredientRegistry.endBatch();

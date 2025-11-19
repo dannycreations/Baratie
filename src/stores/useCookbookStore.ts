@@ -178,13 +178,13 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
 
   merge: (recipesToImport: ReadonlyArray<RecipebookItem>) => {
     const { show } = useNotificationStore.getState();
-    const { recipes, setRecipes } = get();
+    const { recipes, setRecipes, recipeIdMap } = get();
     logger.info('Merging imported recipes...', {
       importedCount: recipesToImport.length,
       existingCount: recipes.length,
     });
 
-    const recipeMap = new Map<string, RecipebookItem>(recipes.map((r) => [r.id, r]));
+    const recipeMap = new Map<string, RecipebookItem>(recipeIdMap);
     let added = 0;
     let updated = 0;
     let skipped = 0;

@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 
 import { cn } from '../../../utilities/styleUtil';
 
@@ -15,7 +15,7 @@ interface FilePickerProps {
   readonly inputId?: string;
 }
 
-export const FilePicker = memo<FilePickerProps>(({ children, onFileSelect, accept, inputId }): JSX.Element => {
+export const FilePicker = ({ children, onFileSelect, accept, inputId }: FilePickerProps): JSX.Element => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileChange = useCallback(
@@ -41,4 +41,4 @@ export const FilePicker = memo<FilePickerProps>(({ children, onFileSelect, accep
       <input ref={inputRef} id={inputId} type="file" className={cn('hidden')} accept={accept} onChange={handleFileChange} />
     </>
   );
-});
+};

@@ -163,7 +163,14 @@ export class Kitchen {
 
   private async cookRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeCookResult> {
     const loopResult = await this.executeRecipeLoop(recipe, initialInput);
-    const finalStatus: CookingStatusType = loopResult.globalError ? 'error' : loopResult.hasWarnings ? 'warning' : 'success';
+
+    let finalStatus: CookingStatusType = 'success';
+    if (loopResult.globalError) {
+      finalStatus = 'error';
+    } else if (loopResult.hasWarnings) {
+      finalStatus = 'warning';
+    }
+
     logger.info(`Cook finished with status: ${finalStatus}.`);
 
     return {

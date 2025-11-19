@@ -138,33 +138,29 @@ export const CookbookPanel = memo((): JSX.Element | null => {
 
   const title = activeMode === 'save' ? 'Add to Cookbook' : 'Open from Cookbook';
 
-  const headerActions = useMemo(
-    () =>
-      activeMode === 'save' ? (
-        <SaveHeaderActions isSaveDisabled={isSaveDisabled} onExportCurrent={exportCurrent} onSave={handleSave} />
-      ) : (
-        <LoadHeaderActions isExportDisabled={recipes.length === 0} onExportAll={exportAll} onFileImport={handleFileImport} />
-      ),
-    [activeMode, isSaveDisabled, exportCurrent, handleSave, recipes.length, exportAll, handleFileImport],
-  );
+  const headerActions = useMemo(() => {
+    if (activeMode === 'save') {
+      return <SaveHeaderActions isSaveDisabled={isSaveDisabled} onExportCurrent={exportCurrent} onSave={handleSave} />;
+    }
+    return <LoadHeaderActions isExportDisabled={recipes.length === 0} onExportAll={exportAll} onFileImport={handleFileImport} />;
+  }, [activeMode, isSaveDisabled, exportCurrent, handleSave, recipes.length, exportAll, handleFileImport]);
 
-  const bodyContent = useMemo(
-    () =>
-      activeMode === 'save' ? (
-        <CookbookSave isRecipeEmpty={isRecipeEmpty} nameRef={nameRef} nameInput={nameInput} onNameChange={setName} onSave={handleSave} />
-      ) : (
-        <CookbookLoad
-          query={query}
-          recipes={filteredRecipes}
-          searchRef={searchRef}
-          totalRecipes={recipes.length}
-          onDelete={deleteRecipe}
-          onLoad={handleLoad}
-          onQueryChange={setQuery}
-        />
-      ),
-    [activeMode, isRecipeEmpty, nameInput, setName, handleSave, query, filteredRecipes, recipes.length, deleteRecipe, handleLoad, setQuery],
-  );
+  const bodyContent = useMemo(() => {
+    if (activeMode === 'save') {
+      return <CookbookSave isRecipeEmpty={isRecipeEmpty} nameRef={nameRef} nameInput={nameInput} onNameChange={setName} onSave={handleSave} />;
+    }
+    return (
+      <CookbookLoad
+        query={query}
+        recipes={filteredRecipes}
+        searchRef={searchRef}
+        totalRecipes={recipes.length}
+        onDelete={deleteRecipe}
+        onLoad={handleLoad}
+        onQueryChange={setQuery}
+      />
+    );
+  }, [activeMode, isRecipeEmpty, nameInput, setName, handleSave, query, filteredRecipes, recipes.length, deleteRecipe, handleLoad, setQuery]);
 
   return (
     <Modal isOpen={isModalOpen} size="lg" title={title} headerActions={headerActions} onClose={closeModal} onExited={resetModal}>

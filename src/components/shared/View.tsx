@@ -27,22 +27,26 @@ function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
   return objectStringify(errorObject, 2);
 }
 
-export const EmptyView = memo<EmptyViewProps>(
-  ({ children, className = 'flex flex-col items-center justify-center p-3', textClasses, icon, title }): JSX.Element => {
-    const theme = useThemeStore((state) => state.theme);
-    const titleClass = cn('mb-1 text-center font-semibold text-lg', `text-${theme.contentSecondary}`);
+export const EmptyView = ({
+  children,
+  className = 'flex flex-col items-center justify-center p-3',
+  textClasses,
+  icon,
+  title,
+}: EmptyViewProps): JSX.Element => {
+  const theme = useThemeStore((state) => state.theme);
+  const titleClass = cn('mb-1 text-center font-semibold text-lg', `text-${theme.contentSecondary}`);
 
-    const textClass = textClasses ?? cn('w-full break-words text-center text-sm', `text-${theme.contentTertiary}`);
+  const textClass = textClasses ?? cn('w-full break-words text-center text-sm', `text-${theme.contentTertiary}`);
 
-    return (
-      <div className={className}>
-        {icon && <div className={cn('mb-2', `text-${theme.contentTertiary}`)}>{icon}</div>}
-        {title && <h3 className={titleClass}>{title}</h3>}
-        <p className={textClass}>{children}</p>
-      </div>
-    );
-  },
-);
+  return (
+    <div className={className}>
+      {icon && <div className={cn('mb-2', `text-${theme.contentTertiary}`)}>{icon}</div>}
+      {title && <h3 className={titleClass}>{title}</h3>}
+      <p className={textClass}>{children}</p>
+    </div>
+  );
+};
 
 export const ErrorView = memo<ErrorViewProps>(({ error, errorInfo }): JSX.Element | null => {
   const theme = useThemeStore((state) => state.theme);

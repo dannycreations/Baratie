@@ -1,4 +1,4 @@
-function canonicalStringify(obj: unknown, seen: ReadonlySet<unknown>): string {
+function canonicalStringify(obj: unknown, seen: Set<unknown>): string {
   if (obj === null || obj === undefined) {
     return String(obj);
   }
@@ -15,29 +15,33 @@ function canonicalStringify(obj: unknown, seen: ReadonlySet<unknown>): string {
     return '[Circular]';
   }
 
-  const newSeen = new Set(seen).add(obj);
+  seen.add(obj);
 
-  if (Array.isArray(obj)) {
-    const arrayString = obj
-      .map((value) => {
-        return canonicalStringify(value, newSeen);
+  try {
+    if (Array.isArray(obj)) {
+      const arrayString = obj
+        .map((value) => {
+          return canonicalStringify(value, seen);
+        })
+        .join(',');
+      return `[${arrayString}]`;
+    }
+
+    const sortedKeys = Object.keys(obj).sort();
+    const pairs = sortedKeys
+      .map((key) => {
+        const value = (obj as Record<string, unknown>)[key];
+        if (typeof value === 'function') {
+          return '';
+        }
+        return `${JSON.stringify(key)}:${canonicalStringify(value, seen)}`;
       })
-      .join(',');
-    return `[${arrayString}]`;
+      .filter(Boolean);
+
+    return `{${pairs.join(',')}}`;
+  } finally {
+    seen.delete(obj);
   }
-
-  const sortedKeys = Object.keys(obj).sort();
-  const pairs = sortedKeys
-    .map((key) => {
-      const value = (obj as Record<string, unknown>)[key];
-      if (typeof value === 'function') {
-        return '';
-      }
-      return `${JSON.stringify(key)}:${canonicalStringify(value, newSeen)}`;
-    })
-    .filter(Boolean);
-
-  return `{${pairs.join(',')}}`;
 }
 
 export function getObjectHash(obj: object, namespace?: string): string {

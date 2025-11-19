@@ -64,14 +64,21 @@ const TEXT_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
   lg: 'text-base',
 } as const;
 
-function getVariantMap(theme: AppTheme): Record<ButtonVariant, string> {
-  return {
-    danger: `border-${theme.dangerBorder} bg-transparent text-${theme.dangerFg} hover:bg-${theme.dangerBgHover}`,
-    outline: `border-${theme.borderPrimary} bg-transparent text-${theme.contentSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
-    primary: `border-transparent bg-${theme.accentBg} text-${theme.accentFg} hover:bg-${theme.accentBgHover}`,
-    secondary: `border-transparent bg-${theme.surfaceTertiary} text-${theme.contentSecondary} hover:bg-${theme.surfaceHover} hover:text-${theme.contentPrimary}`,
-    stealth: `border-transparent bg-transparent text-${theme.contentTertiary} hover:bg-${theme.surfaceMuted} hover:text-${theme.contentPrimary}`,
-  };
+function getButtonVariantClass(theme: AppTheme, variant: ButtonVariant): string {
+  switch (variant) {
+    case 'danger':
+      return `border-${theme.dangerBorder} bg-transparent text-${theme.dangerFg} hover:bg-${theme.dangerBgHover}`;
+    case 'outline':
+      return `border-${theme.borderPrimary} bg-transparent text-${theme.contentSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`;
+    case 'primary':
+      return `border-transparent bg-${theme.accentBg} text-${theme.accentFg} hover:bg-${theme.accentBgHover}`;
+    case 'secondary':
+      return `border-transparent bg-${theme.surfaceTertiary} text-${theme.contentSecondary} hover:bg-${theme.surfaceHover} hover:text-${theme.contentPrimary}`;
+    case 'stealth':
+      return `border-transparent bg-transparent text-${theme.contentTertiary} hover:bg-${theme.surfaceMuted} hover:text-${theme.contentPrimary}`;
+    default:
+      return `border-transparent bg-${theme.accentBg} text-${theme.accentFg} hover:bg-${theme.accentBgHover}`;
+  }
 }
 
 export const Button = memo<ButtonProps>(
@@ -86,15 +93,13 @@ export const Button = memo<ButtonProps>(
     onClick,
     size = 'sm',
     type = 'button',
-    variant,
+    variant = 'primary',
   }): JSX.Element => {
     const theme = useThemeStore((state) => state.theme);
-    const finalVariant = variant ?? 'primary';
 
     const baseClass = `inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50`;
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
-    const variantMap = getVariantMap(theme);
-    const variantClass = variantMap[finalVariant];
+    const variantClass = getButtonVariantClass(theme, variant as ButtonVariant);
     const sizeClass = children ? cn(PADDING_MAP[size], TEXT_SIZE_MAP[size]) : PADDING_MAP[size];
     const finalClassName = cn(baseClass, shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className);
 

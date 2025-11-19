@@ -16,7 +16,7 @@ import { useDragMoveStore } from '../stores/useDragMoveStore';
 import { useExtensionStore } from '../stores/useExtensionStore';
 import { useTaskStore } from '../stores/useTaskStore';
 import { cn } from '../utilities/styleUtil';
-import { errorHandler, ingredientRegistry, kitchen, logger, taskRegistry } from './container';
+import { errorHandler, ingredientRegistry, kitchen, taskRegistry } from './container';
 import { APP_STYLES } from './styles';
 
 import type { JSX } from 'react';
@@ -108,19 +108,28 @@ export function createRoot(element: HTMLElement | null, options: Readonly<Barati
       message: 'Gathering exotic provisions...',
       handler: async () => {
         const { add, extensionMap } = useExtensionStore.getState();
+        const { setLoadingMessage } = useTaskStore.getState();
         const extensionsToLoad = Array.isArray(defaultExtensions) ? defaultExtensions : [defaultExtensions];
+        const totalExtensions = extensionsToLoad.length;
 
-        for (const url of extensionsToLoad) {
+        for (let i = 0; i < totalExtensions; i++) {
+          const url = extensionsToLoad[i];
           const repoInfo = parseGitHubUrl(url);
           if (repoInfo) {
             const repoName = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
             if (extensionMap.has(repoName)) {
+              const percent = Math.round(((i + 1) / totalExtensions) * 100);
+              setLoadingMessage(`Gathering exotic provisions... ${percent}%`);
               continue;
             }
 
-            await add(url, { force: true });
-          } else {
-            logger.warn(`Invalid default extension URL provided: "${url}"`);
+            await add(url, {
+              force: true,
+              onProgress: (itemPercent) => {
+                const totalPercent = Math.round(((i + itemPercent) / totalExtensions) * 100);
+                setLoadingMessage(`Gathering exotic provisions... ${totalPercent}%`);
+              },
+            });
           }
         }
       },

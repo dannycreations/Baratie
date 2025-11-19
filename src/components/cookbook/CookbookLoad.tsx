@@ -36,25 +36,27 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
     onQueryChange('');
   }, [onQueryChange]);
 
-  const listContent = useMemo(
-    () =>
-      recipes.length > 0 ? (
+  const listContent = useMemo(() => {
+    if (recipes.length > 0) {
+      return (
         <ul className="space-y-2">
           {recipes.map((recipe) => (
             <CookbookItem key={recipe.id} recipe={recipe} onDelete={onDelete} onLoad={onLoad} query={query} />
           ))}
         </ul>
-      ) : (
-        <EmptyView
-          className="flex h-full w-full flex-col items-center justify-center p-3"
-          icon={totalRecipes === 0 ? <SaveIcon size={48} /> : undefined}
-          title={totalRecipes > 0 ? 'No Matches Found' : 'Cookbook is Empty'}
-        >
-          {totalRecipes === 0 ? 'Build a recipe and save it to your cookbook!' : `No recipes found for "${query}".`}
-        </EmptyView>
-      ),
-    [recipes, onDelete, onLoad, query, totalRecipes],
-  );
+      );
+    }
+
+    return (
+      <EmptyView
+        className="flex h-full w-full flex-col items-center justify-center p-3"
+        icon={totalRecipes === 0 ? <SaveIcon size={48} /> : undefined}
+        title={totalRecipes > 0 ? 'No Matches Found' : 'Cookbook is Empty'}
+      >
+        {totalRecipes === 0 ? 'Build a recipe and save it to your cookbook!' : `No recipes found for "${query}".`}
+      </EmptyView>
+    );
+  }, [recipes, onDelete, onLoad, query, totalRecipes]);
 
   return (
     <div className="flex h-full flex-col gap-2 min-h-0">

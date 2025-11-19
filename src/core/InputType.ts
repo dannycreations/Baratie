@@ -186,9 +186,17 @@ export class InputType<T = unknown> {
     if (typeof this.value === 'boolean') {
       return this.cloneValue(this.value);
     }
-    const stringValue = String(this.value ?? '')
-      .trim()
-      .toLowerCase();
+    if (this.value === null || this.value === undefined) {
+      return this.cloneValue(false);
+    }
+    if (this.value === 1) {
+      return this.cloneValue(true);
+    }
+    if (this.value === 0) {
+      return this.cloneValue(false);
+    }
+
+    const stringValue = String(this.value).trim().toLowerCase();
     switch (stringValue) {
       case 'true':
       case '1':

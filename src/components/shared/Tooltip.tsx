@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
@@ -45,195 +45,216 @@ function getTooltipArrowStyles(backdrop: string): Readonly<Record<TooltipPositio
   };
 }
 
-export const Tooltip = memo<TooltipProps>(
-  ({ content, children, position = 'top', delay = 200, className = '', tooltipClasses = '', disabled = false }): JSX.Element => {
-    const { activeId, setActiveId } = useTooltipStore();
-    const theme = useThemeStore((state) => state.theme);
-    const isDragging = useDragMoveStore((state) => !!state.draggedItemId);
+export const Tooltip = ({
+  content,
+  children,
+  position = 'top',
+  delay = 200,
+  className = '',
+  tooltipClasses = '',
+  disabled = false,
+}: TooltipProps): JSX.Element => {
+  const { activeId, setActiveId } = useTooltipStore();
+  const theme = useThemeStore((state) => state.theme);
+  const isDragging = useDragMoveStore((state) => !!state.draggedItemId);
 
-    const [style, setStyle] = useState<TooltipPositionStyle>(INITIAL_TOOLTIP_STYLE);
+  const [style, setStyle] = useState<TooltipPositionStyle>(INITIAL_TOOLTIP_STYLE);
 
-    const timeoutRef = useRef<number | null>(null);
-    const triggerRef = useRef<HTMLDivElement>(null);
-    const tooltipRef = useRef<HTMLDivElement>(null);
-    const tooltipId = useId();
+  const timeoutRef = useRef<number | null>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
+  const tooltipId = useId();
 
-    const isVisible = activeId === tooltipId;
-    const finalDisabled = disabled || isDragging;
+  const isVisible = activeId === tooltipId;
+  const finalDisabled = disabled || isDragging;
 
-    const clearTimer = useCallback((): void => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    }, []);
+  const clearTimer = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
 
-    const handleMouseEnter = useCallback((): void => {
-      if (finalDisabled || !content) {
-        return;
-      }
-      clearTimer();
-      timeoutRef.current = window.setTimeout(() => {
-        setActiveId(tooltipId);
-      }, delay);
-    }, [finalDisabled, content, clearTimer, delay, tooltipId, setActiveId]);
+  const handleMouseEnter = () => {
+    if (finalDisabled || !content) {
+      return;
+    }
+    clearTimer();
+    timeoutRef.current = window.setTimeout(() => {
+      setActiveId(tooltipId);
+    }, delay);
+  };
 
-    const handleMouseLeave = useCallback((): void => {
-      clearTimer();
-      if (activeId === tooltipId) {
+  const handleMouseLeave = () => {
+    clearTimer();
+    if (activeId === tooltipId) {
+      setActiveId(null);
+    }
+  };
+
+  const tooltipArrows = useMemo(() => getTooltipArrowStyles(theme.backdrop), [theme.backdrop]);
+
+  useEffect(() => {
+    return clearTimer;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (useTooltipStore.getState().activeId === tooltipId) {
         setActiveId(null);
       }
-    }, [clearTimer, activeId, tooltipId, setActiveId]);
+    };
+  }, [tooltipId, setActiveId]);
 
-    const tooltipArrows = useMemo(() => getTooltipArrowStyles(theme.backdrop), [theme.backdrop]);
-
-    useEffect(() => {
-      return clearTimer;
-    }, [clearTimer]);
-
-    useEffect(() => {
-      return () => {
-        if (useTooltipStore.getState().activeId === tooltipId) {
-          setActiveId(null);
-        }
-      };
-    }, [tooltipId, setActiveId]);
-
-    useEffect(() => {
-      if (!isVisible) {
-        setStyle(INITIAL_TOOLTIP_STYLE);
-      }
-    }, [isVisible]);
-
-    useLayoutEffect(() => {
-      const calculatePosition = (): void => {
-        if (!isVisible || !triggerRef.current || !tooltipRef.current) {
-          return;
-        }
-
-        const triggerElement = triggerRef.current.firstElementChild || triggerRef.current;
-        const triggerRect = triggerElement.getBoundingClientRect();
-        const tooltipRect = tooltipRef.current.getBoundingClientRect();
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        let newTop = 0;
-        let newLeft = 0;
-        const triggerCenterX = triggerRect.left + triggerRect.width / 2;
-        const triggerCenterY = triggerRect.top + triggerRect.height / 2;
-
-        switch (position) {
-          case 'top':
-            newTop = triggerRect.top - tooltipRect.height - TOOLTIP_GAP_PX;
-            newLeft = triggerCenterX - tooltipRect.width / 2;
-            break;
-          case 'bottom':
-            newTop = triggerRect.bottom + TOOLTIP_GAP_PX;
-            newLeft = triggerCenterX - tooltipRect.width / 2;
-            break;
-          case 'left':
-            newTop = triggerCenterY - tooltipRect.height / 2;
-            newLeft = triggerRect.left - tooltipRect.width - TOOLTIP_GAP_PX;
-            break;
-          case 'right':
-            newTop = triggerCenterY - tooltipRect.height / 2;
-            newLeft = triggerRect.right + TOOLTIP_GAP_PX;
-            break;
-        }
-
-        newLeft = Math.max(TOOLTIP_GAP_PX, Math.min(newLeft, viewportWidth - tooltipRect.width - TOOLTIP_GAP_PX));
-        newTop = Math.max(TOOLTIP_GAP_PX, Math.min(newTop, viewportHeight - tooltipRect.height - TOOLTIP_GAP_PX));
-        const finalLeft = Math.round(newLeft);
-        const finalTop = Math.round(newTop);
-
-        let arrowLeft: number | undefined;
-        let arrowTop: number | undefined;
-
-        switch (position) {
-          case 'top':
-          case 'bottom':
-            arrowLeft = triggerCenterX - finalLeft - ARROW_SIZE_PX;
-            arrowLeft = Math.max(ARROW_SIZE_PX, Math.min(arrowLeft, tooltipRect.width - ARROW_SIZE_PX * 3));
-            break;
-          case 'left':
-          case 'right':
-            arrowTop = triggerCenterY - finalTop - ARROW_SIZE_PX;
-            arrowTop = Math.max(ARROW_SIZE_PX, Math.min(arrowTop, tooltipRect.height - ARROW_SIZE_PX * 3));
-            break;
-        }
-
-        setStyle({
-          top: finalTop,
-          left: finalLeft,
-          arrowLeft: arrowLeft !== undefined ? Math.round(arrowLeft) : undefined,
-          arrowTop: arrowTop !== undefined ? Math.round(arrowTop) : undefined,
-          isPositioned: true,
-        });
-      };
-
-      if (isVisible) {
-        calculatePosition();
-        window.addEventListener('resize', calculatePosition);
-        window.addEventListener('scroll', calculatePosition, true);
-        return () => {
-          window.removeEventListener('resize', calculatePosition);
-          window.removeEventListener('scroll', calculatePosition, true);
-        };
-      }
-    }, [isVisible, position, content]);
-
-    const arrowClass = tooltipArrows[position] || tooltipArrows.top;
-    const visibilityClass = isVisible && style.isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
-    const tooltipClass = cn(
-      'z-[1000] max-w-xs p-2 whitespace-pre-line rounded-md font-medium text-sm shadow-lg transition-opacity duration-150',
-      `bg-${theme.backdrop}`,
-      `text-${theme.accentFg}`,
-      visibilityClass,
-      tooltipClasses,
-    );
-    const triggerClass = cn('relative inline-flex', className);
-
-    const triggerElement = (
-      <div ref={triggerRef} className={triggerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onDragStart={handleMouseLeave}>
-        {children}
-      </div>
-    );
-
-    if (finalDisabled || !content) {
-      return triggerElement;
+  useEffect(() => {
+    if (!isVisible) {
+      setStyle(INITIAL_TOOLTIP_STYLE);
     }
+  }, [isVisible]);
 
-    const tooltipElement = isVisible
-      ? createPortal(
+  useLayoutEffect(() => {
+    const calculatePosition = (): void => {
+      if (!isVisible || !triggerRef.current || !tooltipRef.current) {
+        return;
+      }
+
+      const triggerElement = triggerRef.current.firstElementChild || triggerRef.current;
+      const triggerRect = triggerElement.getBoundingClientRect();
+      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      let newTop = 0;
+      let newLeft = 0;
+      const triggerCenterX = triggerRect.left + triggerRect.width / 2;
+      const triggerCenterY = triggerRect.top + triggerRect.height / 2;
+
+      switch (position) {
+        case 'top':
+          newTop = triggerRect.top - tooltipRect.height - TOOLTIP_GAP_PX;
+          newLeft = triggerCenterX - tooltipRect.width / 2;
+          break;
+        case 'bottom':
+          newTop = triggerRect.bottom + TOOLTIP_GAP_PX;
+          newLeft = triggerCenterX - tooltipRect.width / 2;
+          break;
+        case 'left':
+          newTop = triggerCenterY - tooltipRect.height / 2;
+          newLeft = triggerRect.left - tooltipRect.width - TOOLTIP_GAP_PX;
+          break;
+        case 'right':
+          newTop = triggerCenterY - tooltipRect.height / 2;
+          newLeft = triggerRect.right + TOOLTIP_GAP_PX;
+          break;
+      }
+
+      newLeft = Math.max(TOOLTIP_GAP_PX, Math.min(newLeft, viewportWidth - tooltipRect.width - TOOLTIP_GAP_PX));
+      newTop = Math.max(TOOLTIP_GAP_PX, Math.min(newTop, viewportHeight - tooltipRect.height - TOOLTIP_GAP_PX));
+      const finalLeft = Math.round(newLeft);
+      const finalTop = Math.round(newTop);
+
+      let arrowLeft: number | undefined;
+      let arrowTop: number | undefined;
+
+      switch (position) {
+        case 'top':
+        case 'bottom':
+          arrowLeft = triggerCenterX - finalLeft - ARROW_SIZE_PX;
+          arrowLeft = Math.max(ARROW_SIZE_PX, Math.min(arrowLeft, tooltipRect.width - ARROW_SIZE_PX * 3));
+          break;
+        case 'left':
+        case 'right':
+          arrowTop = triggerCenterY - finalTop - ARROW_SIZE_PX;
+          arrowTop = Math.max(ARROW_SIZE_PX, Math.min(arrowTop, tooltipRect.height - ARROW_SIZE_PX * 3));
+          break;
+      }
+
+      setStyle({
+        top: finalTop,
+        left: finalLeft,
+        arrowLeft: arrowLeft !== undefined ? Math.round(arrowLeft) : undefined,
+        arrowTop: arrowTop !== undefined ? Math.round(arrowTop) : undefined,
+        isPositioned: true,
+      });
+    };
+
+    const onLayoutChange = () => {
+      if (rafRef.current) {
+        return;
+      }
+      rafRef.current = requestAnimationFrame(() => {
+        calculatePosition();
+        rafRef.current = null;
+      });
+    };
+
+    if (isVisible) {
+      calculatePosition();
+      window.addEventListener('resize', onLayoutChange);
+      window.addEventListener('scroll', onLayoutChange, true);
+      return () => {
+        window.removeEventListener('resize', onLayoutChange);
+        window.removeEventListener('scroll', onLayoutChange, true);
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = null;
+        }
+      };
+    }
+  }, [isVisible, position, content]);
+
+  const arrowClass = tooltipArrows[position] || tooltipArrows.top;
+  const visibilityClass = isVisible && style.isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
+  const tooltipClass = cn(
+    'z-[1000] max-w-xs p-2 whitespace-pre-line rounded-md font-medium text-sm shadow-lg transition-opacity duration-150',
+    `bg-${theme.backdrop}`,
+    `text-${theme.accentFg}`,
+    visibilityClass,
+    tooltipClasses,
+  );
+  const triggerClass = cn('relative inline-flex', className);
+
+  const triggerElement = (
+    <div ref={triggerRef} className={triggerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onDragStart={handleMouseLeave}>
+      {children}
+    </div>
+  );
+
+  if (finalDisabled || !content) {
+    return triggerElement;
+  }
+
+  const tooltipElement = isVisible
+    ? createPortal(
+        <div
+          ref={tooltipRef}
+          id={tooltipId}
+          className={tooltipClass}
+          style={{
+            position: 'fixed',
+            top: `${style.top}px`,
+            left: `${style.left}px`,
+          }}
+        >
+          {content}
           <div
-            ref={tooltipRef}
-            id={tooltipId}
-            className={tooltipClass}
+            className={arrowClass}
             style={{
-              position: 'fixed',
-              top: `${style.top}px`,
-              left: `${style.left}px`,
+              borderWidth: `${ARROW_SIZE_PX}px`,
+              top: style.arrowTop !== undefined ? `${style.arrowTop}px` : undefined,
+              left: style.arrowLeft !== undefined ? `${style.arrowLeft}px` : undefined,
             }}
-          >
-            {content}
-            <div
-              className={arrowClass}
-              style={{
-                borderWidth: `${ARROW_SIZE_PX}px`,
-                top: style.arrowTop !== undefined ? `${style.arrowTop}px` : undefined,
-                left: style.arrowLeft !== undefined ? `${style.arrowLeft}px` : undefined,
-              }}
-            />
-          </div>,
-          document.body,
-        )
-      : null;
+          />
+        </div>,
+        document.body,
+      )
+    : null;
 
-    return (
-      <>
-        {triggerElement}
-        {tooltipElement}
-      </>
-    );
-  },
-);
+  return (
+    <>
+      {triggerElement}
+      {tooltipElement}
+    </>
+  );
+};
