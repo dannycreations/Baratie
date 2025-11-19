@@ -89,9 +89,15 @@ export const SettingPanel = memo((): JSX.Element => {
             </TabButton>
           ))}
         </nav>
-        <div className="pt-3">
+        <div className="flex min-h-0 flex-1 flex-col pt-3">
           {SETTING_TABS.map((tab) => (
-            <div key={tab.id} className={cn(activeTab === tab.id ? 'flex h-full flex-col gap-3' : 'hidden')}>
+            <div
+              key={tab.id}
+              className={cn(
+                activeTab === tab.id ? 'flex h-full flex-col gap-3' : 'hidden',
+                tab.id === 'extensions' ? 'overflow-hidden' : 'overflow-y-auto',
+              )}
+            >
               {tab.description && <p className={cn('text-sm', `text-${theme.contentTertiary}`)}>{tab.description(theme)}</p>}
               {tab.component}
             </div>

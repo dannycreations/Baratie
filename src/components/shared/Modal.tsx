@@ -102,7 +102,7 @@ export const Modal = ({
   const contentAnimation = isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active';
   const backdropClass = cn('fixed inset-0 z-[500] flex items-center justify-center p-3 backdrop-blur-sm', `bg-${theme.backdrop}`, backdropAnimation);
   const modalClass = cn(
-    'flex w-full flex-col rounded-lg border',
+    'flex w-full flex-col rounded-lg border overflow-hidden',
     `border-${theme.borderPrimary}`,
     `bg-${theme.surfaceSecondary}`,
     modalSizeClass,
@@ -122,7 +122,7 @@ export const Modal = ({
             <Button icon={<XIcon size={ICON_SIZES.MD} />} size="sm" variant="stealth" onClick={onClose} />
           </div>
         </header>
-        <div className="flex min-h-0 flex-col p-3">{children}</div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-3">{children}</div>
       </div>
     </div>,
     document.body,
