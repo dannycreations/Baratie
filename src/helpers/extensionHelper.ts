@@ -165,26 +165,44 @@ export async function loadAndExecuteExtension(
     } as IngredientRegistry,
   };
 
-  let processedCount = 0;
-  const totalCount = entryPoints.length;
+  const scriptsToFetch = entryPoints.filter((ep) => ep.trim() && !cachedScripts?.[ep]);
+
+  let completedSteps = 0;
+  const totalSteps = scriptsToFetch.length + entryPoints.length;
+
+  const incrementProgress = () => {
+    completedSteps++;
+    onProgress?.(totalSteps > 0 ? completedSteps / totalSteps : 1);
+  };
+
+  if (scriptsToFetch.length > 0) {
+    await Promise.all(
+      scriptsToFetch.map(async (entryPoint) => {
+        try {
+          const response = await fetchProvider(repoInfo, entryPoint);
+          if (!response.ok) {
+            throw new Error(`Fetch failed: ${response.statusText}`);
+          }
+          const content = await response.text();
+          fetchedScripts[entryPoint] = content;
+        } catch (error) {
+          logger.warn(`Failed to fetch script '${entryPoint}':`, error);
+        } finally {
+          incrementProgress();
+        }
+      }),
+    );
+  }
 
   try {
     ingredientRegistry.startBatch();
     for (const entryPoint of entryPoints) {
       if (entryPoint.trim()) {
         try {
-          let scriptContent = cachedScripts?.[entryPoint];
-          if (!scriptContent) {
-            logger.debug(`Cache miss for script: ${entryPoint}`);
-            const response = await fetchProvider(repoInfo, entryPoint);
-            if (!response.ok) {
-              throw new Error(`Fetch failed: ${response.statusText}`);
-            }
+          const scriptContent = cachedScripts?.[entryPoint] || fetchedScripts[entryPoint];
 
-            scriptContent = await response.text();
-            fetchedScripts[entryPoint] = scriptContent;
-          } else {
-            logger.debug(`Cache hit for script: ${entryPoint}`);
+          if (!scriptContent) {
+            throw new Error('Script content not found after fetch.');
           }
 
           executeScript(scriptContent, customBaratieApi);
@@ -194,8 +212,7 @@ export async function loadAndExecuteExtension(
         }
       }
 
-      processedCount++;
-      onProgress?.(processedCount / totalCount);
+      incrementProgress();
     }
   } finally {
     ingredientRegistry.endBatch();

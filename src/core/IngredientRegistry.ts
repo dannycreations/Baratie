@@ -118,15 +118,18 @@ export class IngredientRegistry {
   private ingredients: Map<string, IngredientProps> = new Map();
   private nameToIdMap: Map<string, string> = new Map();
   private categories: ReadonlySet<string> | null = null;
-  private isBatching = false;
+  private batchDepth = 0;
 
   public startBatch(): void {
-    this.isBatching = true;
+    this.batchDepth++;
   }
 
   public endBatch(): void {
-    this.isBatching = false;
-    this.resort();
+    this.batchDepth--;
+    if (this.batchDepth <= 0) {
+      this.batchDepth = 0;
+      this.resort();
+    }
   }
 
   public get(id: string): IngredientProps | undefined {
@@ -169,7 +172,7 @@ export class IngredientRegistry {
     }
 
     this.ingredients.set(id, { ...definition, id } as IngredientProps);
-    if (!this.isBatching) {
+    if (this.batchDepth === 0) {
       this.resort();
     }
     return id;
@@ -183,7 +186,7 @@ export class IngredientRegistry {
         logger.info(`Unregistered ingredient: ${id}`);
       }
     }
-    if (changed && !this.isBatching) {
+    if (changed && this.batchDepth === 0) {
       this.resort();
     }
   }

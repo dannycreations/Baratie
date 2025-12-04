@@ -111,27 +111,40 @@ export function createRoot(element: HTMLElement | null, options: Readonly<Barati
         const { setLoadingMessage } = useTaskStore.getState();
         const extensionsToLoad = Array.isArray(defaultExtensions) ? defaultExtensions : [defaultExtensions];
         const totalExtensions = extensionsToLoad.length;
+        const progressMap = new Array(totalExtensions).fill(0);
 
-        for (let i = 0; i < totalExtensions; i++) {
-          const url = extensionsToLoad[i];
+        const updateProgress = () => {
+          const totalProgress = progressMap.reduce((acc, curr) => acc + curr, 0);
+          const percent = Math.min(100, Math.round((totalProgress / totalExtensions) * 100));
+          setLoadingMessage(`Gathering exotic provisions... ${percent}%`);
+        };
+
+        const loadPromises = extensionsToLoad.map(async (url, index) => {
           const repoInfo = parseGitHubUrl(url);
           if (repoInfo) {
             const repoName = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
             if (extensionMap.has(repoName)) {
-              const percent = Math.round(((i + 1) / totalExtensions) * 100);
-              setLoadingMessage(`Gathering exotic provisions... ${percent}%`);
-              continue;
+              progressMap[index] = 1;
+              updateProgress();
+              return;
             }
 
             await add(url, {
               force: true,
-              onProgress: (itemPercent) => {
-                const totalPercent = Math.round(((i + itemPercent) / totalExtensions) * 100);
-                setLoadingMessage(`Gathering exotic provisions... ${totalPercent}%`);
+              onProgress: (p) => {
+                progressMap[index] = p;
+                updateProgress();
               },
             });
+            progressMap[index] = 1;
+            updateProgress();
+          } else {
+            progressMap[index] = 1;
+            updateProgress();
           }
-        }
+        });
+
+        await Promise.all(loadPromises);
       },
     });
   }

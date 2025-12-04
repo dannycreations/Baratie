@@ -5,7 +5,7 @@ import { Tooltip } from '../Tooltip';
 import type { JSX, ReactNode } from 'react';
 
 interface FormLayoutProps {
-  readonly children: (id: string) => ReactNode;
+  readonly children?: (id: string) => ReactNode;
   readonly inputId: string;
   readonly className?: string;
   readonly description?: ReactNode;
@@ -58,7 +58,7 @@ export const FormLayout = ({
           </label>
         </div>
       ) : null}
-      <div className={finalInputWrapClass}>{children(inputId)}</div>
+      <div className={finalInputWrapClass}>{children?.(inputId)}</div>
     </div>
   );
 };

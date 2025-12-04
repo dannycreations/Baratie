@@ -11,7 +11,7 @@ import { ErrorView } from '../shared/View';
 import type { ErrorInfo, JSX, ReactNode } from 'react';
 
 interface ErrorBoundaryProps {
-  readonly children: ReactNode;
+  readonly children?: ReactNode;
 }
 
 interface ErrorBoundaryState {
@@ -48,25 +48,22 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = {
-      hasError: false,
-      error: null,
-      errorInfo: null,
-    };
-  }
+  public override state: ErrorBoundaryState = {
+    hasError: false,
+    error: null,
+    errorInfo: null,
+  };
 
   public static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return { hasError: true, error };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+  public override componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     logger.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({ errorInfo });
   }
 
-  public render(): ReactNode {
+  public override render(): ReactNode {
     if (this.state.hasError) {
       return <ErrorDisplay error={this.state.error} errorInfo={this.state.errorInfo} />;
     }

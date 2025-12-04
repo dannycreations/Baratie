@@ -9,7 +9,7 @@ export interface FilePickerRenderProps {
 }
 
 interface FilePickerProps {
-  readonly children: (props: FilePickerRenderProps) => ReactNode;
+  readonly children?: (props: FilePickerRenderProps) => ReactNode;
   readonly onFileSelect: (file: File) => void;
   readonly accept?: string;
   readonly inputId?: string;
@@ -37,7 +37,7 @@ export const FilePicker = ({ children, onFileSelect, accept, inputId }: FilePick
 
   return (
     <>
-      {children({ trigger })}
+      {children?.({ trigger })}
       <input ref={inputRef} id={inputId} type="file" className={cn('hidden')} accept={accept} onChange={handleFileChange} />
     </>
   );

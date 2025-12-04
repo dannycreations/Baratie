@@ -12,7 +12,7 @@ import { XIcon } from './Icon';
 import type { JSX, KeyboardEvent, MouseEvent, ReactNode } from 'react';
 
 interface ModalProps {
-  readonly children: ReactNode;
+  readonly children?: ReactNode;
   readonly isOpen: boolean;
   readonly title: string;
   readonly onClose: () => void;
@@ -84,11 +84,9 @@ export const Modal = ({
 
   useEffect(() => {
     if (isOpen) {
-      // @ts-expect-error
-      document.addEventListener('keydown', handleEscapeKey);
+      document.addEventListener('keydown', handleEscapeKey as unknown as EventListener);
       return () => {
-        // @ts-expect-error
-        document.removeEventListener('keydown', handleEscapeKey);
+        document.removeEventListener('keydown', handleEscapeKey as unknown as EventListener);
       };
     }
   }, [isOpen, handleEscapeKey]);

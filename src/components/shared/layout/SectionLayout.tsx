@@ -4,7 +4,7 @@ import { cn } from '../../../utilities/styleUtil';
 import type { JSX, ReactNode, RefObject } from 'react';
 
 interface SectionLayoutProps {
-  readonly children: ReactNode;
+  readonly children?: ReactNode;
   readonly headerLeft: ReactNode;
   readonly contentClasses?: string;
   readonly headerRight?: ReactNode;

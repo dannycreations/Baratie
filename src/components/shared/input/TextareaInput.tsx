@@ -71,13 +71,18 @@ export const TextareaInput = memo<TextareaInputProps>(
       [onChange],
     );
 
-    const handleScroll = useCallback((event: UIEvent<HTMLTextAreaElement>): void => {
-      const newScrollTop = event.currentTarget.scrollTop;
-      if (lineNumbersRef.current) {
-        lineNumbersRef.current.scrollTop = newScrollTop;
-      }
-      setScrollTop(newScrollTop);
-    }, []);
+    const handleScroll = useCallback(
+      (event: UIEvent<HTMLTextAreaElement>): void => {
+        const newScrollTop = event.currentTarget.scrollTop;
+        if (lineNumbersRef.current) {
+          lineNumbersRef.current.scrollTop = newScrollTop;
+        }
+        if (showLineNumbers) {
+          setScrollTop(newScrollTop);
+        }
+      },
+      [showLineNumbers],
+    );
 
     const containerClass = cn(
       'relative flex overflow-hidden rounded-md border',

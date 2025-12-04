@@ -19,6 +19,11 @@ export interface DragMoveHookReturn {
 
 export function useDragMove<T extends { id: string }>({ dragId, setDragId, onDragMove, items }: DragMoveHookProps<T>): DragMoveHookReturn {
   const itemIndexMapRef = useRef(new Map<string, number>());
+  const dragIdRef = useRef(dragId);
+
+  useEffect(() => {
+    dragIdRef.current = dragId;
+  }, [dragId]);
 
   useEffect(() => {
     const newMap = new Map<string, number>();
@@ -52,18 +57,19 @@ export function useDragMove<T extends { id: string }>({ dragId, setDragId, onDra
     (event: DragEvent<HTMLElement>, targetItemId: string): void => {
       event.preventDefault();
 
-      if (!dragId) {
+      const currentDragId = dragIdRef.current;
+      if (!currentDragId) {
         return;
       }
 
       event.dataTransfer.dropEffect = 'move';
 
-      if (dragId === targetItemId) {
+      if (currentDragId === targetItemId) {
         return;
       }
 
       const itemIndexMap = itemIndexMapRef.current;
-      const draggedIndex = itemIndexMap.get(dragId);
+      const draggedIndex = itemIndexMap.get(currentDragId);
       const targetIndex = itemIndexMap.get(targetItemId);
 
       if (draggedIndex === undefined || targetIndex === undefined) {
@@ -82,9 +88,9 @@ export function useDragMove<T extends { id: string }>({ dragId, setDragId, onDra
         return;
       }
 
-      onDragMove(dragId, targetItemId);
+      onDragMove(currentDragId, targetItemId);
     },
-    [dragId, onDragMove],
+    [onDragMove],
   );
 
   const handleDragEnd = useCallback((): void => {

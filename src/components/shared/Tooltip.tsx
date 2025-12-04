@@ -11,7 +11,7 @@ import type { JSX, ReactNode } from 'react';
 type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
 
 export interface TooltipProps {
-  readonly children: ReactNode;
+  readonly children?: ReactNode;
   readonly content: ReactNode;
   readonly className?: string;
   readonly delay?: number;

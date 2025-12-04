@@ -7,7 +7,7 @@ import { cn } from '../../utilities/styleUtil';
 import type { ErrorInfo, JSX, ReactNode } from 'react';
 
 interface EmptyViewProps {
-  readonly children: ReactNode;
+  readonly children?: ReactNode;
   readonly className?: string;
   readonly icon?: ReactNode;
   readonly textClasses?: string;
