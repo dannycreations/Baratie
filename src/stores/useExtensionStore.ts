@@ -216,7 +216,6 @@ export const useExtensionStore = create<ExtensionState>()(
 
       try {
         const manifest = await fetchAndValidateManifest(repoInfo);
-        upsert({ id, manifest });
 
         if (storeExtension?.ingredients) {
           ingredientRegistry.unregister(storeExtension.ingredients);
@@ -228,7 +227,7 @@ export const useExtensionStore = create<ExtensionState>()(
           upsert({ id, name: manifest.name, status: 'awaiting', manifest, scripts: {} });
         } else {
           const entryToUse = isModuleBased && storeExtension?.entry ? storeExtension.entry : manifest.entry;
-          upsert({ id, entry: entryToUse, scripts: {} });
+          upsert({ id, manifest, entry: entryToUse, scripts: {} });
           const currentExtState = get().extensionMap.get(id)!;
 
           await loadAndExecuteExtension(

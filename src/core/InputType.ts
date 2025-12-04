@@ -244,7 +244,7 @@ export class InputType<T = unknown> {
       value?: unknown;
     }>,
   ): InputType<number> {
-    const stringValue = String(this.value ?? '').trim();
+    const stringValue = String(this.value ?? '');
     let numericValue = Number(stringValue);
 
     if (isNaN(numericValue) || !isFinite(numericValue)) {

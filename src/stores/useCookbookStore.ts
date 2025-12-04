@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 import { STORAGE_COOKBOOK } from '../app/constants';
 import { errorHandler, logger, storage } from '../app/container';
-import { computeInitialRecipeName, createRecipeHash, processAndSanitizeRecipes, saveAllRecipes } from '../helpers/cookbookHelper';
+import { computeInitialRecipeName, processAndSanitizeRecipes, saveAllRecipes } from '../helpers/cookbookHelper';
 import { readFile, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
@@ -26,7 +26,6 @@ interface CookbookState {
   readonly query: string;
   readonly recipes: ReadonlyArray<RecipebookItem>;
   readonly recipeIdMap: ReadonlyMap<string, RecipebookItem>;
-  readonly recipeContentHashMap: ReadonlyMap<string, string>;
   readonly delete: (id: string) => void;
   readonly exportAll: () => void;
   readonly exportCurrent: () => void;
@@ -47,7 +46,6 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
   query: '',
   recipes: [],
   recipeIdMap: new Map(),
-  recipeContentHashMap: new Map(),
 
   delete: (id) => {
     const { show } = useNotificationStore.getState();
@@ -226,8 +224,8 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
 
   prepareToOpen: (args) => {
     if (args.mode === 'save') {
-      const { recipeIdMap, recipeContentHashMap } = get();
-      const initialName = args.name ?? computeInitialRecipeName(args.ingredients, args.activeRecipeId, recipeIdMap, recipeContentHashMap);
+      const { recipeIdMap, recipes } = get();
+      const initialName = args.name ?? computeInitialRecipeName(args.ingredients, args.activeRecipeId, recipeIdMap, recipes);
       set({ nameInput: initialName });
     }
   },
@@ -247,14 +245,12 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
   setRecipes: (newRecipes: ReadonlyArray<RecipebookItem>) => {
     const recipes = [...newRecipes].sort((a, b) => b.updatedAt - a.updatedAt);
     const recipeIdMap = new Map<string, RecipebookItem>();
-    const recipeContentHashMap = new Map<string, string>();
 
     for (const recipe of recipes) {
       recipeIdMap.set(recipe.id, recipe);
-      recipeContentHashMap.set(createRecipeHash(recipe.ingredients), recipe.id);
     }
 
-    set({ recipes, recipeIdMap, recipeContentHashMap });
+    set({ recipes, recipeIdMap });
   },
 
   upsert: () => {

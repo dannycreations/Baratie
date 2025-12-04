@@ -69,7 +69,7 @@ export function computeInitialRecipeName(
   ingredients: ReadonlyArray<IngredientItem>,
   activeRecipeId: string | null,
   recipeIdMap: ReadonlyMap<string, RecipebookItem>,
-  recipeContentHashMap: ReadonlyMap<string, string>,
+  recipes: ReadonlyArray<RecipebookItem>,
 ): string {
   if (ingredients.length === 0) {
     return '';
@@ -83,12 +83,10 @@ export function computeInitialRecipeName(
   }
 
   const currentHash = createRecipeHash(ingredients);
-  const existingRecipeIdByContent = recipeContentHashMap.get(currentHash);
-  if (existingRecipeIdByContent) {
-    const existingRecipe = recipeIdMap.get(existingRecipeIdByContent);
-    if (existingRecipe) {
-      return existingRecipe.name;
-    }
+  const existingRecipe = recipes.find((r) => createRecipeHash(r.ingredients) === currentHash);
+
+  if (existingRecipe) {
+    return existingRecipe.name;
   }
 
   const dateString = recipeNameFormatter.format(new Date());

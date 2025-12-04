@@ -55,13 +55,9 @@ export class Kitchen {
       }
     };
 
-    const unsubscribeKitchen = useKitchenStore.subscribe(
-      (state) => ({ inputData: state.inputData, isBatchingUpdates: state.isBatchingUpdates }),
-      handleStateChange,
-      {
-        equalityFn: (a, b) => a.inputData === b.inputData && a.isBatchingUpdates === b.isBatchingUpdates,
-      },
-    );
+    const unsubscribeKitchen = useKitchenStore.subscribe((state) => [state.inputData, state.isBatchingUpdates] as const, handleStateChange, {
+      equalityFn: ([d1, b1], [d2, b2]) => d1 === d2 && b1 === b2,
+    });
 
     const unsubscribeRecipe = useRecipeStore.subscribe(
       (state) => ({ ingredients: state.ingredients, pausedIds: state.pausedIngredientIds }),
