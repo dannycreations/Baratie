@@ -43,6 +43,8 @@ const recipeNameFormatter = new Intl.DateTimeFormat(undefined, {
   day: 'numeric',
 });
 
+const ingredientsHashCache = new WeakMap<ReadonlyArray<IngredientItem>, string>();
+
 function findIngredientDefinition(rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientProps | null {
   if (rawIngredient.ingredientId) {
     const defById = ingredientRegistry.get(rawIngredient.ingredientId);
@@ -94,6 +96,10 @@ export function computeInitialRecipeName(
 }
 
 export function createRecipeHash(ingredients: ReadonlyArray<IngredientItem>): string {
+  if (ingredientsHashCache.has(ingredients)) {
+    return ingredientsHashCache.get(ingredients)!;
+  }
+
   const canonicalParts = ingredients.map((ing) => {
     const definition = ingredientRegistry.get(ing.ingredientId);
 
@@ -111,7 +117,10 @@ export function createRecipeHash(ingredients: ReadonlyArray<IngredientItem>): st
 
     return `${ing.ingredientId}|${spicesString}`;
   });
-  return canonicalParts.join('||');
+
+  const hash = canonicalParts.join('||');
+  ingredientsHashCache.set(ingredients, hash);
+  return hash;
 }
 
 export function saveAllRecipes(recipes: ReadonlyArray<RecipebookItem>): boolean {

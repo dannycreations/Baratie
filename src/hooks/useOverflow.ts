@@ -37,15 +37,24 @@ export function useOverflow<T extends HTMLElement>(): OverflowReturn<T> {
       return;
     }
 
-    const checkOverflow = (): void => {
-      const hasOverflowX = element.scrollWidth > element.clientWidth;
-      const hasOverflowY = element.scrollHeight > element.clientHeight;
+    let rafId: number | null = null;
 
-      setStatus((currentStatus) => {
-        if (currentStatus.hasOverflowX === hasOverflowX && currentStatus.hasOverflowY === hasOverflowY) {
-          return currentStatus;
-        }
-        return { hasOverflowX, hasOverflowY };
+    const checkOverflow = (): void => {
+      if (rafId !== null) {
+        return;
+      }
+
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const hasOverflowX = element.scrollWidth > element.clientWidth;
+        const hasOverflowY = element.scrollHeight > element.clientHeight;
+
+        setStatus((currentStatus) => {
+          if (currentStatus.hasOverflowX === hasOverflowX && currentStatus.hasOverflowY === hasOverflowY) {
+            return currentStatus;
+          }
+          return { hasOverflowX, hasOverflowY };
+        });
       });
     };
 
@@ -63,6 +72,9 @@ export function useOverflow<T extends HTMLElement>(): OverflowReturn<T> {
     });
 
     return () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
       resizeObserver.disconnect();
       mutationObserver.disconnect();
     };
