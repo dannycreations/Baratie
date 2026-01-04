@@ -37,7 +37,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
     "husky": "^9.1.7",
-    "npm-check-updates": "^19.2.0",
+    "npm-check-updates": "^19.2.1",
     "prettier": "^3.7.4",
     "tailwindcss": "^4.1.18",
     "terser": "^5.44.1",
@@ -55,5 +55,5 @@
       "esbuild"
     ]
   },
-  "packageManager": "pnpm@10.26.2"
+  "packageManager": "pnpm@10.27.0"
 }
