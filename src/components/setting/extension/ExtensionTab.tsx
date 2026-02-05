@@ -123,7 +123,7 @@ export const ExtensionTab = memo((): JSX.Element => {
       </div>
 
       <div className="flex flex-1 flex-col min-h-0">
-        <h4 className="mb-3 text-base font-medium text-content-secondary">Installed Extensions</h4>
+        <h4 className="label-base mb-3 !text-base">Installed Extensions</h4>
         <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>
           {listContent}
         </div>

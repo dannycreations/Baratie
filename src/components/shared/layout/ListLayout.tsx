@@ -108,11 +108,7 @@ const CategorySection = memo<CategorySectionProps>((props) => {
   }, [onToggle, category]);
 
   const header = (
-    <button
-      className="list-item-container px-2 outline-none hover:bg-surface-hover text-content-secondary"
-      onClick={handleToggle}
-      disabled={disabled}
-    >
+    <button className="list-item-container outline-none hover:bg-surface-hover text-content-secondary" onClick={handleToggle} disabled={disabled}>
       {renderHeader ? renderHeader(category, items) : <span className="truncate font-medium">{category}</span>}
       <ChevronRightIcon
         className={clsx('transform transition-transform duration-200 ease-in-out', isExpanded ? 'rotate-90' : 'rotate-0')}

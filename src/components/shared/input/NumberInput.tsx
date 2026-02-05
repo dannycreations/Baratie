@@ -129,7 +129,7 @@ export const NumberInput = memo<NumberInputProps>(
     const incrementPressHandlers = useLongPress(handleIncrement, pressHandlersConfig);
     const decrementPressHandlers = useLongPress(handleDecrement, pressHandlersConfig);
 
-    const standardInputStyle = clsx('input-base py-2 pl-2 pr-8 number-input-no-spinner');
+    const standardInputStyle = clsx('input-base input-base-padding pr-8 number-input-no-spinner');
     const containerClass = clsx('input-number-container', className);
     const buttonGroupClass = clsx('input-number-button-group');
     const stepButtonClass = clsx('input-number-button');

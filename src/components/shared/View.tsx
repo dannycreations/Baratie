@@ -28,13 +28,12 @@ function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
 
 export const EmptyView = ({ children, className, textClasses, icon, title }: EmptyViewProps): JSX.Element => {
   const containerClass = clsx('empty-view-container', className);
-  const titleClass = clsx('empty-view-title text-center');
-  const textClass = clsx('empty-view-text text-center', textClasses);
+  const textClass = clsx('empty-view-text', textClasses);
 
   return (
     <div className={containerClass}>
-      {icon && <div className="mb-2 text-content-tertiary">{icon}</div>}
-      {title && <h3 className={titleClass}>{title}</h3>}
+      {icon && <div className="empty-view-icon">{icon}</div>}
+      {title && <h3 className="empty-view-title">{title}</h3>}
       <p className={textClass}>{children}</p>
     </div>
   );

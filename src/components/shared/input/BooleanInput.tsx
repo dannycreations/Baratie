@@ -14,7 +14,7 @@ interface BooleanInputProps {
 
 export const BooleanInput = memo<BooleanInputProps>(
   ({ id, checked, onChange, className = '', disabled = false, offBackgroundColor }): JSX.Element => {
-    const finalOffBgClass = offBackgroundColor || 'bg-surface-tertiary';
+    const finalOffBgClass = offBackgroundColor || 'bg-surface-primary';
 
     const containerClass = clsx('input-boolean-container', className);
 

@@ -122,9 +122,7 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
           />
         </div>
       </div>
-      <p className="missing-item-text">
-        This ingredient could not be found. It may be from a disabled or uninstalled extension.
-      </p>
+      <p className="missing-item-text">This ingredient could not be found. It may be from a disabled or uninstalled extension.</p>
     </li>
   );
 });
@@ -135,11 +133,7 @@ interface InfoMessageProps {
 }
 
 const InfoMessage = memo<InfoMessageProps>(({ type, message }): JSX.Element => {
-  return (
-    <p className="info-message-box">
-      {type === 'spiceInInput' ? 'Options are managed in the Input panel.' : message}
-    </p>
-  );
+  return <p className="info-message-box">{type === 'spiceInInput' ? 'Options are managed in the Input panel.' : message}</p>;
 });
 
 const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition, onSpiceChange, onLongPressStart, onLongPressEnd }): JSX.Element => {
@@ -252,7 +246,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
 
   return (
     <li className={itemClass} onDragOver={handleDragOver}>
-      <div className="flex h-12 w-full shrink-0 cursor-default items-center justify-between p-2">
+      <div className="flex h-12 w-full shrink-0 cursor-default items-center justify-between p-2 list-item-interactive">
         <div className="flex min-w-0 grow items-center">{leftColumn}</div>
         <div className="flex shrink-0 items-center gap-1">{rightColumn}</div>
       </div>

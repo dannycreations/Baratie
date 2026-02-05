@@ -166,7 +166,7 @@ export const RecipePanel = memo((): JSX.Element => {
         return <DropZoneLayout mode="overlay" text="Drop to add ingredient" variant="add" />;
       }
       return (
-        <EmptyView className="flex h-full flex-col items-center justify-center p-3">
+        <EmptyView className="h-full">
           No ingredients have been added.
           <br />
           Select from the Ingredients panel or drag them here.

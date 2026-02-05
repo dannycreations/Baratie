@@ -35,7 +35,7 @@ export const GeneralTab = memo((): JSX.Element => {
   return (
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <div className="rounded-md border border-border-primary bg-surface-tertiary p-3">
+        <div className="list-item-container h-auto border border-border-primary p-3">
           <FormLayout
             inputId="allow-multiple-open"
             label="Multi-Expand Accordions"
@@ -47,7 +47,7 @@ export const GeneralTab = memo((): JSX.Element => {
             {(id) => <BooleanInput id={id} checked={allowMultipleOpen} offBackgroundColor="bg-border-primary" onChange={handleToggleMultipleOpen} />}
           </FormLayout>
         </div>
-        <div className="rounded-md border border-border-primary bg-surface-tertiary p-3">
+        <div className="list-item-container h-auto border border-border-primary p-3">
           <FormLayout
             inputId="persist-recipe"
             label="Persist Current Recipe"

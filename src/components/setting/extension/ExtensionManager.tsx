@@ -173,7 +173,7 @@ export const ExtensionManager = memo((): JSX.Element | null => {
       return (
         <div className="flex min-w-0 items-center gap-2">
           <BooleanInput id={`${categoryId}-toggle`} checked={areAllSelected} disabled={isLoading} onChange={() => handleToggleCategory(items)} />
-          <span className="cursor-pointer truncate font-medium text-content-secondary">{category}</span>
+          <span className="cursor-pointer truncate font-medium text-content-secondary list-item-interactive">{category}</span>
         </div>
       );
     },

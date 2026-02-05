@@ -47,7 +47,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
 
     return (
       <EmptyView
-        className="flex h-full w-full flex-col items-center justify-center p-3"
+        className="h-full w-full"
         icon={totalRecipes === 0 ? <SaveIcon size={48} /> : undefined}
         title={totalRecipes > 0 ? 'No Matches Found' : 'Cookbook is Empty'}
       >

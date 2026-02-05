@@ -20,7 +20,7 @@ export const SectionLayout = ({
   contentRef,
 }: SectionLayoutProps): JSX.Element => {
   const panelClass = clsx('panel-container', className);
-  const headerClass = clsx('panel-header', 'px-2');
+  const headerClass = clsx('panel-header');
   const contentClass = clsx('panel-content', contentClasses);
 
   return (

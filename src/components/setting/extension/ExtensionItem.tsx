@@ -99,7 +99,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
   );
 
   return (
-    <li className="flex h-16 w-full list-none items-center justify-between rounded-md bg-surface-tertiary p-2 text-sm transition-colors duration-150 hover:bg-surface-muted">
+    <li className="list-item-container h-16 transition-colors duration-150 hover:bg-surface-muted">
       <div className="min-w-0 grow mr-2">{leftContent}</div>
       <div className="flex shrink-0 items-center">{rightContent}</div>
     </li>

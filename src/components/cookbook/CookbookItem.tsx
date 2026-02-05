@@ -38,7 +38,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete,
   const formattedTimestamp = useMemo(() => timestampFormatter.format(recipe.updatedAt), [recipe.updatedAt]);
 
   return (
-    <li className="flex h-16 w-full list-none items-center justify-between rounded-md bg-surface-tertiary p-2 transition-colors duration-150 hover:bg-surface-hover">
+    <li className="list-item-container h-16 transition-colors duration-150 hover:bg-surface-hover">
       <div className="mr-2 grow min-w-0">
         <h3 className="block cursor-default truncate text-sm font-medium text-content-primary outline-none">
           <HighlightText text={recipe.name} highlight={query} />

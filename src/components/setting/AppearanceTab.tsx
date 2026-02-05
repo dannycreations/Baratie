@@ -39,10 +39,8 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
   const liClass = clsx('list-none rounded-md cursor-pointer outline-none');
 
   const itemLayoutClass = clsx(
-    'flex w-full items-center justify-between h-16 p-2 border-2 rounded-md transition-colors duration-150',
-    isChecked
-      ? 'border-info-border bg-surface-muted'
-      : 'border-border-primary bg-surface-secondary hover:border-border-secondary hover:bg-surface-muted',
+    'list-item-container flex w-full items-center justify-between h-16 p-2 border-2 rounded-md transition-colors duration-150',
+    isChecked ? 'border-info-border bg-surface-muted' : 'border-border-primary hover:border-border-secondary hover:bg-surface-muted',
   );
 
   const leftContent = (

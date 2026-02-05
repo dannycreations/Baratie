@@ -33,7 +33,7 @@ export const LoadingScreen = (): JSX.Element | null => {
 
   return (
     <div className={containerClass}>
-      <div className="flex-col-center p-3 text-center">
+      <div className="flex-col-center p-3">
         {isError ? (
           <AlertTriangleIcon className="text-danger-fg" size={ICON_SIZES.XXL} />
         ) : (

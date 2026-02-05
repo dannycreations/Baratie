@@ -54,7 +54,7 @@ const Baratie = (): JSX.Element => {
   }, [isAppReady]);
 
   const mainContentClass = clsx('main-content-wrapper', isAppReady ? 'opacity-100' : 'opacity-0');
-  const rootLayoutClass = clsx('main-layout-root overflow-y-auto', scrollClasses);
+  const rootLayoutClass = clsx('main-layout-root', scrollClasses);
 
   return (
     <>

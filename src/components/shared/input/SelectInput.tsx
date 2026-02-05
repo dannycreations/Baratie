@@ -36,7 +36,7 @@ export const SelectInput = memo(
     );
 
     const finalWrapperClass = clsx('relative', className);
-    const selectInputStyle = clsx('input-base', 'input-base-padding', 'appearance-none pr-8 cursor-pointer');
+    const selectInputStyle = clsx('input-base input-base-padding appearance-none pr-8 cursor-pointer');
 
     return (
       <div className={finalWrapperClass}>
