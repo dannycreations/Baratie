@@ -25,10 +25,7 @@ export const StringInput = memo<StringInputProps>(
     const hasClearButton = showClearButton && value && !disabled;
     const finalWrapperClass = clsx('relative', className);
 
-    const baseInputStyle =
-      'w-full rounded-md border border-border-primary bg-surface-tertiary text-content-primary placeholder:text-content-tertiary outline-none disabled:opacity-50';
-    const paddingClass = `py-2 pl-2 ${hasClearButton ? 'pr-8' : 'pr-2'}`;
-    const finalInputClass = clsx(baseInputStyle, paddingClass);
+    const finalInputClass = clsx('input-base', 'py-2 pl-2', hasClearButton ? 'pr-8' : 'pr-2');
 
     const handleClear = useCallback((): void => {
       onClear?.();

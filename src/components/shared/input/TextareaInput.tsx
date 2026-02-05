@@ -86,10 +86,11 @@ export const TextareaInput = memo<TextareaInputProps>(
       disabled && 'opacity-50',
       wrapperClasses,
     );
-    const gutterClass =
-      'shrink-0 p-2 overflow-hidden select-none text-right border-r text-content-tertiary bg-surface-secondary border-border-primary';
+    const gutterClass = clsx(
+      'shrink-0 p-2 overflow-hidden select-none text-right border-r text-content-tertiary bg-surface-secondary border-border-primary',
+    );
     const commonStyles =
-      'h-full w-full resize-none p-2 font-mono text-content-primary outline-none allow-text-selection placeholder:text-content-tertiary';
+      'h-full w-full resize-none p-2 font-mono text-content-primary outline-none allow-text-selection placeholder:text-content-tertiary transition-all duration-150 ease-in-out';
     const textareaClass = clsx(commonStyles, 'bg-transparent', textareaClasses);
 
     return (

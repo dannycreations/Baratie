@@ -1,6 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-
-import type { RefObject } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 
 interface OverflowStatus {
   readonly hasOverflowX: boolean;
@@ -8,7 +6,7 @@ interface OverflowStatus {
 }
 
 interface OverflowReturn<T extends HTMLElement> {
-  readonly ref: RefObject<T | null>;
+  readonly ref: (element: T | null) => void;
   readonly className: string;
 }
 
@@ -28,12 +26,16 @@ function isTouchDevice(): boolean {
 const isMobile = isTouchDevice();
 
 export function useOverflow<T extends HTMLElement>(): OverflowReturn<T> {
-  const ref = useRef<T>(null);
+  const [element, setElement] = useState<T | null>(null);
   const [status, setStatus] = useState<OverflowStatus>(INITIAL_STATUS);
 
+  const ref = useCallback((node: T | null) => {
+    setElement(node);
+  }, []);
+
   useLayoutEffect(() => {
-    const element = ref.current;
     if (!element) {
+      setStatus(INITIAL_STATUS);
       return;
     }
 
@@ -78,7 +80,7 @@ export function useOverflow<T extends HTMLElement>(): OverflowReturn<T> {
       resizeObserver.disconnect();
       mutationObserver.disconnect();
     };
-  }, [ref]);
+  }, [element]);
 
   const className = useMemo(() => {
     if (isMobile) {

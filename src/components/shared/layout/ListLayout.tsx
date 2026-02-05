@@ -68,7 +68,7 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
 
   return (
     <li data-item-id={item.id} draggable={isDraggable} onDragStart={handleDragStart}>
-      <div className="flex h-12 w-full items-center justify-between rounded-md p-2 transition-colors duration-150 bg-surface-tertiary hover:bg-surface-muted group">
+      <div className="list-item-container group">
         <div className="flex min-w-0 grow items-center gap-2">
           {renderItemPrefix?.(item)}
           <Tooltip
@@ -109,7 +109,7 @@ const CategorySection = memo<CategorySectionProps>((props) => {
 
   const header = (
     <button
-      className="flex h-12 w-full items-center justify-between p-2 outline-none transition-colors duration-150 bg-surface-tertiary hover:bg-surface-hover text-content-secondary disabled:cursor-not-allowed disabled:opacity-50"
+      className="list-item-container px-2 outline-none hover:bg-surface-hover text-content-secondary"
       onClick={handleToggle}
       disabled={disabled}
     >

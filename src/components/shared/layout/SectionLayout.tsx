@@ -1,13 +1,13 @@
 import { clsx } from 'clsx';
 
-import type { JSX, ReactNode, RefObject } from 'react';
+import type { JSX, ReactNode } from 'react';
 
 interface SectionLayoutProps {
   readonly children?: ReactNode;
   readonly headerLeft: ReactNode;
   readonly contentClasses?: string;
   readonly headerRight?: ReactNode;
-  readonly contentRef?: RefObject<HTMLDivElement | null>;
+  readonly contentRef?: ((element: HTMLDivElement | null) => void) | { readonly current: HTMLDivElement | null };
   readonly className?: string;
 }
 
@@ -19,12 +19,9 @@ export const SectionLayout = ({
   contentClasses = '',
   contentRef,
 }: SectionLayoutProps): JSX.Element => {
-  const panelClass = clsx('flex flex-col overflow-hidden rounded-lg bg-surface-secondary', className);
-  const headerClass = clsx(
-    'flex h-12 shrink-0 items-center justify-between border-b p-2',
-    'text-content-primary border-border-primary bg-surface-tertiary',
-  );
-  const contentClass = clsx('grow overflow-auto p-3', contentClasses);
+  const panelClass = clsx('panel-container', className);
+  const headerClass = clsx('panel-header', 'px-2');
+  const contentClass = clsx('panel-content', contentClasses);
 
   return (
     <section className={panelClass}>

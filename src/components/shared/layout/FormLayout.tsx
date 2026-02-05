@@ -32,7 +32,7 @@ export const FormLayout = ({
   const containerClass = clsx(isRow ? 'flex items-center justify-start gap-2' : 'flex flex-col gap-2', className);
   const finalLabelWrapClass = clsx(isRow ? 'min-w-0' : '', labelWrapperClasses);
   const finalInputWrapClass = clsx(isRow ? 'flex h-8 shrink-0 items-center' : 'w-full', inputWrapperClasses);
-  const finalLabelClass = clsx('font-medium text-sm text-content-secondary', labelClasses);
+  const finalLabelClass = clsx('label-base', labelClasses);
 
   const labelText = <span className="block truncate">{label}</span>;
 

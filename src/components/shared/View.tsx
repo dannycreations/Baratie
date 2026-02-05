@@ -50,7 +50,7 @@ export const ErrorView = memo<ErrorViewProps>(({ error, errorInfo }): JSX.Elemen
     return null;
   }
 
-  const detailsClass = 'max-h-48 mt-3 p-2 overflow-y-auto rounded-md text-left text-xs bg-surface-tertiary';
+  const detailsClass = 'max-h-48 mt-3 p-2 overflow-y-auto rounded-md text-left text-xs bg-surface-tertiary transition-all duration-300';
   const summaryClass = 'font-medium cursor-pointer text-content-tertiary hover:text-content-primary';
   const preClass = 'mt-2 whitespace-pre-wrap allow-text-selection text-content-secondary';
 

@@ -268,6 +268,38 @@
 }
 
 @layer components {
+  /* Layout & Panels */
+  .panel-container {
+    @apply flex w-full flex-col overflow-hidden rounded-lg bg-surface-secondary transition-all duration-300;
+  }
+
+  .panel-header {
+    @apply flex h-12 shrink-0 items-center justify-between border-b border-border-primary bg-surface-tertiary px-2 text-content-primary;
+  }
+
+  .panel-content {
+    @apply grow overflow-auto p-3;
+  }
+
+  /* Form & Inputs */
+  .input-base {
+    @apply w-full rounded-md border border-border-primary bg-surface-tertiary text-content-primary placeholder:text-content-tertiary outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .input-base-padding {
+    @apply py-2 px-2;
+  }
+
+  .label-base {
+    @apply font-medium text-sm text-content-secondary;
+  }
+
+  /* Lists & Items */
+  .list-item-container {
+    @apply flex h-12 w-full items-center justify-between rounded-md p-2 transition-colors duration-150 bg-surface-tertiary hover:bg-surface-muted;
+  }
+
+  /* Scrollbar Utilities */
   .scrollbar-hidden {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -288,6 +320,7 @@
     }
   }
 
+  /* Animation Hooks */
   .notification-enter-active {
     animation: var(--animate-slide-in-up);
   }
@@ -328,12 +361,9 @@
   }
 
   .accordion-grid {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
+    @apply grid grid-rows-[0fr] overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out;
     &.expanded {
-      grid-template-rows: 1fr;
+      @apply grid-rows-[1fr];
     }
   }
 

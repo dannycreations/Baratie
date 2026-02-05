@@ -96,20 +96,15 @@ export const Modal = ({
   const backdropAnimation = isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active';
   const contentAnimation = isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active';
   const backdropClass = clsx('fixed inset-0 z-[500] flex items-center justify-center p-3 backdrop-blur-sm bg-backdrop', backdropAnimation);
-  const modalClass = clsx(
-    'flex w-full flex-col rounded-lg border border-border-primary bg-surface-secondary overflow-hidden',
-    modalSizeClass,
-    contentClasses,
-    contentAnimation,
-  );
+  const modalClass = clsx('panel-container border border-border-primary', modalSizeClass, contentClasses, contentAnimation);
 
   errorHandler.assert(document.body, 'document.body is not available for Modal portal.', 'Modal Creation');
 
   return createPortal(
     <div ref={backdropRef} className={backdropClass} onClick={handleBackdropClick}>
       <div ref={modalContentRef} className={modalClass}>
-        <header className="flex h-12 shrink-0 items-center justify-between border-b border-border-primary px-2">
-          <h2 className="grow truncate pr-2 font-semibold text-xl text-content-primary">{title}</h2>
+        <header className="panel-header">
+          <h2 className="grow truncate pr-2 font-semibold text-xl">{title}</h2>
           <div className="flex shrink-0 items-center gap-2">
             {headerActions && <div className="flex shrink-0 items-center gap-1">{headerActions}</div>}
             <Button icon={<XIcon size={ICON_SIZES.MD} />} size="sm" variant="stealth" onClick={onClose} />
