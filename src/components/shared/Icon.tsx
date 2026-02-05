@@ -1,7 +1,7 @@
+import { clsx } from 'clsx';
 import { memo } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
-import { cn } from '../../utilities/styleUtil';
 
 import type { JSX, ReactNode } from 'react';
 
@@ -46,7 +46,7 @@ export function createIcon<P extends IconProps = IconProps>({ iconName, defaultP
       <svg
         width={size}
         height={size}
-        className={cn('flex-shrink-0', `icon-${iconName}`, className)}
+        className={clsx('flex-shrink-0', `icon-${iconName}`, className)}
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
         {...finalProps}

@@ -1,5 +1,6 @@
+import { clsx } from 'clsx';
+
 import { useThemeStore } from '../../../stores/useThemeStore';
-import { cn } from '../../../utilities/styleUtil';
 
 import type { JSX, ReactNode, RefObject } from 'react';
 
@@ -22,14 +23,14 @@ export const SectionLayout = ({
 }: SectionLayoutProps): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
 
-  const panelClass = cn('flex flex-col overflow-hidden rounded-lg', `bg-${theme.surfaceSecondary}`, className);
-  const headerClass = cn(
+  const panelClass = clsx('flex flex-col overflow-hidden rounded-lg', `bg-${theme.surfaceSecondary}`, className);
+  const headerClass = clsx(
     'flex h-12 shrink-0 items-center justify-between p-2 border-b',
     `text-${theme.contentPrimary}`,
     `border-${theme.borderPrimary}`,
     `bg-${theme.surfaceTertiary}`,
   );
-  const contentClass = cn('grow p-3 overflow-auto', contentClasses);
+  const contentClass = clsx('grow p-3 overflow-auto', contentClasses);
 
   return (
     <section className={panelClass}>

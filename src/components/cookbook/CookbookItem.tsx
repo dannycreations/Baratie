@@ -1,8 +1,8 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useMemo } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { cn } from '../../utilities/styleUtil';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
 import { HighlightText } from '../shared/HighlightText';
 import { UploadCloudIcon } from '../shared/Icon';
@@ -43,17 +43,17 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete,
 
   return (
     <li
-      className={cn(
+      className={clsx(
         'list-none flex w-full items-center justify-between h-16 p-2 rounded-md transition-colors duration-150',
         `bg-${theme.surfaceTertiary}`,
         `hover:bg-${theme.surfaceHover}`,
       )}
     >
       <div className="grow min-w-0 mr-2">
-        <h3 className={cn('block truncate font-medium text-sm cursor-default outline-none', `text-${theme.contentPrimary}`)}>
+        <h3 className={clsx('block truncate font-medium text-sm cursor-default outline-none', `text-${theme.contentPrimary}`)}>
           <HighlightText text={recipe.name} highlight={query} />
         </h3>
-        <p className={cn('text-xs', `text-${theme.contentTertiary}`)}>
+        <p className={clsx('text-xs', `text-${theme.contentTertiary}`)}>
           Last Updated: {formattedTimestamp} ({recipe.ingredients.length} steps)
         </p>
       </div>

@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useEffect, useId, useMemo, useRef } from 'react';
 
 import { DATA_TYPE_INGREDIENT, DATA_TYPE_RECIPE_ITEM, ICON_SIZES } from '../../app/constants';
@@ -11,7 +12,6 @@ import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { cn } from '../../utilities/styleUtil';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
 import { FolderOpenIcon, PauseIcon, PlayIcon, SaveIcon } from '../shared/Icon';
 import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
@@ -191,18 +191,18 @@ export const RecipePanel = memo((): JSX.Element => {
     );
   }, [ingredients, isDraggingIngredient, recipeItemHandlers]);
 
-  const listClass = cn('grow transition-colors duration-200', isDraggingIngredient && `bg-${theme.surfaceMuted}`);
+  const listClass = clsx('grow transition-colors duration-200', isDraggingIngredient && `bg-${theme.surfaceMuted}`);
 
   return (
     <SectionLayout
       headerLeft="Recipe"
       headerRight={headerActions}
       className="h-[50vh] min-h-0 md:h-auto md:flex-1"
-      contentClasses={cn('relative flex h-full flex-col', `text-${theme.contentTertiary}`, scrollClasses)}
+      contentClasses={clsx('relative flex h-full flex-col', `text-${theme.contentTertiary}`, scrollClasses)}
       contentRef={scrollRef}
     >
       <div className="flex h-full flex-col" {...dropZoneProps}>
-        <div id={listId} className={cn('grow overflow-y-auto', listClass, scrollClasses)}>
+        <div id={listId} className={clsx('grow overflow-y-auto', listClass, scrollClasses)}>
           {content}
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -5,7 +6,6 @@ import { ICON_SIZES, MODAL_SHOW_MS } from '../../app/constants';
 import { errorHandler } from '../../app/container';
 import { ModalSize } from '../../app/types';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { cn } from '../../utilities/styleUtil';
 import { Button } from './Button';
 import { XIcon } from './Icon';
 
@@ -98,8 +98,12 @@ export const Modal = ({
   const modalSizeClass = MODAL_SIZE_MAP[size] || MODAL_SIZE_MAP.lg;
   const backdropAnimation = isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active';
   const contentAnimation = isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active';
-  const backdropClass = cn('fixed inset-0 z-[500] flex items-center justify-center p-3 backdrop-blur-sm', `bg-${theme.backdrop}`, backdropAnimation);
-  const modalClass = cn(
+  const backdropClass = clsx(
+    'fixed inset-0 z-[500] flex items-center justify-center p-3 backdrop-blur-sm',
+    `bg-${theme.backdrop}`,
+    backdropAnimation,
+  );
+  const modalClass = clsx(
     'flex w-full flex-col rounded-lg border overflow-hidden',
     `border-${theme.borderPrimary}`,
     `bg-${theme.surfaceSecondary}`,
@@ -113,8 +117,8 @@ export const Modal = ({
   return createPortal(
     <div ref={backdropRef} className={backdropClass} onClick={handleBackdropClick}>
       <div ref={modalContentRef} className={modalClass}>
-        <header className={cn('flex h-12 shrink-0 items-center justify-between border-b px-2', `border-${theme.borderPrimary}`)}>
-          <h2 className={cn('grow truncate pr-2 font-semibold text-xl', `text-${theme.contentPrimary}`)}>{title}</h2>
+        <header className={clsx('flex h-12 shrink-0 items-center justify-between border-b px-2', `border-${theme.borderPrimary}`)}>
+          <h2 className={clsx('grow truncate pr-2 font-semibold text-xl', `text-${theme.contentPrimary}`)}>{title}</h2>
           <div className="flex shrink-0 items-center gap-2">
             {headerActions && <div className="flex shrink-0 items-center gap-1">{headerActions}</div>}
             <Button icon={<XIcon size={ICON_SIZES.MD} />} size="sm" variant="stealth" onClick={onClose} />

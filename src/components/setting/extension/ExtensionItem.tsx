@@ -1,9 +1,9 @@
+import { clsx } from 'clsx';
 import { memo, useCallback } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 import { useCopyAction } from '../../../hooks/useCopyAction';
 import { useThemeStore } from '../../../stores/useThemeStore';
-import { cn } from '../../../utilities/styleUtil';
 import { ConfirmButton, TooltipButton } from '../../shared/Button';
 import { AlertTriangleIcon, CheckIcon, Loader2Icon, RefreshCwIcon } from '../../shared/Icon';
 import { Tooltip } from '../../shared/Tooltip';
@@ -38,7 +38,7 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
 
   const current = statusMap[status] || statusMap.error;
   const content = (
-    <div className={cn('flex items-center gap-2 font-medium text-xs', `text-${current.color}`)}>
+    <div className={clsx('flex items-center gap-2 font-medium text-xs', `text-${current.color}`)}>
       {current.icon}
       <span>{current.text}</span>
     </div>
@@ -75,10 +75,10 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
 
   const leftContent = (
     <div className="flex flex-col">
-      <h3 className={cn('font-medium cursor-default', `text-${theme.contentPrimary}`)}>{displayName}</h3>
+      <h3 className={clsx('font-medium cursor-default', `text-${theme.contentPrimary}`)}>{displayName}</h3>
       <Tooltip content={isCopied ? 'Copied URL!' : 'Click to copy URL'} position="top">
         <button
-          className={cn(
+          className={clsx(
             'rounded-sm text-left text-xs cursor-pointer transition-colors duration-150',
             `text-${theme.contentTertiary}`,
             `hover:bg-${theme.surfaceMuted}`,
@@ -109,7 +109,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
 
   return (
     <li
-      className={cn(
+      className={clsx(
         'list-none flex w-full items-center justify-between h-16 p-2 text-sm rounded-md transition-colors duration-150',
         `bg-${theme.surfaceTertiary}`,
         `hover:bg-${theme.surfaceMuted}`,

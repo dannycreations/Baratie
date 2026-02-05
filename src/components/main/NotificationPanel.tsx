@@ -1,10 +1,10 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ICON_SIZES, NOTIFICATION_EXIT_MS, NOTIFICATION_SHOW_MS } from '../../app/constants';
 import { useControlTimer } from '../../hooks/useControlTimer';
 import { useNotificationStore } from '../../stores/useNotificationStore';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { cn } from '../../utilities/styleUtil';
 import { Button } from '../shared/Button';
 import { AlertTriangleIcon, CheckIcon, InfoIcon, XIcon } from '../shared/Icon';
 
@@ -86,7 +86,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
   const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
 
-  const containerClass = cn(
+  const containerClass = clsx(
     'relative w-full overflow-hidden rounded-lg border-l-4 shadow-lg',
     `border-${borderColor}`,
     `bg-${theme.surfaceSecondary}`,
@@ -94,14 +94,14 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
     isPaused && 'notification-paused',
   );
 
-  const messageClass = cn('allow-text-selection text-sm', `text-${theme.contentSecondary}`, notification.title && 'mt-1');
+  const messageClass = clsx('allow-text-selection text-sm', `text-${theme.contentSecondary}`, notification.title && 'mt-1');
 
   return (
     <li className={containerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="flex items-start gap-2 p-3">
         <div className="flex-shrink-0">{renderedIcon}</div>
         <div className="flex-1">
-          {notification.title && <h3 className={cn('font-semibold text-sm', `text-${theme.contentPrimary}`)}>{notification.title}</h3>}
+          {notification.title && <h3 className={clsx('font-semibold text-sm', `text-${theme.contentPrimary}`)}>{notification.title}</h3>}
           <p className={messageClass}>{notification.message}</p>
         </div>
         <div className="flex-shrink-0">
@@ -109,10 +109,10 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
         </div>
       </div>
       {!isExiting && (
-        <div className={cn('absolute inset-x-0 bottom-0 h-1', `bg-${theme.surfaceTertiary}`)}>
+        <div className={clsx('absolute inset-x-0 bottom-0 h-1', `bg-${theme.surfaceTertiary}`)}>
           <div
             key={`${notification.id}-${notification.resetAt ?? 0}`}
-            className={cn('h-full progress-bar-fill', `bg-${barColor}`)}
+            className={clsx('h-full progress-bar-fill', `bg-${barColor}`)}
             style={{
               animationDuration: `${duration}ms`,
             }}

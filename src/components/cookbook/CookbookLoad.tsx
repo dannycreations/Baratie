@@ -1,8 +1,8 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useId, useMemo } from 'react';
 
 import { useOverflow } from '../../hooks/useOverflow';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { cn } from '../../utilities/styleUtil';
 import { SaveIcon } from '../shared/Icon';
 import { StringInput } from '../shared/input/StringInput';
 import { EmptyView } from '../shared/View';
@@ -60,7 +60,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
 
   return (
     <div className="flex h-full flex-col gap-2 min-h-0">
-      <div className={cn('pb-2 border-b', `border-${theme.borderPrimary}`)}>
+      <div className={clsx('pb-2 border-b', `border-${theme.borderPrimary}`)}>
         <StringInput
           id="recipe-search"
           inputRef={searchRef}
@@ -72,7 +72,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
           onClear={handleClear}
         />
       </div>
-      <div id={listId} ref={scrollRef} className={cn('grow overflow-y-auto', scrollClasses)}>
+      <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>
         {listContent}
       </div>
     </div>

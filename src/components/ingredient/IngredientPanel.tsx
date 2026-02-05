@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useDeferredValue, useId, useMemo, useState } from 'react';
 
 import { CATEGORY_FAVORITES, DATA_TYPE_INGREDIENT, DATA_TYPE_RECIPE_ITEM, ICON_SIZES } from '../../app/constants';
@@ -11,7 +12,6 @@ import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { cn } from '../../utilities/styleUtil';
 import { TooltipButton } from '../shared/Button';
 import { PlusIcon, PreferencesIcon, SettingsIcon, StarIcon } from '../shared/Icon';
 import { StringInput } from '../shared/input/StringInput';
@@ -155,7 +155,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   const renderItemActions = useCallback(
     (item: GroupListItem): JSX.Element => {
       const isFavorite = favorites.has(item.id);
-      const starClasses = cn(
+      const starClasses = clsx(
         'opacity-70 group-hover:opacity-100',
         isFavorite ? `text-${theme.favoriteFg} hover:text-${theme.favoriteFgHover}` : `text-${theme.contentTertiary} hover:text-${theme.favoriteFg}`,
       );
@@ -207,7 +207,7 @@ export const IngredientPanel = memo((): JSX.Element => {
               onClear={handleClearQuery}
             />
           </div>
-          <div id={listId} ref={scrollRef} className={cn('grow overflow-y-auto', scrollClasses)}>
+          <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>
             <GroupListLayout
               query={query}
               itemsByCategory={filteredIngredients}

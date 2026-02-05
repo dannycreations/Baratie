@@ -1,8 +1,8 @@
+import { clsx } from 'clsx';
 import { memo } from 'react';
 
 import { DropZoneMode, DropZoneVariant } from '../../../app/types';
 import { useThemeStore } from '../../../stores/useThemeStore';
-import { cn } from '../../../utilities/styleUtil';
 
 import type { JSX } from 'react';
 
@@ -26,7 +26,7 @@ export const DropZoneLayout = memo<DropZoneProps>(({ text, variant = 'add', mode
     remove: `border-${theme.dangerBorder} bg-${theme.dangerBg} text-${theme.dangerFg}`,
   };
 
-  const combinedClass = cn(
+  const combinedClass = clsx(
     'flex items-center justify-center rounded-lg border-2 border-dashed text-center font-semibold transition-colors duration-200',
     dropZoneThemeMap[variant],
     DROPZONE_MODE_MAP[mode],

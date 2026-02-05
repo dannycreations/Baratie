@@ -1,8 +1,8 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useMemo } from 'react';
 
 import { getVisibleSpices } from '../../../helpers/spiceHelper';
 import { useThemeStore } from '../../../stores/useThemeStore';
-import { cn } from '../../../utilities/styleUtil';
 import { BooleanInput } from '../input/BooleanInput';
 import { NumberInput } from '../input/NumberInput';
 import { SelectInput } from '../input/SelectInput';
@@ -135,11 +135,11 @@ export const SpiceLayout = memo<SpiceLayoutProps>(
     }, [ingredient, currentSpices]);
 
     if (!ingredient.spices || ingredient.spices.length === 0) {
-      return <p className={cn('text-sm italic', `text-${theme.contentTertiary}`)}>This ingredient has no configurable options.</p>;
+      return <p className={clsx('text-sm italic', `text-${theme.contentTertiary}`)}>This ingredient has no configurable options.</p>;
     }
 
     if (visibleSpices.length === 0) {
-      return <p className={cn('text-sm italic', `text-${theme.contentTertiary}`)}>No options are available. Adjust other values to see more.</p>;
+      return <p className={clsx('text-sm italic', `text-${theme.contentTertiary}`)}>No options are available. Adjust other values to see more.</p>;
     }
 
     return (

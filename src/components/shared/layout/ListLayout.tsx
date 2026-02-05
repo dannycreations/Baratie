@@ -1,8 +1,8 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useState } from 'react';
 
 import { useSettingStore } from '../../../stores/useSettingStore';
 import { useThemeStore } from '../../../stores/useThemeStore';
-import { cn } from '../../../utilities/styleUtil';
 import { HighlightText } from '../HighlightText';
 import { ChevronRightIcon } from '../Icon';
 import { Tooltip } from '../Tooltip';
@@ -52,7 +52,7 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
   const isDisabled = isItemDisabled?.(item) ?? false;
   const isDraggable = !isDisabled && !!onItemDragStart;
 
-  const nameClass = cn(
+  const nameClass = clsx(
     'block truncate pr-2 text-sm transition-colors duration-150 cursor-default outline-none',
     `group-hover:text-${theme.infoFg}`,
     `text-${theme.contentSecondary}`,
@@ -74,7 +74,7 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
   return (
     <li data-item-id={item.id} draggable={isDraggable} onDragStart={handleDragStart}>
       <div
-        className={cn(
+        className={clsx(
           'flex w-full items-center justify-between group h-12 p-2 rounded-md transition-colors duration-150',
           `bg-${theme.surfaceTertiary}`,
           `hover:bg-${theme.surfaceMuted}`,
@@ -121,7 +121,7 @@ const CategorySection = memo<CategorySectionProps>((props) => {
 
   const header = (
     <button
-      className={cn(
+      className={clsx(
         'flex h-12 w-full items-center justify-between p-2 outline-none disabled:cursor-not-allowed disabled:opacity-50',
         `text-${theme.contentSecondary}`,
         `bg-${theme.surfaceTertiary}`,
@@ -131,16 +131,19 @@ const CategorySection = memo<CategorySectionProps>((props) => {
       disabled={disabled}
     >
       {renderHeader ? renderHeader(category, items) : <span className="truncate font-medium">{category}</span>}
-      <ChevronRightIcon className={cn('transform transition-transform duration-200 ease-in-out', isExpanded ? 'rotate-90' : 'rotate-0')} size={20} />
+      <ChevronRightIcon
+        className={clsx('transform transition-transform duration-200 ease-in-out', isExpanded ? 'rotate-90' : 'rotate-0')}
+        size={20}
+      />
     </button>
   );
 
   return (
     <section className="overflow-hidden rounded-md">
       {header}
-      <div className={cn('accordion-grid', isExpanded && 'expanded')}>
+      <div className={clsx('accordion-grid', isExpanded && 'expanded')}>
         <div className="accordion-content">
-          <div className={cn('p-2', `bg-${theme.surfaceMuted}`)}>
+          <div className={clsx('p-2', `bg-${theme.surfaceMuted}`)}>
             <ul className="space-y-2">
               {items.map((item) => (
                 <GroupItemLayout

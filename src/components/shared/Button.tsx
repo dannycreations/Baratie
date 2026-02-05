@@ -1,10 +1,10 @@
+import { clsx } from 'clsx';
 import { memo, useCallback } from 'react';
 
 import { CONFIRM_SHOW_MS, ICON_SIZES } from '../../app/constants';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { useCopyAction } from '../../hooks/useCopyAction';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { cn } from '../../utilities/styleUtil';
 import { AlertTriangleIcon, CheckIcon, CopyIcon, Loader2Icon, Trash2Icon } from './Icon';
 import { Tooltip } from './Tooltip';
 
@@ -100,11 +100,11 @@ export const Button = memo<ButtonProps>(
     const baseClass = `inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50`;
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
     const variantClass = getButtonVariantClass(theme, variant as ButtonVariant);
-    const sizeClass = children ? cn(PADDING_MAP[size], TEXT_SIZE_MAP[size]) : PADDING_MAP[size];
-    const finalClassName = cn(baseClass, shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className);
+    const sizeClass = children ? clsx(PADDING_MAP[size], TEXT_SIZE_MAP[size]) : PADDING_MAP[size];
+    const finalClassName = clsx(baseClass, shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className);
 
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
-    const loadingSpinner = <Loader2Icon size={ICON_SIZES.XS} className={cn('animate-spin', iconMarginClass)} />;
+    const loadingSpinner = <Loader2Icon size={ICON_SIZES.XS} className={clsx('animate-spin', iconMarginClass)} />;
 
     const showIconLeft = iconPosition === 'left';
     const showIconRight = iconPosition === 'right';
@@ -112,9 +112,9 @@ export const Button = memo<ButtonProps>(
     return (
       <button type={type} className={finalClassName} disabled={loading || disabled} onClick={onClick}>
         {loading && showIconLeft && loadingSpinner}
-        {icon && showIconLeft && <span className={cn(iconMarginClass)}>{icon}</span>}
+        {icon && showIconLeft && <span className={clsx(iconMarginClass)}>{icon}</span>}
         {children}
-        {icon && showIconRight && <span className={cn(iconMarginClass)}>{icon}</span>}
+        {icon && showIconRight && <span className={clsx(iconMarginClass)}>{icon}</span>}
         {loading && (showIconRight || !children) && loadingSpinner}
       </button>
     );
@@ -174,10 +174,10 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
     const defaultConfirmTooltip = `Confirm ${actionName}`;
     const tooltipContent = isConfirm ? (customConfirmTooltip ?? defaultConfirmTooltip) : (customTooltip ?? defaultTooltip);
 
-    const buttonClass = cn(className, isConfirm && `bg-${theme.dangerBg} text-${theme.accentFg}`);
+    const buttonClass = clsx(className, isConfirm && `bg-${theme.dangerBg} text-${theme.accentFg}`);
 
     const defaultIcon = icon ?? <Trash2Icon size={ICON_SIZES.SM} />;
-    const defaultConfirmIcon = confirmIcon ?? <AlertTriangleIcon className={cn(`text-${theme.dangerFg}`)} size={ICON_SIZES.SM} />;
+    const defaultConfirmIcon = confirmIcon ?? <AlertTriangleIcon className={clsx(`text-${theme.dangerFg}`)} size={ICON_SIZES.SM} />;
 
     return (
       <TooltipButton

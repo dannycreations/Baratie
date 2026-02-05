@@ -1,8 +1,8 @@
+import { clsx } from 'clsx';
 import { memo } from 'react';
 
 import { useThemeStore } from '../../stores/useThemeStore';
 import { createErrorObject, objectStringify } from '../../utilities/errorUtil';
-import { cn } from '../../utilities/styleUtil';
 
 import type { ErrorInfo, JSX, ReactNode } from 'react';
 
@@ -35,13 +35,13 @@ export const EmptyView = ({
   title,
 }: EmptyViewProps): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
-  const titleClass = cn('mb-1 text-center font-semibold text-lg', `text-${theme.contentSecondary}`);
+  const titleClass = clsx('mb-1 text-center font-semibold text-lg', `text-${theme.contentSecondary}`);
 
-  const textClass = textClasses ?? cn('w-full break-words text-center text-sm', `text-${theme.contentTertiary}`);
+  const textClass = textClasses ?? clsx('w-full break-words text-center text-sm', `text-${theme.contentTertiary}`);
 
   return (
     <div className={className}>
-      {icon && <div className={cn('mb-2', `text-${theme.contentTertiary}`)}>{icon}</div>}
+      {icon && <div className={clsx('mb-2', `text-${theme.contentTertiary}`)}>{icon}</div>}
       {title && <h3 className={titleClass}>{title}</h3>}
       <p className={textClass}>{children}</p>
     </div>
@@ -55,9 +55,9 @@ export const ErrorView = memo<ErrorViewProps>(({ error, errorInfo }): JSX.Elemen
     return null;
   }
 
-  const detailsClass = cn('max-h-48 mt-3 p-2 overflow-y-auto rounded-md text-left text-xs', `bg-${theme.surfaceTertiary}`);
-  const summaryClass = cn('font-medium cursor-pointer', `text-${theme.contentTertiary}`, `hover:text-${theme.contentPrimary}`);
-  const preClass = cn('mt-2 whitespace-pre-wrap allow-text-selection', `text-${theme.contentSecondary}`);
+  const detailsClass = clsx('max-h-48 mt-3 p-2 overflow-y-auto rounded-md text-left text-xs', `bg-${theme.surfaceTertiary}`);
+  const summaryClass = clsx('font-medium cursor-pointer', `text-${theme.contentTertiary}`, `hover:text-${theme.contentPrimary}`);
+  const preClass = clsx('mt-2 whitespace-pre-wrap allow-text-selection', `text-${theme.contentSecondary}`);
 
   return (
     <details className={detailsClass}>

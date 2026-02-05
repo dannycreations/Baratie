@@ -1,9 +1,9 @@
+import { clsx } from 'clsx';
 import { memo, useCallback } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { APP_THEMES } from '../../app/themes';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { cn } from '../../utilities/styleUtil';
 import { CheckIcon } from '../shared/Icon';
 
 import type { JSX } from 'react';
@@ -27,7 +27,11 @@ const PalettePreview = memo<PalettePreviewProps>(({ theme }): JSX.Element => {
   return (
     <div className="flex items-center space-x-1">
       {swatchColors.map(({ color, title }, index) => (
-        <div key={`${title}-${index}`} className={cn('h-4 w-4 rounded-full border', `border-${theme.borderPrimary}`, `bg-${color}`)} title={title} />
+        <div
+          key={`${title}-${index}`}
+          className={clsx('h-4 w-4 rounded-full border', `border-${theme.borderPrimary}`, `bg-${color}`)}
+          title={title}
+        />
       ))}
     </div>
   );
@@ -46,9 +50,9 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
     onSelect(item.id);
   }, [onSelect, item.id]);
 
-  const liClass = cn('list-none rounded-md cursor-pointer outline-none');
+  const liClass = clsx('list-none rounded-md cursor-pointer outline-none');
 
-  const itemLayoutClass = cn(
+  const itemLayoutClass = clsx(
     'flex w-full items-center justify-between h-16 p-2 border-2 rounded-md transition-colors duration-150',
     isChecked
       ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
@@ -57,7 +61,7 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
 
   const leftContent = (
     <div className="flex flex-col justify-center gap-1">
-      <h3 className={cn('font-medium text-sm', isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`)}>{item.name}</h3>
+      <h3 className={clsx('font-medium text-sm', isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`)}>{item.name}</h3>
       <PalettePreview theme={item.theme} />
     </div>
   );

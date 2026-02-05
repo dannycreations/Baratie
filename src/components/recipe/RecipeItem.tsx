@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo, useCallback } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
@@ -6,7 +7,6 @@ import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { cn } from '../../utilities/styleUtil';
 import { TooltipButton } from '../shared/Button';
 import { AlertTriangleIcon, GrabIcon, PauseIcon, PlayIcon, PreferencesIcon, XIcon } from '../shared/Icon';
 import { SpiceLayout } from '../shared/layout/SpiceLayout';
@@ -55,7 +55,7 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
           icon={isPaused ? <PlayIcon size={ICON_SIZES.SM} /> : <PauseIcon size={ICON_SIZES.SM} />}
           size="sm"
           variant="stealth"
-          className={cn(
+          className={clsx(
             'opacity-50 group-hover:opacity-100',
             isPaused ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : `text-${theme.warningFg} hover:!bg-${theme.warningBg}`,
           )}
@@ -68,7 +68,7 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
             icon={<PreferencesIcon size={ICON_SIZES.SM} />}
             size="sm"
             variant={isEditorVisible ? 'primary' : 'stealth'}
-            className={!isEditorVisible ? cn(`text-${theme.contentTertiary}`, `hover:text-${theme.infoFg}`) : undefined}
+            className={!isEditorVisible ? clsx(`text-${theme.contentTertiary}`, `hover:text-${theme.infoFg}`) : undefined}
             tooltipContent={settingsTooltip}
             tooltipPosition="top"
             onClick={onEditToggle}
@@ -108,13 +108,13 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
   }, [onRemove, ingredientItem.id]);
 
   return (
-    <li className={cn('group flex flex-col rounded-md text-sm outline-none', `bg-${theme.dangerBg}`)}>
+    <li className={clsx('group flex flex-col rounded-md text-sm outline-none', `bg-${theme.dangerBg}`)}>
       <div className="p-2">
         <div className="flex w-full items-center justify-between">
           <div className="flex min-w-0 grow items-center">
             <div className="flex items-center gap-1">
-              <AlertTriangleIcon className={cn(`text-${theme.dangerFg}`)} size={ICON_SIZES.MD} />
-              <h3 className={cn('truncate pr-2 font-medium', `text-${theme.dangerFg}`)}>{ingredientItem.name} (Missing)</h3>
+              <AlertTriangleIcon className={clsx(`text-${theme.dangerFg}`)} size={ICON_SIZES.MD} />
+              <h3 className={clsx('truncate pr-2 font-medium', `text-${theme.dangerFg}`)}>{ingredientItem.name} (Missing)</h3>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
@@ -128,7 +128,7 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
             />
           </div>
         </div>
-        <p className={cn('mt-1 text-xs', `text-${theme.dangerFg}`)}>
+        <p className={clsx('mt-1 text-xs', `text-${theme.dangerFg}`)}>
           This ingredient could not be found. It may be from a disabled or uninstalled extension.
         </p>
       </div>
@@ -144,7 +144,7 @@ interface InfoMessageProps {
 const InfoMessage = memo<InfoMessageProps>(({ type, message }): JSX.Element => {
   const theme = useThemeStore((state) => state.theme);
   return (
-    <p className={cn('p-2 text-center text-xs italic rounded-md border', `border-${theme.borderSecondary}`, `bg-${theme.surfaceHover}`)}>
+    <p className={clsx('p-2 text-center text-xs italic rounded-md border', `border-${theme.borderSecondary}`, `bg-${theme.surfaceHover}`)}>
       {type === 'spiceInInput' ? 'Options are managed in the Input panel.' : message}
     </p>
   );
@@ -161,7 +161,7 @@ const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition
 
   return (
     <div className="max-h-96 p-1 overflow-y-auto">
-      <div className={cn('p-2 rounded-md border', `border-${theme.borderSecondary}`, `bg-${theme.surfaceHover}`)}>
+      <div className={clsx('p-2 rounded-md border', `border-${theme.borderSecondary}`, `bg-${theme.surfaceHover}`)}>
         <SpiceLayout
           ingredient={definition}
           currentSpices={ingredient.spices}
@@ -226,14 +226,14 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
 
   const statusBorder = isAutoCook ? (STATUS_BORDER_MAP[status] ?? STATUS_BORDER_MAP.idle)(theme) : '';
   const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
-  const itemClass = cn(
+  const itemClass = clsx(
     'group flex flex-col rounded-md text-sm outline-none transition-all duration-200 ease-in-out',
     `bg-${theme.surfaceTertiary}`,
     isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100',
     statusBorderClass,
   );
 
-  const grabHandleClass = cn(`mr-2 cursor-grab transition-colors group-hover:text-${theme.contentSecondary}`, `text-${theme.contentTertiary}`);
+  const grabHandleClass = clsx(`mr-2 cursor-grab transition-colors group-hover:text-${theme.contentSecondary}`, `text-${theme.contentTertiary}`);
 
   const leftColumn = (
     <>
@@ -244,7 +244,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
       </Tooltip>
       <div className="min-w-0 flex-1">
         <Tooltip content={definition.description} position="top" className="inline-block max-w-full">
-          <h3 className={cn('block truncate pr-2 font-medium cursor-default outline-none', `text-${theme.contentPrimary}`)}>{definition.name}</h3>
+          <h3 className={clsx('block truncate pr-2 font-medium cursor-default outline-none', `text-${theme.contentPrimary}`)}>{definition.name}</h3>
         </Tooltip>
       </div>
     </>
@@ -272,7 +272,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
       {infoContent && <div className="p-2 pt-0">{infoContent}</div>}
 
       {hasSpices && (
-        <div className={cn('accordion-grid', isEditorVisible && 'expanded')}>
+        <div className={clsx('accordion-grid', isEditorVisible && 'expanded')}>
           <div className="accordion-content">
             <RecipeSpiceEditor
               ingredient={ingredientItem}

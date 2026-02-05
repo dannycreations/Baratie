@@ -1,7 +1,7 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useMemo } from 'react';
 
 import { useThemeStore } from '../../../stores/useThemeStore';
-import { cn } from '../../../utilities/styleUtil';
 import { ChevronDownIcon } from '../Icon';
 
 import type { ChangeEventHandler, JSX } from 'react';
@@ -38,8 +38,8 @@ export const SelectInput = memo(
       [valueToOptionMap, onChange],
     );
 
-    const finalWrapperClass = cn('relative', className);
-    const selectInputStyle = cn(
+    const finalWrapperClass = clsx('relative', className);
+    const selectInputStyle = clsx(
       'w-full appearance-none py-2 pl-2 pr-8 rounded-md border outline-none transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50',
       `text-${theme.contentPrimary}`,
       `placeholder:text-${theme.contentTertiary}`,
@@ -54,13 +54,13 @@ export const SelectInput = memo(
             <option
               key={String(option.value)}
               value={String(option.value)}
-              className={cn(`bg-${theme.surfaceSecondary}`, `text-${theme.contentSecondary}`)}
+              className={clsx(`bg-${theme.surfaceSecondary}`, `text-${theme.contentSecondary}`)}
             >
               {option.label}
             </option>
           ))}
         </select>
-        <div className={cn('pointer-events-none absolute inset-y-0 right-0 flex items-center px-2', `text-${theme.contentTertiary}`)}>
+        <div className={clsx('pointer-events-none absolute inset-y-0 right-0 flex items-center px-2', `text-${theme.contentTertiary}`)}>
           <ChevronDownIcon size={20} />
         </div>
       </div>

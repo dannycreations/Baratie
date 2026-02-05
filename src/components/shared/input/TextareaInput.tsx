@@ -1,9 +1,9 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useRef, useState } from 'react';
 
 import { useDropZone } from '../../../hooks/useDropZone';
 import { useLineNumber } from '../../../hooks/useLineNumber';
 import { useThemeStore } from '../../../stores/useThemeStore';
-import { cn } from '../../../utilities/styleUtil';
 import { DropZoneLayout } from '../layout/DropZoneLayout';
 
 import type { ChangeEvent, JSX, RefObject, UIEvent } from 'react';
@@ -84,21 +84,21 @@ export const TextareaInput = memo<TextareaInputProps>(
       [showLineNumbers],
     );
 
-    const containerClass = cn(
+    const containerClass = clsx(
       'relative flex overflow-hidden rounded-md border',
       `border-${theme.borderPrimary}`,
       `bg-${theme.surfaceSecondary}`,
       disabled && 'opacity-50',
       wrapperClasses,
     );
-    const gutterClass = cn(
+    const gutterClass = clsx(
       'shrink-0 p-2 overflow-hidden select-none text-right border-r',
       `text-${theme.contentTertiary}`,
       `bg-${theme.surfaceSecondary}`,
       `border-${theme.borderPrimary}`,
     );
     const commonStyles = `h-full w-full resize-none p-2 font-mono text-${theme.contentPrimary} outline-none allow-text-selection placeholder:text-${theme.contentTertiary}`;
-    const textareaClass = cn(commonStyles, 'bg-transparent', textareaClasses);
+    const textareaClass = clsx(commonStyles, 'bg-transparent', textareaClasses);
 
     return (
       <div className={containerClass} {...dropZoneProps}>

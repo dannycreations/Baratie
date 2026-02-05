@@ -1,9 +1,9 @@
+import { clsx } from 'clsx';
 import { Component } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { logger } from '../../app/container';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { cn } from '../../utilities/styleUtil';
 import { Button } from '../shared/Button';
 import { RefreshCwIcon } from '../shared/Icon';
 import { ErrorView } from '../shared/View';
@@ -25,8 +25,8 @@ type ErrorDisplayProps = Omit<ErrorBoundaryState, 'hasError'>;
 function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
   const theme = useThemeStore((state) => state.theme);
 
-  const backdropClass = cn('fixed inset-0 z-[800] flex items-center justify-center p-3 backdrop-blur-sm', `bg-${theme.backdrop}`);
-  const dialogClass = cn(
+  const backdropClass = clsx('fixed inset-0 z-[800] flex items-center justify-center p-3 backdrop-blur-sm', `bg-${theme.backdrop}`);
+  const dialogClass = clsx(
     'w-full max-w-md p-3 text-center rounded-lg border sm:max-w-lg md:max-w-2xl',
     `border-${theme.dangerBorder}`,
     `bg-${theme.surfaceSecondary}`,
@@ -35,9 +35,9 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
   return (
     <div className={backdropClass}>
       <div className={dialogClass}>
-        <div className={cn('mb-3 text-5xl', `text-${theme.dangerFg}`)}>⚠️</div>
-        <h2 className={cn('mb-2 font-bold text-2xl', `text-${theme.dangerFg}`)}>A Kitchen Catastrophe!</h2>
-        <p className={cn('mb-3', `text-${theme.contentSecondary}`)}>A sudden squall has hit the galley! Reloading might calm the seas.</p>
+        <div className={clsx('mb-3 text-5xl', `text-${theme.dangerFg}`)}>⚠️</div>
+        <h2 className={clsx('mb-2 font-bold text-2xl', `text-${theme.dangerFg}`)}>A Kitchen Catastrophe!</h2>
+        <p className={clsx('mb-3', `text-${theme.contentSecondary}`)}>A sudden squall has hit the galley! Reloading might calm the seas.</p>
         <Button icon={<RefreshCwIcon size={ICON_SIZES.MD} />} size="sm" variant="primary" onClick={() => window.location.reload()}>
           Batten Down the Hatches!
         </Button>

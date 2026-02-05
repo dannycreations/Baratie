@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useDeferredValue, useId, useMemo, useRef, useState } from 'react';
 
 import { ingredientRegistry } from '../../app/container';
@@ -7,7 +8,6 @@ import { useOverflow } from '../../hooks/useOverflow';
 import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { cn } from '../../utilities/styleUtil';
 import { BooleanInput } from '../shared/input/BooleanInput';
 import { StringInput } from '../shared/input/StringInput';
 import { GroupListLayout } from '../shared/layout/ListLayout';
@@ -70,7 +70,7 @@ export const IngredientManager = memo((): JSX.Element => {
             onChange={() => toggleCategory(category)}
           />
           <span
-            className={cn(
+            className={clsx(
               'truncate font-medium cursor-pointer',
               isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`,
             )}
@@ -134,7 +134,7 @@ export const IngredientManager = memo((): JSX.Element => {
             onClear={handleClearQuery}
           />
         </div>
-        <div id={listId} ref={scrollRef} className={cn('grow overflow-y-auto', scrollClasses)}>
+        <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>
           {content}
         </div>
       </div>

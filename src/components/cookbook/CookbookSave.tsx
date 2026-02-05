@@ -1,7 +1,7 @@
+import { clsx } from 'clsx';
 import { memo, useCallback } from 'react';
 
 import { useThemeStore } from '../../stores/useThemeStore';
-import { cn } from '../../utilities/styleUtil';
 import { StringInput } from '../shared/input/StringInput';
 import { FormLayout } from '../shared/layout/FormLayout';
 
@@ -52,7 +52,7 @@ export const CookbookSave = memo<CookbookSaveProps>(({ nameInput, onNameChange, 
         )}
       </FormLayout>
       {isRecipeEmpty && (
-        <p className={cn('mt-3 text-center text-sm', `text-${theme.warningFg}`)}>
+        <p className={clsx('mt-3 text-center text-sm', `text-${theme.warningFg}`)}>
           Your recipe is empty. Add ingredients from the panel on the left before saving.
         </p>
       )}

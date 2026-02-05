@@ -1,8 +1,8 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useState } from 'react';
 
 import { useModalStore } from '../../stores/useModalStore';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { cn } from '../../utilities/styleUtil';
 import { Modal } from '../shared/Modal';
 import { AppearanceTab } from './AppearanceTab';
 import { ExtensionManager } from './extension/ExtensionManager';
@@ -31,7 +31,7 @@ const SETTING_TABS = [
     description: (theme: AppTheme): ReactNode => (
       <>
         Add external ingredients by providing a link to a public GitHub repository. The repository must contain a{' '}
-        <code className={cn('p-1 rounded-md text-xs', `bg-${theme.surfaceHover}`, `text-${theme.contentSecondary}`)}>manifest.json</code> file.
+        <code className={clsx('p-1 rounded-md text-xs', `bg-${theme.surfaceHover}`, `text-${theme.contentSecondary}`)}>manifest.json</code> file.
       </>
     ),
     component: <ExtensionTab />,
@@ -54,7 +54,7 @@ const TabButton = memo<TabButtonProps>(({ children, isActive, onClick, id }): JS
     onClick(id);
   }, [id, onClick]);
 
-  const tabClass = cn(
+  const tabClass = clsx(
     'p-2 font-medium text-sm rounded-t-md border-b-2 outline-none transition-colors duration-150',
     isActive
       ? `border-${theme.infoBorder} text-${theme.infoFg}`
@@ -82,7 +82,7 @@ export const SettingPanel = memo((): JSX.Element => {
   return (
     <>
       <Modal isOpen={isModalOpen} size="xl" title="Settings" onClose={closeModal}>
-        <nav className={cn('flex gap-1 border-b', `border-${theme.borderPrimary}`)}>
+        <nav className={clsx('flex gap-1 border-b', `border-${theme.borderPrimary}`)}>
           {SETTING_TABS.map((tab) => (
             <TabButton key={tab.id} id={tab.id} isActive={activeTab === tab.id} onClick={handleTabSelect}>
               {tab.label}
@@ -93,12 +93,12 @@ export const SettingPanel = memo((): JSX.Element => {
           {SETTING_TABS.map((tab) => (
             <div
               key={tab.id}
-              className={cn(
+              className={clsx(
                 activeTab === tab.id ? 'flex h-full flex-col gap-3' : 'hidden',
                 tab.id === 'extensions' ? 'overflow-hidden' : 'overflow-y-auto',
               )}
             >
-              {tab.description && <p className={cn('text-sm', `text-${theme.contentTertiary}`)}>{tab.description(theme)}</p>}
+              {tab.description && <p className={clsx('text-sm', `text-${theme.contentTertiary}`)}>{tab.description(theme)}</p>}
               {tab.component}
             </div>
           ))}

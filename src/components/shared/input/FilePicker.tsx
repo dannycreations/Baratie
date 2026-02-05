@@ -1,6 +1,5 @@
+import { clsx } from 'clsx';
 import { useCallback, useRef } from 'react';
-
-import { cn } from '../../../utilities/styleUtil';
 
 import type { ChangeEvent, JSX, ReactNode } from 'react';
 
@@ -38,7 +37,7 @@ export const FilePicker = ({ children, onFileSelect, accept, inputId }: FilePick
   return (
     <>
       {children?.({ trigger })}
-      <input ref={inputRef} id={inputId} type="file" className={cn('hidden')} accept={accept} onChange={handleFileChange} />
+      <input ref={inputRef} id={inputId} type="file" className={clsx('hidden')} accept={accept} onChange={handleFileChange} />
     </>
   );
 };

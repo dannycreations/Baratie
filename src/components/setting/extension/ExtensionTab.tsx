@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
@@ -6,7 +7,6 @@ import { useOverflow } from '../../../hooks/useOverflow';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
 import { useThemeStore } from '../../../stores/useThemeStore';
-import { cn } from '../../../utilities/styleUtil';
 import { Button } from '../../shared/Button';
 import { GitMergeIcon } from '../../shared/Icon';
 import { StringInput } from '../../shared/input/StringInput';
@@ -125,8 +125,8 @@ export const ExtensionTab = memo((): JSX.Element => {
       </div>
 
       <div className="flex flex-1 flex-col min-h-0">
-        <h4 className={cn('mb-3 font-medium text-base', `text-${theme.contentSecondary}`)}>Installed Extensions</h4>
-        <div id={listId} ref={scrollRef} className={cn('grow overflow-y-auto', scrollClasses)}>
+        <h4 className={clsx('mb-3 font-medium text-base', `text-${theme.contentSecondary}`)}>Installed Extensions</h4>
+        <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>
           {listContent}
         </div>
       </div>

@@ -1,10 +1,10 @@
+import { clsx } from 'clsx';
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { useTooltipStore } from '../../stores/useTooltipStore';
-import { cn } from '../../utilities/styleUtil';
 
 import type { JSX, ReactNode } from 'react';
 
@@ -206,14 +206,14 @@ export const Tooltip = ({
 
   const arrowClass = tooltipArrows[position] || tooltipArrows.top;
   const visibilityClass = isVisible && style.isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
-  const tooltipClass = cn(
+  const tooltipClass = clsx(
     'z-[1000] max-w-xs p-2 whitespace-pre-line rounded-md font-medium text-sm shadow-lg transition-opacity duration-150',
     `bg-${theme.backdrop}`,
     `text-${theme.accentFg}`,
     visibilityClass,
     tooltipClasses,
   );
-  const triggerClass = cn('relative inline-flex', className);
+  const triggerClass = clsx('relative inline-flex', className);
 
   const triggerElement = (
     <div ref={triggerRef} className={triggerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onDragStart={handleMouseLeave}>

@@ -1,9 +1,9 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 import { useLongPress } from '../../../hooks/useLongPress';
 import { useThemeStore } from '../../../stores/useThemeStore';
-import { cn } from '../../../utilities/styleUtil';
 import { ChevronDownIcon, ChevronUpIcon } from '../Icon';
 
 import type { ChangeEvent, JSX, KeyboardEvent, WheelEvent } from 'react';
@@ -131,20 +131,20 @@ export const NumberInput = memo<NumberInputProps>(
     const incrementPressHandlers = useLongPress(handleIncrement, pressHandlersConfig);
     const decrementPressHandlers = useLongPress(handleDecrement, pressHandlersConfig);
 
-    const standardInputStyle = cn(
+    const standardInputStyle = clsx(
       'w-full py-2 pl-2 pr-8 rounded-md border outline-none disabled:opacity-50 number-input-no-spinner',
       `text-${theme.contentPrimary}`,
       `placeholder:text-${theme.contentTertiary}`,
       `bg-${theme.surfaceTertiary}`,
       `border-${theme.borderPrimary}`,
     );
-    const containerClass = cn('relative flex items-center', className);
-    const buttonGroupClass = cn(
+    const containerClass = clsx('relative flex items-center', className);
+    const buttonGroupClass = clsx(
       'absolute top-1 right-1 flex h-[calc(100%-8px)] w-6 flex-col rounded-r-md border-l',
       `bg-${theme.surfaceTertiary}`,
       `border-${theme.borderPrimary}`,
     );
-    const stepButtonClass = cn(
+    const stepButtonClass = clsx(
       'flex h-1/2 w-full shrink-0 items-center justify-center transition-colors disabled:cursor-not-allowed',
       `text-${theme.contentTertiary}`,
       `hover:bg-${theme.surfaceMuted}`,
@@ -170,7 +170,7 @@ export const NumberInput = memo<NumberInputProps>(
         <div className={buttonGroupClass}>
           <button
             type="button"
-            className={cn(stepButtonClass, 'rounded-tr-sm')}
+            className={clsx(stepButtonClass, 'rounded-tr-sm')}
             disabled={disabled || (max !== undefined && value >= max)}
             {...incrementPressHandlers}
           >
@@ -178,7 +178,7 @@ export const NumberInput = memo<NumberInputProps>(
           </button>
           <button
             type="button"
-            className={cn(stepButtonClass, 'rounded-br-sm')}
+            className={clsx(stepButtonClass, 'rounded-br-sm')}
             disabled={disabled || (min !== undefined && value <= min)}
             {...decrementPressHandlers}
           >

@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { useAutoFocus } from '../../../hooks/useAutoFocus';
@@ -5,7 +6,6 @@ import { useOverflow } from '../../../hooks/useOverflow';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
 import { useThemeStore } from '../../../stores/useThemeStore';
-import { cn } from '../../../utilities/styleUtil';
 import { Button } from '../../shared/Button';
 import { BooleanInput } from '../../shared/input/BooleanInput';
 import { StringInput } from '../../shared/input/StringInput';
@@ -175,7 +175,7 @@ export const ExtensionManager = memo((): JSX.Element | null => {
       return (
         <div className="flex min-w-0 items-center gap-2">
           <BooleanInput id={`${categoryId}-toggle`} checked={areAllSelected} disabled={isLoading} onChange={() => handleToggleCategory(items)} />
-          <span className={cn('truncate font-medium cursor-pointer', `text-${theme.contentSecondary}`)}>{category}</span>
+          <span className={clsx('truncate font-medium cursor-pointer', `text-${theme.contentSecondary}`)}>{category}</span>
         </div>
       );
     },
@@ -225,7 +225,7 @@ export const ExtensionManager = memo((): JSX.Element | null => {
             onClear={handleClearQuery}
           />
         </div>
-        <div id={listId} ref={scrollRef} className={cn('grow overflow-y-auto', scrollClasses)}>
+        <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>
           {content}
         </div>
       </div>
