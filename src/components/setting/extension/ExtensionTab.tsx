@@ -6,7 +6,6 @@ import { parseGitHubUrl } from '../../../helpers/extensionHelper';
 import { useOverflow } from '../../../hooks/useOverflow';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
-import { useThemeStore } from '../../../stores/useThemeStore';
 import { Button } from '../../shared/Button';
 import { GitMergeIcon } from '../../shared/Icon';
 import { StringInput } from '../../shared/input/StringInput';
@@ -16,7 +15,6 @@ import { ExtensionItem } from './ExtensionItem';
 import type { ChangeEvent, JSX, KeyboardEvent } from 'react';
 
 export const ExtensionTab = memo((): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
   const extensions = useExtensionStore((state) => state.extensions);
   const addExtension = useExtensionStore((state) => state.add);
   const removeExtension = useExtensionStore((state) => state.remove);
@@ -125,7 +123,7 @@ export const ExtensionTab = memo((): JSX.Element => {
       </div>
 
       <div className="flex flex-1 flex-col min-h-0">
-        <h4 className={clsx('mb-3 font-medium text-base', `text-${theme.contentSecondary}`)}>Installed Extensions</h4>
+        <h4 className="mb-3 text-base font-medium text-content-secondary">Installed Extensions</h4>
         <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>
           {listContent}
         </div>

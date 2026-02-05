@@ -7,7 +7,6 @@ import { useAutoFocus } from '../../hooks/useAutoFocus';
 import { useOverflow } from '../../hooks/useOverflow';
 import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useModalStore } from '../../stores/useModalStore';
-import { useThemeStore } from '../../stores/useThemeStore';
 import { BooleanInput } from '../shared/input/BooleanInput';
 import { StringInput } from '../shared/input/StringInput';
 import { GroupListLayout } from '../shared/layout/ListLayout';
@@ -25,7 +24,6 @@ export const IngredientManager = memo((): JSX.Element => {
   const toggleCategory = useIngredientStore((state) => state.toggleCategory);
   const toggleIngredient = useIngredientStore((state) => state.toggleIngredient);
   const registryVersion = useIngredientStore((state) => state.registryVersion);
-  const theme = useThemeStore((state) => state.theme);
 
   const [query, setQuery] = useState('');
 
@@ -66,13 +64,13 @@ export const IngredientManager = memo((): JSX.Element => {
           <BooleanInput
             id={`${categoryId}-toggle`}
             checked={!isCategoryDisabled}
-            offBackgroundColor={theme.borderPrimary}
+            offBackgroundColor="bg-border-primary"
             onChange={() => toggleCategory(category)}
           />
           <span
             className={clsx(
-              'truncate font-medium cursor-pointer',
-              isCategoryDisabled ? `text-${theme.contentDisabled} line-through` : `text-${theme.contentSecondary}`,
+              'cursor-pointer truncate font-medium',
+              isCategoryDisabled ? 'text-content-disabled line-through' : 'text-content-secondary',
             )}
           >
             {category}
@@ -80,7 +78,7 @@ export const IngredientManager = memo((): JSX.Element => {
         </div>
       );
     },
-    [disabledCategories, theme, toggleCategory],
+    [disabledCategories, toggleCategory],
   );
 
   const renderItemPrefix = useCallback(
@@ -94,12 +92,12 @@ export const IngredientManager = memo((): JSX.Element => {
           id={ingredientId}
           checked={!isIngredientDisabled}
           disabled={isCategoryDisabled}
-          offBackgroundColor={theme.borderPrimary}
+          offBackgroundColor="bg-border-primary"
           onChange={() => toggleIngredient(ingredient.id)}
         />
       );
     },
-    [disabledCategories, disabledIngredients, theme, toggleIngredient],
+    [disabledCategories, disabledIngredients, toggleIngredient],
   );
 
   const isItemDisabled = useCallback(

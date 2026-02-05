@@ -1,8 +1,6 @@
 import { clsx } from 'clsx';
 import { memo } from 'react';
 
-import { useThemeStore } from '../../../stores/useThemeStore';
-
 import type { ChangeEvent, JSX } from 'react';
 
 interface BooleanInputProps {
@@ -16,17 +14,15 @@ interface BooleanInputProps {
 
 export const BooleanInput = memo<BooleanInputProps>(
   ({ id, checked, onChange, className = '', disabled = false, offBackgroundColor }): JSX.Element => {
-    const theme = useThemeStore((state) => state.theme);
-
-    const finalOffBgColor = offBackgroundColor || theme.surfaceTertiary;
+    const finalOffBgClass = offBackgroundColor || 'bg-surface-tertiary';
 
     const containerClass = clsx('relative inline-flex items-center cursor-pointer', className);
 
     const switchClass = clsx(
       "h-6 w-11 rounded-full outline-none transition-colors after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-disabled:opacity-50",
-      `bg-${finalOffBgColor}`,
-      `after:border-${theme.borderSecondary}`,
-      `peer-checked:bg-${theme.accentBg}`,
+      finalOffBgClass,
+      'after:border-border-secondary',
+      'peer-checked:bg-accent-bg',
     );
 
     return (

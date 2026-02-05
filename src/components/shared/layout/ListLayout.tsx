@@ -2,7 +2,6 @@ import { clsx } from 'clsx';
 import { memo, useCallback, useState } from 'react';
 
 import { useSettingStore } from '../../../stores/useSettingStore';
-import { useThemeStore } from '../../../stores/useThemeStore';
 import { HighlightText } from '../HighlightText';
 import { ChevronRightIcon } from '../Icon';
 import { Tooltip } from '../Tooltip';
@@ -47,15 +46,11 @@ type CategorySectionProps = GroupListPropsBase & {
 };
 
 const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItemPrefix, renderItemActions, onItemDragStart, query }) => {
-  const theme = useThemeStore((state) => state.theme);
-
   const isDisabled = isItemDisabled?.(item) ?? false;
   const isDraggable = !isDisabled && !!onItemDragStart;
 
   const nameClass = clsx(
-    'block truncate pr-2 text-sm transition-colors duration-150 cursor-default outline-none',
-    `group-hover:text-${theme.infoFg}`,
-    `text-${theme.contentSecondary}`,
+    'block truncate pr-2 text-sm transition-colors duration-150 cursor-default outline-none group-hover:text-info-fg text-content-secondary',
     isDisabled && 'line-through',
   );
 
@@ -73,13 +68,7 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
 
   return (
     <li data-item-id={item.id} draggable={isDraggable} onDragStart={handleDragStart}>
-      <div
-        className={clsx(
-          'flex w-full items-center justify-between group h-12 p-2 rounded-md transition-colors duration-150',
-          `bg-${theme.surfaceTertiary}`,
-          `hover:bg-${theme.surfaceMuted}`,
-        )}
-      >
+      <div className="flex h-12 w-full items-center justify-between rounded-md p-2 transition-colors duration-150 bg-surface-tertiary hover:bg-surface-muted group">
         <div className="flex min-w-0 grow items-center gap-2">
           {renderItemPrefix?.(item)}
           <Tooltip
@@ -113,7 +102,6 @@ const CategorySection = memo<CategorySectionProps>((props) => {
     renderHeader,
     disabled,
   } = props;
-  const theme = useThemeStore((state) => state.theme);
 
   const handleToggle = useCallback(() => {
     onToggle(category);
@@ -121,12 +109,7 @@ const CategorySection = memo<CategorySectionProps>((props) => {
 
   const header = (
     <button
-      className={clsx(
-        'flex h-12 w-full items-center justify-between p-2 outline-none disabled:cursor-not-allowed disabled:opacity-50',
-        `text-${theme.contentSecondary}`,
-        `bg-${theme.surfaceTertiary}`,
-        `hover:bg-${theme.surfaceHover}`,
-      )}
+      className="flex h-12 w-full items-center justify-between p-2 outline-none transition-colors duration-150 bg-surface-tertiary hover:bg-surface-hover text-content-secondary disabled:cursor-not-allowed disabled:opacity-50"
       onClick={handleToggle}
       disabled={disabled}
     >
@@ -143,7 +126,7 @@ const CategorySection = memo<CategorySectionProps>((props) => {
       {header}
       <div className={clsx('accordion-grid', isExpanded && 'expanded')}>
         <div className="accordion-content">
-          <div className={clsx('p-2', `bg-${theme.surfaceMuted}`)}>
+          <div className="bg-surface-muted p-2">
             <ul className="space-y-2">
               {items.map((item) => (
                 <GroupItemLayout

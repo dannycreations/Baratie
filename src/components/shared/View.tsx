@@ -1,7 +1,5 @@
-import { clsx } from 'clsx';
 import { memo } from 'react';
 
-import { useThemeStore } from '../../stores/useThemeStore';
 import { createErrorObject, objectStringify } from '../../utilities/errorUtil';
 
 import type { ErrorInfo, JSX, ReactNode } from 'react';
@@ -34,14 +32,13 @@ export const EmptyView = ({
   icon,
   title,
 }: EmptyViewProps): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
-  const titleClass = clsx('mb-1 text-center font-semibold text-lg', `text-${theme.contentSecondary}`);
+  const titleClass = 'mb-1 text-center font-semibold text-lg text-content-secondary';
 
-  const textClass = textClasses ?? clsx('w-full break-words text-center text-sm', `text-${theme.contentTertiary}`);
+  const textClass = textClasses ?? 'w-full break-words text-center text-sm text-content-tertiary';
 
   return (
     <div className={className}>
-      {icon && <div className={clsx('mb-2', `text-${theme.contentTertiary}`)}>{icon}</div>}
+      {icon && <div className="mb-2 text-content-tertiary">{icon}</div>}
       {title && <h3 className={titleClass}>{title}</h3>}
       <p className={textClass}>{children}</p>
     </div>
@@ -49,15 +46,13 @@ export const EmptyView = ({
 };
 
 export const ErrorView = memo<ErrorViewProps>(({ error, errorInfo }): JSX.Element | null => {
-  const theme = useThemeStore((state) => state.theme);
-
   if (!error) {
     return null;
   }
 
-  const detailsClass = clsx('max-h-48 mt-3 p-2 overflow-y-auto rounded-md text-left text-xs', `bg-${theme.surfaceTertiary}`);
-  const summaryClass = clsx('font-medium cursor-pointer', `text-${theme.contentTertiary}`, `hover:text-${theme.contentPrimary}`);
-  const preClass = clsx('mt-2 whitespace-pre-wrap allow-text-selection', `text-${theme.contentSecondary}`);
+  const detailsClass = 'max-h-48 mt-3 p-2 overflow-y-auto rounded-md text-left text-xs bg-surface-tertiary';
+  const summaryClass = 'font-medium cursor-pointer text-content-tertiary hover:text-content-primary';
+  const preClass = 'mt-2 whitespace-pre-wrap allow-text-selection text-content-secondary';
 
   return (
     <details className={detailsClass}>

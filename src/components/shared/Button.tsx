@@ -4,12 +4,10 @@ import { memo, useCallback } from 'react';
 import { CONFIRM_SHOW_MS, ICON_SIZES } from '../../app/constants';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { useCopyAction } from '../../hooks/useCopyAction';
-import { useThemeStore } from '../../stores/useThemeStore';
 import { AlertTriangleIcon, CheckIcon, CopyIcon, Loader2Icon, Trash2Icon } from './Icon';
 import { Tooltip } from './Tooltip';
 
 import type { JSX, MouseEvent, ReactNode } from 'react';
-import type { AppTheme } from '../../app/themes';
 import type { ButtonSize, ButtonVariant } from '../../app/types';
 import type { TooltipProps } from './Tooltip';
 
@@ -64,20 +62,20 @@ const TEXT_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
   lg: 'text-base',
 } as const;
 
-function getButtonVariantClass(theme: AppTheme, variant: ButtonVariant): string {
+function getButtonVariantClass(variant: ButtonVariant): string {
   switch (variant) {
     case 'danger':
-      return `border-${theme.dangerBorder} bg-transparent text-${theme.dangerFg} hover:bg-${theme.dangerBgHover}`;
+      return 'border-danger-border bg-transparent text-danger-fg hover:bg-danger-bg-hover';
     case 'outline':
-      return `border-${theme.borderPrimary} bg-transparent text-${theme.contentSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`;
+      return 'border-border-primary bg-transparent text-content-secondary hover:border-border-secondary hover:bg-surface-muted';
     case 'primary':
-      return `border-transparent bg-${theme.accentBg} text-${theme.accentFg} hover:bg-${theme.accentBgHover}`;
+      return 'border-transparent bg-accent-bg text-accent-fg hover:bg-accent-bg-hover';
     case 'secondary':
-      return `border-transparent bg-${theme.surfaceTertiary} text-${theme.contentSecondary} hover:bg-${theme.surfaceHover} hover:text-${theme.contentPrimary}`;
+      return 'border-transparent bg-surface-tertiary text-content-secondary hover:bg-surface-hover hover:text-content-primary';
     case 'stealth':
-      return `border-transparent bg-transparent text-${theme.contentTertiary} hover:bg-${theme.surfaceMuted} hover:text-${theme.contentPrimary}`;
+      return 'border-transparent bg-transparent text-content-tertiary hover:bg-surface-muted hover:text-content-primary';
     default:
-      return `border-transparent bg-${theme.accentBg} text-${theme.accentFg} hover:bg-${theme.accentBgHover}`;
+      return 'border-transparent bg-accent-bg text-accent-fg hover:bg-accent-bg-hover';
   }
 }
 
@@ -95,11 +93,9 @@ export const Button = memo<ButtonProps>(
     type = 'button',
     variant = 'primary',
   }): JSX.Element => {
-    const theme = useThemeStore((state) => state.theme);
-
     const baseClass = `inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50`;
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
-    const variantClass = getButtonVariantClass(theme, variant as ButtonVariant);
+    const variantClass = getButtonVariantClass(variant as ButtonVariant);
     const sizeClass = children ? clsx(PADDING_MAP[size], TEXT_SIZE_MAP[size]) : PADDING_MAP[size];
     const finalClassName = clsx(baseClass, shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className);
 
@@ -123,7 +119,6 @@ export const Button = memo<ButtonProps>(
 
 export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition = 'top' }): JSX.Element => {
   const { isCopied, copy } = useCopyAction();
-  const theme = useThemeStore((state) => state.theme);
 
   const handleCopy = useCallback(async (): Promise<void> => {
     await copy(textToCopy);
@@ -134,7 +129,7 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
       icon={isCopied ? <CheckIcon size={ICON_SIZES.SM} /> : <CopyIcon size={ICON_SIZES.SM} />}
       size="sm"
       variant="stealth"
-      className={isCopied ? `text-${theme.successFg}` : ''}
+      className={isCopied ? 'text-success-fg' : ''}
       disabled={!textToCopy || isCopied}
       tooltipContent={isCopied ? 'Copied!' : 'Copy'}
       tooltipPosition={tooltipPosition}
@@ -166,18 +161,16 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
     tooltip: customTooltip,
     confirmTooltip: customConfirmTooltip,
   }): JSX.Element => {
-    const theme = useThemeStore((state) => state.theme);
-
     const { isConfirm, trigger } = useConfirmAction(onConfirm, CONFIRM_SHOW_MS);
 
     const defaultTooltip = `${actionName} ${itemType}`;
     const defaultConfirmTooltip = `Confirm ${actionName}`;
     const tooltipContent = isConfirm ? (customConfirmTooltip ?? defaultConfirmTooltip) : (customTooltip ?? defaultTooltip);
 
-    const buttonClass = clsx(className, isConfirm && `bg-${theme.dangerBg} text-${theme.accentFg}`);
+    const buttonClass = clsx(className, isConfirm && 'bg-danger-bg text-accent-fg');
 
     const defaultIcon = icon ?? <Trash2Icon size={ICON_SIZES.SM} />;
-    const defaultConfirmIcon = confirmIcon ?? <AlertTriangleIcon className={clsx(`text-${theme.dangerFg}`)} size={ICON_SIZES.SM} />;
+    const defaultConfirmIcon = confirmIcon ?? <AlertTriangleIcon className="text-danger-fg" size={ICON_SIZES.SM} />;
 
     return (
       <TooltipButton

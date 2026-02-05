@@ -12,6 +12,21 @@ export const KEY_CUSTOM_INPUT = 'Custom Input';
 export const KEY_CUSTOM_OUTPUT = 'Custom Output';
 export const KEY_REPEAT_STEP = 'Repeat Step';
 
+export const THEME_DARK = 'dark';
+export const THEME_LIGHT = 'light';
+export const THEME_VARIANT = [
+  {
+    id: THEME_DARK,
+    name: 'Baratie Dark',
+    color: '#0f172a',
+  },
+  {
+    id: THEME_LIGHT,
+    name: 'Sunrise Light',
+    color: '#FFF8F1',
+  },
+] as const;
+
 export const DATA_TYPE_INGREDIENT = 'application/x-baratie-ingredient-type';
 export const DATA_TYPE_RECIPE_ITEM = 'application/x-baratie-recipe-item-id';
 

@@ -1,7 +1,4 @@
-import { clsx } from 'clsx';
 import { memo, useMemo } from 'react';
-
-import { useThemeStore } from '../../stores/useThemeStore';
 
 import type { JSX } from 'react';
 
@@ -11,8 +8,6 @@ interface HighlightTextProps {
 }
 
 export const HighlightText = memo<HighlightTextProps>(({ text, highlight }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
-
   const parts = useMemo(() => {
     const trimmedHighlight = highlight.trim();
     if (!trimmedHighlight || !text) {
@@ -31,7 +26,7 @@ export const HighlightText = memo<HighlightTextProps>(({ text, highlight }): JSX
     <>
       {parts.map((part, i) =>
         i % 2 === 1 ? (
-          <mark key={i} className={clsx('px-1 rounded', `bg-${theme.highlightBg}`, `text-${theme.highlightFg}`)}>
+          <mark key={i} className="rounded px-1 bg-highlight-bg text-highlight-fg">
             {part}
           </mark>
         ) : (

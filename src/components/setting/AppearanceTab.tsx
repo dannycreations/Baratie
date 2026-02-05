@@ -1,51 +1,37 @@
 import { clsx } from 'clsx';
 import { memo, useCallback } from 'react';
 
-import { ICON_SIZES } from '../../app/constants';
-import { APP_THEMES } from '../../app/themes';
+import { ICON_SIZES, THEME_VARIANT } from '../../app/constants';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { CheckIcon } from '../shared/Icon';
 
 import type { JSX } from 'react';
-import type { AppTheme } from '../../app/themes';
 import type { ThemeId } from '../../stores/useThemeStore';
 
 interface PalettePreviewProps {
-  readonly theme: AppTheme;
+  readonly themeId: string;
 }
 
-const PalettePreview = memo<PalettePreviewProps>(({ theme }): JSX.Element => {
-  const swatchColors = [
-    { color: theme.surfacePrimary, title: 'Page BG' },
-    { color: theme.surfaceSecondary, title: 'Card BG' },
-    { color: theme.accentBg, title: 'Accent' },
-    { color: theme.contentPrimary, title: 'Text' },
-    { color: theme.successFg, title: 'Success' },
-    { color: theme.dangerFg, title: 'Error' },
-  ];
-
+const PalettePreview = memo<PalettePreviewProps>(({ themeId }): JSX.Element => {
   return (
-    <div className="flex items-center space-x-1">
-      {swatchColors.map(({ color, title }, index) => (
-        <div
-          key={`${title}-${index}`}
-          className={clsx('h-4 w-4 rounded-full border', `border-${theme.borderPrimary}`, `bg-${color}`)}
-          title={title}
-        />
-      ))}
+    <div className={clsx('flex items-center space-x-1', themeId)}>
+      <div className="h-4 w-4 rounded-full border border-border-primary bg-surface-primary" title="Page BG" />
+      <div className="h-4 w-4 rounded-full border border-border-primary bg-surface-secondary" title="Card BG" />
+      <div className="h-4 w-4 rounded-full border border-border-primary bg-accent-bg" title="Accent" />
+      <div className="h-4 w-4 rounded-full border border-border-primary bg-content-primary" title="Text" />
+      <div className="h-4 w-4 rounded-full border border-border-primary bg-success-fg" title="Success" />
+      <div className="h-4 w-4 rounded-full border border-border-primary bg-danger-fg" title="Error" />
     </div>
   );
 });
 
 interface ThemeItemProps {
-  readonly item: (typeof APP_THEMES)[number];
+  readonly item: (typeof THEME_VARIANT)[number];
   readonly isChecked: boolean;
   readonly onSelect: (id: ThemeId) => void;
 }
 
 const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
-
   const handleClick = useCallback(() => {
     onSelect(item.id);
   }, [onSelect, item.id]);
@@ -55,20 +41,20 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
   const itemLayoutClass = clsx(
     'flex w-full items-center justify-between h-16 p-2 border-2 rounded-md transition-colors duration-150',
     isChecked
-      ? `border-${theme.infoBorder} bg-${theme.surfaceMuted}`
-      : `border-${theme.borderPrimary} bg-${theme.surfaceSecondary} hover:border-${theme.borderSecondary} hover:bg-${theme.surfaceMuted}`,
+      ? 'border-info-border bg-surface-muted'
+      : 'border-border-primary bg-surface-secondary hover:border-border-secondary hover:bg-surface-muted',
   );
 
   const leftContent = (
     <div className="flex flex-col justify-center gap-1">
-      <h3 className={clsx('font-medium text-sm', isChecked ? `text-${theme.infoFg}` : `text-${theme.contentPrimary}`)}>{item.name}</h3>
-      <PalettePreview theme={item.theme} />
+      <h3 className={clsx('font-medium text-sm', isChecked ? 'text-info-fg' : 'text-content-primary')}>{item.name}</h3>
+      <PalettePreview themeId={item.id} />
     </div>
   );
 
   const rightContent = isChecked ? (
     <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-500/20">
-      <CheckIcon className={`text-${theme.infoFg}`} size={ICON_SIZES.XS} />
+      <CheckIcon className="text-info-fg" size={ICON_SIZES.XS} />
     </div>
   ) : null;
 
@@ -95,7 +81,7 @@ export const AppearanceTab = memo((): JSX.Element => {
 
   return (
     <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-      {APP_THEMES.map((item) => (
+      {THEME_VARIANT.map((item) => (
         <ThemeItem key={item.id} item={item} isChecked={id === item.id} onSelect={handleSelectTheme} />
       ))}
     </ul>

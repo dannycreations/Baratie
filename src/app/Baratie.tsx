@@ -1,3 +1,5 @@
+import './styles.css';
+
 import { clsx } from 'clsx';
 import { StrictMode, useEffect } from 'react';
 import { createRoot as createReactRoot } from 'react-dom/client';
@@ -16,12 +18,10 @@ import { internalIngredients } from '../ingredients';
 import { useDragMoveStore } from '../stores/useDragMoveStore';
 import { useExtensionStore } from '../stores/useExtensionStore';
 import { useTaskStore } from '../stores/useTaskStore';
+import { useThemeStore } from '../stores/useThemeStore';
 import { errorHandler, ingredientRegistry, kitchen, taskRegistry } from './container';
-import { APP_STYLES } from './styles';
 
 import type { JSX } from 'react';
-
-const APP_STYLES_ID = 'baratie-global-styles';
 
 export interface BaratieOptions {
   readonly disableIngredients?: boolean;
@@ -30,8 +30,15 @@ export interface BaratieOptions {
 
 const Baratie = (): JSX.Element => {
   const isAppReady = useTaskStore((state) => state.isInitialized);
+  const theme = useThemeStore((state) => state.id);
   const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
   const isDragging = useDragMoveStore((state) => !!state.draggedItemId);
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+  }, [theme]);
 
   useEffect(() => {
     document.body.classList.toggle('grabbing', isDragging);
@@ -46,7 +53,7 @@ const Baratie = (): JSX.Element => {
     }
   }, [isAppReady]);
 
-  const mainContentClass = clsx('h-screen w-screen overflow-hidden transition-opacity duration-300', isAppReady ? 'opacity-100' : 'opacity-0');
+  const mainContentClass = clsx('h-full w-full overflow-hidden transition-opacity duration-300', isAppReady ? 'opacity-100' : 'opacity-0');
   const rootLayoutClass = clsx('flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden', scrollClasses);
 
   return (
@@ -75,13 +82,6 @@ const Baratie = (): JSX.Element => {
 
 export function createRoot(element: HTMLElement | null, options: Readonly<BaratieOptions> = {}): void {
   errorHandler.assert(element, 'Could not find the root element to mount the application.', 'Baratie Mount');
-
-  if (!document.getElementById(APP_STYLES_ID)) {
-    const style = document.createElement('style');
-    style.id = APP_STYLES_ID;
-    style.textContent = APP_STYLES;
-    document.head.appendChild(style);
-  }
 
   const { disableIngredients, defaultExtensions } = options;
 

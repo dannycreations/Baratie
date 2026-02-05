@@ -1,8 +1,6 @@
-import { clsx } from 'clsx';
 import { memo, useCallback, useMemo } from 'react';
 
 import { getVisibleSpices } from '../../../helpers/spiceHelper';
-import { useThemeStore } from '../../../stores/useThemeStore';
 import { BooleanInput } from '../input/BooleanInput';
 import { NumberInput } from '../input/NumberInput';
 import { SelectInput } from '../input/SelectInput';
@@ -123,7 +121,6 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
 
 export const SpiceLayout = memo<SpiceLayoutProps>(
   ({ ingredient, currentSpices, onSpiceChange, containerClasses, onLongPressStart, onLongPressEnd }): JSX.Element => {
-    const theme = useThemeStore((state) => state.theme);
     const finalContainerClass = containerClasses || 'space-y-2';
 
     const handleSubmit = useCallback((event: FormEvent<HTMLFormElement>): void => {
@@ -135,11 +132,11 @@ export const SpiceLayout = memo<SpiceLayoutProps>(
     }, [ingredient, currentSpices]);
 
     if (!ingredient.spices || ingredient.spices.length === 0) {
-      return <p className={clsx('text-sm italic', `text-${theme.contentTertiary}`)}>This ingredient has no configurable options.</p>;
+      return <p className="text-sm italic text-content-tertiary">This ingredient has no configurable options.</p>;
     }
 
     if (visibleSpices.length === 0) {
-      return <p className={clsx('text-sm italic', `text-${theme.contentTertiary}`)}>No options are available. Adjust other values to see more.</p>;
+      return <p className="text-sm italic text-content-tertiary">No options are available. Adjust other values to see more.</p>;
     }
 
     return (

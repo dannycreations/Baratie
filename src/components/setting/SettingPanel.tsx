@@ -2,7 +2,6 @@ import { clsx } from 'clsx';
 import { memo, useCallback, useState } from 'react';
 
 import { useModalStore } from '../../stores/useModalStore';
-import { useThemeStore } from '../../stores/useThemeStore';
 import { Modal } from '../shared/Modal';
 import { AppearanceTab } from './AppearanceTab';
 import { ExtensionManager } from './extension/ExtensionManager';
@@ -10,7 +9,6 @@ import { ExtensionTab } from './extension/ExtensionTab';
 import { GeneralTab } from './GeneralTab';
 
 import type { JSX, ReactNode } from 'react';
-import type { AppTheme } from '../../app/themes';
 
 const SETTING_TABS = [
   {
@@ -28,10 +26,10 @@ const SETTING_TABS = [
   {
     id: 'extensions',
     label: 'Extensions',
-    description: (theme: AppTheme): ReactNode => (
+    description: (): ReactNode => (
       <>
         Add external ingredients by providing a link to a public GitHub repository. The repository must contain a{' '}
-        <code className={clsx('p-1 rounded-md text-xs', `bg-${theme.surfaceHover}`, `text-${theme.contentSecondary}`)}>manifest.json</code> file.
+        <code className="rounded-md bg-surface-hover p-1 text-xs text-content-secondary">manifest.json</code> file.
       </>
     ),
     component: <ExtensionTab />,
@@ -48,17 +46,13 @@ interface TabButtonProps {
 }
 
 const TabButton = memo<TabButtonProps>(({ children, isActive, onClick, id }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
-
   const handleClick = useCallback(() => {
     onClick(id);
   }, [id, onClick]);
 
   const tabClass = clsx(
-    'p-2 font-medium text-sm rounded-t-md border-b-2 outline-none transition-colors duration-150',
-    isActive
-      ? `border-${theme.infoBorder} text-${theme.infoFg}`
-      : `border-transparent text-${theme.contentTertiary} hover:bg-${theme.surfaceMuted} hover:text-${theme.contentPrimary}`,
+    'rounded-t-md border-b-2 p-2 text-sm font-medium outline-none transition-colors duration-150',
+    isActive ? 'border-info-border text-info-fg' : 'border-transparent text-content-tertiary hover:bg-surface-muted hover:text-content-primary',
   );
 
   return (
@@ -71,7 +65,6 @@ const TabButton = memo<TabButtonProps>(({ children, isActive, onClick, id }): JS
 export const SettingPanel = memo((): JSX.Element => {
   const isModalOpen = useModalStore((state) => state.currentModal?.type === 'settings');
   const closeModal = useModalStore((state) => state.closeModal);
-  const theme = useThemeStore((state) => state.theme);
 
   const [activeTab, setActiveTab] = useState<SettingTab>('general');
 
@@ -82,7 +75,7 @@ export const SettingPanel = memo((): JSX.Element => {
   return (
     <>
       <Modal isOpen={isModalOpen} size="xl" title="Settings" onClose={closeModal}>
-        <nav className={clsx('flex gap-1 border-b', `border-${theme.borderPrimary}`)}>
+        <nav className="flex gap-1 border-b border-border-primary">
           {SETTING_TABS.map((tab) => (
             <TabButton key={tab.id} id={tab.id} isActive={activeTab === tab.id} onClick={handleTabSelect}>
               {tab.label}
@@ -98,7 +91,7 @@ export const SettingPanel = memo((): JSX.Element => {
                 tab.id === 'extensions' ? 'overflow-hidden' : 'overflow-y-auto',
               )}
             >
-              {tab.description && <p className={clsx('text-sm', `text-${theme.contentTertiary}`)}>{tab.description(theme)}</p>}
+              {tab.description && <p className="text-sm text-content-tertiary">{tab.description()}</p>}
               {tab.component}
             </div>
           ))}

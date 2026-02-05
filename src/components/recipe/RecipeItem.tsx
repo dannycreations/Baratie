@@ -6,14 +6,12 @@ import { ingredientRegistry } from '../../app/container';
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
-import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
 import { AlertTriangleIcon, GrabIcon, PauseIcon, PlayIcon, PreferencesIcon, XIcon } from '../shared/Icon';
 import { SpiceLayout } from '../shared/layout/SpiceLayout';
 import { Tooltip } from '../shared/Tooltip';
 
 import type { DragEvent, JSX, ReactNode } from 'react';
-import type { AppTheme } from '../../app/themes';
 import type { IngredientDefinition, IngredientItem, SpiceValue } from '../../core/IngredientRegistry';
 import type { CookingStatusType } from '../../core/Kitchen';
 
@@ -38,17 +36,15 @@ interface RecipeItemActionsProps {
   readonly onRemove: () => void;
 }
 
-const STATUS_BORDER_MAP: Readonly<Record<CookingStatusType, (theme: AppTheme) => string>> = {
-  error: (theme) => theme.dangerBorder,
-  success: (theme) => theme.successBorder,
-  warning: (theme) => theme.warningBorder,
-  idle: () => '',
+const STATUS_BORDER_MAP: Readonly<Record<CookingStatusType, string>> = {
+  error: 'border-danger-border',
+  success: 'border-success-border',
+  warning: 'border-warning-border',
+  idle: '',
 } as const;
 
 const RecipeItemActions = memo<RecipeItemActionsProps>(
   ({ isPaused, hasSpices, isEditorVisible, settingsTooltip, onTogglePause, onEditToggle, onRemove }): JSX.Element => {
-    const theme = useThemeStore((state) => state.theme);
-
     return (
       <>
         <TooltipButton
@@ -57,7 +53,7 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
           variant="stealth"
           className={clsx(
             'opacity-50 group-hover:opacity-100',
-            isPaused ? `text-${theme.successFg} hover:!bg-${theme.successBg}` : `text-${theme.warningFg} hover:!bg-${theme.warningBg}`,
+            isPaused ? 'text-success-fg hover:!bg-success-bg' : 'text-warning-fg hover:!bg-warning-bg',
           )}
           tooltipContent={isPaused ? 'Resume' : 'Pause'}
           tooltipPosition="top"
@@ -68,7 +64,7 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
             icon={<PreferencesIcon size={ICON_SIZES.SM} />}
             size="sm"
             variant={isEditorVisible ? 'primary' : 'stealth'}
-            className={!isEditorVisible ? clsx(`text-${theme.contentTertiary}`, `hover:text-${theme.infoFg}`) : undefined}
+            className={!isEditorVisible ? 'text-content-tertiary hover:text-info-fg' : undefined}
             tooltipContent={settingsTooltip}
             tooltipPosition="top"
             onClick={onEditToggle}
@@ -102,19 +98,18 @@ interface RecipeSpiceEditorProps {
 }
 
 const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemove }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
   const handleRemove = useCallback((): void => {
     onRemove(ingredientItem.id);
   }, [onRemove, ingredientItem.id]);
 
   return (
-    <li className={clsx('group flex flex-col rounded-md text-sm outline-none', `bg-${theme.dangerBg}`)}>
+    <li className="group flex flex-col rounded-md bg-danger-bg text-sm outline-none">
       <div className="p-2">
         <div className="flex w-full items-center justify-between">
           <div className="flex min-w-0 grow items-center">
             <div className="flex items-center gap-1">
-              <AlertTriangleIcon className={clsx(`text-${theme.dangerFg}`)} size={ICON_SIZES.MD} />
-              <h3 className={clsx('truncate pr-2 font-medium', `text-${theme.dangerFg}`)}>{ingredientItem.name} (Missing)</h3>
+              <AlertTriangleIcon className="text-danger-fg" size={ICON_SIZES.MD} />
+              <h3 className="truncate pr-2 font-medium text-danger-fg">{ingredientItem.name} (Missing)</h3>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
@@ -128,9 +123,7 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
             />
           </div>
         </div>
-        <p className={clsx('mt-1 text-xs', `text-${theme.dangerFg}`)}>
-          This ingredient could not be found. It may be from a disabled or uninstalled extension.
-        </p>
+        <p className="mt-1 text-xs text-danger-fg">This ingredient could not be found. It may be from a disabled or uninstalled extension.</p>
       </div>
     </li>
   );
@@ -142,16 +135,14 @@ interface InfoMessageProps {
 }
 
 const InfoMessage = memo<InfoMessageProps>(({ type, message }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
   return (
-    <p className={clsx('p-2 text-center text-xs italic rounded-md border', `border-${theme.borderSecondary}`, `bg-${theme.surfaceHover}`)}>
+    <p className="rounded-md border border-border-secondary bg-surface-hover p-2 text-center text-xs italic">
       {type === 'spiceInInput' ? 'Options are managed in the Input panel.' : message}
     </p>
   );
 });
 
 const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition, onSpiceChange, onLongPressStart, onLongPressEnd }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
   const handleSpiceChange = useCallback(
     (spiceId: string, newValue: SpiceValue): void => {
       onSpiceChange(ingredient.id, spiceId, newValue);
@@ -161,7 +152,7 @@ const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition
 
   return (
     <div className="max-h-96 p-1 overflow-y-auto">
-      <div className={clsx('p-2 rounded-md border', `border-${theme.borderSecondary}`, `bg-${theme.surfaceHover}`)}>
+      <div className="rounded-md border border-border-secondary bg-surface-hover p-2">
         <SpiceLayout
           ingredient={definition}
           currentSpices={ingredient.spices}
@@ -175,7 +166,6 @@ const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition
 });
 
 export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
   const { onDragStart, onDragEnd, onDragOver } = handlers;
 
   const isAutoCook = useKitchenStore((state) => state.isAutoCookEnabled);
@@ -224,16 +214,14 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
     infoContent = <InfoMessage type="spiceInInput" />;
   }
 
-  const statusBorder = isAutoCook ? (STATUS_BORDER_MAP[status] ?? STATUS_BORDER_MAP.idle)(theme) : '';
-  const statusBorderClass = statusBorder ? `border-l-4 border-${statusBorder}` : '';
+  const statusBorderClass = isAutoCook ? (STATUS_BORDER_MAP[status] ? `border-l-4 ${STATUS_BORDER_MAP[status]}` : '') : '';
   const itemClass = clsx(
-    'group flex flex-col rounded-md text-sm outline-none transition-all duration-200 ease-in-out',
-    `bg-${theme.surfaceTertiary}`,
-    isDragged ? `z-10 scale-[0.97] opacity-60 !bg-${theme.surfaceHover}` : 'scale-100 opacity-100',
+    'group flex flex-col rounded-md text-sm outline-none transition-all duration-200 ease-in-out bg-surface-tertiary',
+    isDragged ? 'z-10 scale-[0.97] opacity-60 !bg-surface-hover' : 'scale-100 opacity-100',
     statusBorderClass,
   );
 
-  const grabHandleClass = clsx(`mr-2 cursor-grab transition-colors group-hover:text-${theme.contentSecondary}`, `text-${theme.contentTertiary}`);
+  const grabHandleClass = 'mr-2 cursor-grab text-content-tertiary transition-colors group-hover:text-content-secondary';
 
   const leftColumn = (
     <>
@@ -244,7 +232,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
       </Tooltip>
       <div className="min-w-0 flex-1">
         <Tooltip content={definition.description} position="top" className="inline-block max-w-full">
-          <h3 className={clsx('block truncate pr-2 font-medium cursor-default outline-none', `text-${theme.contentPrimary}`)}>{definition.name}</h3>
+          <h3 className="block cursor-default truncate pr-2 font-medium text-content-primary outline-none">{definition.name}</h3>
         </Tooltip>
       </div>
     </>

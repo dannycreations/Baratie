@@ -1,7 +1,6 @@
 import { clsx } from 'clsx';
 import { memo, useCallback, useMemo } from 'react';
 
-import { useThemeStore } from '../../../stores/useThemeStore';
 import { ChevronDownIcon } from '../Icon';
 
 import type { ChangeEventHandler, JSX } from 'react';
@@ -21,8 +20,6 @@ interface SelectInputProps<T extends SpiceValue> {
 
 export const SelectInput = memo(
   <T extends SpiceValue>({ id, value, onChange, options, disabled = false, className }: SelectInputProps<T>): JSX.Element => {
-    const theme = useThemeStore((state) => state.theme);
-
     const valueToOptionMap = useMemo(() => {
       return new Map(options.map((opt) => [String(opt.value), opt]));
     }, [options]);
@@ -39,28 +36,19 @@ export const SelectInput = memo(
     );
 
     const finalWrapperClass = clsx('relative', className);
-    const selectInputStyle = clsx(
-      'w-full appearance-none py-2 pl-2 pr-8 rounded-md border outline-none transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50',
-      `text-${theme.contentPrimary}`,
-      `placeholder:text-${theme.contentTertiary}`,
-      `bg-${theme.surfaceTertiary}`,
-      `border-${theme.borderPrimary}`,
-    );
+    const selectInputStyle =
+      'w-full appearance-none py-2 pl-2 pr-8 rounded-md border outline-none transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 text-content-primary placeholder:text-content-tertiary bg-surface-tertiary border-border-primary';
 
     return (
       <div className={finalWrapperClass}>
         <select id={id} value={String(value)} className={selectInputStyle} disabled={disabled} onChange={handleChange}>
           {options.map((option) => (
-            <option
-              key={String(option.value)}
-              value={String(option.value)}
-              className={clsx(`bg-${theme.surfaceSecondary}`, `text-${theme.contentSecondary}`)}
-            >
+            <option key={String(option.value)} value={String(option.value)} className="bg-surface-secondary text-content-secondary">
               {option.label}
             </option>
           ))}
         </select>
-        <div className={clsx('pointer-events-none absolute inset-y-0 right-0 flex items-center px-2', `text-${theme.contentTertiary}`)}>
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-content-tertiary">
           <ChevronDownIcon size={20} />
         </div>
       </div>

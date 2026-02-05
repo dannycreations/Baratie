@@ -11,7 +11,6 @@ import { useFavoriteStore } from '../../stores/useFavoriteStore';
 import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
-import { useThemeStore } from '../../stores/useThemeStore';
 import { TooltipButton } from '../shared/Button';
 import { PlusIcon, PreferencesIcon, SettingsIcon, StarIcon } from '../shared/Icon';
 import { StringInput } from '../shared/input/StringInput';
@@ -35,7 +34,6 @@ export const IngredientPanel = memo((): JSX.Element => {
   const openModal = useModalStore((state) => state.openModal);
   const currentModal = useModalStore((state) => state.currentModal);
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
-  const theme = useThemeStore((state) => state.theme);
 
   const [query, setQuery] = useState<string>('');
 
@@ -157,7 +155,7 @@ export const IngredientPanel = memo((): JSX.Element => {
       const isFavorite = favorites.has(item.id);
       const starClasses = clsx(
         'opacity-70 group-hover:opacity-100',
-        isFavorite ? `text-${theme.favoriteFg} hover:text-${theme.favoriteFgHover}` : `text-${theme.contentTertiary} hover:text-${theme.favoriteFg}`,
+        isFavorite ? 'text-favorite-fg hover:text-favorite-fg-hover' : 'text-content-tertiary hover:text-favorite-fg',
       );
 
       return (
@@ -183,7 +181,7 @@ export const IngredientPanel = memo((): JSX.Element => {
         </>
       );
     },
-    [addIngredient, favorites, theme, toggleFavorite],
+    [addIngredient, favorites, toggleFavorite],
   );
 
   return (
@@ -191,7 +189,7 @@ export const IngredientPanel = memo((): JSX.Element => {
       headerLeft="Ingredients"
       headerRight={headerActions}
       className="h-[50vh] min-h-0 md:h-auto md:flex-1"
-      contentClasses={`relative flex h-full flex-col text-${theme.contentTertiary}`}
+      contentClasses="relative flex h-full flex-col text-content-tertiary"
     >
       <div className="flex h-full flex-col" {...recipeDropZoneProps}>
         {isDragOverRecipe && <DropZoneLayout mode="overlay" text="Drop to Remove from Recipe" variant="remove" />}

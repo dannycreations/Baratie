@@ -3,7 +3,6 @@ import { memo, useCallback, useRef, useState } from 'react';
 
 import { useDropZone } from '../../../hooks/useDropZone';
 import { useLineNumber } from '../../../hooks/useLineNumber';
-import { useThemeStore } from '../../../stores/useThemeStore';
 import { DropZoneLayout } from '../layout/DropZoneLayout';
 
 import type { ChangeEvent, JSX, RefObject, UIEvent } from 'react';
@@ -38,8 +37,6 @@ export const TextareaInput = memo<TextareaInputProps>(
     id,
     textareaRef: externalRef,
   }): JSX.Element => {
-    const theme = useThemeStore((state) => state.theme);
-
     const lineNumbersRef = useRef<HTMLDivElement>(null);
     const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
     const textareaRef = externalRef || internalTextareaRef;
@@ -85,19 +82,14 @@ export const TextareaInput = memo<TextareaInputProps>(
     );
 
     const containerClass = clsx(
-      'relative flex overflow-hidden rounded-md border',
-      `border-${theme.borderPrimary}`,
-      `bg-${theme.surfaceSecondary}`,
+      'relative flex overflow-hidden rounded-md border border-border-primary bg-surface-secondary',
       disabled && 'opacity-50',
       wrapperClasses,
     );
-    const gutterClass = clsx(
-      'shrink-0 p-2 overflow-hidden select-none text-right border-r',
-      `text-${theme.contentTertiary}`,
-      `bg-${theme.surfaceSecondary}`,
-      `border-${theme.borderPrimary}`,
-    );
-    const commonStyles = `h-full w-full resize-none p-2 font-mono text-${theme.contentPrimary} outline-none allow-text-selection placeholder:text-${theme.contentTertiary}`;
+    const gutterClass =
+      'shrink-0 p-2 overflow-hidden select-none text-right border-r text-content-tertiary bg-surface-secondary border-border-primary';
+    const commonStyles =
+      'h-full w-full resize-none p-2 font-mono text-content-primary outline-none allow-text-selection placeholder:text-content-tertiary';
     const textareaClass = clsx(commonStyles, 'bg-transparent', textareaClasses);
 
     return (

@@ -46,7 +46,7 @@ const BARATIE_API = {
       },
     },
     theme: {
-      get: () => useThemeStore((state) => state.theme),
+      get: () => useThemeStore((state) => state.id),
     },
   },
 } as const;

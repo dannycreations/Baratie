@@ -4,12 +4,10 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ICON_SIZES, NOTIFICATION_EXIT_MS, NOTIFICATION_SHOW_MS } from '../../app/constants';
 import { useControlTimer } from '../../hooks/useControlTimer';
 import { useNotificationStore } from '../../stores/useNotificationStore';
-import { useThemeStore } from '../../stores/useThemeStore';
 import { Button } from '../shared/Button';
 import { AlertTriangleIcon, CheckIcon, InfoIcon, XIcon } from '../shared/Icon';
 
 import type { ElementType, JSX } from 'react';
-import type { AppTheme } from '../../app/themes';
 import type { NotificationMessage, NotificationType } from '../../app/types';
 
 interface NotificationItemProps {
@@ -17,16 +15,16 @@ interface NotificationItemProps {
 }
 
 interface NotificationTheme {
-  readonly barColor: string;
-  readonly borderColor: string;
-  readonly iconColor: string;
+  readonly barClass: string;
+  readonly borderClass: string;
+  readonly iconClass: string;
 }
 
-const NOTIFICATION_THEME_MAP: Readonly<Record<NotificationType, (theme: AppTheme) => NotificationTheme>> = {
-  error: (theme) => ({ barColor: theme.dangerBg, borderColor: theme.dangerBorder, iconColor: theme.dangerFg }),
-  success: (theme) => ({ barColor: theme.successBg, borderColor: theme.successBorder, iconColor: theme.successFg }),
-  warning: (theme) => ({ barColor: theme.warningBg, borderColor: theme.warningBorder, iconColor: theme.warningFg }),
-  info: (theme) => ({ barColor: theme.infoBg, borderColor: theme.infoBorder, iconColor: theme.infoFg }),
+const NOTIFICATION_THEME_MAP: Readonly<Record<NotificationType, NotificationTheme>> = {
+  error: { barClass: 'bg-danger-bg', borderClass: 'border-danger-border', iconClass: 'text-danger-fg' },
+  success: { barClass: 'bg-success-bg', borderClass: 'border-success-border', iconClass: 'text-success-fg' },
+  warning: { barClass: 'bg-warning-bg', borderClass: 'border-warning-border', iconClass: 'text-warning-fg' },
+  info: { barClass: 'bg-info-bg', borderClass: 'border-info-border', iconClass: 'text-info-fg' },
 } as const;
 
 const NOTIFICATION_ICON_MAP: Readonly<Record<NotificationType, ElementType>> = {
@@ -36,15 +34,14 @@ const NOTIFICATION_ICON_MAP: Readonly<Record<NotificationType, ElementType>> = {
   info: InfoIcon,
 } as const;
 
-function getNotificationTheme(theme: AppTheme, type: NotificationType): NotificationTheme {
-  return (NOTIFICATION_THEME_MAP[type] || NOTIFICATION_THEME_MAP.info)(theme);
+function getNotificationTheme(type: NotificationType): NotificationTheme {
+  return NOTIFICATION_THEME_MAP[type] || NOTIFICATION_THEME_MAP.info;
 }
 
 const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Element => {
   const [isExiting, setExiting] = useState(false);
   const [isPaused, setPaused] = useState(false);
 
-  const theme = useThemeStore((state) => state.theme);
   const removeNotification = useNotificationStore((state) => state.remove);
 
   const handleExit = useCallback((): void => {
@@ -79,29 +76,28 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
     };
   }, [isExiting, notification.id, removeNotification]);
 
-  const { iconColor, borderColor, barColor } = getNotificationTheme(theme, notification.type);
+  const { iconClass, borderClass, barClass } = getNotificationTheme(notification.type);
   const IconComponent = NOTIFICATION_ICON_MAP[notification.type] || InfoIcon;
-  const renderedIcon = <IconComponent className={`text-${iconColor}`} size={ICON_SIZES.MD} />;
+  const renderedIcon = <IconComponent className={iconClass} size={ICON_SIZES.MD} />;
 
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
   const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
 
   const containerClass = clsx(
-    'relative w-full overflow-hidden rounded-lg border-l-4 shadow-lg',
-    `border-${borderColor}`,
-    `bg-${theme.surfaceSecondary}`,
+    'relative w-full overflow-hidden rounded-lg border-l-4 bg-surface-secondary shadow-lg',
+    borderClass,
     animationClass,
     isPaused && 'notification-paused',
   );
 
-  const messageClass = clsx('allow-text-selection text-sm', `text-${theme.contentSecondary}`, notification.title && 'mt-1');
+  const messageClass = clsx('allow-text-selection text-sm text-content-secondary', notification.title && 'mt-1');
 
   return (
     <li className={containerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="flex items-start gap-2 p-3">
         <div className="flex-shrink-0">{renderedIcon}</div>
         <div className="flex-1">
-          {notification.title && <h3 className={clsx('font-semibold text-sm', `text-${theme.contentPrimary}`)}>{notification.title}</h3>}
+          {notification.title && <h3 className="text-sm font-semibold text-content-primary">{notification.title}</h3>}
           <p className={messageClass}>{notification.message}</p>
         </div>
         <div className="flex-shrink-0">
@@ -109,10 +105,10 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
         </div>
       </div>
       {!isExiting && (
-        <div className={clsx('absolute inset-x-0 bottom-0 h-1', `bg-${theme.surfaceTertiary}`)}>
+        <div className="absolute inset-x-0 bottom-0 h-1 bg-surface-tertiary">
           <div
             key={`${notification.id}-${notification.resetAt ?? 0}`}
-            className={clsx('h-full progress-bar-fill', `bg-${barColor}`)}
+            className={clsx('h-full progress-bar-fill', barClass)}
             style={{
               animationDuration: `${duration}ms`,
             }}

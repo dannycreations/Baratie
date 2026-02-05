@@ -1,9 +1,8 @@
 import { clsx } from 'clsx';
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
-import { useThemeStore } from '../../stores/useThemeStore';
 import { useTooltipStore } from '../../stores/useTooltipStore';
 
 import type { JSX, ReactNode } from 'react';
@@ -36,14 +35,12 @@ const INITIAL_TOOLTIP_STYLE: TooltipPositionStyle = {
   isPositioned: false,
 };
 
-function getTooltipArrowStyles(backdrop: string): Readonly<Record<TooltipPosition, string>> {
-  return {
-    top: `absolute top-full h-0 w-0 border-x-transparent border-b-transparent border-t-${backdrop}`,
-    bottom: `absolute bottom-full h-0 w-0 border-x-transparent border-t-transparent border-b-${backdrop}`,
-    left: `absolute left-full h-0 w-0 border-y-transparent border-r-transparent border-l-${backdrop}`,
-    right: `absolute right-full h-0 w-0 border-y-transparent border-l-transparent border-r-${backdrop}`,
-  };
-}
+const TOOLTIP_ARROW_STYLES: Readonly<Record<TooltipPosition, string>> = {
+  top: 'absolute top-full h-0 w-0 border-x-transparent border-b-transparent border-t-backdrop',
+  bottom: 'absolute bottom-full h-0 w-0 border-x-transparent border-t-transparent border-b-backdrop',
+  left: 'absolute left-full h-0 w-0 border-y-transparent border-r-transparent border-l-backdrop',
+  right: 'absolute right-full h-0 w-0 border-y-transparent border-l-transparent border-r-backdrop',
+};
 
 export const Tooltip = ({
   content,
@@ -55,7 +52,6 @@ export const Tooltip = ({
   disabled = false,
 }: TooltipProps): JSX.Element => {
   const { activeId, setActiveId } = useTooltipStore();
-  const theme = useThemeStore((state) => state.theme);
   const isDragging = useDragMoveStore((state) => !!state.draggedItemId);
 
   const [style, setStyle] = useState<TooltipPositionStyle>(INITIAL_TOOLTIP_STYLE);
@@ -92,8 +88,6 @@ export const Tooltip = ({
       setActiveId(null);
     }
   };
-
-  const tooltipArrows = useMemo(() => getTooltipArrowStyles(theme.backdrop), [theme.backdrop]);
 
   useEffect(() => {
     return clearTimer;
@@ -204,12 +198,10 @@ export const Tooltip = ({
     }
   }, [isVisible, position, content]);
 
-  const arrowClass = tooltipArrows[position] || tooltipArrows.top;
+  const arrowClass = TOOLTIP_ARROW_STYLES[position] || TOOLTIP_ARROW_STYLES.top;
   const visibilityClass = isVisible && style.isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
   const tooltipClass = clsx(
-    'z-[1000] max-w-xs p-2 whitespace-pre-line rounded-md font-medium text-sm shadow-lg transition-opacity duration-150',
-    `bg-${theme.backdrop}`,
-    `text-${theme.accentFg}`,
+    'z-[1000] max-w-xs p-2 whitespace-pre-line rounded-md font-medium text-sm shadow-lg transition-opacity duration-150 bg-backdrop text-accent-fg',
     visibilityClass,
     tooltipClasses,
   );

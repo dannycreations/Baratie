@@ -3,7 +3,6 @@ import { memo, useCallback } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 import { useCopyAction } from '../../../hooks/useCopyAction';
-import { useThemeStore } from '../../../stores/useThemeStore';
 import { ConfirmButton, TooltipButton } from '../../shared/Button';
 import { AlertTriangleIcon, CheckIcon, Loader2Icon, RefreshCwIcon } from '../../shared/Icon';
 import { Tooltip } from '../../shared/Tooltip';
@@ -26,19 +25,17 @@ export interface ExtensionItemProps extends ExtensionItemStatusProps, ExtensionI
 }
 
 const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
-
   const statusMap = {
-    loading: { icon: <Loader2Icon className="animate-spin" size={ICON_SIZES.XS} />, text: 'Loading...', color: theme.contentTertiary },
-    loaded: { icon: <CheckIcon size={ICON_SIZES.XS} />, text: 'Loaded', color: theme.successFg },
-    error: { icon: <AlertTriangleIcon size={ICON_SIZES.XS} />, text: 'Error', color: theme.dangerFg },
-    partial: { icon: <AlertTriangleIcon size={ICON_SIZES.XS} />, text: 'Partial', color: theme.warningFg },
-    awaiting: { icon: <Loader2Icon className="animate-spin" size={ICON_SIZES.XS} />, text: 'Awaiting Install...', color: theme.infoFg },
+    loading: { icon: <Loader2Icon className="animate-spin" size={ICON_SIZES.XS} />, text: 'Loading...', colorClass: 'text-content-tertiary' },
+    loaded: { icon: <CheckIcon size={ICON_SIZES.XS} />, text: 'Loaded', colorClass: 'text-success-fg' },
+    error: { icon: <AlertTriangleIcon size={ICON_SIZES.XS} />, text: 'Error', colorClass: 'text-danger-fg' },
+    partial: { icon: <AlertTriangleIcon size={ICON_SIZES.XS} />, text: 'Partial', colorClass: 'text-warning-fg' },
+    awaiting: { icon: <Loader2Icon className="animate-spin" size={ICON_SIZES.XS} />, text: 'Awaiting Install...', colorClass: 'text-info-fg' },
   };
 
   const current = statusMap[status] || statusMap.error;
   const content = (
-    <div className={clsx('flex items-center gap-2 font-medium text-xs', `text-${current.color}`)}>
+    <div className={clsx('flex items-center gap-2 text-xs font-medium', current.colorClass)}>
       {current.icon}
       <span>{current.text}</span>
     </div>
@@ -58,7 +55,6 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
 });
 
 export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status, errors, isLoading, onRefresh, onRemove }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
   const { isCopied, copy } = useCopyAction();
 
   const handleCopyId = useCallback(async (): Promise<void> => {
@@ -75,15 +71,10 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
 
   const leftContent = (
     <div className="flex flex-col">
-      <h3 className={clsx('font-medium cursor-default', `text-${theme.contentPrimary}`)}>{displayName}</h3>
+      <h3 className="cursor-default font-medium text-content-primary">{displayName}</h3>
       <Tooltip content={isCopied ? 'Copied URL!' : 'Click to copy URL'} position="top">
         <button
-          className={clsx(
-            'rounded-sm text-left text-xs cursor-pointer transition-colors duration-150',
-            `text-${theme.contentTertiary}`,
-            `hover:bg-${theme.surfaceMuted}`,
-            `hover:text-${theme.infoFg}`,
-          )}
+          className="cursor-pointer rounded-sm text-left text-xs text-content-tertiary transition-colors duration-150 hover:bg-surface-muted hover:text-info-fg"
           onClick={handleCopyId}
         >
           {id}
@@ -108,13 +99,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
   );
 
   return (
-    <li
-      className={clsx(
-        'list-none flex w-full items-center justify-between h-16 p-2 text-sm rounded-md transition-colors duration-150',
-        `bg-${theme.surfaceTertiary}`,
-        `hover:bg-${theme.surfaceMuted}`,
-      )}
-    >
+    <li className="flex h-16 w-full list-none items-center justify-between rounded-md bg-surface-tertiary p-2 text-sm transition-colors duration-150 hover:bg-surface-muted">
       <div className="min-w-0 grow mr-2">{leftContent}</div>
       <div className="flex shrink-0 items-center">{rightContent}</div>
     </li>

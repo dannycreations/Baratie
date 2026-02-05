@@ -11,7 +11,6 @@ import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
-import { useThemeStore } from '../../stores/useThemeStore';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
 import { FolderOpenIcon, PauseIcon, PlayIcon, SaveIcon } from '../shared/Icon';
 import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
@@ -35,7 +34,6 @@ export const RecipePanel = memo((): JSX.Element => {
   const openModal = useModalStore((state) => state.openModal);
   const isCookbookOpen = useModalStore((state) => state.currentModal?.type === 'cookbook');
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
-  const theme = useThemeStore((state) => state.theme);
   const prepareCookbook = useCookbookStore((state) => state.prepareToOpen);
   const dragId = useDragMoveStore((state) => state.draggedItemId);
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
@@ -110,9 +108,7 @@ export const RecipePanel = memo((): JSX.Element => {
 
   const headerActions = useMemo((): JSX.Element => {
     const autoCookTooltip = isAutoCookEnabled ? 'Pause Auto-Cooking' : 'Resume Auto-Cooking';
-    const autoCookClass = isAutoCookEnabled
-      ? `text-${theme.warningFg} hover:!bg-${theme.warningBg}`
-      : `text-${theme.successFg} hover:!bg-${theme.successBg}`;
+    const autoCookClass = isAutoCookEnabled ? 'text-warning-fg hover:!bg-warning-bg' : 'text-success-fg hover:!bg-success-bg';
 
     return (
       <>
@@ -153,7 +149,7 @@ export const RecipePanel = memo((): JSX.Element => {
         />
       </>
     );
-  }, [ingredients.length, isCookbookOpen, isAutoCookEnabled, theme, openCookbook, handleClearRecipe]);
+  }, [ingredients.length, isCookbookOpen, isAutoCookEnabled, openCookbook, handleClearRecipe]);
 
   const recipeItemHandlers: RecipeItemHandlers = useMemo(
     () => ({
@@ -191,14 +187,14 @@ export const RecipePanel = memo((): JSX.Element => {
     );
   }, [ingredients, isDraggingIngredient, recipeItemHandlers]);
 
-  const listClass = clsx('grow transition-colors duration-200', isDraggingIngredient && `bg-${theme.surfaceMuted}`);
+  const listClass = clsx('grow transition-colors duration-200', isDraggingIngredient && 'bg-surface-muted');
 
   return (
     <SectionLayout
       headerLeft="Recipe"
       headerRight={headerActions}
       className="h-[50vh] min-h-0 md:h-auto md:flex-1"
-      contentClasses={clsx('relative flex h-full flex-col', `text-${theme.contentTertiary}`, scrollClasses)}
+      contentClasses={clsx('relative flex h-full flex-col text-content-tertiary', scrollClasses)}
       contentRef={scrollRef}
     >
       <div className="flex h-full flex-col" {...dropZoneProps}>

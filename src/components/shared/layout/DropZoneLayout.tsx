@@ -2,7 +2,6 @@ import { clsx } from 'clsx';
 import { memo } from 'react';
 
 import { DropZoneMode, DropZoneVariant } from '../../../app/types';
-import { useThemeStore } from '../../../stores/useThemeStore';
 
 import type { JSX } from 'react';
 
@@ -19,11 +18,9 @@ const DROPZONE_MODE_MAP: Readonly<Record<DropZoneMode, string>> = {
 };
 
 export const DropZoneLayout = memo<DropZoneProps>(({ text, variant = 'add', mode = 'placeholder', className = '' }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
-
   const dropZoneThemeMap: Readonly<Record<DropZoneVariant, string>> = {
-    add: `border-${theme.infoBorder} bg-${theme.infoBg} text-${theme.infoFg}`,
-    remove: `border-${theme.dangerBorder} bg-${theme.dangerBg} text-${theme.dangerFg}`,
+    add: 'border-info-border bg-info-bg text-info-fg',
+    remove: 'border-danger-border bg-danger-bg text-danger-fg',
   };
 
   const combinedClass = clsx(

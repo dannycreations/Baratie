@@ -1,8 +1,6 @@
-import { clsx } from 'clsx';
 import { memo, useCallback, useMemo } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
-import { useThemeStore } from '../../stores/useThemeStore';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
 import { HighlightText } from '../shared/HighlightText';
 import { UploadCloudIcon } from '../shared/Icon';
@@ -29,8 +27,6 @@ const timestampFormatter = new Intl.DateTimeFormat(undefined, {
 });
 
 export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete, query }): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
-
   const handleConfirmDelete = useCallback((): void => {
     onDelete(recipe.id);
   }, [onDelete, recipe.id]);
@@ -42,18 +38,12 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete,
   const formattedTimestamp = useMemo(() => timestampFormatter.format(recipe.updatedAt), [recipe.updatedAt]);
 
   return (
-    <li
-      className={clsx(
-        'list-none flex w-full items-center justify-between h-16 p-2 rounded-md transition-colors duration-150',
-        `bg-${theme.surfaceTertiary}`,
-        `hover:bg-${theme.surfaceHover}`,
-      )}
-    >
-      <div className="grow min-w-0 mr-2">
-        <h3 className={clsx('block truncate font-medium text-sm cursor-default outline-none', `text-${theme.contentPrimary}`)}>
+    <li className="flex h-16 w-full list-none items-center justify-between rounded-md bg-surface-tertiary p-2 transition-colors duration-150 hover:bg-surface-hover">
+      <div className="mr-2 grow min-w-0">
+        <h3 className="block cursor-default truncate text-sm font-medium text-content-primary outline-none">
           <HighlightText text={recipe.name} highlight={query} />
         </h3>
-        <p className={clsx('text-xs', `text-${theme.contentTertiary}`)}>
+        <p className="text-xs text-content-tertiary">
           Last Updated: {formattedTimestamp} ({recipe.ingredients.length} steps)
         </p>
       </div>

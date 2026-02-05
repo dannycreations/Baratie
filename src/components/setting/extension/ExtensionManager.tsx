@@ -5,7 +5,6 @@ import { useAutoFocus } from '../../../hooks/useAutoFocus';
 import { useOverflow } from '../../../hooks/useOverflow';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
-import { useThemeStore } from '../../../stores/useThemeStore';
 import { Button } from '../../shared/Button';
 import { BooleanInput } from '../../shared/input/BooleanInput';
 import { StringInput } from '../../shared/input/StringInput';
@@ -39,7 +38,6 @@ export const ExtensionManager = memo((): JSX.Element | null => {
   const closeModal = useModalStore((state) => state.closeModal);
   const installSelectedModules = useExtensionStore((state) => state.installSelectedModules);
   const cancelPendingInstall = useExtensionStore((state) => state.cancelPendingInstall);
-  const theme = useThemeStore((state) => state.theme);
 
   const [query, setQuery] = useState('');
   const [selectedEntries, setSelectedEntries] = useState(new Set<string>());
@@ -175,11 +173,11 @@ export const ExtensionManager = memo((): JSX.Element | null => {
       return (
         <div className="flex min-w-0 items-center gap-2">
           <BooleanInput id={`${categoryId}-toggle`} checked={areAllSelected} disabled={isLoading} onChange={() => handleToggleCategory(items)} />
-          <span className={clsx('truncate font-medium cursor-pointer', `text-${theme.contentSecondary}`)}>{category}</span>
+          <span className="cursor-pointer truncate font-medium text-content-secondary">{category}</span>
         </div>
       );
     },
-    [selectedEntries, handleToggleCategory, theme, isLoading],
+    [selectedEntries, handleToggleCategory, isLoading],
   );
 
   if (!isModalOpen) {

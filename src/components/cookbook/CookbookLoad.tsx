@@ -2,7 +2,6 @@ import { clsx } from 'clsx';
 import { memo, useCallback, useId, useMemo } from 'react';
 
 import { useOverflow } from '../../hooks/useOverflow';
-import { useThemeStore } from '../../stores/useThemeStore';
 import { SaveIcon } from '../shared/Icon';
 import { StringInput } from '../shared/input/StringInput';
 import { EmptyView } from '../shared/View';
@@ -22,7 +21,6 @@ interface CookbookLoadProps extends CookbookItemHandlers {
 
 export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, recipes, totalRecipes, onLoad, onDelete, searchRef }): JSX.Element => {
   const listId = useId();
-  const theme = useThemeStore((state) => state.theme);
   const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   const handleQueryChange = useCallback(
@@ -60,7 +58,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
 
   return (
     <div className="flex h-full flex-col gap-2 min-h-0">
-      <div className={clsx('pb-2 border-b', `border-${theme.borderPrimary}`)}>
+      <div className="border-b border-border-primary pb-2">
         <StringInput
           id="recipe-search"
           inputRef={searchRef}

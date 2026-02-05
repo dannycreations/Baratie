@@ -1,8 +1,6 @@
-import { clsx } from 'clsx';
 import { memo, useCallback } from 'react';
 
 import { useSettingStore } from '../../stores/useSettingStore';
-import { useThemeStore } from '../../stores/useThemeStore';
 import { ConfirmButton } from '../shared/Button';
 import { BooleanInput } from '../shared/input/BooleanInput';
 import { FormLayout } from '../shared/layout/FormLayout';
@@ -10,7 +8,6 @@ import { FormLayout } from '../shared/layout/FormLayout';
 import type { ChangeEvent, JSX } from 'react';
 
 export const GeneralTab = memo((): JSX.Element => {
-  const theme = useThemeStore((state) => state.theme);
   const allowMultipleOpen = useSettingStore((state) => state.multipleOpen);
   const setAllowMultipleOpen = useSettingStore((state) => state.setMultipleOpen);
   const persistRecipe = useSettingStore((state) => state.persistRecipe);
@@ -38,7 +35,7 @@ export const GeneralTab = memo((): JSX.Element => {
   return (
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <div className={clsx('p-3 rounded-md border', `border-${theme.borderPrimary}`, `bg-${theme.surfaceTertiary}`)}>
+        <div className="rounded-md border border-border-primary bg-surface-tertiary p-3">
           <FormLayout
             inputId="allow-multiple-open"
             label="Multi-Expand Accordions"
@@ -47,12 +44,10 @@ export const GeneralTab = memo((): JSX.Element => {
             labelWrapperClasses="flex-1 order-2"
             inputWrapperClasses="order-1 flex items-center"
           >
-            {(id) => (
-              <BooleanInput id={id} checked={allowMultipleOpen} offBackgroundColor={theme.borderPrimary} onChange={handleToggleMultipleOpen} />
-            )}
+            {(id) => <BooleanInput id={id} checked={allowMultipleOpen} offBackgroundColor="bg-border-primary" onChange={handleToggleMultipleOpen} />}
           </FormLayout>
         </div>
-        <div className={clsx('p-3 rounded-md border', `border-${theme.borderPrimary}`, `bg-${theme.surfaceTertiary}`)}>
+        <div className="rounded-md border border-border-primary bg-surface-tertiary p-3">
           <FormLayout
             inputId="persist-recipe"
             label="Persist Current Recipe"
@@ -61,15 +56,15 @@ export const GeneralTab = memo((): JSX.Element => {
             labelWrapperClasses="flex-1 order-2"
             inputWrapperClasses="order-1 flex items-center"
           >
-            {(id) => <BooleanInput id={id} checked={persistRecipe} offBackgroundColor={theme.borderPrimary} onChange={handleTogglePersistRecipe} />}
+            {(id) => <BooleanInput id={id} checked={persistRecipe} offBackgroundColor="bg-border-primary" onChange={handleTogglePersistRecipe} />}
           </FormLayout>
         </div>
       </div>
-      <div className={clsx('p-3 rounded-md border', `border-${theme.dangerBorder}`, `bg-${theme.surfaceTertiary}`)}>
+      <div className="rounded-md border border-danger-border bg-surface-tertiary p-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h3 className={clsx('font-medium text-sm', `text-${theme.dangerFg}`)}>Danger Zone</h3>
-            <p className={clsx('text-xs', `text-${theme.contentSecondary}`)}>
+            <h3 className="text-sm font-medium text-danger-fg">Danger Zone</h3>
+            <p className="text-xs text-content-secondary">
               Resetting the application will permanently delete all your recipes, extensions, settings, and local data. This action cannot be undone.
             </p>
           </div>
