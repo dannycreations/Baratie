@@ -188,7 +188,7 @@ export const IngredientPanel = memo((): JSX.Element => {
     <SectionLayout
       headerLeft="Ingredients"
       headerRight={headerActions}
-      className="h-[50vh] min-h-0 md:h-auto md:flex-1"
+      className="panel-full-height-flex"
       contentClasses="relative flex h-full flex-col text-content-tertiary"
     >
       <div className="flex h-full flex-col" {...recipeDropZoneProps}>

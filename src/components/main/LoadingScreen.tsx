@@ -28,15 +28,12 @@ export const LoadingScreen = (): JSX.Element | null => {
     return null;
   }
 
-  const containerClass = clsx(
-    'fixed inset-0 z-[900] flex flex-col items-center justify-center bg-surface-primary transition-opacity duration-300',
-    isAppReady ? 'opacity-0' : 'opacity-100',
-  );
-  const titleClass = clsx('mt-3 text-2xl font-semibold tracking-wider', isError ? 'text-danger-fg' : 'text-content-secondary');
+  const containerClass = clsx('loading-screen-container', isAppReady ? 'opacity-0' : 'opacity-100');
+  const titleClass = clsx('loading-screen-title', isError ? 'text-danger-fg' : 'text-content-secondary');
 
   return (
     <div className={containerClass}>
-      <div className="flex flex-col items-center p-3 text-center">
+      <div className="flex-col-center p-3 text-center">
         {isError ? (
           <AlertTriangleIcon className="text-danger-fg" size={ICON_SIZES.XXL} />
         ) : (

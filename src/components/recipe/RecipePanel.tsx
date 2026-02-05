@@ -193,7 +193,7 @@ export const RecipePanel = memo((): JSX.Element => {
     <SectionLayout
       headerLeft="Recipe"
       headerRight={headerActions}
-      className="h-[50vh] min-h-0 md:h-auto md:flex-1"
+      className="panel-full-height-flex"
       contentClasses={clsx('relative flex h-full flex-col text-content-tertiary', scrollClasses)}
       contentRef={scrollRef}
     >

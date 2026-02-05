@@ -269,6 +269,18 @@
 
 @layer components {
   /* Layout & Panels */
+  .main-layout-root {
+    @apply flex h-full w-full flex-col gap-3 p-3 md:flex-row md:overflow-hidden;
+  }
+
+  .main-content-wrapper {
+    @apply h-full w-full overflow-hidden transition-opacity duration-300;
+  }
+
+  .section-column {
+    @apply flex w-full flex-col gap-3 md:flex-1 md:overflow-hidden;
+  }
+
   .panel-container {
     @apply flex w-full flex-col overflow-hidden rounded-lg bg-surface-secondary transition-all duration-300;
   }
@@ -279,6 +291,14 @@
 
   .panel-content {
     @apply grow overflow-auto p-3;
+  }
+
+  .panel-half-height {
+    @apply h-[50vh] min-h-0 md:h-1/2;
+  }
+
+  .panel-full-height-flex {
+    @apply h-[50vh] min-h-0 md:h-auto md:flex-1;
   }
 
   /* Form & Inputs */
@@ -354,6 +374,26 @@
 
   .notification-item {
     @apply relative w-full overflow-hidden rounded-lg border-l-4 bg-surface-secondary shadow-lg;
+  }
+
+  .info-message-box {
+    @apply rounded-md border border-border-secondary bg-surface-hover p-2 text-center text-xs italic;
+  }
+
+  .missing-item-container {
+    @apply flex flex-col rounded-md bg-danger-bg text-sm outline-none;
+  }
+
+  .missing-item-header {
+    @apply flex w-full items-center justify-between p-2;
+  }
+
+  .missing-item-title {
+    @apply truncate pr-2 font-medium text-danger-fg;
+  }
+
+  .missing-item-text {
+    @apply mt-1 px-2 pb-2 text-xs text-danger-fg;
   }
 
   .input-textarea-container {
@@ -447,6 +487,39 @@
 
   .modal-content-exit-active {
     animation: var(--animate-scale-down);
+  }
+
+  /* Screens & Large Views */
+  .loading-screen-container {
+    @apply fixed inset-0 z-[900] flex flex-col items-center justify-center bg-surface-primary transition-opacity duration-300;
+  }
+
+  .loading-screen-title {
+    @apply mt-3 text-2xl font-semibold tracking-wider;
+  }
+
+  .error-view-details {
+    @apply max-h-48 mt-3 p-2 overflow-y-auto rounded-md text-left text-xs bg-surface-tertiary transition-all duration-300;
+  }
+
+  .error-view-summary {
+    @apply font-medium cursor-pointer text-content-tertiary hover:text-content-primary;
+  }
+
+  .error-view-pre {
+    @apply mt-2 whitespace-pre-wrap text-content-secondary;
+  }
+
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+
+  .flex-between {
+    @apply flex items-center justify-between;
+  }
+
+  .flex-col-center {
+    @apply flex flex-col items-center;
   }
 
   .accordion-grid {

@@ -103,28 +103,28 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
   }, [onRemove, ingredientItem.id]);
 
   return (
-    <li className="group flex flex-col rounded-md bg-danger-bg text-sm outline-none">
-      <div className="p-2">
-        <div className="flex w-full items-center justify-between">
-          <div className="flex min-w-0 grow items-center">
-            <div className="flex items-center gap-1">
-              <AlertTriangleIcon className="text-danger-fg" size={ICON_SIZES.MD} />
-              <h3 className="truncate pr-2 font-medium text-danger-fg">{ingredientItem.name} (Missing)</h3>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-1">
-            <TooltipButton
-              icon={<XIcon size={ICON_SIZES.SM} />}
-              size="sm"
-              variant="danger"
-              tooltipContent="Remove Missing Ingredient"
-              tooltipPosition="top"
-              onClick={handleRemove}
-            />
+    <li className="missing-item-container group">
+      <div className="missing-item-header">
+        <div className="flex min-w-0 grow items-center">
+          <div className="flex items-center gap-1">
+            <AlertTriangleIcon className="text-danger-fg" size={ICON_SIZES.MD} />
+            <h3 className="missing-item-title">{ingredientItem.name} (Missing)</h3>
           </div>
         </div>
-        <p className="mt-1 text-xs text-danger-fg">This ingredient could not be found. It may be from a disabled or uninstalled extension.</p>
+        <div className="flex shrink-0 items-center gap-1">
+          <TooltipButton
+            icon={<XIcon size={ICON_SIZES.SM} />}
+            size="sm"
+            variant="danger"
+            tooltipContent="Remove Missing Ingredient"
+            tooltipPosition="top"
+            onClick={handleRemove}
+          />
+        </div>
       </div>
+      <p className="missing-item-text">
+        This ingredient could not be found. It may be from a disabled or uninstalled extension.
+      </p>
     </li>
   );
 });
@@ -136,7 +136,7 @@ interface InfoMessageProps {
 
 const InfoMessage = memo<InfoMessageProps>(({ type, message }): JSX.Element => {
   return (
-    <p className="rounded-md border border-border-secondary bg-surface-hover p-2 text-center text-xs italic">
+    <p className="info-message-box">
       {type === 'spiceInInput' ? 'Options are managed in the Input panel.' : message}
     </p>
   );

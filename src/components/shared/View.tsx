@@ -28,8 +28,8 @@ function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
 
 export const EmptyView = ({ children, className, textClasses, icon, title }: EmptyViewProps): JSX.Element => {
   const containerClass = clsx('empty-view-container', className);
-  const titleClass = clsx('empty-view-title', 'text-center');
-  const textClass = clsx('empty-view-text', 'text-center', textClasses);
+  const titleClass = clsx('empty-view-title text-center');
+  const textClass = clsx('empty-view-text text-center', textClasses);
 
   return (
     <div className={containerClass}>
@@ -45,14 +45,10 @@ export const ErrorView = memo<ErrorViewProps>(({ error, errorInfo }): JSX.Elemen
     return null;
   }
 
-  const detailsClass = 'max-h-48 mt-3 p-2 overflow-y-auto rounded-md text-left text-xs bg-surface-tertiary transition-all duration-300';
-  const summaryClass = 'font-medium cursor-pointer text-content-tertiary hover:text-content-primary';
-  const preClass = 'mt-2 whitespace-pre-wrap allow-text-selection text-content-secondary';
-
   return (
-    <details className={detailsClass}>
-      <summary className={summaryClass}>Error Details (Development)</summary>
-      <pre className={preClass}>{errorStringify(error, errorInfo)}</pre>
+    <details className="error-view-details">
+      <summary className="error-view-summary">Error Details (Development)</summary>
+      <pre className="error-view-pre allow-text-selection">{errorStringify(error, errorInfo)}</pre>
     </details>
   );
 });

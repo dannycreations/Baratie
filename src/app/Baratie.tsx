@@ -53,20 +53,20 @@ const Baratie = (): JSX.Element => {
     }
   }, [isAppReady]);
 
-  const mainContentClass = clsx('h-full w-full overflow-hidden transition-opacity duration-300', isAppReady ? 'opacity-100' : 'opacity-0');
-  const rootLayoutClass = clsx('flex h-full w-full flex-col gap-3 overflow-y-auto p-3 md:flex-row md:overflow-hidden', scrollClasses);
+  const mainContentClass = clsx('main-content-wrapper', isAppReady ? 'opacity-100' : 'opacity-0');
+  const rootLayoutClass = clsx('main-layout-root overflow-y-auto', scrollClasses);
 
   return (
     <>
       <LoadingScreen />
       <main className={mainContentClass}>
         <div ref={scrollRef} className={rootLayoutClass}>
-          <section className="flex w-full flex-col gap-3 md:flex-1 md:flex-row md:overflow-hidden">
+          <section className="section-column md:flex-row">
             <IngredientPanel />
             <RecipePanel />
           </section>
 
-          <section className="flex w-full flex-col gap-3 md:flex-1 md:overflow-hidden">
+          <section className="section-column">
             <KitchenPanel type="input" />
             <KitchenPanel type="output" />
           </section>
