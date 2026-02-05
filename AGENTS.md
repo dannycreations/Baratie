@@ -3,6 +3,7 @@
 ## Guidelines
 
 - Bun is used as both the runtime and package manager.
+- You shall read `styles.css` if you dealing with styles related.
 
 ## Commands
 
