@@ -1,40 +1,50 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import checker from 'vite-plugin-checker';
 
-export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-    checker({
-      typescript: true,
-      enableBuild: true,
-    }),
-  ],
-  build: {
-    lib: {
-      entry: 'src/index.ts',
-      name: 'Baratie',
-      fileName: 'index',
-      formats: ['umd'],
-    },
-    rollupOptions: {
-      output: {
-        entryFileNames: 'index.js',
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, '.', '');
+  return {
+    base: './',
+    plugins: [
+      react(),
+      tailwindcss(),
+      checker({
+        typescript: true,
+        enableBuild: true,
+      }),
+    ],
+    build: {
+      lib: {
+        entry: 'src/index.ts',
+        name: 'Baratie',
+        fileName: 'index',
+        formats: ['umd'],
       },
-    },
-    minify: 'terser',
-    terserOptions: {
-      compress: true,
-      format: {
-        beautify: false,
-        comments: false,
+      rollupOptions: {
+        output: {
+          entryFileNames: '[name].js',
+          assetFileNames: (assetInfo) => {
+            if (assetInfo.names?.some((r) => r.endsWith('.css'))) {
+              return 'styles.css';
+            }
+            return '[name].[hash].[ext]';
+          },
+        },
       },
+      minify: 'terser',
+      terserOptions: {
+        compress: true,
+        format: {
+          beautify: false,
+          comments: false,
+        },
+      },
+      sourcemap: true,
     },
-    sourcemap: true,
-  },
-  define: {
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
-  },
+    define: {
+      'process.env.NODE_ENV': JSON.stringify(env.NODE_ENV),
+    },
+  };
 });

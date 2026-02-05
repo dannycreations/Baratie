@@ -5,8 +5,7 @@
   "schedule": ["before 12pm on sunday"],
   "dependencyDashboard": false,
   "cloneSubmodules": true,
-  "npm": {
-    "postUpdateOptions": ["pnpmDedupe"],
+  "bun": {
     "rangeStrategy": "bump",
     "packageRules": [
       {
