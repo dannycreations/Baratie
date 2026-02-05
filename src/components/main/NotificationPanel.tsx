@@ -83,12 +83,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
   const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
 
-  const containerClass = clsx(
-    'relative w-full overflow-hidden rounded-lg border-l-4 bg-surface-secondary shadow-lg',
-    borderClass,
-    animationClass,
-    isPaused && 'notification-paused',
-  );
+  const containerClass = clsx('notification-item', borderClass, animationClass, isPaused && 'notification-paused');
 
   const messageClass = clsx('allow-text-selection text-sm text-content-secondary', notification.title && 'mt-1');
 

@@ -16,14 +16,9 @@ export const BooleanInput = memo<BooleanInputProps>(
   ({ id, checked, onChange, className = '', disabled = false, offBackgroundColor }): JSX.Element => {
     const finalOffBgClass = offBackgroundColor || 'bg-surface-tertiary';
 
-    const containerClass = clsx('relative inline-flex items-center cursor-pointer', className);
+    const containerClass = clsx('input-boolean-container', className);
 
-    const switchClass = clsx(
-      "h-6 w-11 rounded-full outline-none transition-colors after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-disabled:opacity-50",
-      finalOffBgClass,
-      'after:border-border-secondary',
-      'peer-checked:bg-accent-bg',
-    );
+    const switchClass = clsx('input-boolean-switch', finalOffBgClass);
 
     return (
       <label className={containerClass}>

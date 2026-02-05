@@ -294,9 +294,98 @@
     @apply font-medium text-sm text-content-secondary;
   }
 
+  /* Buttons */
+  .btn-base {
+    @apply inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply border-transparent bg-accent-bg text-accent-fg hover:bg-accent-bg-hover;
+  }
+
+  .btn-secondary {
+    @apply border-transparent bg-surface-tertiary text-content-secondary hover:bg-surface-hover hover:text-content-primary;
+  }
+
+  .btn-danger {
+    @apply border-danger-border bg-transparent text-danger-fg hover:bg-danger-bg-hover;
+  }
+
+  .btn-outline {
+    @apply border-border-primary bg-transparent text-content-secondary hover:border-border-secondary hover:bg-surface-muted;
+  }
+
+  .btn-stealth {
+    @apply border-transparent bg-transparent text-content-tertiary hover:bg-surface-muted hover:text-content-primary;
+  }
+
   /* Lists & Items */
   .list-item-container {
     @apply flex h-12 w-full items-center justify-between rounded-md p-2 transition-colors duration-150 bg-surface-tertiary hover:bg-surface-muted;
+  }
+
+  .list-item-interactive {
+    @apply cursor-default group-hover:text-info-fg;
+  }
+
+  .recipe-item {
+    @apply flex w-full flex-col rounded-md transition-colors duration-200 ease-in-out bg-surface-tertiary h-auto min-h-12;
+  }
+
+  .empty-view-container {
+    @apply flex flex-col items-center justify-center p-3 text-center;
+  }
+
+  .empty-view-title {
+    @apply mb-1 font-semibold text-lg text-content-secondary;
+  }
+
+  .empty-view-text {
+    @apply w-full break-words text-sm text-content-tertiary;
+  }
+
+  .tooltip-base {
+    @apply z-[1000] max-w-xs p-2 whitespace-pre-line rounded-md font-medium text-sm shadow-lg transition-opacity duration-150 bg-backdrop text-accent-fg;
+  }
+
+  .highlight-mark {
+    @apply rounded px-1 bg-highlight-bg text-highlight-fg;
+  }
+
+  .notification-item {
+    @apply relative w-full overflow-hidden rounded-lg border-l-4 bg-surface-secondary shadow-lg;
+  }
+
+  .input-textarea-container {
+    @apply relative flex overflow-hidden rounded-md border border-border-primary bg-surface-secondary;
+  }
+
+  .input-textarea-gutter {
+    @apply shrink-0 p-2 overflow-hidden select-none text-right border-r text-content-tertiary bg-surface-secondary border-border-primary;
+  }
+
+  .input-textarea-element {
+    @apply h-full w-full resize-none bg-transparent p-2 font-mono text-content-primary outline-none select-text placeholder:text-content-tertiary transition-all duration-150 ease-in-out;
+  }
+
+  .input-boolean-container {
+    @apply relative inline-flex items-center cursor-pointer;
+  }
+
+  .input-boolean-switch {
+    @apply h-6 w-11 rounded-full outline-none transition-colors after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-border-secondary after:bg-white after:transition-all after:content-[''] peer-checked:bg-accent-bg! peer-checked:after:translate-x-full peer-disabled:opacity-50;
+  }
+
+  .input-number-container {
+    @apply relative flex items-center;
+  }
+
+  .input-number-button-group {
+    @apply absolute top-1 right-1 flex h-[calc(100%-8px)] w-6 flex-col rounded-r-md border-l bg-surface-tertiary border-border-primary;
+  }
+
+  .input-number-button {
+    @apply flex h-1/2 w-full shrink-0 items-center justify-center transition-colors text-content-tertiary hover:bg-surface-muted hover:text-content-primary disabled:cursor-not-allowed disabled:text-content-disabled;
   }
 
   /* Scrollbar Utilities */

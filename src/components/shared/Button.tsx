@@ -65,17 +65,17 @@ const TEXT_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
 function getButtonVariantClass(variant: ButtonVariant): string {
   switch (variant) {
     case 'danger':
-      return 'border-danger-border bg-transparent text-danger-fg hover:bg-danger-bg-hover';
+      return 'btn-danger';
     case 'outline':
-      return 'border-border-primary bg-transparent text-content-secondary hover:border-border-secondary hover:bg-surface-muted';
+      return 'btn-outline';
     case 'primary':
-      return 'border-transparent bg-accent-bg text-accent-fg hover:bg-accent-bg-hover';
+      return 'btn-primary';
     case 'secondary':
-      return 'border-transparent bg-surface-tertiary text-content-secondary hover:bg-surface-hover hover:text-content-primary';
+      return 'btn-secondary';
     case 'stealth':
-      return 'border-transparent bg-transparent text-content-tertiary hover:bg-surface-muted hover:text-content-primary';
+      return 'btn-stealth';
     default:
-      return 'border-transparent bg-accent-bg text-accent-fg hover:bg-accent-bg-hover';
+      return 'btn-primary';
   }
 }
 
@@ -93,11 +93,10 @@ export const Button = memo<ButtonProps>(
     type = 'button',
     variant = 'primary',
   }): JSX.Element => {
-    const baseClass = `inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50`;
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
     const variantClass = getButtonVariantClass(variant as ButtonVariant);
     const sizeClass = children ? clsx(PADDING_MAP[size], TEXT_SIZE_MAP[size]) : PADDING_MAP[size];
-    const finalClassName = clsx(baseClass, shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className);
+    const finalClassName = clsx('btn-base', shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className);
 
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
     const loadingSpinner = <Loader2Icon size={ICON_SIZES.XS} className={clsx('animate-spin', iconMarginClass)} />;

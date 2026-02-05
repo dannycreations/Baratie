@@ -200,11 +200,7 @@ export const Tooltip = ({
 
   const arrowClass = TOOLTIP_ARROW_STYLES[position] || TOOLTIP_ARROW_STYLES.top;
   const visibilityClass = isVisible && style.isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
-  const tooltipClass = clsx(
-    'z-[1000] max-w-xs p-2 whitespace-pre-line rounded-md font-medium text-sm shadow-lg transition-opacity duration-150 bg-backdrop text-accent-fg',
-    visibilityClass,
-    tooltipClasses,
-  );
+  const tooltipClass = clsx('tooltip-base', visibilityClass, tooltipClasses);
   const triggerClass = clsx('relative inline-flex', className);
 
   const triggerElement = (

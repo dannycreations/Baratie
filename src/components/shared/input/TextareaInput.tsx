@@ -81,17 +81,9 @@ export const TextareaInput = memo<TextareaInputProps>(
       [showLineNumbers],
     );
 
-    const containerClass = clsx(
-      'relative flex overflow-hidden rounded-md border border-border-primary bg-surface-secondary',
-      disabled && 'opacity-50',
-      wrapperClasses,
-    );
-    const gutterClass = clsx(
-      'shrink-0 p-2 overflow-hidden select-none text-right border-r text-content-tertiary bg-surface-secondary border-border-primary',
-    );
-    const commonStyles =
-      'h-full w-full resize-none p-2 font-mono text-content-primary outline-none allow-text-selection placeholder:text-content-tertiary transition-all duration-150 ease-in-out';
-    const textareaClass = clsx(commonStyles, 'bg-transparent', textareaClasses);
+    const containerClass = clsx('input-textarea-container', disabled && 'opacity-50', wrapperClasses);
+    const gutterClass = clsx('input-textarea-gutter');
+    const textareaClass = clsx('input-textarea-element', textareaClasses);
 
     return (
       <div className={containerClass} {...dropZoneProps}>

@@ -216,7 +216,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
 
   const statusBorderClass = isAutoCook ? (STATUS_BORDER_MAP[status] ? `border-l-4 ${STATUS_BORDER_MAP[status]}` : '') : '';
   const itemClass = clsx(
-    'group flex flex-col rounded-md text-sm outline-none transition-all duration-200 ease-in-out bg-surface-tertiary',
+    'recipe-item group outline-none',
     isDragged ? 'z-10 scale-[0.97] opacity-60 !bg-surface-hover' : 'scale-100 opacity-100',
     statusBorderClass,
   );
@@ -252,8 +252,8 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
 
   return (
     <li className={itemClass} onDragOver={handleDragOver}>
-      <div className="flex w-full items-center justify-between h-12 p-2 cursor-default">
-        <div className="flex grow items-center min-w-0">{leftColumn}</div>
+      <div className="flex h-12 w-full shrink-0 cursor-default items-center justify-between p-2">
+        <div className="flex min-w-0 grow items-center">{leftColumn}</div>
         <div className="flex shrink-0 items-center gap-1">{rightColumn}</div>
       </div>
 

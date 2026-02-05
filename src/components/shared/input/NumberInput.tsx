@@ -129,14 +129,10 @@ export const NumberInput = memo<NumberInputProps>(
     const incrementPressHandlers = useLongPress(handleIncrement, pressHandlersConfig);
     const decrementPressHandlers = useLongPress(handleDecrement, pressHandlersConfig);
 
-    const standardInputStyle = clsx(
-      'w-full py-2 pl-2 pr-8 rounded-md border outline-none transition-colors duration-150 disabled:opacity-50 number-input-no-spinner text-content-primary placeholder:text-content-tertiary bg-surface-tertiary border-border-primary',
-    );
-    const containerClass = clsx('relative flex items-center', className);
-    const buttonGroupClass =
-      'absolute top-1 right-1 flex h-[calc(100%-8px)] w-6 flex-col rounded-r-md border-l bg-surface-tertiary border-border-primary';
-    const stepButtonClass =
-      'flex h-1/2 w-full shrink-0 items-center justify-center transition-colors text-content-tertiary hover:bg-surface-muted hover:text-content-primary disabled:cursor-not-allowed disabled:text-content-disabled';
+    const standardInputStyle = clsx('input-base py-2 pl-2 pr-8 number-input-no-spinner');
+    const containerClass = clsx('input-number-container', className);
+    const buttonGroupClass = clsx('input-number-button-group');
+    const stepButtonClass = clsx('input-number-button');
 
     return (
       <div className={containerClass}>

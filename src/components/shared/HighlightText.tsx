@@ -26,7 +26,7 @@ export const HighlightText = memo<HighlightTextProps>(({ text, highlight }): JSX
     <>
       {parts.map((part, i) =>
         i % 2 === 1 ? (
-          <mark key={i} className="rounded px-1 bg-highlight-bg text-highlight-fg">
+          <mark key={i} className="highlight-mark">
             {part}
           </mark>
         ) : (

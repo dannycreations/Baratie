@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo } from 'react';
 
 import { createErrorObject, objectStringify } from '../../utilities/errorUtil';
@@ -25,19 +26,13 @@ function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
   return objectStringify(errorObject, 2);
 }
 
-export const EmptyView = ({
-  children,
-  className = 'flex flex-col items-center justify-center p-3',
-  textClasses,
-  icon,
-  title,
-}: EmptyViewProps): JSX.Element => {
-  const titleClass = 'mb-1 text-center font-semibold text-lg text-content-secondary';
-
-  const textClass = textClasses ?? 'w-full break-words text-center text-sm text-content-tertiary';
+export const EmptyView = ({ children, className, textClasses, icon, title }: EmptyViewProps): JSX.Element => {
+  const containerClass = clsx('empty-view-container', className);
+  const titleClass = clsx('empty-view-title', 'text-center');
+  const textClass = clsx('empty-view-text', 'text-center', textClasses);
 
   return (
-    <div className={className}>
+    <div className={containerClass}>
       {icon && <div className="mb-2 text-content-tertiary">{icon}</div>}
       {title && <h3 className={titleClass}>{title}</h3>}
       <p className={textClass}>{children}</p>

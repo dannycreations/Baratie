@@ -50,7 +50,7 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
   const isDraggable = !isDisabled && !!onItemDragStart;
 
   const nameClass = clsx(
-    'block truncate pr-2 text-sm transition-colors duration-150 cursor-default outline-none group-hover:text-info-fg text-content-secondary',
+    'block truncate pr-2 text-sm transition-colors duration-150 outline-none list-item-interactive text-content-secondary',
     isDisabled && 'line-through',
   );
 
