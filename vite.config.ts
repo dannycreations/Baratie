@@ -17,9 +17,8 @@ export default defineConfig(({ mode }) => {
     ],
     build: {
       lib: {
-        entry: 'src/index.ts',
         name: 'Baratie',
-        fileName: 'index',
+        entry: 'src/index.ts',
         formats: ['umd'],
       },
       rollupOptions: {
