@@ -120,7 +120,7 @@ const CategorySection = memo<CategorySectionProps>((props) => {
       <div className={clsx('accordion-grid', isExpanded && 'expanded')}>
         <div className="accordion-content">
           <div className="bg-surface-muted p-2">
-            <ul className="space-y-2">
+            <ul className="list-container">
               {items.map((item) => (
                 <GroupItemLayout
                   key={item.id}
@@ -185,7 +185,7 @@ export const GroupListLayout = memo<GroupListProps>(
     }
 
     return (
-      <div className="space-y-2">
+      <div className="list-container">
         {itemsByCategory.map(([category, items]) => {
           const isExpanded = hasQuery || expandedCategories.has(category);
 

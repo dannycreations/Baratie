@@ -51,10 +51,7 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
           icon={isPaused ? <PlayIcon size={ICON_SIZES.SM} /> : <PauseIcon size={ICON_SIZES.SM} />}
           size="sm"
           variant="stealth"
-          className={clsx(
-            'opacity-50 group-hover:opacity-100',
-            isPaused ? 'text-success-fg hover:!bg-success-bg' : 'text-warning-fg hover:!bg-warning-bg',
-          )}
+          className={clsx('list-item-group-actions', isPaused ? 'text-success-fg hover:!bg-success-bg' : 'text-warning-fg hover:!bg-warning-bg')}
           tooltipContent={isPaused ? 'Resume' : 'Pause'}
           tooltipPosition="top"
           onClick={onTogglePause}
@@ -64,7 +61,7 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
             icon={<PreferencesIcon size={ICON_SIZES.SM} />}
             size="sm"
             variant={isEditorVisible ? 'primary' : 'stealth'}
-            className={!isEditorVisible ? 'text-content-tertiary hover:text-info-fg' : undefined}
+            className={clsx(!isEditorVisible && 'text-content-tertiary hover:text-info-fg')}
             tooltipContent={settingsTooltip}
             tooltipPosition="top"
             onClick={onEditToggle}
@@ -74,7 +71,7 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
           icon={<XIcon size={ICON_SIZES.SM} />}
           size="sm"
           variant="danger"
-          className="opacity-50 group-hover:opacity-100"
+          className="list-item-group-actions"
           tooltipContent="Remove Ingredient"
           tooltipPosition="top"
           onClick={onRemove}
@@ -224,7 +221,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
           <GrabIcon size={ICON_SIZES.MD} />
         </span>
       </Tooltip>
-      <div className="min-w-0 flex-1">
+      <div className="flex-1-min-0">
         <Tooltip content={definition.description} position="top" className="inline-block max-w-full">
           <h3 className="list-item-title font-medium text-content-primary">{definition.name}</h3>
         </Tooltip>
@@ -247,7 +244,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
   return (
     <li className={itemClass} onDragOver={handleDragOver}>
       <div className="flex h-12 w-full shrink-0 cursor-default items-center justify-between p-2 list-item-interactive">
-        <div className="flex min-w-0 grow items-center">{leftColumn}</div>
+        <div className="flex grow items-center min-w-0">{leftColumn}</div>
         <div className="list-item-actions">{rightColumn}</div>
       </div>
 

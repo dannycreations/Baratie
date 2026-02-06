@@ -129,7 +129,7 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
       icon={isCopied ? <CheckIcon size={ICON_SIZES.SM} /> : <CopyIcon size={ICON_SIZES.SM} />}
       size="sm"
       variant="stealth"
-      className={isCopied ? 'text-success-fg' : ''}
+      className={clsx(isCopied && 'text-success-fg')}
       disabled={!textToCopy || isCopied}
       tooltipContent={isCopied ? 'Copied!' : 'Copy'}
       tooltipPosition={tooltipPosition}
@@ -167,7 +167,7 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
     const defaultConfirmTooltip = `Confirm ${actionName}`;
     const tooltipContent = isConfirm ? (customConfirmTooltip ?? defaultConfirmTooltip) : (customTooltip ?? defaultTooltip);
 
-    const buttonClass = clsx(className, isConfirm && 'bg-danger-bg text-accent-fg');
+    const buttonClass = clsx(className, isConfirm && 'bg-danger-bg! text-accent-fg!');
 
     const defaultIcon = icon ?? <Trash2Icon size={ICON_SIZES.SM} />;
     const defaultConfirmIcon = confirmIcon ?? <AlertTriangleIcon className="text-danger-fg" size={ICON_SIZES.SM} />;

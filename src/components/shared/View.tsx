@@ -34,7 +34,7 @@ export const EmptyView = ({ children, className, textClasses, icon, title }: Emp
     <div className={containerClass}>
       {icon && <div className="empty-view-icon">{icon}</div>}
       {title && <h3 className="empty-view-title">{title}</h3>}
-      <p className={textClass}>{children}</p>
+      {children && <p className={textClass}>{children}</p>}
     </div>
   );
 };

@@ -59,7 +59,7 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
   return (
     <li className={liClass} onClick={handleClick}>
       <div className={itemLayoutClass}>
-        <div className="min-w-0 grow">{leftContent}</div>
+        <div className="flex-1-min-0">{leftContent}</div>
         <div className="list-item-actions">{rightContent}</div>
       </div>
     </li>

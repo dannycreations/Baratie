@@ -100,7 +100,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
 
   return (
     <li className="list-item-container h-16 transition-colors duration-150 hover:bg-surface-muted">
-      <div className="min-w-0 grow mr-2">{leftContent}</div>
+      <div className="mr-2 flex-1-min-0">{leftContent}</div>
       <div className="list-item-actions">{rightContent}</div>
     </li>
   );

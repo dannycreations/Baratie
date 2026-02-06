@@ -174,7 +174,7 @@ export const RecipePanel = memo((): JSX.Element => {
       );
     }
     return (
-      <ul className="space-y-2 pb-3">
+      <ul className="list-container pb-3">
         {ingredients.map((ingredient: IngredientItem) => (
           <RecipeItem key={ingredient.id} ingredientItem={ingredient} handlers={recipeItemHandlers} />
         ))}

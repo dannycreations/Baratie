@@ -154,7 +154,7 @@ export const IngredientPanel = memo((): JSX.Element => {
     (item: GroupListItem): JSX.Element => {
       const isFavorite = favorites.has(item.id);
       const starClasses = clsx(
-        'opacity-70 group-hover:opacity-100',
+        'list-item-group-actions',
         isFavorite ? 'text-favorite-fg hover:text-favorite-fg-hover' : 'text-content-tertiary hover:text-favorite-fg',
       );
 
@@ -173,7 +173,7 @@ export const IngredientPanel = memo((): JSX.Element => {
             icon={<PlusIcon size={ICON_SIZES.SM} />}
             size="sm"
             variant="primary"
-            className="opacity-70 group-hover:opacity-100"
+            className="list-item-group-actions"
             tooltipContent={`Add '${item.name}' to Recipe`}
             tooltipPosition="top"
             onClick={() => addIngredient(item.id)}

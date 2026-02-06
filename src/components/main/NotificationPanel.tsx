@@ -91,7 +91,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
     <li className={containerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="flex items-start gap-2 p-3">
         <div className="flex-shrink-0">{renderedIcon}</div>
-        <div className="flex-1">
+        <div className="flex-1-min-0">
           {notification.title && <h3 className="text-sm font-semibold text-content-primary">{notification.title}</h3>}
           <p className={messageClass}>{notification.message}</p>
         </div>
@@ -127,7 +127,7 @@ export const NotificationPanel = memo((): JSX.Element | null => {
   }
 
   return (
-    <ul className="fixed inset-x-3 top-3 z-[700] m-0 list-none space-y-2 p-0 sm:left-auto sm:w-full sm:max-w-sm">
+    <ul className="fixed inset-x-3 top-3 z-[700] m-0 list-none list-container p-0 sm:left-auto sm:w-full sm:max-w-sm">
       {messages.map((notification) => (
         <NotificationItem key={notification.id} notification={notification} />
       ))}

@@ -169,7 +169,7 @@
 
 .light {
   --theme-color: #fff8f1;
-  --backdrop: rgba(fff8f1, 0.7);
+  --backdrop: rgba(255, 248, 241, 0.7);
   --ring-theme: #fb923c; /* orange-400 */
   --content-primary: #78350f; /* amber-900 */
   --content-secondary: #92400e; /* amber-800 */
@@ -179,7 +179,7 @@
   --surface-secondary: #fef3c7; /* amber-200 */
   --surface-tertiary: #fde68a; /* amber-300 */
   --surface-hover: #fbbf24; /* amber-400 */
-  --surface-muted: rgba(fde68a, 0.5); /* amber-300/50 */
+  --surface-muted: rgba(253, 230, 138, 0.5); /* amber-300/50 */
   --border-primary: #fbbf24; /* amber-400 */
   --border-secondary: #f59e0b; /* amber-500 */
   --accent-bg: #f97316; /* orange-500 */
@@ -202,7 +202,7 @@
   --scrollbar-thumb-hover: #fdba74;
   --favorite-fg: #d97706; /* yellow-600 */
   --favorite-fg-hover: #b45309; /* yellow-700 */
-  --highlight-bg: rgba(fbbf24, 0.4); /* amber-400/40 */
+  --highlight-bg: rgba(251, 191, 36, 0.4); /* amber-400/40 */
   --highlight-fg: #451a03; /* amber-950 */
 }
 
@@ -311,7 +311,7 @@
 
   /* Form & Inputs */
   .input-base {
-    @apply w-full rounded-md border border-border-primary bg-surface-tertiary text-content-primary placeholder:text-content-tertiary outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
+    @apply w-full rounded-md border border-border-primary bg-surface-tertiary text-content-primary placeholder:text-content-tertiary outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 focus:border-ring-theme focus:ring-2 focus:ring-ring-theme/30;
   }
 
   .input-base-padding {
@@ -324,7 +324,7 @@
 
   /* Buttons */
   .btn-base {
-    @apply inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center font-medium border outline-none transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-ring-theme/30;
   }
 
   .btn-primary {
@@ -360,6 +360,10 @@
   }
 
   /* Lists & Items */
+  .list-container {
+    @apply space-y-2;
+  }
+
   .list-item-container {
     @apply flex h-12 w-full items-center justify-between rounded-md p-2 transition-colors duration-150 bg-surface-tertiary hover:bg-surface-muted;
   }
@@ -374,6 +378,10 @@
 
   .list-item-actions {
     @apply flex shrink-0 items-center gap-1;
+  }
+
+  .list-item-group-actions {
+    @apply opacity-70 group-hover:opacity-100;
   }
 
   .recipe-item {
@@ -401,7 +409,7 @@
   }
 
   .tooltip-base {
-    @apply z-[1000] max-w-xs p-2 whitespace-pre-line rounded-md font-medium text-sm shadow-lg transition-opacity duration-150 bg-backdrop text-accent-fg;
+    @apply z-[1000] max-w-xs p-2 whitespace-pre-line rounded-md font-medium text-sm shadow-lg transition-opacity duration-150 bg-backdrop text-content-primary border border-border-primary;
   }
 
   .highlight-mark {
@@ -625,6 +633,10 @@
     @apply flex items-center;
   }
 
+  .flex-1-min-0 {
+    @apply min-w-0 flex-1;
+  }
+
   .status-error {
     @apply border-l-4 border-danger-border;
   }
@@ -654,6 +666,10 @@
       -webkit-appearance: none;
       margin: 0;
     }
+  }
+
+  .dropzone-base {
+    @apply flex items-center justify-center rounded-lg border-2 border-dashed text-center font-semibold transition-colors duration-200;
   }
 
   .dropzone-add {

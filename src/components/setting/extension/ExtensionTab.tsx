@@ -77,7 +77,7 @@ export const ExtensionTab = memo((): JSX.Element => {
   const listContent = useMemo(
     () =>
       extensions.length > 0 ? (
-        <ul className="space-y-2">
+        <ul className="list-container">
           {extensions.map((extension) => (
             <ExtensionItem
               key={extension.id}

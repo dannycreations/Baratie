@@ -121,7 +121,7 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
 
 export const SpiceLayout = memo<SpiceLayoutProps>(
   ({ ingredient, currentSpices, onSpiceChange, containerClasses, onLongPressStart, onLongPressEnd }): JSX.Element => {
-    const finalContainerClass = containerClasses || 'space-y-2';
+    const finalContainerClass = containerClasses || 'list-container';
 
     const handleSubmit = useCallback((event: FormEvent<HTMLFormElement>): void => {
       event.preventDefault();

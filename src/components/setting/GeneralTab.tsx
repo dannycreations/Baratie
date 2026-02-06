@@ -41,8 +41,8 @@ export const GeneralTab = memo((): JSX.Element => {
             label="Multi-Expand Accordions"
             description="Allows multiple categories or ingredient options to be open at the same time."
             direction="row"
-            labelWrapperClasses="flex-1 order-2"
-            inputWrapperClasses="order-1 flex items-center"
+            labelWrapperClasses="flex-1-min-0 order-2"
+            inputWrapperClasses="order-1 flex-y-center"
           >
             {(id) => <BooleanInput id={id} checked={allowMultipleOpen} offBackgroundColor="bg-border-primary" onChange={handleToggleMultipleOpen} />}
           </FormLayout>
@@ -53,8 +53,8 @@ export const GeneralTab = memo((): JSX.Element => {
             label="Persist Current Recipe"
             description="Automatically save the current recipe to your browser's local storage to prevent data loss."
             direction="row"
-            labelWrapperClasses="flex-1 order-2"
-            inputWrapperClasses="order-1 flex items-center"
+            labelWrapperClasses="flex-1-min-0 order-2"
+            inputWrapperClasses="order-1 flex-y-center"
           >
             {(id) => <BooleanInput id={id} checked={persistRecipe} offBackgroundColor="bg-border-primary" onChange={handleTogglePersistRecipe} />}
           </FormLayout>

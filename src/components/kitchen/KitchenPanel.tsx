@@ -76,7 +76,7 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, 
       disabled={isTextareaDisabled}
       placeholder={placeholder}
       showLineNumbers
-      wrapperClasses="flex-1 min-h-0"
+      wrapperClasses="flex-1-min-0"
       onChange={onDataChange}
       onFileDrop={onFileDrop}
       textareaRef={textareaRef}
@@ -86,7 +86,7 @@ const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, 
 
 const OutputContent = memo<OutputContentProps>(({ config, data }) => {
   const placeholder = (config?.mode === 'textarea' ? config.placeholder : undefined) || 'Your Results Will Be Presented Here.';
-  return <TextareaInput value={data} readOnly placeholder={placeholder} showLineNumbers wrapperClasses="flex-1 min-h-0" />;
+  return <TextareaInput value={data} readOnly placeholder={placeholder} showLineNumbers wrapperClasses="flex-1-min-0" />;
 });
 
 export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {

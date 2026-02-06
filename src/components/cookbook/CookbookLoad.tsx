@@ -1,6 +1,7 @@
 import { clsx } from 'clsx';
 import { memo, useCallback, useId, useMemo } from 'react';
 
+import { ICON_SIZES } from '../../app/constants';
 import { useOverflow } from '../../hooks/useOverflow';
 import { SaveIcon } from '../shared/Icon';
 import { StringInput } from '../shared/input/StringInput';
@@ -37,7 +38,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
   const listContent = useMemo(() => {
     if (recipes.length > 0) {
       return (
-        <ul className="space-y-2">
+        <ul className="list-container">
           {recipes.map((recipe) => (
             <CookbookItem key={recipe.id} recipe={recipe} onDelete={onDelete} onLoad={onLoad} query={query} />
           ))}
@@ -48,7 +49,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(({ query, onQueryChange, rec
     return (
       <EmptyView
         className="h-full w-full"
-        icon={totalRecipes === 0 ? <SaveIcon size={48} /> : undefined}
+        icon={totalRecipes === 0 ? <SaveIcon size={ICON_SIZES.XXL} /> : undefined}
         title={totalRecipes > 0 ? 'No Matches Found' : 'Cookbook is Empty'}
       >
         {totalRecipes === 0 ? 'Build a recipe and save it to your cookbook!' : `No recipes found for "${query}".`}

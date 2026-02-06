@@ -30,7 +30,7 @@ export const HighlightText = memo<HighlightTextProps>(({ text, highlight }): JSX
             {part}
           </mark>
         ) : (
-          <span key={i}>{part}</span>
+          part
         ),
       )}
     </>
