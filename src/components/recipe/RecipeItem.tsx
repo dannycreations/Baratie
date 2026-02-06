@@ -37,9 +37,9 @@ interface RecipeItemActionsProps {
 }
 
 const STATUS_BORDER_MAP: Readonly<Record<CookingStatusType, string>> = {
-  error: 'border-danger-border',
-  success: 'border-success-border',
-  warning: 'border-warning-border',
+  error: 'status-error',
+  success: 'status-success',
+  warning: 'status-warning',
   idle: '',
 } as const;
 
@@ -208,14 +208,14 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
     infoContent = <InfoMessage type="spiceInInput" />;
   }
 
-  const statusBorderClass = isAutoCook ? (STATUS_BORDER_MAP[status] ? `border-l-4 ${STATUS_BORDER_MAP[status]}` : '') : '';
+  const statusBorderClass = isAutoCook ? STATUS_BORDER_MAP[status] : '';
   const itemClass = clsx(
     'recipe-item group outline-none',
     isDragged ? 'z-10 scale-[0.97] opacity-60 !bg-surface-hover' : 'scale-100 opacity-100',
     statusBorderClass,
   );
 
-  const grabHandleClass = 'mr-2 cursor-grab text-content-tertiary transition-colors group-hover:text-content-secondary';
+  const grabHandleClass = 'recipe-item-grab-handle';
 
   const leftColumn = (
     <>

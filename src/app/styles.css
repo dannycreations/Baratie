@@ -339,6 +339,18 @@
     @apply border-transparent bg-transparent text-content-tertiary hover:bg-surface-muted hover:text-content-primary;
   }
 
+  .btn-xs {
+    @apply p-1 text-xs;
+  }
+
+  .btn-sm {
+    @apply p-2 text-sm;
+  }
+
+  .btn-lg {
+    @apply p-3 text-base;
+  }
+
   /* Lists & Items */
   .list-item-container {
     @apply flex h-12 w-full items-center justify-between rounded-md p-2 transition-colors duration-150 bg-surface-tertiary hover:bg-surface-muted;
@@ -350,6 +362,10 @@
 
   .recipe-item {
     @apply flex w-full flex-col rounded-md transition-colors duration-200 ease-in-out bg-surface-tertiary h-auto min-h-12;
+  }
+
+  .recipe-item-grab-handle {
+    @apply mr-2 cursor-grab text-content-tertiary transition-colors group-hover:text-content-secondary;
   }
 
   .empty-view-container {
@@ -432,6 +448,10 @@
     @apply flex h-1/2 w-full shrink-0 items-center justify-center transition-colors text-content-tertiary hover:bg-surface-muted hover:text-content-primary disabled:cursor-not-allowed disabled:text-content-disabled;
   }
 
+  .input-select-option {
+    @apply bg-surface-secondary text-content-secondary;
+  }
+
   /* Scrollbar Utilities */
   .scrollbar-hidden {
     -ms-overflow-style: none;
@@ -493,6 +513,25 @@
     animation: var(--animate-scale-down);
   }
 
+  .modal-sm {
+    @apply max-w-md;
+  }
+  .modal-md {
+    @apply max-w-lg;
+  }
+  .modal-lg {
+    @apply max-w-xl;
+  }
+  .modal-xl {
+    @apply max-w-2xl;
+  }
+  .modal-xxl {
+    @apply max-w-4xl;
+  }
+  .modal-full {
+    @apply max-w-full sm:h-[90vh] sm:max-h-[90vh];
+  }
+
   /* Screens & Large Views */
   .loading-screen-container {
     @apply fixed inset-0 z-[900] flex flex-col items-center justify-center bg-surface-primary transition-opacity duration-300;
@@ -530,6 +569,16 @@
     @apply flex items-center;
   }
 
+  .status-error {
+    @apply border-l-4 border-danger-border;
+  }
+  .status-success {
+    @apply border-l-4 border-success-border;
+  }
+  .status-warning {
+    @apply border-l-4 border-warning-border;
+  }
+
   .accordion-grid {
     @apply grid grid-rows-[0fr] overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out;
     &.expanded {
@@ -549,6 +598,22 @@
       -webkit-appearance: none;
       margin: 0;
     }
+  }
+
+  .dropzone-add {
+    @apply border-info-border bg-info-bg text-info-fg;
+  }
+
+  .dropzone-remove {
+    @apply border-danger-border bg-danger-bg text-danger-fg;
+  }
+
+  .dropzone-overlay {
+    @apply pointer-events-none absolute inset-0 z-10 p-3;
+  }
+
+  .dropzone-placeholder {
+    @apply h-14 text-sm;
   }
 }
 

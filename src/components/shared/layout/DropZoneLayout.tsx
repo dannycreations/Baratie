@@ -13,19 +13,19 @@ interface DropZoneProps {
 }
 
 const DROPZONE_MODE_MAP: Readonly<Record<DropZoneMode, string>> = {
-  overlay: 'pointer-events-none absolute inset-0 z-10 p-3',
-  placeholder: 'h-14 text-sm',
+  overlay: 'dropzone-overlay',
+  placeholder: 'dropzone-placeholder',
+};
+
+const DROPZONE_VARIANT_MAP: Readonly<Record<DropZoneVariant, string>> = {
+  add: 'dropzone-add',
+  remove: 'dropzone-remove',
 };
 
 export const DropZoneLayout = memo<DropZoneProps>(({ text, variant = 'add', mode = 'placeholder', className = '' }): JSX.Element => {
-  const dropZoneThemeMap: Readonly<Record<DropZoneVariant, string>> = {
-    add: 'border-info-border bg-info-bg text-info-fg',
-    remove: 'border-danger-border bg-danger-bg text-danger-fg',
-  };
-
   const combinedClass = clsx(
     'flex items-center justify-center rounded-lg border-2 border-dashed text-center font-semibold transition-colors duration-200',
-    dropZoneThemeMap[variant],
+    DROPZONE_VARIANT_MAP[variant],
     DROPZONE_MODE_MAP[mode],
     className,
   );

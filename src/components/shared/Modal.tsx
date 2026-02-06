@@ -22,12 +22,12 @@ interface ModalProps {
 }
 
 const MODAL_SIZE_MAP: Readonly<Record<ModalSize, string>> = {
-  sm: 'max-w-md',
-  md: 'max-w-lg',
-  lg: 'max-w-xl',
-  xl: 'max-w-2xl',
-  xxl: 'max-w-4xl',
-  full: 'max-w-full sm:h-[90vh] sm:max-h-[90vh]',
+  sm: 'modal-sm',
+  md: 'modal-md',
+  lg: 'modal-lg',
+  xl: 'modal-xl',
+  xxl: 'modal-xxl',
+  full: 'modal-full',
 };
 
 export const Modal = ({

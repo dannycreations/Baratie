@@ -32,8 +32,10 @@ export const StringInput = memo<StringInputProps>(
       inputRef?.current?.focus();
     }, [onClear, inputRef]);
 
-    const clearButtonClass =
-      'absolute top-1/2 right-2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full transition-colors text-content-tertiary hover:bg-surface-muted hover:text-content-primary';
+    const clearButtonClass = clsx(
+      'absolute top-1/2 right-2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full transition-colors',
+      'text-content-tertiary hover:bg-surface-muted hover:text-content-primary',
+    );
 
     return (
       <div className={finalWrapperClass}>

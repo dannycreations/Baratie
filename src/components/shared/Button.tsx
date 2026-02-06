@@ -50,18 +50,6 @@ interface ConfirmButtonProps {
   readonly tooltipPosition?: TooltipProps['position'];
 }
 
-const PADDING_MAP: Readonly<Record<ButtonSize, string>> = {
-  xs: 'p-1',
-  sm: 'p-2',
-  lg: 'p-3',
-} as const;
-
-const TEXT_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
-  xs: 'text-xs',
-  sm: 'text-sm',
-  lg: 'text-base',
-} as const;
-
 function getButtonVariantClass(variant: ButtonVariant): string {
   switch (variant) {
     case 'danger':
@@ -76,6 +64,19 @@ function getButtonVariantClass(variant: ButtonVariant): string {
       return 'btn-stealth';
     default:
       return 'btn-primary';
+  }
+}
+
+function getButtonSizeClass(size: ButtonSize): string {
+  switch (size) {
+    case 'xs':
+      return 'btn-xs';
+    case 'sm':
+      return 'btn-sm';
+    case 'lg':
+      return 'btn-lg';
+    default:
+      return 'btn-sm';
   }
 }
 
@@ -95,7 +96,7 @@ export const Button = memo<ButtonProps>(
   }): JSX.Element => {
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
     const variantClass = getButtonVariantClass(variant as ButtonVariant);
-    const sizeClass = children ? clsx(PADDING_MAP[size], TEXT_SIZE_MAP[size]) : PADDING_MAP[size];
+    const sizeClass = getButtonSizeClass(size as ButtonSize);
     const finalClassName = clsx('btn-base', shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className);
 
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';

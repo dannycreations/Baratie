@@ -42,7 +42,7 @@ export const SelectInput = memo(
       <div className={finalWrapperClass}>
         <select id={id} value={String(value)} className={selectInputStyle} disabled={disabled} onChange={handleChange}>
           {options.map((option) => (
-            <option key={String(option.value)} value={String(option.value)} className="bg-surface-secondary text-content-secondary">
+            <option key={String(option.value)} value={String(option.value)} className="input-select-option">
               {option.label}
             </option>
           ))}
