@@ -59,12 +59,59 @@ export const isObjectLike = (value?: unknown): value is Record<string, unknown> 
   return typeof value === 'object' && value !== null;
 };
 
-export const toggleSetItem = <T>(set: ReadonlySet<T>, item: T): Set<T> => {
+export const clamp = (value: number, min?: number, max?: number): number => {
+  let result = value;
+  if (min !== undefined) result = Math.max(min, result);
+  if (max !== undefined) result = Math.min(max, result);
+  return result;
+};
+
+export const shallowEqual = <T>(a: T, b: T): boolean => {
+  if (Object.is(a, b)) return true;
+  if (!isObjectLike(a) || !isObjectLike(b)) return false;
+
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) return false;
+
+  for (const key of keysA) {
+    if (!Object.prototype.hasOwnProperty.call(b, key) || !Object.is((a as any)[key], (b as any)[key])) {
+      return false;
+    }
+  }
+  return true;
+};
+
+export const isSetEqual = <T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean => {
+  if (a === b) return true;
+  if (a.size !== b.size) return false;
+  for (const item of a) {
+    if (!b.has(item)) return false;
+  }
+  return true;
+};
+
+export const isMapEqual = <K, V>(
+  a: ReadonlyMap<K, V>,
+  b: ReadonlyMap<K, V>,
+  valueEqual: (v1: V, v2: V) => boolean = (v1, v2) => v1 === v2,
+): boolean => {
+  if (a === b) return true;
+  if (a.size !== b.size) return false;
+  for (const [key, value] of a) {
+    if (!b.has(key) || !valueEqual(value, b.get(key) as V)) return false;
+  }
+  return true;
+};
+
+export const toggleSetItem = <T>(set: ReadonlySet<T>, item: T, force?: boolean): Set<T> => {
   const nextSet = new Set(set);
-  if (nextSet.has(item)) {
-    nextSet.delete(item);
-  } else {
+  const shouldInclude = force ?? !nextSet.has(item);
+
+  if (shouldInclude) {
     nextSet.add(item);
+  } else {
+    nextSet.delete(item);
   }
   return nextSet;
 };

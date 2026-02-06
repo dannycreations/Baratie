@@ -1,7 +1,7 @@
 import { array, intersect, nonEmpty, number, object, optional, pipe, record, string, union } from 'valibot';
 
 import { ingredientRegistry, logger } from '../app/container';
-import { isObjectLike } from '../utilities/objectUtil';
+import { isObjectLike, shallowEqual } from '../utilities/objectUtil';
 
 import type { InferInput } from 'valibot';
 import type { IngredientDefinition, IngredientRegistry } from '../core/IngredientRegistry';
@@ -246,69 +246,31 @@ export const loadAndExecuteExtension = async (
   }
 };
 
-const areScriptsEqual = (a: Record<string, string>, b: Record<string, string>): boolean => {
-  const keysA = Object.keys(a);
-  if (keysA.length !== Object.keys(b).length) {
-    return false;
-  }
-  for (const key of keysA) {
-    if (a[key] !== b[key]) {
-      return false;
-    }
-  }
-  return true;
-};
-
-const areModulesEqual = (a: ReadonlyArray<ManifestModule>, b: ReadonlyArray<ManifestModule>): boolean => {
-  if (a.length !== b.length) {
-    return false;
-  }
-  for (let i = 0; i < a.length; i++) {
-    const modA = a[i];
-    const modB = b[i];
-    if (modA.name !== modB.name || modA.category !== modB.category || modA.description !== modB.description || modA.entry !== modB.entry) {
-      return false;
-    }
-  }
-  return true;
-};
-
 const areEntriesEqual = (a: Extension['entry'], b: Extension['entry']): boolean => {
-  if (typeof a !== typeof b) return false;
-  if (typeof a === 'string') return a === b;
-  if (a === undefined && b === undefined) return true;
-  if (!Array.isArray(a) || !Array.isArray(b)) return false;
+  if (a === b) return true;
+  if (typeof a !== typeof b || !Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
 
-  if (a.length !== b.length) return false;
-  if (a.length === 0) return true;
-
-  if (typeof a[0] === 'string') {
-    return a.every((val, index) => val === b[index]);
-  }
-  if (isObjectLike(a[0])) {
-    return areModulesEqual(a as ReadonlyArray<ManifestModule>, b as ReadonlyArray<ManifestModule>);
-  }
-
-  return false;
+  return a.every((val, index) => {
+    const otherVal = b[index];
+    if (typeof val === 'string' || typeof otherVal === 'string') {
+      return val === otherVal;
+    }
+    return shallowEqual(val, otherVal);
+  });
 };
 
 export const shallowExtensionStorable = (a: ReadonlyArray<StorableExtension>, b: ReadonlyArray<StorableExtension>): boolean => {
-  if (a.length !== b.length) {
-    return false;
-  }
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
 
-  for (let i = 0; i < a.length; i++) {
-    const extA = a[i];
+  return a.every((extA, i) => {
     const extB = b[i];
-    if (
-      extA.id !== extB.id ||
-      extA.name !== extB.name ||
-      extA.fetchedAt !== extB.fetchedAt ||
-      !areScriptsEqual(extA.scripts, extB.scripts) ||
-      !areEntriesEqual(extA.entry, extB.entry)
-    ) {
-      return false;
-    }
-  }
-  return true;
+    return (
+      extA.id === extB.id &&
+      extA.name === extB.name &&
+      extA.fetchedAt === extB.fetchedAt &&
+      shallowEqual(extA.scripts, extB.scripts) &&
+      areEntriesEqual(extA.entry, extB.entry)
+    );
+  });
 };

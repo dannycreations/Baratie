@@ -1,9 +1,8 @@
 import { CATEGORY_EFFECT, KEY_REPEAT_STEP } from '../app/constants';
-import { errorHandler, ingredientRegistry, kitchen, logger } from '../app/container';
-import { InputType } from '../core/InputType';
+import { errorHandler, kitchen, logger } from '../app/container';
 import { useNotificationStore } from '../stores/useNotificationStore';
 
-import type { IngredientContext, IngredientDefinition, SpiceDefinition } from '../core/IngredientRegistry';
+import type { IngredientDefinition, SpiceDefinition } from '../core/IngredientRegistry';
 
 interface RepeatStepSpices {
   readonly delimiter: string;
@@ -96,26 +95,7 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
         const collectedOutputs: Array<string> = [];
         for (let repetitionIndex = 0; repetitionIndex < repeatCount; repetitionIndex++) {
           const { result: output, error } = await errorHandler.attemptAsync(
-            async () => {
-              let currentData = initialInput;
-              for (let subIndex = 0; subIndex < ingredientsToRepeat.length; subIndex++) {
-                const ingredient = ingredientsToRepeat[subIndex];
-                const definition = ingredientRegistry.get(ingredient.ingredientId);
-                errorHandler.assert(definition, `Definition for '${ingredient.name}' not found during sub-recipe execution.`);
-
-                const subContext: IngredientContext = { ...context, currentIndex: subIndex, ingredient: ingredient };
-                const runResult = await definition.run(input.update(currentData), ingredient.spices, subContext);
-
-                errorHandler.assert(runResult instanceof InputType, `Ingredient '${definition.name}' returned an invalid result type.`);
-
-                if (runResult.warningMessage !== undefined) {
-                  continue;
-                }
-
-                currentData = runResult.cast('string').value;
-              }
-              return currentData;
-            },
+            () => kitchen.executeSubRecipe(ingredientsToRepeat, initialInput, context),
             `Ingredient: ${ingredientDisplayName} > Repetition ${repetitionIndex + 1} (Attempt ${attempt + 1})`,
             {
               genericMessage: `An error occurred during repetition ${repetitionIndex + 1} for '${ingredientDisplayName}'.`,

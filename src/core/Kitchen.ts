@@ -157,6 +157,35 @@ export class Kitchen {
     }
   }
 
+  public async executeSubRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string, context?: Partial<IngredientContext>): Promise<string> {
+    let currentData = initialInput;
+
+    for (const [index, ingredient] of recipe.entries()) {
+      const definition = ingredientRegistry.get(ingredient.ingredientId);
+      errorHandler.assert(definition, `Definition for '${ingredient.name}' not found during sub-recipe execution.`);
+
+      const subContext: IngredientContext = {
+        currentIndex: index,
+        ingredient,
+        initialInput,
+        recipe,
+        ...context,
+      };
+
+      const result = await this.runIngredient(ingredient, definition, currentData, recipe, index, initialInput, subContext);
+
+      if (result.status === 'error') {
+        throw new AppError(result.nextData, 'Sub-recipe Execution');
+      }
+
+      if (result.status !== 'warning') {
+        currentData = result.nextData;
+      }
+    }
+
+    return currentData;
+  }
+
   private async cookRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeCookResult> {
     const loopResult = await this.executeRecipeLoop(recipe, initialInput);
 
@@ -268,11 +297,12 @@ export class Kitchen {
     recipe: ReadonlyArray<IngredientItem>,
     currentIndex: number,
     initialInput: string,
+    providedContext?: IngredientContext,
   ): Promise<IngredientRunResult> {
     errorHandler.assert(definition.run, `Runner for '${definition.name}' not found.`);
     logger.debug(`Running ingredient: ${definition.name}`, { id: ingredient.id, index: currentIndex });
 
-    const context: IngredientContext = { currentIndex, ingredient, initialInput, recipe };
+    const context: IngredientContext = providedContext ?? { currentIndex, ingredient, initialInput, recipe };
     const { error, result } = await errorHandler.attemptAsync(() => definition.run(new InputType(currentData), ingredient.spices, context));
 
     if (error) {

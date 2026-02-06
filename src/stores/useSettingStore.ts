@@ -3,6 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_RECIPE, STORAGE_SETTINGS } from '../app/constants';
 import { storage } from '../app/container';
+import { shallowEqual } from '../utilities/objectUtil';
 
 interface SettingProps {
   readonly multipleOpen: boolean;
@@ -50,6 +51,6 @@ useSettingStore.subscribe(
     storage.set(STORAGE_SETTINGS, newSettings, 'App Settings');
   },
   {
-    equalityFn: (a, b) => a.multipleOpen === b.multipleOpen && a.persistRecipe === b.persistRecipe,
+    equalityFn: shallowEqual,
   },
 );

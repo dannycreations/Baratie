@@ -1,5 +1,5 @@
 import { stringToUint8Array, uint8ArrayToBase64, uint8ArrayToHex } from '../utilities/cryptoUtil';
-import { isObjectLike } from '../utilities/objectUtil';
+import { clamp, isObjectLike } from '../utilities/objectUtil';
 
 import type { PanelControlConfig, PanelCustomConfig } from './IngredientRegistry';
 
@@ -252,13 +252,7 @@ export class InputType<T = unknown> {
     }
 
     const { min, max } = options || {};
-    if (min !== undefined) {
-      numericValue = Math.max(min, numericValue);
-    }
-    if (max !== undefined) {
-      numericValue = Math.min(max, numericValue);
-    }
-    return this.cloneValue(numericValue);
+    return this.cloneValue(clamp(numericValue, min, max));
   }
 
   private castToObject(options?: Readonly<{ value?: unknown }>): InputType<object> {

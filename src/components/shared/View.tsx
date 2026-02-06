@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import { memo } from 'react';
 
-import { createErrorObject, objectStringify } from '../../utilities/errorUtil';
+import { createErrorObject, objectStringify, splitLines } from '../../utilities/errorUtil';
 
 import type { ErrorInfo, JSX, ReactNode } from 'react';
 
@@ -21,7 +21,7 @@ interface ErrorViewProps {
 const errorStringify = (error: Error, errorInfo: ErrorInfo | null): string => {
   const errorObject = createErrorObject(error);
   if (errorInfo?.componentStack) {
-    errorObject.componentStack = errorInfo.componentStack.split('\n').map((line) => line.trim());
+    errorObject.componentStack = splitLines(errorInfo.componentStack);
   }
   return objectStringify(errorObject, 2);
 };

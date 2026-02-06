@@ -231,7 +231,8 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
   },
 
   resetModal: () => {
-    set({ nameInput: '', query: '' });
+    get().setName('');
+    get().setQuery('');
   },
 
   setName: (nameInput) => {

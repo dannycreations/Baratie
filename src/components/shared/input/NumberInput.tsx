@@ -3,6 +3,7 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 import { useLongPress } from '../../../hooks/useLongPress';
+import { clamp } from '../../../utilities/objectUtil';
 import { ChevronDownIcon, ChevronUpIcon } from '../Icon';
 
 import type { ChangeEvent, JSX, KeyboardEvent, WheelEvent } from 'react';
@@ -37,20 +38,6 @@ export const NumberInput = memo<NumberInputProps>(
       valueRef.current = value;
     }, [value, internalValue]);
 
-    const clamp = useCallback(
-      (num: number): number => {
-        let clamped = num;
-        if (min !== undefined) {
-          clamped = Math.max(min, clamped);
-        }
-        if (max !== undefined) {
-          clamped = Math.min(max, clamped);
-        }
-        return clamped;
-      },
-      [min, max],
-    );
-
     const handleInputChange = useCallback(
       (event: ChangeEvent<HTMLInputElement>): void => {
         const val = event.target.value;
@@ -59,20 +46,20 @@ export const NumberInput = memo<NumberInputProps>(
 
           const numericValue = parseFloat(val);
           if (isFinite(numericValue)) {
-            const clampedValue = clamp(numericValue);
+            const clampedValue = clamp(numericValue, min, max);
             if (clampedValue !== value) {
               onChange(clampedValue);
             }
           }
         }
       },
-      [clamp, onChange, value],
+      [min, max, onChange, value],
     );
 
     const handleBlur = useCallback((): void => {
       const numericValue = parseFloat(internalValue);
       if (isFinite(numericValue)) {
-        const clampedValue = clamp(numericValue);
+        const clampedValue = clamp(numericValue, min, max);
         setInternalValue(String(clampedValue));
         if (clampedValue !== value) {
           onChange(clampedValue);
@@ -80,21 +67,21 @@ export const NumberInput = memo<NumberInputProps>(
       } else {
         setInternalValue(String(value));
       }
-    }, [internalValue, clamp, onChange, value]);
+    }, [internalValue, min, max, onChange, value]);
 
     const handleStep = useCallback(
       (direction: 'up' | 'down'): void => {
         const currentValue = parseFloat(internalValue);
         const numericValue = isFinite(currentValue) ? currentValue : value;
         const change = direction === 'up' ? step : -step;
-        const finalValue = clamp(numericValue + change);
+        const finalValue = clamp(numericValue + change, min, max);
 
         setInternalValue(String(finalValue));
         if (finalValue !== value) {
           onChange(finalValue);
         }
       },
-      [internalValue, value, step, clamp, onChange],
+      [internalValue, value, step, min, max, onChange],
     );
 
     const handleKeyDown = useCallback(

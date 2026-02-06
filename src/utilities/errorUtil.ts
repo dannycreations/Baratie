@@ -22,10 +22,16 @@ export const createErrorObject = (error: Error): Record<string, unknown> => {
   }
 
   if (error.stack) {
-    errorObject.stack = error.stack.split('\n').map((line) => line.trim());
+    errorObject.stack = splitLines(error.stack);
   }
 
   return errorObject;
+};
+
+export const splitLines = (text: string, trim = true): string[] => {
+  if (!text) return [];
+  const lines = text.split('\n');
+  return trim ? lines.map((l) => l.trim()) : lines;
 };
 
 export const objectStringify = (data: unknown, space?: string | number): string => {

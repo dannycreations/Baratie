@@ -4,7 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { STORAGE_RECIPE } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger, storage } from '../app/container';
 import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
-import { toggleSetItem } from '../utilities/objectUtil';
+import { shallowEqual, toggleSetItem } from '../utilities/objectUtil';
 import { useIngredientStore } from './useIngredientStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useSettingStore } from './useSettingStore';
@@ -161,16 +161,13 @@ export const useRecipeStore = create<RecipeState>()(
         const newEditingIds = new Set(state.editingIds);
         const isCurrentlyEditing = newEditingIds.has(id);
 
-        if (isCurrentlyEditing) {
-          newEditingIds.delete(id);
-        } else {
-          if (!multipleOpen) {
-            newEditingIds.clear();
-          }
-          newEditingIds.add(id);
+        const nextEditingIds = toggleSetItem(state.editingIds, id, isCurrentlyEditing ? false : undefined);
+        if (!isCurrentlyEditing && !multipleOpen) {
+          nextEditingIds.clear();
+          nextEditingIds.add(id);
         }
 
-        return { editingIds: newEditingIds };
+        return { editingIds: nextEditingIds };
       });
     },
 
@@ -244,6 +241,6 @@ useRecipeStore.subscribe(
     }
   },
   {
-    equalityFn: (a, b) => a.ingredients === b.ingredients && a.activeRecipeId === b.activeRecipeId,
+    equalityFn: shallowEqual,
   },
 );
