@@ -39,13 +39,13 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
   const liClass = clsx('list-none rounded-md cursor-pointer outline-none');
 
   const itemLayoutClass = clsx(
-    'list-item-container flex w-full items-center justify-between h-16 p-2 border-2 rounded-md transition-colors duration-150',
+    'list-item-container flex h-16 w-full items-center justify-between border-2 p-2',
     isChecked ? 'border-info-border bg-surface-muted' : 'border-border-primary hover:border-border-secondary hover:bg-surface-muted',
   );
 
   const leftContent = (
     <div className="flex flex-col justify-center gap-1">
-      <h3 className={clsx('font-medium text-sm', isChecked ? 'text-info-fg' : 'text-content-primary')}>{item.name}</h3>
+      <h3 className={clsx('list-item-title font-medium', isChecked ? 'text-info-fg' : 'text-content-primary')}>{item.name}</h3>
       <PalettePreview themeId={item.id} />
     </div>
   );
@@ -60,7 +60,7 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
     <li className={liClass} onClick={handleClick}>
       <div className={itemLayoutClass}>
         <div className="min-w-0 grow">{leftContent}</div>
-        <div className="flex shrink-0 items-center">{rightContent}</div>
+        <div className="list-item-actions">{rightContent}</div>
       </div>
     </li>
   );

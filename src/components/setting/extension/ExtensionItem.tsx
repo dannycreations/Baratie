@@ -71,7 +71,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
 
   const leftContent = (
     <div className="flex flex-col">
-      <h3 className="cursor-default font-medium text-content-primary">{displayName}</h3>
+      <h3 className="list-item-title font-medium text-content-primary">{displayName}</h3>
       <Tooltip content={isCopied ? 'Copied URL!' : 'Click to copy URL'} position="top">
         <button
           className="cursor-pointer rounded-sm text-left text-xs text-content-tertiary transition-colors duration-150 hover:bg-surface-muted hover:text-info-fg"
@@ -84,7 +84,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
   );
 
   const rightContent = (
-    <div className="flex items-center gap-2">
+    <>
       <ExtensionItemStatus status={status} errors={errors} />
       <TooltipButton
         icon={<RefreshCwIcon size={ICON_SIZES.SM} />}
@@ -95,13 +95,13 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
         onClick={handleRefresh}
       />
       <ConfirmButton actionName="Remove" itemType="Extension" onConfirm={handleConfirmDelete} />
-    </div>
+    </>
   );
 
   return (
     <li className="list-item-container h-16 transition-colors duration-150 hover:bg-surface-muted">
       <div className="min-w-0 grow mr-2">{leftContent}</div>
-      <div className="flex shrink-0 items-center">{rightContent}</div>
+      <div className="list-item-actions">{rightContent}</div>
     </li>
   );
 });

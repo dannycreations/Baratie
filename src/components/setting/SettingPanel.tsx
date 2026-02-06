@@ -50,10 +50,7 @@ const TabButton = memo<TabButtonProps>(({ children, isActive, onClick, id }): JS
     onClick(id);
   }, [id, onClick]);
 
-  const tabClass = clsx(
-    'rounded-t-md border-b-2 p-2 text-sm font-medium outline-none transition-colors duration-150',
-    isActive ? 'border-info-border text-info-fg' : 'border-transparent text-content-tertiary hover:bg-surface-muted hover:text-content-primary',
-  );
+  const tabClass = clsx('tab-button', isActive ? 'tab-button-active' : 'tab-button-inactive');
 
   return (
     <button className={tabClass} onClick={handleClick}>
@@ -75,19 +72,19 @@ export const SettingPanel = memo((): JSX.Element => {
   return (
     <>
       <Modal isOpen={isModalOpen} size="xl" title="Settings" onClose={closeModal}>
-        <nav className="flex gap-1 border-b border-border-primary">
+        <nav className="tab-nav">
           {SETTING_TABS.map((tab) => (
             <TabButton key={tab.id} id={tab.id} isActive={activeTab === tab.id} onClick={handleTabSelect}>
               {tab.label}
             </TabButton>
           ))}
         </nav>
-        <div className="flex min-h-0 flex-1 flex-col pt-3">
+        <div className="tab-content-wrapper">
           {SETTING_TABS.map((tab) => (
             <div
               key={tab.id}
               className={clsx(
-                activeTab === tab.id ? 'flex h-full flex-col gap-3' : 'hidden',
+                activeTab === tab.id ? 'tab-panel' : 'tab-panel-hidden',
                 tab.id === 'extensions' ? 'overflow-hidden' : 'overflow-y-auto',
               )}
             >

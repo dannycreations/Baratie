@@ -16,7 +16,7 @@ export const BooleanInput = memo<BooleanInputProps>(
   ({ id, checked, onChange, className = '', disabled = false, offBackgroundColor }): JSX.Element => {
     const containerClass = clsx('input-boolean-container', className);
 
-    const switchClass = clsx('input-boolean-switch', offBackgroundColor);
+    const switchClass = clsx('input-boolean-switch', !checked && offBackgroundColor);
 
     return (
       <label className={containerClass}>

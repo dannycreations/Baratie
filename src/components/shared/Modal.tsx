@@ -104,13 +104,13 @@ export const Modal = ({
     <div ref={backdropRef} className={backdropClass} onClick={handleBackdropClick}>
       <div ref={modalContentRef} className={modalClass}>
         <header className="panel-header">
-          <h2 className="grow truncate pr-2 font-semibold text-xl">{title}</h2>
-          <div className="flex shrink-0 items-center gap-2">
-            {headerActions && <div className="flex shrink-0 items-center gap-1">{headerActions}</div>}
+          <h2 className="modal-header-title">{title}</h2>
+          <div className="modal-header-actions-wrapper">
+            {headerActions && <div className="panel-header-actions">{headerActions}</div>}
             <Button icon={<XIcon size={ICON_SIZES.MD} />} size="sm" variant="stealth" onClick={onClose} />
           </div>
         </header>
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-3">{children}</div>
+        <div className="modal-body">{children}</div>
       </div>
     </div>,
     document.body,

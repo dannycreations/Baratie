@@ -40,14 +40,14 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete,
   return (
     <li className="list-item-container h-16 transition-colors duration-150 hover:bg-surface-hover">
       <div className="mr-2 grow min-w-0">
-        <h3 className="block cursor-default truncate text-sm font-medium text-content-primary outline-none">
+        <h3 className="list-item-title text-content-primary">
           <HighlightText text={recipe.name} highlight={query} />
         </h3>
         <p className="text-xs text-content-tertiary">
           Last Updated: {formattedTimestamp} ({recipe.ingredients.length} steps)
         </p>
       </div>
-      <div className="flex shrink-0 items-center gap-1">
+      <div className="list-item-actions">
         <TooltipButton
           icon={<UploadCloudIcon size={ICON_SIZES.SM} />}
           size="sm"

@@ -49,10 +49,7 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
   const isDisabled = isItemDisabled?.(item) ?? false;
   const isDraggable = !isDisabled && !!onItemDragStart;
 
-  const nameClass = clsx(
-    'block truncate pr-2 text-sm transition-colors duration-150 outline-none list-item-interactive text-content-secondary',
-    isDisabled && 'line-through',
-  );
+  const nameClass = clsx('list-item-title list-item-interactive text-content-secondary', isDisabled && 'line-through');
 
   const handleDragStart = useCallback(
     (event: DragEvent<HTMLElement>): void => {
@@ -82,7 +79,7 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
             </h3>
           </Tooltip>
         </div>
-        {rightColumn && <div className="flex shrink-0 items-center gap-1">{rightColumn}</div>}
+        {rightColumn && <div className="list-item-actions">{rightColumn}</div>}
       </div>
     </li>
   );

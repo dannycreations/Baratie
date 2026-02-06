@@ -289,6 +289,14 @@
     @apply flex h-12 shrink-0 items-center justify-between border-b border-border-primary bg-surface-tertiary px-2 text-content-primary;
   }
 
+  .panel-header-title {
+    @apply min-w-0 truncate pr-2 font-semibold text-lg;
+  }
+
+  .panel-header-actions {
+    @apply flex shrink-0 items-center gap-1;
+  }
+
   .panel-content {
     @apply grow overflow-auto p-3;
   }
@@ -356,8 +364,16 @@
     @apply flex h-12 w-full items-center justify-between rounded-md p-2 transition-colors duration-150 bg-surface-tertiary hover:bg-surface-muted;
   }
 
+  .list-item-title {
+    @apply block truncate pr-2 text-sm transition-colors duration-150 outline-none;
+  }
+
   .list-item-interactive {
     @apply cursor-default group-hover:text-info-fg;
+  }
+
+  .list-item-actions {
+    @apply flex shrink-0 items-center gap-1;
   }
 
   .recipe-item {
@@ -433,7 +449,7 @@
   }
 
   .input-boolean-switch {
-    @apply h-6 w-11 rounded-full outline-none transition-colors after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-border-secondary after:bg-white after:transition-all after:content-[''] peer-checked:bg-accent-bg! peer-checked:after:translate-x-full peer-disabled:opacity-50;
+    @apply relative h-6 w-11 rounded-full border border-border-primary bg-surface-tertiary outline-none transition-colors after:absolute after:top-1/2 after:left-[1px] after:h-5 after:w-5 after:-translate-y-1/2 after:rounded-full after:border after:border-border-secondary after:bg-white after:transition-all after:content-[''] peer-checked:border-accent-bg peer-checked:bg-accent-bg! peer-checked:after:translate-x-[20px] peer-disabled:opacity-50;
   }
 
   .input-number-container {
@@ -532,6 +548,18 @@
     @apply max-w-full sm:h-[90vh] sm:max-h-[90vh];
   }
 
+  .modal-header-title {
+    @apply grow truncate pr-2 font-semibold text-xl;
+  }
+
+  .modal-header-actions-wrapper {
+    @apply flex shrink-0 items-center gap-2;
+  }
+
+  .modal-body {
+    @apply flex min-h-0 flex-1 flex-col overflow-hidden p-3;
+  }
+
   /* Screens & Large Views */
   .loading-screen-container {
     @apply fixed inset-0 z-[900] flex flex-col items-center justify-center bg-surface-primary transition-opacity duration-300;
@@ -539,6 +567,34 @@
 
   .loading-screen-title {
     @apply mt-3 text-2xl font-semibold tracking-wider;
+  }
+
+  .tab-nav {
+    @apply flex gap-1 border-b border-border-primary;
+  }
+
+  .tab-button {
+    @apply rounded-t-md border-b-2 p-2 text-sm font-medium outline-none transition-colors duration-150;
+  }
+
+  .tab-button-active {
+    @apply border-info-border text-info-fg;
+  }
+
+  .tab-button-inactive {
+    @apply border-transparent text-content-tertiary hover:bg-surface-muted hover:text-content-primary;
+  }
+
+  .tab-content-wrapper {
+    @apply flex min-h-0 flex-1 flex-col pt-3;
+  }
+
+  .tab-panel {
+    @apply flex h-full flex-col gap-3;
+  }
+
+  .tab-panel-hidden {
+    @apply hidden;
   }
 
   .error-view-details {

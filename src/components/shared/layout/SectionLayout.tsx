@@ -26,8 +26,8 @@ export const SectionLayout = ({
   return (
     <section className={panelClass}>
       <header className={headerClass}>
-        <h2 className="min-w-0 truncate pr-2 font-semibold text-lg">{headerLeft}</h2>
-        {headerRight && <div className="flex shrink-0 items-center gap-1">{headerRight}</div>}
+        <h2 className="panel-header-title">{headerLeft}</h2>
+        {headerRight && <div className="panel-header-actions">{headerRight}</div>}
       </header>
       <div ref={contentRef} className={contentClass}>
         {children}

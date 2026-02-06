@@ -111,7 +111,7 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
             <h3 className="missing-item-title">{ingredientItem.name} (Missing)</h3>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="list-item-actions">
           <TooltipButton
             icon={<XIcon size={ICON_SIZES.SM} />}
             size="sm"
@@ -226,7 +226,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
       </Tooltip>
       <div className="min-w-0 flex-1">
         <Tooltip content={definition.description} position="top" className="inline-block max-w-full">
-          <h3 className="block cursor-default truncate pr-2 font-medium text-content-primary outline-none">{definition.name}</h3>
+          <h3 className="list-item-title font-medium text-content-primary">{definition.name}</h3>
         </Tooltip>
       </div>
     </>
@@ -248,7 +248,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
     <li className={itemClass} onDragOver={handleDragOver}>
       <div className="flex h-12 w-full shrink-0 cursor-default items-center justify-between p-2 list-item-interactive">
         <div className="flex min-w-0 grow items-center">{leftColumn}</div>
-        <div className="flex shrink-0 items-center gap-1">{rightColumn}</div>
+        <div className="list-item-actions">{rightColumn}</div>
       </div>
 
       {infoContent && <div className="p-2 pt-0">{infoContent}</div>}
