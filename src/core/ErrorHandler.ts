@@ -49,29 +49,25 @@ export class ErrorHandler {
 
   public attempt<T>(fn: () => T, context?: string, options?: Partial<ErrorOptions>): AttemptResult<T> {
     try {
-      const result = fn();
-      return { result, error: null };
+      return { result: fn(), error: null };
     } catch (error: unknown) {
-      const handlerOptions = { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
-      const newError = this.buildError(error, context || 'Sync Operation', handlerOptions.defaultMessage, handlerOptions.genericMessage);
-      this.handle(newError, undefined, handlerOptions);
-      return { result: null, error: newError };
+      return { result: null, error: this.handleCapture(error, context || 'Sync Operation', options) };
     }
   }
 
   public async attemptAsync<T>(fn: () => T | Promise<T>, context?: string, options?: Partial<ErrorOptions>): Promise<AttemptResult<T>> {
     try {
-      const result = await fn();
-      return { result, error: null };
+      return { result: await fn(), error: null };
     } catch (error: unknown) {
-      const handlerOptions = { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
-      const newError = this.buildError(error, context || 'Async Operation', handlerOptions.defaultMessage, handlerOptions.genericMessage);
-      this.handle(newError, undefined, handlerOptions);
-      return { result: null, error: newError };
+      return { result: null, error: this.handleCapture(error, context || 'Async Operation', options) };
     }
   }
 
   public handle(error: unknown, callerContext?: string, options: Partial<ErrorOptions> = {}): void {
+    this.handleCapture(error, callerContext, options);
+  }
+
+  private handleCapture(error: unknown, callerContext?: string, options: Partial<ErrorOptions> = {}): AppError {
     const handlerOptions = { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
     const newError = this.buildError(error, callerContext, handlerOptions.defaultMessage, handlerOptions.genericMessage);
     const effectiveContext = newError.context ?? 'Application';
@@ -97,6 +93,8 @@ export class ErrorHandler {
         });
       }
     }
+
+    return newError;
   }
 
   private buildError(error: unknown, callerContext?: string, defaultMessage?: string, genericMessage?: string): AppError {

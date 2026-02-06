@@ -278,20 +278,19 @@ export const useExtensionStore = create<ExtensionState>()(
     },
 
     setExtensionStatus: (id, status, errors) => {
-      const { extensions, extensionMap, setExtensions } = get();
-      if (!extensionMap.has(id)) {
+      const extension = get().extensionMap.get(id);
+      if (!extension) {
         return;
       }
-      const extension = extensionMap.get(id);
       const updates: Partial<Extension> = {
         status: status,
         errors: errors,
         ...((status === 'loaded' || status === 'partial') && { fetchedAt: Date.now() }),
       };
-      if (status === 'error' && extension?.name === 'Refreshing...') {
+      if (status === 'error' && extension.name === 'Refreshing...') {
         updates.name = 'Error';
       }
-      setExtensions(extensions.map((ext) => (ext.id === id ? { ...ext, ...updates } : ext)));
+      get().upsert({ ...updates, id });
     },
 
     setExtensions: (extensions) => {
@@ -302,20 +301,16 @@ export const useExtensionStore = create<ExtensionState>()(
     },
 
     setIngredients: (id, ingredients) => {
-      const { extensions, extensionMap, setExtensions } = get();
-      if (!extensionMap.has(id)) {
-        return;
-      }
-      setExtensions(extensions.map((ext) => (ext.id === id ? { ...ext, ingredients } : ext)));
+      get().upsert({ id, ingredients });
     },
 
     upsert: (extension) => {
       const { extensions, extensionMap, setExtensions } = get();
-      setExtensions(
-        extensionMap.has(extension.id)
-          ? extensions.map((e) => (e.id === extension.id ? { ...e, ...extension } : e))
-          : [...extensions, extension as Extension],
-      );
+      if (extensionMap.has(extension.id)) {
+        setExtensions(extensions.map((e) => (e.id === extension.id ? { ...e, ...extension } : e)));
+      } else {
+        setExtensions([...extensions, extension as Extension]);
+      }
     },
   })),
 );

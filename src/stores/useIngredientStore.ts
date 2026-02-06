@@ -3,6 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_FILTERS } from '../app/constants';
 import { ingredientRegistry, storage } from '../app/container';
+import { toggleSetItem } from '../utilities/objectUtil';
 
 interface IngredientState {
   readonly disabledCategories: ReadonlySet<string>;
@@ -53,27 +54,15 @@ export const useIngredientStore = create<IngredientState>()(
     },
 
     toggleCategory: (category) => {
-      set((state) => {
-        const disabledCategories = new Set(state.disabledCategories);
-        if (disabledCategories.has(category)) {
-          disabledCategories.delete(category);
-        } else {
-          disabledCategories.add(category);
-        }
-        return { disabledCategories };
-      });
+      set((state) => ({
+        disabledCategories: toggleSetItem(state.disabledCategories, category),
+      }));
     },
 
     toggleIngredient: (id) => {
-      set((state) => {
-        const disabledIngredients = new Set(state.disabledIngredients);
-        if (disabledIngredients.has(id)) {
-          disabledIngredients.delete(id);
-        } else {
-          disabledIngredients.add(id);
-        }
-        return { disabledIngredients };
-      });
+      set((state) => ({
+        disabledIngredients: toggleSetItem(state.disabledIngredients, id),
+      }));
     },
   })),
 );

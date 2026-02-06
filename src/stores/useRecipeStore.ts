@@ -6,6 +6,7 @@ import { errorHandler, ingredientRegistry, logger, storage } from '../app/contai
 import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
 import { useIngredientStore } from './useIngredientStore';
 import { useNotificationStore } from './useNotificationStore';
+import { toggleSetItem } from '../utilities/objectUtil';
 import { useSettingStore } from './useSettingStore';
 
 import type { IngredientItem, SpiceValue } from '../core/IngredientRegistry';
@@ -85,10 +86,9 @@ export const useRecipeStore = create<RecipeState>()(
 
     removeIngredient: (id) => {
       set((state) => {
-        const originalLength = state.ingredients.length;
         const newIngredients = state.ingredients.filter((ingredient) => ingredient.id !== id);
 
-        if (newIngredients.length === originalLength) {
+        if (newIngredients.length === state.ingredients.length) {
           logger.warn(`Attempted to remove non-existent ingredient with id: ${id}`);
           return state;
         }
@@ -99,11 +99,9 @@ export const useRecipeStore = create<RecipeState>()(
         const newPausedIds = new Set(state.pausedIngredientIds);
         newPausedIds.delete(id);
 
-        const newActiveRecipeId = newIngredients.length > 0 ? state.activeRecipeId : null;
-
         return {
           ingredients: newIngredients,
-          activeRecipeId: newActiveRecipeId,
+          activeRecipeId: newIngredients.length > 0 ? state.activeRecipeId : null,
           editingIds: newEditingIds,
           pausedIngredientIds: newPausedIds,
         };
@@ -177,15 +175,9 @@ export const useRecipeStore = create<RecipeState>()(
     },
 
     toggleIngredientPause: (id) => {
-      set((state) => {
-        const newPausedIds = new Set(state.pausedIngredientIds);
-        if (newPausedIds.has(id)) {
-          newPausedIds.delete(id);
-        } else {
-          newPausedIds.add(id);
-        }
-        return { pausedIngredientIds: newPausedIds };
-      });
+      set((state) => ({
+        pausedIngredientIds: toggleSetItem(state.pausedIngredientIds, id),
+      }));
     },
 
     updateSpice: (id, spiceId, rawValue) => {

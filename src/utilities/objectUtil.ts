@@ -58,3 +58,13 @@ export function getObjectHash(obj: object, namespace?: string): string {
 export function isObjectLike(value?: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
+
+export function toggleSetItem<T>(set: ReadonlySet<T>, item: T): Set<T> {
+  const nextSet = new Set(set);
+  if (nextSet.has(item)) {
+    nextSet.delete(item);
+  } else {
+    nextSet.add(item);
+  }
+  return nextSet;
+}
