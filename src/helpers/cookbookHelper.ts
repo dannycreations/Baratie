@@ -45,7 +45,7 @@ const recipeNameFormatter = new Intl.DateTimeFormat(undefined, {
 
 const ingredientsHashCache = new WeakMap<ReadonlyArray<IngredientItem>, string>();
 
-function findIngredientDefinition(rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientProps | null {
+const findIngredientDefinition = (rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientProps | null => {
   if (rawIngredient.ingredientId) {
     const defById = ingredientRegistry.get(rawIngredient.ingredientId);
     if (defById) {
@@ -65,14 +65,14 @@ function findIngredientDefinition(rawIngredient: RawIngredient, source: 'fileImp
 
   logger.warn(`Skipping unknown ingredient '${rawIngredient.name}' from ${source} for recipe '${recipeName}'. Its definition could not be found.`);
   return null;
-}
+};
 
-export function computeInitialRecipeName(
+export const computeInitialRecipeName = (
   ingredients: ReadonlyArray<IngredientItem>,
   activeRecipeId: string | null,
   recipeIdMap: ReadonlyMap<string, RecipebookItem>,
   recipes: ReadonlyArray<RecipebookItem>,
-): string {
+): string => {
   if (ingredients.length === 0) {
     return '';
   }
@@ -93,9 +93,9 @@ export function computeInitialRecipeName(
 
   const dateString = recipeNameFormatter.format(new Date());
   return `My Recipe ${dateString}`;
-}
+};
 
-export function createRecipeHash(ingredients: ReadonlyArray<IngredientItem>): string {
+export const createRecipeHash = (ingredients: ReadonlyArray<IngredientItem>): string => {
   if (ingredientsHashCache.has(ingredients)) {
     return ingredientsHashCache.get(ingredients)!;
   }
@@ -121,14 +121,14 @@ export function createRecipeHash(ingredients: ReadonlyArray<IngredientItem>): st
   const hash = canonicalParts.join('||');
   ingredientsHashCache.set(ingredients, hash);
   return hash;
-}
+};
 
-export function saveAllRecipes(recipes: ReadonlyArray<RecipebookItem>): boolean {
+export const saveAllRecipes = (recipes: ReadonlyArray<RecipebookItem>): boolean => {
   logger.info(`Saving ${recipes.length} recipes to storage.`);
   return storage.set('baratie-cookbook', recipes, 'Saved Recipes');
-}
+};
 
-export function sanitizeIngredient(rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientItem | null {
+export const sanitizeIngredient = (rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientItem | null => {
   const definition = findIngredientDefinition(rawIngredient, source, recipeName);
 
   if (!definition) {
@@ -137,9 +137,9 @@ export function sanitizeIngredient(rawIngredient: RawIngredient, source: 'fileIm
 
   const validatedSpices = validateSpices(definition, rawIngredient.spices);
   return { id: rawIngredient.id, name: definition.name, ingredientId: definition.id, spices: validatedSpices };
-}
+};
 
-export function sanitizeRecipe(rawRecipe: RawRecipeBookItem, source: 'fileImport' | 'storage'): SanitizationResult {
+export const sanitizeRecipe = (rawRecipe: RawRecipeBookItem, source: 'fileImport' | 'storage'): SanitizationResult => {
   const { id, name, createdAt, updatedAt, ingredients: rawIngredients } = rawRecipe;
   const validIngredients: Array<IngredientItem> = [];
 
@@ -159,9 +159,9 @@ export function sanitizeRecipe(rawRecipe: RawRecipeBookItem, source: 'fileImport
       : null;
   const recipe: RecipebookItem = { id, name, ingredients: validIngredients, createdAt, updatedAt };
   return { recipe, warning };
-}
+};
 
-export function processAndSanitizeRecipes(rawItems: ReadonlyArray<unknown>, source: 'fileImport' | 'storage'): SanitizedRecipesResult {
+export const processAndSanitizeRecipes = (rawItems: ReadonlyArray<unknown>, source: 'fileImport' | 'storage'): SanitizedRecipesResult => {
   const allWarnings = new Set<string>();
   const sanitizedRecipes: Array<RecipebookItem> = [];
   let corruptionCount = 0;
@@ -182,4 +182,4 @@ export function processAndSanitizeRecipes(rawItems: ReadonlyArray<unknown>, sour
   }
 
   return { recipes: sanitizedRecipes, warnings: allWarnings, hasCorruption: corruptionCount > 0 };
-}
+};

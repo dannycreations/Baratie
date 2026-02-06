@@ -1,7 +1,7 @@
 import { AppError } from '../core/ErrorHandler';
 import { isObjectLike } from './objectUtil';
 
-export function createErrorObject(error: Error): Record<string, unknown> {
+export const createErrorObject = (error: Error): Record<string, unknown> => {
   const errorObject: Record<string, unknown> = {
     message: error.message,
     name: error.name,
@@ -26,9 +26,9 @@ export function createErrorObject(error: Error): Record<string, unknown> {
   }
 
   return errorObject;
-}
+};
 
-export function objectStringify(data: unknown, space?: string | number): string {
+export const objectStringify = (data: unknown, space?: string | number): string => {
   if (!isObjectLike(data)) {
     return String(data);
   }
@@ -67,4 +67,4 @@ export function objectStringify(data: unknown, space?: string | number): string 
 
     return JSON.stringify(fallback, null, space);
   }
-}
+};

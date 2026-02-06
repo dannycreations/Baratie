@@ -7,7 +7,7 @@ interface ControlTimerProps {
   readonly state?: boolean;
 }
 
-export function useControlTimer({ callback, duration, state = true, reset }: ControlTimerProps): void {
+export const useControlTimer = ({ callback, duration, state = true, reset }: ControlTimerProps): void => {
   const timerIdRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const remainingTimeRef = useRef(duration);
@@ -46,4 +46,4 @@ export function useControlTimer({ callback, duration, state = true, reset }: Con
 
     return clearTimer;
   }, [state, duration, reset]);
-}
+};

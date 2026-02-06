@@ -8,7 +8,7 @@ interface AutoFocusOptions {
   readonly delay?: number;
 }
 
-export function useAutoFocus<T extends HTMLElement>(elementRef: RefObject<T | null>, isActive: boolean, options?: AutoFocusOptions): void {
+export const useAutoFocus = <T extends HTMLElement>(elementRef: RefObject<T | null>, isActive: boolean, options?: AutoFocusOptions): void => {
   const { delay = MODAL_SHOW_MS } = options || {};
 
   useEffect(() => {
@@ -22,4 +22,4 @@ export function useAutoFocus<T extends HTMLElement>(elementRef: RefObject<T | nu
       };
     }
   }, [isActive, delay, elementRef]);
-}
+};

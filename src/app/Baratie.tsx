@@ -80,7 +80,7 @@ const Baratie = (): JSX.Element => {
   );
 };
 
-export function createRoot(element: HTMLElement | null, options: Readonly<BaratieOptions> = {}): void {
+export const createRoot = (element: HTMLElement | null, options: Readonly<BaratieOptions> = {}): void => {
   errorHandler.assert(element, 'Could not find the root element to mount the application.', 'Baratie Mount');
 
   const { disableIngredients, defaultExtensions } = options;
@@ -160,4 +160,4 @@ export function createRoot(element: HTMLElement | null, options: Readonly<Barati
       </ErrorBoundary>
     </StrictMode>,
   );
-}
+};

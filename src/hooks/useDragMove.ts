@@ -17,7 +17,7 @@ export interface DragMoveHookReturn {
   readonly onDragStart: (event: DragEvent<HTMLElement>, itemId: string) => void;
 }
 
-export function useDragMove<T extends { id: string }>({ dragId, setDragId, onDragMove, items }: DragMoveHookProps<T>): DragMoveHookReturn {
+export const useDragMove = <T extends { id: string }>({ dragId, setDragId, onDragMove, items }: DragMoveHookProps<T>): DragMoveHookReturn => {
   const itemIndexMapRef = useRef(new Map<string, number>());
   const dragIdRef = useRef(dragId);
 
@@ -102,4 +102,4 @@ export function useDragMove<T extends { id: string }>({ dragId, setDragId, onDra
     onDragOver: handleDragOver,
     onDragEnd: handleDragEnd,
   };
-}
+};

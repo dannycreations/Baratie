@@ -59,16 +59,16 @@ export type Extension = BaseExtension &
     readonly manifest?: ExtensionManifest;
   };
 
-function executeScript(scriptContent: string, api: typeof window.Baratie): void {
+const executeScript = (scriptContent: string, api: typeof window.Baratie): void => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-implied-eval
     new Function('Baratie', scriptContent)(api);
   } catch (error) {
     throw new Error(`Execution failed: ${error instanceof Error ? error.message : String(error)}`);
   }
-}
+};
 
-async function fetchProvider(repoInfo: Readonly<{ owner: string; repo: string; ref: string }>, path: string): Promise<Response> {
+const fetchProvider = async (repoInfo: Readonly<{ owner: string; repo: string; ref: string }>, path: string): Promise<Response> => {
   const repo = `${repoInfo.owner}/${repoInfo.repo}`;
   const ref = `${repoInfo.ref}/${path}`;
   const primaryUrl = `https://raw.githubusercontent.com/${repo}/${ref}?t=${Date.now()}`;
@@ -88,16 +88,16 @@ async function fetchProvider(repoInfo: Readonly<{ owner: string; repo: string; r
 
   logger.debug(`Fetching from mirror provider: ${fallbackUrl}`);
   return fetch(fallbackUrl, { cache: 'reload' });
-}
+};
 
-export function isCacheValid(fetchedAt?: number): boolean {
+export const isCacheValid = (fetchedAt?: number): boolean => {
   if (typeof fetchedAt !== 'number') {
     return false;
   }
   return Date.now() - fetchedAt < EXTENSION_CACHE_MS;
-}
+};
 
-export function parseGitHubUrl(url: string): Readonly<{ owner: string; repo: string; ref: string }> | null {
+export const parseGitHubUrl = (url: string): Readonly<{ owner: string; repo: string; ref: string }> | null => {
   const trimmedUrl = url.trim();
   const match = trimmedUrl.match(GH_URL_SHORTHAND_REGEX);
   if (!match) {
@@ -111,13 +111,13 @@ export function parseGitHubUrl(url: string): Readonly<{ owner: string; repo: str
     return null;
   }
   return { owner, repo, ref };
-}
+};
 
-export async function loadAndExecuteExtension(
+export const loadAndExecuteExtension = async (
   extension: Readonly<Extension>,
   dependencies: Readonly<LoadExtensionDependencies>,
   onProgress?: (progress: number) => void,
-): Promise<void> {
+): Promise<void> => {
   const { id, name, entry, scripts: cachedScripts } = extension;
   const { setExtensionStatus, setIngredients, upsert, getExtensionMap } = dependencies;
 
@@ -244,9 +244,9 @@ export async function loadAndExecuteExtension(
   } else {
     logger.error(`Extension '${nameForLog}' failed to load with ${errorLogs.length} error(s).`, errorLogs);
   }
-}
+};
 
-function areScriptsEqual(a: Record<string, string>, b: Record<string, string>): boolean {
+const areScriptsEqual = (a: Record<string, string>, b: Record<string, string>): boolean => {
   const keysA = Object.keys(a);
   if (keysA.length !== Object.keys(b).length) {
     return false;
@@ -257,9 +257,9 @@ function areScriptsEqual(a: Record<string, string>, b: Record<string, string>): 
     }
   }
   return true;
-}
+};
 
-function areModulesEqual(a: ReadonlyArray<ManifestModule>, b: ReadonlyArray<ManifestModule>): boolean {
+const areModulesEqual = (a: ReadonlyArray<ManifestModule>, b: ReadonlyArray<ManifestModule>): boolean => {
   if (a.length !== b.length) {
     return false;
   }
@@ -271,9 +271,9 @@ function areModulesEqual(a: ReadonlyArray<ManifestModule>, b: ReadonlyArray<Mani
     }
   }
   return true;
-}
+};
 
-function areEntriesEqual(a: Extension['entry'], b: Extension['entry']): boolean {
+const areEntriesEqual = (a: Extension['entry'], b: Extension['entry']): boolean => {
   if (typeof a !== typeof b) return false;
   if (typeof a === 'string') return a === b;
   if (a === undefined && b === undefined) return true;
@@ -290,9 +290,9 @@ function areEntriesEqual(a: Extension['entry'], b: Extension['entry']): boolean 
   }
 
   return false;
-}
+};
 
-export function shallowExtensionStorable(a: ReadonlyArray<StorableExtension>, b: ReadonlyArray<StorableExtension>): boolean {
+export const shallowExtensionStorable = (a: ReadonlyArray<StorableExtension>, b: ReadonlyArray<StorableExtension>): boolean => {
   if (a.length !== b.length) {
     return false;
   }
@@ -311,4 +311,4 @@ export function shallowExtensionStorable(a: ReadonlyArray<StorableExtension>, b:
     }
   }
   return true;
-}
+};

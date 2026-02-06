@@ -4,9 +4,9 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { STORAGE_RECIPE } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger, storage } from '../app/container';
 import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
+import { toggleSetItem } from '../utilities/objectUtil';
 import { useIngredientStore } from './useIngredientStore';
 import { useNotificationStore } from './useNotificationStore';
-import { toggleSetItem } from '../utilities/objectUtil';
 import { useSettingStore } from './useSettingStore';
 
 import type { IngredientItem, SpiceValue } from '../core/IngredientRegistry';

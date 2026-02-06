@@ -13,7 +13,7 @@ interface ThemeState {
 
 const DEFAULT_THEME_ID = THEME_VARIANT[0].id;
 
-function getInitialThemeId(): ThemeId {
+const getInitialThemeId = (): ThemeId => {
   try {
     const storedThemeId = storage.get<ThemeId>(STORAGE_THEME, 'Theme');
     const themeConfig = THEME_VARIANT.find((theme) => theme.id === storedThemeId);
@@ -26,7 +26,7 @@ function getInitialThemeId(): ThemeId {
   }
 
   return DEFAULT_THEME_ID;
-}
+};
 
 export const useThemeStore = create<ThemeState>()(
   subscribeWithSelector((set) => {

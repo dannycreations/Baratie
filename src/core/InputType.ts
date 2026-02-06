@@ -22,13 +22,13 @@ type InputRenderProps = Omit<PanelControlConfig, 'config'> & Omit<PanelCustomCon
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder('utf-8', { fatal: true });
 
-function toUtf8OrHex(data: Uint8Array): string {
+const toUtf8OrHex = (data: Uint8Array): string => {
   try {
     return textDecoder.decode(data);
   } catch {
     return uint8ArrayToHex(data);
   }
-}
+};
 
 export class InputType<T = unknown> {
   public readonly value: T;

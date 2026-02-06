@@ -21,13 +21,13 @@ export interface DropZoneReturn<E extends HTMLElement> {
   readonly reset: () => void;
 }
 
-export function useDropZone<T, E extends HTMLElement>({
+export const useDropZone = <T, E extends HTMLElement>({
   onValidate,
   onDrop,
   onExtract,
   disabled = false,
   effect = 'copy',
-}: DropZoneProps<T>): DropZoneReturn<E> {
+}: DropZoneProps<T>): DropZoneReturn<E> => {
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleDragEnter = useCallback(
@@ -96,4 +96,4 @@ export function useDropZone<T, E extends HTMLElement>({
     },
     reset,
   };
-}
+};

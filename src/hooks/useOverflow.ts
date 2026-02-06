@@ -15,17 +15,17 @@ const INITIAL_STATUS: OverflowStatus = {
   hasOverflowY: false,
 };
 
-function isTouchDevice(): boolean {
+const isTouchDevice = (): boolean => {
   if (typeof window === 'undefined') {
     return false;
   }
 
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-}
+};
 
 const isMobile = isTouchDevice();
 
-export function useOverflow<T extends HTMLElement>(): OverflowReturn<T> {
+export const useOverflow = <T extends HTMLElement>(): OverflowReturn<T> => {
   const [element, setElement] = useState<T | null>(null);
   const [status, setStatus] = useState<OverflowStatus>(INITIAL_STATUS);
 
@@ -102,4 +102,4 @@ export function useOverflow<T extends HTMLElement>(): OverflowReturn<T> {
   }, [status.hasOverflowX, status.hasOverflowY]);
 
   return { ref, className };
-}
+};

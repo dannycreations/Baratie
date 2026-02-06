@@ -18,13 +18,13 @@ interface ErrorViewProps {
   readonly errorInfo: ErrorInfo | null;
 }
 
-function errorStringify(error: Error, errorInfo: ErrorInfo | null): string {
+const errorStringify = (error: Error, errorInfo: ErrorInfo | null): string => {
   const errorObject = createErrorObject(error);
   if (errorInfo?.componentStack) {
     errorObject.componentStack = errorInfo.componentStack.split('\n').map((line) => line.trim());
   }
   return objectStringify(errorObject, 2);
-}
+};
 
 export const EmptyView = ({ children, className, textClasses, icon, title }: EmptyViewProps): JSX.Element => {
   const containerClass = clsx('empty-view-container', className);

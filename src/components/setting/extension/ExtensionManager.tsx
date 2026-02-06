@@ -17,7 +17,7 @@ import type { GroupListItem } from '../../shared/layout/ListLayout';
 
 type ModuleIngredient = ManifestModule & { id: string };
 
-function groupModulesForDisplay(modules: ReadonlyArray<ManifestModule>): Array<[string, Array<ModuleIngredient>]> {
+const groupModulesForDisplay = (modules: ReadonlyArray<ManifestModule>): Array<[string, Array<ModuleIngredient>]> => {
   const grouped = new Map<string, Array<ModuleIngredient>>();
 
   for (const module of modules) {
@@ -31,7 +31,7 @@ function groupModulesForDisplay(modules: ReadonlyArray<ManifestModule>): Array<[
   }
 
   return [...grouped.entries()].sort(([a], [b]) => a.localeCompare(b));
-}
+};
 
 export const ExtensionManager = memo((): JSX.Element | null => {
   const currentModal = useModalStore((state) => state.currentModal);

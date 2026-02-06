@@ -20,7 +20,7 @@ interface ErrorBoundaryState {
 
 type ErrorDisplayProps = Omit<ErrorBoundaryState, 'hasError'>;
 
-function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
+const ErrorDisplay = ({ error, errorInfo }: ErrorDisplayProps): JSX.Element => {
   const backdropClass = 'fixed inset-0 z-[800] flex items-center justify-center bg-backdrop p-3 backdrop-blur-sm';
   const dialogClass = 'w-full max-w-md rounded-lg border border-danger-border bg-surface-secondary p-3 text-center sm:max-w-lg md:max-w-2xl';
 
@@ -37,7 +37,7 @@ function ErrorDisplay({ error, errorInfo }: ErrorDisplayProps): JSX.Element {
       </div>
     </div>
   );
-}
+};
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   public override state: ErrorBoundaryState = {

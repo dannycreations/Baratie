@@ -9,7 +9,7 @@ interface CopyActionReturn {
   readonly copy: (textToCopy: string) => Promise<void>;
 }
 
-export function useCopyAction(): CopyActionReturn {
+export const useCopyAction = (): CopyActionReturn => {
   const [isCopied, setIsCopied] = useState(false);
 
   const resetCopiedState = useCallback(() => {
@@ -38,4 +38,4 @@ export function useCopyAction(): CopyActionReturn {
   });
 
   return { isCopied, copy };
-}
+};

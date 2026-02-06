@@ -2,7 +2,7 @@ import { errorHandler } from '../app/container';
 import { AppError } from '../core/ErrorHandler';
 import { base64ToUint8Array } from './cryptoUtil';
 
-export function readFile<T>(file: Readonly<File>, readMethod: 'readAsText' | 'readAsArrayBuffer', context: string): Promise<T> {
+export const readFile = <T>(file: Readonly<File>, readMethod: 'readAsText' | 'readAsArrayBuffer', context: string): Promise<T> => {
   return new Promise<T>((resolve, reject) => {
     const reader = new FileReader();
 
@@ -36,9 +36,9 @@ export function readFile<T>(file: Readonly<File>, readMethod: 'readAsText' | 're
       reject(new AppError(`Exception during ${readMethod} call: ${String(error)}`, context, `Could not read '${file.name}'.`, error));
     }
   });
-}
+};
 
-export function sanitizeFileName(name: string, fallbackName = 'file'): string {
+export const sanitizeFileName = (name: string, fallbackName = 'file'): string => {
   const MAX_BASENAME_LENGTH = 200;
   const trimmedName = name.trim();
 
@@ -73,9 +73,9 @@ export function sanitizeFileName(name: string, fallbackName = 'file'): string {
   }
 
   return `${baseName.toLowerCase()}${extension.toLowerCase()}`;
-}
+};
 
-export function triggerDownload(data: string, fileName: string, mimeType = 'text/plain', isBase64 = false): void {
+export const triggerDownload = (data: string, fileName: string, mimeType = 'text/plain', isBase64 = false): void => {
   errorHandler.attempt(
     () => {
       let blob: Blob;
@@ -103,4 +103,4 @@ export function triggerDownload(data: string, fileName: string, mimeType = 'text
       genericMessage: `Failed to initiate the download for '${fileName}'. Please check your browser settings.`,
     },
   );
-}
+};

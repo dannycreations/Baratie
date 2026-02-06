@@ -1,4 +1,4 @@
-function canonicalStringify(obj: unknown, seen: Set<unknown>): string {
+const canonicalStringify = (obj: unknown, seen: Set<unknown>): string => {
   if (obj === null || obj === undefined) {
     return String(obj);
   }
@@ -42,9 +42,9 @@ function canonicalStringify(obj: unknown, seen: Set<unknown>): string {
   } finally {
     seen.delete(obj);
   }
-}
+};
 
-export function getObjectHash(obj: object, namespace?: string): string {
+export const getObjectHash = (obj: object, namespace?: string): string => {
   const stringToHash = (namespace || '') + canonicalStringify(obj, new Set());
   let hash = 5381;
 
@@ -53,13 +53,13 @@ export function getObjectHash(obj: object, namespace?: string): string {
   }
 
   return (hash >>> 0).toString(36);
-}
+};
 
-export function isObjectLike(value?: unknown): value is Record<string, unknown> {
+export const isObjectLike = (value?: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null;
-}
+};
 
-export function toggleSetItem<T>(set: ReadonlySet<T>, item: T): Set<T> {
+export const toggleSetItem = <T>(set: ReadonlySet<T>, item: T): Set<T> => {
   const nextSet = new Set(set);
   if (nextSet.has(item)) {
     nextSet.delete(item);
@@ -67,4 +67,4 @@ export function toggleSetItem<T>(set: ReadonlySet<T>, item: T): Set<T> {
     nextSet.add(item);
   }
   return nextSet;
-}
+};

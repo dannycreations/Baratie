@@ -7,7 +7,7 @@ interface ConfirmActionReturn {
   readonly trigger: () => void;
 }
 
-export function useConfirmAction(callback: () => void, timeout: number): ConfirmActionReturn {
+export const useConfirmAction = (callback: () => void, timeout: number): ConfirmActionReturn => {
   const [isConfirm, setIsConfirm] = useState(false);
 
   const callbackRef = useRef(callback);
@@ -41,4 +41,4 @@ export function useConfirmAction(callback: () => void, timeout: number): Confirm
     isConfirm,
     trigger,
   };
-}
+};

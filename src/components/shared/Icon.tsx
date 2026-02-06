@@ -27,7 +27,7 @@ export interface CreateIconProps<P extends IconProps = IconProps> {
   readonly defaultProps?: Partial<SvgIconAttributes> | ((props: P) => Partial<SvgIconAttributes>);
 }
 
-export function createIcon<P extends IconProps = IconProps>({ iconName, defaultProps = {}, path }: Readonly<CreateIconProps<P>>) {
+export const createIcon = <P extends IconProps = IconProps>({ iconName, defaultProps = {}, path }: Readonly<CreateIconProps<P>>) => {
   return memo((props: P): JSX.Element => {
     const { size = ICON_SIZES.LG, className = '', ...rest } = props;
     const computedDefaultProps = typeof defaultProps === 'function' ? defaultProps(props as P) : defaultProps;
@@ -55,7 +55,7 @@ export function createIcon<P extends IconProps = IconProps>({ iconName, defaultP
       </svg>
     );
   });
-}
+};
 
 export const AlertTriangleIcon = createIcon({
   iconName: 'alert-triangle',

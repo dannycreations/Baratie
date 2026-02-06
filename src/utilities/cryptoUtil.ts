@@ -1,6 +1,6 @@
 const HEX_TABLE = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, '0'));
 
-export function base64ToUint8Array(base64: string): Uint8Array {
+export const base64ToUint8Array = (base64: string): Uint8Array => {
   const binaryString = atob(base64);
   const length = binaryString.length;
   const bytes = new Uint8Array(length);
@@ -8,9 +8,9 @@ export function base64ToUint8Array(base64: string): Uint8Array {
     bytes[i] = binaryString.charCodeAt(i);
   }
   return bytes;
-}
+};
 
-export function hexToUint8Array(hex: string): Uint8Array {
+export const hexToUint8Array = (hex: string): Uint8Array => {
   const cleanHex = hex.startsWith('0x') ? hex.slice(2) : hex;
   const length = cleanHex.length;
 
@@ -28,9 +28,9 @@ export function hexToUint8Array(hex: string): Uint8Array {
     bytes[i / 2] = (high << 4) | low;
   }
   return bytes;
-}
+};
 
-export function stringToUint8Array(str: string): Uint8Array {
+export const stringToUint8Array = (str: string): Uint8Array => {
   const cleanValue = str.trim();
   if (!cleanValue) {
     return new Uint8Array();
@@ -45,18 +45,18 @@ export function stringToUint8Array(str: string): Uint8Array {
   } catch {}
 
   return new TextEncoder().encode(str);
-}
+};
 
-export function uint8ArrayToHex(bytes: Uint8Array): string {
+export const uint8ArrayToHex = (bytes: Uint8Array): string => {
   const length = bytes.length;
   const out = new Array(length);
   for (let i = 0; i < length; i++) {
     out[i] = HEX_TABLE[bytes[i]];
   }
   return out.join('');
-}
+};
 
-export function uint8ArrayToBase64(bytes: Uint8Array): string {
+export const uint8ArrayToBase64 = (bytes: Uint8Array): string => {
   const CHUNK_SIZE = 8192;
   const length = bytes.length;
   const chunks: string[] = [];
@@ -67,4 +67,4 @@ export function uint8ArrayToBase64(bytes: Uint8Array): string {
   }
 
   return btoa(chunks.join(''));
-}
+};

@@ -15,9 +15,9 @@ interface NotificationState {
   readonly update: (id: string, duration: number, resetAt: number) => void;
 }
 
-function getDedupeKey(notification: Readonly<Pick<NotificationMessage, 'type' | 'title' | 'message'>>): string {
+const getDedupeKey = (notification: Readonly<Pick<NotificationMessage, 'type' | 'title' | 'message'>>): string => {
   return [notification.type, notification.title || '', notification.message].join('|');
-}
+};
 
 export const useNotificationStore = create<NotificationState>()((set, get) => ({
   order: [],

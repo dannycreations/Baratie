@@ -7,7 +7,7 @@ interface LongPressOptions {
   readonly onEnd?: () => void;
 }
 
-export function useLongPress(
+export const useLongPress = (
   callback: () => void,
   { delay = 300, onStart, onEnd }: LongPressOptions = {},
 ): {
@@ -16,7 +16,7 @@ export function useLongPress(
   readonly onMouseLeave: () => void;
   readonly onTouchStart: () => void;
   readonly onTouchEnd: () => void;
-} {
+} => {
   const timeoutRef = useRef<number | null>(null);
   const intervalRef = useRef<number | null>(null);
   const callbackRef = useRef(callback);
@@ -77,4 +77,4 @@ export function useLongPress(
     onTouchStart: start,
     onTouchEnd: stop,
   };
-}
+};

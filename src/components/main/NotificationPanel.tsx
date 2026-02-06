@@ -34,9 +34,9 @@ const NOTIFICATION_ICON_MAP: Readonly<Record<NotificationType, ElementType>> = {
   info: InfoIcon,
 } as const;
 
-function getNotificationTheme(type: NotificationType): NotificationTheme {
+const getNotificationTheme = (type: NotificationType): NotificationTheme => {
   return NOTIFICATION_THEME_MAP[type] || NOTIFICATION_THEME_MAP.info;
-}
+};
 
 const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Element => {
   const [isExiting, setExiting] = useState(false);

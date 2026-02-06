@@ -32,7 +32,7 @@ interface TextareaMetrics {
   readonly contentWidth: number;
 }
 
-function findStartLogicalLineIndex(prefixSum: ReadonlyArray<number>, targetVisualLine: number): number {
+const findStartLogicalLineIndex = (prefixSum: ReadonlyArray<number>, targetVisualLine: number): number => {
   let low = 0;
   let high = prefixSum.length - 1;
   let resultIndex = prefixSum.length;
@@ -48,9 +48,9 @@ function findStartLogicalLineIndex(prefixSum: ReadonlyArray<number>, targetVisua
   }
 
   return resultIndex;
-}
+};
 
-export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }: LineNumberProps): VirtualResult {
+export const useLineNumber = ({ textareaRef, value, showLineNumbers, scrollTop }: LineNumberProps): VirtualResult => {
   const [lineMetrics, setLineMetrics] = useState<ReadonlyArray<LineMetric>>([]);
   const [visualLinePrefixSum, setVisualLinePrefixSum] = useState<ReadonlyArray<number>>([]);
 
@@ -210,4 +210,4 @@ export function useLineNumber({ textareaRef, value, showLineNumbers, scrollTop }
       visibleItems: visibleItems,
     };
   }, [showLineNumbers, textareaRef, lineMetrics, scrollTop, visualLinePrefixSum]);
-}
+};

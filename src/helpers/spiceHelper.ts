@@ -6,7 +6,7 @@ import type { IngredientDefinition, SpiceDefinition, SpiceValue } from '../core/
 const sortedSpicesCache = new WeakMap<Readonly<IngredientDefinition>, ReadonlyArray<SpiceDefinition>>();
 const spiceMapCache = new WeakMap<Readonly<IngredientDefinition>, ReadonlyMap<string, Readonly<SpiceDefinition>>>();
 
-function getSpiceMap(definition: Readonly<IngredientDefinition>): ReadonlyMap<string, Readonly<SpiceDefinition>> {
+const getSpiceMap = (definition: Readonly<IngredientDefinition>): ReadonlyMap<string, Readonly<SpiceDefinition>> => {
   if (spiceMapCache.has(definition)) {
     return spiceMapCache.get(definition)!;
   }
@@ -20,9 +20,9 @@ function getSpiceMap(definition: Readonly<IngredientDefinition>): ReadonlyMap<st
   const result = new Map(definition.spices.map((s) => [s.id, s]));
   spiceMapCache.set(definition, result);
   return result;
-}
+};
 
-function prepareSelectValue(newValue: SpiceValue, spice: Readonly<SpiceDefinition>): SpiceValue {
+const prepareSelectValue = (newValue: SpiceValue, spice: Readonly<SpiceDefinition>): SpiceValue => {
   if (spice.type !== 'select') {
     return newValue;
   }
@@ -30,9 +30,9 @@ function prepareSelectValue(newValue: SpiceValue, spice: Readonly<SpiceDefinitio
   const selectedOption = spice.options.find((opt) => String(opt.value) === String(newValue));
 
   return selectedOption ? selectedOption.value : newValue;
-}
+};
 
-export function getSortedSpices(definition: Readonly<IngredientDefinition>): ReadonlyArray<SpiceDefinition> {
+export const getSortedSpices = (definition: Readonly<IngredientDefinition>): ReadonlyArray<SpiceDefinition> => {
   if (sortedSpicesCache.has(definition)) {
     return sortedSpicesCache.get(definition)!;
   }
@@ -46,12 +46,12 @@ export function getSortedSpices(definition: Readonly<IngredientDefinition>): Rea
   const result = [...definition.spices].sort((a, b) => a.id.localeCompare(b.id));
   sortedSpicesCache.set(definition, result);
   return result;
-}
+};
 
-export function getVisibleSpices(
+export const getVisibleSpices = (
   ingredientDefinition: Readonly<IngredientDefinition>,
   currentSpices: Readonly<Record<string, SpiceValue>>,
-): Array<SpiceDefinition> {
+): Array<SpiceDefinition> => {
   const allSpices = ingredientDefinition.spices || [];
   if (!allSpices.length) {
     return [];
@@ -95,14 +95,14 @@ export function getVisibleSpices(
   };
 
   return allSpices.filter((spice) => checkVisibility(spice.id));
-}
+};
 
-export function updateAndValidate(
+export const updateAndValidate = (
   ingredientDefinition: Readonly<IngredientDefinition>,
   currentSpices: Readonly<Record<string, SpiceValue>>,
   spiceId: string,
   rawValue: SpiceValue,
-): Record<string, SpiceValue> {
+): Record<string, SpiceValue> => {
   const spiceMap = getSpiceMap(ingredientDefinition);
   const spice = spiceMap.get(spiceId);
   errorHandler.assert(spice, `Could not find spice definition for ID: ${spiceId} in ingredient ${ingredientDefinition.name}`);
@@ -111,12 +111,12 @@ export function updateAndValidate(
   const newSpices = { ...currentSpices, [spiceId]: processedValue };
 
   return validateSpices(ingredientDefinition, newSpices);
-}
+};
 
-export function validateSpices(
+export const validateSpices = (
   ingredientDefinition: Readonly<IngredientDefinition>,
   rawSpices: Readonly<Record<string, unknown>>,
-): Record<string, SpiceValue> {
+): Record<string, SpiceValue> => {
   const validatedSpices: Record<string, SpiceValue> = {};
 
   if (!ingredientDefinition.spices) {
@@ -162,4 +162,4 @@ export function validateSpices(
     }
   }
   return validatedSpices;
-}
+};

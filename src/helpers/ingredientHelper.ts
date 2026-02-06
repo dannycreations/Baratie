@@ -2,11 +2,11 @@ import type { IngredientProps } from '../core/IngredientRegistry';
 
 const categorySortFn = ([catA]: readonly [string, unknown], [catB]: readonly [string, unknown]): number => catA.localeCompare(catB);
 
-export function createIngredientSearchPredicate(lowerQuery: string): (ing: IngredientProps) => boolean {
+export const createIngredientSearchPredicate = (lowerQuery: string): ((ing: IngredientProps) => boolean) => {
   return (ing: IngredientProps): boolean => ing.name.toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
-}
+};
 
-export function groupAndSortIngredients(ingredients: ReadonlyArray<IngredientProps>): ReadonlyMap<string, ReadonlyArray<IngredientProps>> {
+export const groupAndSortIngredients = (ingredients: ReadonlyArray<IngredientProps>): ReadonlyMap<string, ReadonlyArray<IngredientProps>> => {
   const grouped = new Map<string, Array<IngredientProps>>();
 
   for (const ingredient of ingredients) {
@@ -20,12 +20,12 @@ export function groupAndSortIngredients(ingredients: ReadonlyArray<IngredientPro
 
   const sortedEntries = [...grouped.entries()].sort(categorySortFn);
   return new Map(sortedEntries);
-}
+};
 
-export function searchGroupedIngredients(
+export const searchGroupedIngredients = (
   groupedIngredients: ReadonlyMap<string, ReadonlyArray<IngredientProps>>,
   query: string,
-): Array<[string, ReadonlyArray<IngredientProps>]> {
+): Array<[string, ReadonlyArray<IngredientProps>]> => {
   const lowerQuery = query.toLowerCase().trim();
   if (!lowerQuery) {
     return [...groupedIngredients.entries()];
@@ -47,4 +47,4 @@ export function searchGroupedIngredients(
   }
 
   return result;
-}
+};
