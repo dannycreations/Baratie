@@ -3,8 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_FILTERS } from '../app/constants';
 import { ingredientRegistry, storage } from '../app/container';
-import { toggleSetItem } from '../utilities/objectUtil';
-import { persistStore } from '../utilities/storeUtil';
+import { createSetHandlers, persistStore } from '../utilities/storeUtil';
 
 interface IngredientState {
   readonly disabledCategories: ReadonlySet<string>;
@@ -18,54 +17,44 @@ interface IngredientState {
 }
 
 export const useIngredientStore = create<IngredientState>()(
-  subscribeWithSelector((set) => ({
-    disabledCategories: new Set(),
-    disabledIngredients: new Set(),
-    registryVersion: 0,
+  subscribeWithSelector((set) => {
+    const categoryHandlers = createSetHandlers<IngredientState, 'disabledCategories', string>(set, 'disabledCategories');
+    const ingredientHandlers = createSetHandlers<IngredientState, 'disabledIngredients', string>(set, 'disabledIngredients');
 
-    init: () => {
-      const filters = storage.get<{
-        readonly categories?: ReadonlyArray<string>;
-        readonly ingredients?: ReadonlyArray<string>;
-      }>(STORAGE_FILTERS, 'Ingredient Filters');
+    return {
+      disabledCategories: new Set(),
+      disabledIngredients: new Set(),
+      registryVersion: 0,
 
-      const allCategories = ingredientRegistry.getAllCategories();
-      const validCategories = (filters?.categories ?? []).filter((c: unknown) => {
-        return typeof c === 'string' && allCategories.has(c);
-      }) as string[];
-      const validIngredients = (filters?.ingredients ?? []).filter((i: unknown) => {
-        return typeof i === 'string' && !!ingredientRegistry.get(i);
-      }) as string[];
+      init: () => {
+        const filters = storage.get<{
+          readonly categories?: ReadonlyArray<string>;
+          readonly ingredients?: ReadonlyArray<string>;
+        }>(STORAGE_FILTERS, 'Ingredient Filters');
 
-      set({
-        disabledCategories: new Set(validCategories),
-        disabledIngredients: new Set(validIngredients),
-      });
-    },
+        const allCategories = ingredientRegistry.getAllCategories();
+        const validCategories = (filters?.categories ?? []).filter((c: unknown) => typeof c === 'string' && allCategories.has(c)) as string[];
+        const validIngredients = (filters?.ingredients ?? []).filter(
+          (i: unknown) => typeof i === 'string' && !!ingredientRegistry.get(i),
+        ) as string[];
 
-    refreshRegistry: () => {
-      set((state) => ({ registryVersion: state.registryVersion + 1 }));
-    },
+        categoryHandlers.set(validCategories);
+        ingredientHandlers.set(validIngredients);
+      },
 
-    setFilters: ({ categories, ingredients }) => {
-      set({
-        disabledCategories: new Set(categories),
-        disabledIngredients: new Set(ingredients),
-      });
-    },
+      refreshRegistry: () => {
+        set((state) => ({ registryVersion: state.registryVersion + 1 }));
+      },
 
-    toggleCategory: (category) => {
-      set((state) => ({
-        disabledCategories: toggleSetItem(state.disabledCategories, category),
-      }));
-    },
+      setFilters: ({ categories, ingredients }) => {
+        categoryHandlers.set(categories as string[]);
+        ingredientHandlers.set(ingredients as string[]);
+      },
 
-    toggleIngredient: (id) => {
-      set((state) => ({
-        disabledIngredients: toggleSetItem(state.disabledIngredients, id),
-      }));
-    },
-  })),
+      toggleCategory: categoryHandlers.toggle,
+      toggleIngredient: ingredientHandlers.toggle,
+    };
+  }),
 );
 
 persistStore(useIngredientStore, {

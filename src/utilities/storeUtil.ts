@@ -1,5 +1,5 @@
 import { storage } from '../app/container';
-import { shallowEqual } from './objectUtil';
+import { shallowEqual, toggleSetItem } from './objectUtil';
 
 import type { StoreApi, UseBoundStore } from 'zustand';
 
@@ -11,6 +11,21 @@ export interface PersistOptions<T> {
   readonly equalityFn?: (a: Partial<T>, b: Partial<T>) => boolean;
   readonly shouldPersist?: (state: T) => boolean;
 }
+
+export const createSetHandlers = <T extends object, K extends keyof T, V>(
+  set: (fn: (state: T) => Partial<T> | T | (Partial<T> | T)) => void,
+  key: K,
+) => ({
+  toggle: (item: V) =>
+    set(
+      (state) =>
+        ({
+          [key]: toggleSetItem(state[key] as unknown as ReadonlySet<V>, item),
+        }) as unknown as Partial<T>,
+    ),
+  clear: () => set(() => ({ [key]: new Set<V>() }) as unknown as Partial<T>),
+  set: (items: ReadonlyArray<V>) => set(() => ({ [key]: new Set(items) }) as unknown as Partial<T>),
+});
 
 export const persistStore = <T extends object>(useStore: UseBoundStore<StoreApi<T>>, options: PersistOptions<T>): (() => void) => {
   const { key, context, pick, onHydrate, equalityFn = shallowEqual, shouldPersist } = options;

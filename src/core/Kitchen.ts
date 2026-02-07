@@ -158,21 +158,33 @@ export class Kitchen {
   }
 
   public async executeSubRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string, context?: Partial<IngredientContext>): Promise<string> {
-    let currentData = initialInput;
+    const state: RecipeLoopState = {
+      cookedData: initialInput,
+      globalError: false,
+      hasWarnings: false,
+      lastInputConfig: null,
+      lastInputPanelId: null,
+      lastOutputConfig: null,
+      localStatuses: {},
+      localWarnings: {},
+    };
+
     for (const [index, ingredient] of recipe.entries()) {
       const definition = ingredientRegistry.get(ingredient.ingredientId);
       errorHandler.assert(definition, `Definition for '${ingredient.name}' not found during sub-recipe execution.`);
-      const res = await this.runIngredient(ingredient, definition, currentData, recipe, index, initialInput, {
+
+      const res = await this.runIngredient(ingredient, definition, state.cookedData, recipe, index, initialInput, {
         currentIndex: index,
         ingredient,
         initialInput,
         recipe,
         ...context,
       });
+
       if (res.status === 'error') throw new AppError(res.nextData, 'Sub-recipe Execution');
-      if (res.status !== 'warning') currentData = res.nextData;
+      this.updateLoopStateFromResult(state, res, ingredient.id);
     }
-    return currentData;
+    return state.cookedData;
   }
 
   private async cookRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeCookResult> {

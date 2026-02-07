@@ -265,6 +265,11 @@
     -webkit-appearance: none;
     display: none;
   }
+
+  ::placeholder {
+    user-select: none;
+    -webkit-user-select: none;
+  }
 }
 
 @layer components {
@@ -489,12 +494,6 @@
     -webkit-user-select: text;
     -ms-user-select: text;
     user-select: text;
-
-    &.textarea::placeholder {
-      -webkit-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
   }
 
   /* Animation Hooks */
@@ -685,7 +684,7 @@
   }
 
   .dropzone-placeholder {
-    @apply h-14 text-sm;
+    @apply h-14 text-sm select-none;
   }
 }
 

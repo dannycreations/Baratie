@@ -35,25 +35,16 @@ export const splitLines = (text: string, trim = true): string[] => {
 };
 
 export const objectStringify = (data: unknown, space?: string | number): string => {
-  if (!isObjectLike(data)) {
-    return String(data);
-  }
+  if (data === null || data === undefined) return String(data);
+  if (typeof data !== 'object' && typeof data !== 'function') return String(data);
 
   const cache = new Set<unknown>();
-
   const replacer = (_key: string, value: unknown): unknown => {
     if (isObjectLike(value)) {
-      if (cache.has(value)) {
-        return '[Circular]';
-      }
+      if (cache.has(value)) return '[Circular]';
       cache.add(value);
     }
-
-    if (value instanceof Error) {
-      return createErrorObject(value);
-    }
-
-    return value;
+    return value instanceof Error ? createErrorObject(value) : value;
   };
 
   try {
@@ -65,12 +56,10 @@ export const objectStringify = (data: unknown, space?: string | number): string 
       note: 'Could not stringify the object, possibly due to circular references.',
       stringifyError: error.message,
     };
-
     if (data instanceof Error) {
       fallback.name = data.name;
       fallback.message = data.message;
     }
-
     return JSON.stringify(fallback, null, space);
   }
 };

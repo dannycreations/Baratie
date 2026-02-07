@@ -4,8 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { STORAGE_RECIPE } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger, storage } from '../app/container';
 import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
-import { toggleSetItem } from '../utilities/objectUtil';
-import { persistStore } from '../utilities/storeUtil';
+import { createSetHandlers, persistStore } from '../utilities/storeUtil';
 import { useIngredientStore } from './useIngredientStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useSettingStore } from './useSettingStore';
@@ -32,187 +31,175 @@ interface RecipeState {
 }
 
 export const useRecipeStore = create<RecipeState>()(
-  subscribeWithSelector((set, get) => ({
-    activeRecipeId: null,
-    editingIds: new Set(),
-    ingredients: [],
-    pausedIngredientIds: new Set(),
+  subscribeWithSelector((set, get) => {
+    const editingHandlers = createSetHandlers<RecipeState, 'editingIds', string>(set, 'editingIds');
+    const pausedHandlers = createSetHandlers<RecipeState, 'pausedIngredientIds', string>(set, 'pausedIngredientIds');
 
-    addIngredient: (ingredientId, initialSpices) => {
-      const ingredientDefinition = ingredientRegistry.get(ingredientId);
-      errorHandler.assert(ingredientDefinition, `Ingredient definition not found for ID: ${ingredientId}`, 'Recipe Add Ingredient', {
-        genericMessage: `Ingredient "${ingredientId}" could not be added because its definition is missing.`,
-      });
+    return {
+      activeRecipeId: null,
+      editingIds: new Set(),
+      ingredients: [],
+      pausedIngredientIds: new Set(),
 
-      const validSpices = validateSpices(ingredientDefinition, initialSpices || {});
-      const newIngredient: IngredientItem = {
-        id: crypto.randomUUID(),
-        ingredientId: ingredientDefinition.id,
-        name: ingredientDefinition.name,
-        spices: validSpices,
-      };
+      addIngredient: (ingredientId, initialSpices) => {
+        const ingredientDefinition = ingredientRegistry.get(ingredientId);
+        errorHandler.assert(ingredientDefinition, `Ingredient definition not found for ID: ${ingredientId}`, 'Recipe Add Ingredient', {
+          genericMessage: `Ingredient "${ingredientId}" could not be added because its definition is missing.`,
+        });
 
-      set((state) => ({ ingredients: [...state.ingredients, newIngredient] }));
-    },
-
-    clearEditingIds: () => {
-      set({ editingIds: new Set() });
-    },
-
-    clearRecipe: () => {
-      set({
-        activeRecipeId: null,
-        ingredients: [],
-        editingIds: new Set(),
-        pausedIngredientIds: new Set(),
-      });
-    },
-
-    getActiveRecipeId: () => {
-      return get().activeRecipeId;
-    },
-
-    init: () => {
-      if (useSettingStore.getState().persistRecipe) {
-        const stored = storage.get<{
-          ingredients: ReadonlyArray<IngredientItem>;
-          activeRecipeId: string | null;
-        }>(STORAGE_RECIPE, 'Current Recipe');
-
-        if (stored && Array.isArray(stored.ingredients)) {
-          get().setRecipe(stored.ingredients, stored.activeRecipeId);
-        }
-      }
-    },
-
-    removeIngredient: (id) => {
-      set((state) => {
-        const newIngredients = state.ingredients.filter((ingredient) => ingredient.id !== id);
-
-        if (newIngredients.length === state.ingredients.length) {
-          logger.warn(`Attempted to remove non-existent ingredient with id: ${id}`);
-          return state;
-        }
-
-        const newEditingIds = new Set(state.editingIds);
-        newEditingIds.delete(id);
-
-        const newPausedIds = new Set(state.pausedIngredientIds);
-        newPausedIds.delete(id);
-
-        return {
-          ingredients: newIngredients,
-          activeRecipeId: newIngredients.length > 0 ? state.activeRecipeId : null,
-          editingIds: newEditingIds,
-          pausedIngredientIds: newPausedIds,
+        const validSpices = validateSpices(ingredientDefinition, initialSpices || {});
+        const newIngredient: IngredientItem = {
+          id: crypto.randomUUID(),
+          ingredientId: ingredientDefinition.id,
+          name: ingredientDefinition.name,
+          spices: validSpices,
         };
-      });
-    },
 
-    reorderIngredients: (draggedId, targetId) => {
-      set((state) => {
-        const { ingredients } = state;
-        const draggedIndex = ingredients.findIndex((ingredient) => ingredient.id === draggedId);
-        const targetIndex = ingredients.findIndex((ingredient) => ingredient.id === targetId);
+        set((state) => ({ ingredients: [...state.ingredients, newIngredient] }));
+      },
 
-        if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) {
-          return state;
+      clearEditingIds: editingHandlers.clear,
+
+      clearRecipe: () => {
+        set({ activeRecipeId: null, ingredients: [] });
+        editingHandlers.clear();
+        pausedHandlers.clear();
+      },
+
+      getActiveRecipeId: () => {
+        return get().activeRecipeId;
+      },
+
+      init: () => {
+        if (useSettingStore.getState().persistRecipe) {
+          const stored = storage.get<{
+            ingredients: ReadonlyArray<IngredientItem>;
+            activeRecipeId: string | null;
+          }>(STORAGE_RECIPE, 'Current Recipe');
+
+          if (stored && Array.isArray(stored.ingredients)) {
+            get().setRecipe(stored.ingredients, stored.activeRecipeId);
+          }
         }
+      },
 
-        const newIngredients = [...ingredients];
-        const [draggedItem] = newIngredients.splice(draggedIndex, 1);
-        newIngredients.splice(targetIndex, 0, draggedItem);
+      removeIngredient: (id) => {
+        set((state) => {
+          const newIngredients = state.ingredients.filter((ingredient) => ingredient.id !== id);
 
-        return {
-          ingredients: newIngredients,
-        };
-      });
-    },
+          if (newIngredients.length === state.ingredients.length) {
+            logger.warn(`Attempted to remove non-existent ingredient with id: ${id}`);
+            return state;
+          }
 
-    setActiveRecipeId: (activeRecipeId) => {
-      set({
-        activeRecipeId: activeRecipeId,
-      });
-    },
+          const newEditingIds = new Set(state.editingIds);
+          newEditingIds.delete(id);
 
-    setRecipe: (ingredients, activeRecipeId = null) => {
-      const validIngredients = ingredients.map((ingredient) => {
-        const ingredientDefinition = ingredientRegistry.get(ingredient.ingredientId);
-        if (ingredientDefinition) {
-          const validatedSpices = validateSpices(ingredientDefinition, ingredient.spices);
-          return { ...ingredient, spices: validatedSpices };
+          const newPausedIds = new Set(state.pausedIngredientIds);
+          newPausedIds.delete(id);
+
+          return {
+            ingredients: newIngredients,
+            activeRecipeId: newIngredients.length > 0 ? state.activeRecipeId : null,
+            editingIds: newEditingIds,
+            pausedIngredientIds: newPausedIds,
+          };
+        });
+      },
+
+      reorderIngredients: (draggedId, targetId) => {
+        set((state) => {
+          const { ingredients } = state;
+          const draggedIndex = ingredients.findIndex((ingredient) => ingredient.id === draggedId);
+          const targetIndex = ingredients.findIndex((ingredient) => ingredient.id === targetId);
+
+          if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) {
+            return state;
+          }
+
+          const newIngredients = [...ingredients];
+          const [draggedItem] = newIngredients.splice(draggedIndex, 1);
+          newIngredients.splice(targetIndex, 0, draggedItem);
+
+          return {
+            ingredients: newIngredients,
+          };
+        });
+      },
+
+      setActiveRecipeId: (activeRecipeId) => {
+        set({
+          activeRecipeId: activeRecipeId,
+        });
+      },
+
+      setRecipe: (ingredients, activeRecipeId = null) => {
+        const validIngredients = ingredients.map((ingredient) => {
+          const ingredientDefinition = ingredientRegistry.get(ingredient.ingredientId);
+          if (ingredientDefinition) {
+            const validatedSpices = validateSpices(ingredientDefinition, ingredient.spices);
+            return { ...ingredient, spices: validatedSpices };
+          }
+          logger.warn(
+            `Ingredient definition not found for ID "${ingredient.ingredientId}" (${ingredient.name}) during setRecipe. Options may not be correctly validated.`,
+          );
+          return ingredient;
+        });
+
+        set({
+          activeRecipeId: activeRecipeId,
+          ingredients: validIngredients,
+          editingIds: new Set(),
+          pausedIngredientIds: new Set(),
+        });
+      },
+
+      toggleEditingId: (id) => {
+        if (useSettingStore.getState().multipleOpen) {
+          editingHandlers.toggle(id);
+        } else {
+          set((state) => ({ editingIds: state.editingIds.has(id) ? new Set() : new Set([id]) }));
         }
-        logger.warn(
-          `Ingredient definition not found for ID "${ingredient.ingredientId}" (${ingredient.name}) during setRecipe. Options may not be correctly validated.`,
-        );
-        return ingredient;
-      });
+      },
 
-      set({
-        activeRecipeId: activeRecipeId,
-        ingredients: validIngredients,
-        editingIds: new Set(),
-        pausedIngredientIds: new Set(),
-      });
-    },
+      toggleIngredientPause: pausedHandlers.toggle,
 
-    toggleEditingId: (id) => {
-      set((state) => {
-        const { multipleOpen } = useSettingStore.getState();
-        const newEditingIds = new Set(state.editingIds);
-        const isCurrentlyEditing = newEditingIds.has(id);
+      updateSpice: (id, spiceId, rawValue) => {
+        set((state) => {
+          const { ingredients } = state;
+          const index = ingredients.findIndex((ingredient) => ingredient.id === id);
+          errorHandler.assert(index !== -1, `Ingredient with ID "${id}" not found for spice change.`, 'Recipe Change Spice');
 
-        const nextEditingIds = toggleSetItem(state.editingIds, id, isCurrentlyEditing ? false : undefined);
-        if (!isCurrentlyEditing && !multipleOpen) {
-          nextEditingIds.clear();
-          nextEditingIds.add(id);
-        }
+          const ingredientToUpdate = ingredients[index];
+          const ingredientDefinition = ingredientRegistry.get(ingredientToUpdate.ingredientId);
+          errorHandler.assert(
+            ingredientDefinition,
+            `Ingredient definition not found for ID "${ingredientToUpdate.ingredientId}".`,
+            'Recipe Change Spice',
+          );
 
-        return { editingIds: nextEditingIds };
-      });
-    },
+          const isSpiceInDefinition = ingredientDefinition.spices?.some((s) => s.id === spiceId);
+          errorHandler.assert(
+            isSpiceInDefinition,
+            `Spice with ID "${spiceId}" is not a valid spice for ingredient "${ingredientDefinition.name}".`,
+            'Recipe Change Spice',
+            {
+              genericMessage: `An internal error occurred while updating options for "${ingredientDefinition.name}".`,
+            },
+          );
 
-    toggleIngredientPause: (id) => {
-      set((state) => ({
-        pausedIngredientIds: toggleSetItem(state.pausedIngredientIds, id),
-      }));
-    },
+          const newValidSpices = updateAndValidate(ingredientDefinition, ingredientToUpdate.spices, spiceId, rawValue);
+          const updatedIngredient = { ...ingredientToUpdate, spices: newValidSpices };
+          const newIngredients = [...ingredients];
+          newIngredients[index] = updatedIngredient;
 
-    updateSpice: (id, spiceId, rawValue) => {
-      set((state) => {
-        const { ingredients } = state;
-        const index = ingredients.findIndex((ingredient) => ingredient.id === id);
-        errorHandler.assert(index !== -1, `Ingredient with ID "${id}" not found for spice change.`, 'Recipe Change Spice');
-
-        const ingredientToUpdate = ingredients[index];
-        const ingredientDefinition = ingredientRegistry.get(ingredientToUpdate.ingredientId);
-        errorHandler.assert(
-          ingredientDefinition,
-          `Ingredient definition not found for ID "${ingredientToUpdate.ingredientId}".`,
-          'Recipe Change Spice',
-        );
-
-        const isSpiceInDefinition = ingredientDefinition.spices?.some((s) => s.id === spiceId);
-        errorHandler.assert(
-          isSpiceInDefinition,
-          `Spice with ID "${spiceId}" is not a valid spice for ingredient "${ingredientDefinition.name}".`,
-          'Recipe Change Spice',
-          {
-            genericMessage: `An internal error occurred while updating options for "${ingredientDefinition.name}".`,
-          },
-        );
-
-        const newValidSpices = updateAndValidate(ingredientDefinition, ingredientToUpdate.spices, spiceId, rawValue);
-        const updatedIngredient = { ...ingredientToUpdate, spices: newValidSpices };
-        const newIngredients = [...ingredients];
-        newIngredients[index] = updatedIngredient;
-
-        return {
-          ingredients: newIngredients,
-        };
-      });
-    },
-  })),
+          return {
+            ingredients: newIngredients,
+          };
+        });
+      },
+    };
+  }),
 );
 
 useIngredientStore.subscribe(
