@@ -9,11 +9,12 @@ interface CookbookSaveProps {
   readonly isRecipeEmpty: boolean;
   readonly nameRef: RefObject<HTMLInputElement | null>;
   readonly nameInput: string;
-  readonly onNameChange: (name: string) => void;
+  readonly onNameChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  readonly onClear: () => void;
   readonly onSave: () => void;
 }
 
-export const CookbookSave = memo<CookbookSaveProps>(({ nameInput, onNameChange, onSave, isRecipeEmpty, nameRef }): JSX.Element => {
+export const CookbookSave = memo<CookbookSaveProps>(({ nameInput, onNameChange, onClear, onSave, isRecipeEmpty, nameRef }): JSX.Element => {
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>): void => {
       if (event.key === 'Enter' && nameInput.trim() && !isRecipeEmpty) {
@@ -21,13 +22,6 @@ export const CookbookSave = memo<CookbookSaveProps>(({ nameInput, onNameChange, 
       }
     },
     [nameInput, isRecipeEmpty, onSave],
-  );
-
-  const handleChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>): void => {
-      onNameChange(event.target.value);
-    },
-    [onNameChange],
   );
 
   return (
@@ -41,9 +35,9 @@ export const CookbookSave = memo<CookbookSaveProps>(({ nameInput, onNameChange, 
             value={nameInput}
             placeholder="Enter Recipe Name..."
             showClearButton
-            onChange={handleChange}
+            onChange={onNameChange}
             onKeyDown={handleKeyDown}
-            onClear={() => onNameChange('')}
+            onClear={onClear}
           />
         )}
       </FormLayout>

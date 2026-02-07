@@ -1,10 +1,11 @@
 import { clsx } from 'clsx';
-import { memo, useCallback, useDeferredValue, useId, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useId, useMemo, useRef } from 'react';
 
 import { ingredientRegistry } from '../../app/container';
 import { groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
 import { useAutoFocus } from '../../hooks/useAutoFocus';
 import { useOverflow } from '../../hooks/useOverflow';
+import { useSearch } from '../../hooks/useSearch';
 import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { BooleanInput } from '../shared/input/BooleanInput';
@@ -12,7 +13,7 @@ import { StringInput } from '../shared/input/StringInput';
 import { GroupListLayout } from '../shared/layout/ListLayout';
 import { Modal } from '../shared/Modal';
 
-import type { ChangeEvent, JSX } from 'react';
+import type { JSX } from 'react';
 import type { IngredientProps } from '../../core/IngredientRegistry';
 import type { GroupListItem } from '../shared/layout/ListLayout';
 
@@ -25,11 +26,10 @@ export const IngredientManager = memo((): JSX.Element => {
   const toggleIngredient = useIngredientStore((state) => state.toggleIngredient);
   const registryVersion = useIngredientStore((state) => state.registryVersion);
 
-  const [query, setQuery] = useState('');
+  const { query, deferredQuery, onQueryChange, onClear } = useSearch();
 
   const listId = useId();
   const searchRef = useRef<HTMLInputElement>(null);
-  const deferredQuery = useDeferredValue(query);
   const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   useAutoFocus(searchRef, isModalOpen);
@@ -45,14 +45,6 @@ export const IngredientManager = memo((): JSX.Element => {
   const filteredList = useMemo(() => {
     return searchGroupedIngredients(ingredientsByCategory, deferredQuery);
   }, [ingredientsByCategory, deferredQuery]);
-
-  const handleQueryChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setQuery(event.target.value);
-  }, []);
-
-  const handleClearQuery = useCallback(() => {
-    setQuery('');
-  }, []);
 
   const renderHeader = useCallback(
     (category: string, _items: ReadonlyArray<GroupListItem>): JSX.Element => {
@@ -128,8 +120,8 @@ export const IngredientManager = memo((): JSX.Element => {
             value={query}
             placeholder="Search Ingredients..."
             showClearButton
-            onChange={handleQueryChange}
-            onClear={handleClearQuery}
+            onChange={onQueryChange}
+            onClear={onClear}
           />
         </div>
         <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>

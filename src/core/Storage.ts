@@ -1,7 +1,14 @@
 import { errorHandler } from '../app/container';
 
+import type { ErrorOptions } from './ErrorHandler';
+
 export class Storage {
-  public get<T = unknown>(key: string, context: string, reviver?: (key: string, value: unknown) => unknown): T | null {
+  public get<T = unknown>(
+    key: string,
+    context: string,
+    reviver?: (key: string, value: unknown) => unknown,
+    options?: Partial<ErrorOptions>,
+  ): T | null {
     const { result } = errorHandler.attempt<T | null>(
       () => {
         const storedValue = localStorage.getItem(key);
@@ -13,12 +20,13 @@ export class Storage {
       `${context} Storage`,
       {
         genericMessage: `Could not load your ${context.toLowerCase()} data.`,
+        ...options,
       },
     );
     return result;
   }
 
-  public remove(key: string, context: string): boolean {
+  public remove(key: string, context: string, options?: Partial<ErrorOptions>): boolean {
     const { error } = errorHandler.attempt(
       () => {
         localStorage.removeItem(key);
@@ -26,12 +34,13 @@ export class Storage {
       `${context} Storage Remove`,
       {
         genericMessage: `Failed to remove ${context.toLowerCase()} data from local storage.`,
+        ...options,
       },
     );
     return !error;
   }
 
-  public set(key: string, value: unknown, context: string): boolean {
+  public set(key: string, value: unknown, context: string, options?: Partial<ErrorOptions>): boolean {
     const { error } = errorHandler.attempt(
       () => {
         localStorage.setItem(key, JSON.stringify(value));
@@ -40,6 +49,7 @@ export class Storage {
       {
         genericMessage: `Failed to save ${context.toLowerCase()} data to local storage.`,
         shouldNotify: true,
+        ...options,
       },
     );
     return !error;

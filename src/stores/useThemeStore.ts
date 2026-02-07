@@ -3,6 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_THEME, THEME_VARIANT } from '../app/constants';
 import { logger, storage } from '../app/container';
+import { persistStore } from '../utilities/storeUtil';
 
 export type ThemeId = (typeof THEME_VARIANT)[number]['id'];
 
@@ -42,12 +43,12 @@ export const useThemeStore = create<ThemeState>()(
   }),
 );
 
-useThemeStore.subscribe(
-  (state) => state.id,
-  (themeId) => {
-    storage.set(STORAGE_THEME, themeId, 'Theme Preference');
-
-    const themeConfig = THEME_VARIANT.find((t) => t.id === themeId);
+persistStore(useThemeStore, {
+  key: STORAGE_THEME,
+  context: 'Theme Preference',
+  pick: (state) => ({ id: state.id }),
+  onHydrate: (state) => {
+    const themeConfig = THEME_VARIANT.find((t) => t.id === state.id);
     if (themeConfig) {
       const themeColorMeta = document.getElementById('theme-color-meta');
       if (themeColorMeta) {
@@ -55,5 +56,4 @@ useThemeStore.subscribe(
       }
     }
   },
-  { fireImmediately: true },
-);
+});

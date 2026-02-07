@@ -16,7 +16,7 @@ export class AppError extends Error {
   }
 }
 
-interface ErrorOptions {
+export interface ErrorOptions {
   readonly defaultMessage?: string;
   readonly genericMessage?: string;
   readonly shouldLog?: boolean;
@@ -98,14 +98,12 @@ export class ErrorHandler {
   }
 
   private buildError(error: unknown, callerContext?: string, defaultMessage?: string, genericMessage?: string): AppError {
+    const userMsg = genericMessage ?? defaultMessage;
     if (error instanceof AppError) {
-      const finalContext = callerContext ?? error.context;
-      const finalUserMessage = error.userMessage ?? genericMessage ?? defaultMessage;
-      return new AppError(error.message, finalContext, finalUserMessage, error);
+      return new AppError(error.message, callerContext ?? error.context, error.userMessage ?? userMsg, error);
     }
-
     if (error instanceof Error) {
-      return new AppError(error.message, callerContext, genericMessage ?? defaultMessage, error);
+      return new AppError(error.message, callerContext, userMsg, error);
     }
 
     let errorMessage: string;
@@ -114,6 +112,6 @@ export class ErrorHandler {
     } catch {
       errorMessage = `Unknown error: ${String(error)}`;
     }
-    return new AppError(errorMessage, callerContext, genericMessage ?? defaultMessage, error);
+    return new AppError(errorMessage, callerContext, userMsg, error);
   }
 }

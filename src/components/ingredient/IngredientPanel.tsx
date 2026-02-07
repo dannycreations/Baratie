@@ -1,11 +1,12 @@
 import { clsx } from 'clsx';
-import { memo, useCallback, useDeferredValue, useId, useMemo, useState } from 'react';
+import { memo, useCallback, useId, useMemo } from 'react';
 
 import { CATEGORY_FAVORITES, DATA_TYPE_INGREDIENT, DATA_TYPE_RECIPE_ITEM, ICON_SIZES } from '../../app/constants';
 import { errorHandler, ingredientRegistry } from '../../app/container';
 import { createIngredientSearchPredicate, groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
 import { useDropZone } from '../../hooks/useDropZone';
 import { useOverflow } from '../../hooks/useOverflow';
+import { useSearch } from '../../hooks/useSearch';
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useFavoriteStore } from '../../stores/useFavoriteStore';
 import { useIngredientStore } from '../../stores/useIngredientStore';
@@ -19,7 +20,7 @@ import { GroupListLayout } from '../shared/layout/ListLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
 import { IngredientManager } from './IngredientManager';
 
-import type { ChangeEvent, DragEvent, JSX } from 'react';
+import type { DragEvent, JSX } from 'react';
 import type { IngredientProps } from '../../core/IngredientRegistry';
 import type { GroupListItem } from '../shared/layout/ListLayout';
 
@@ -35,7 +36,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   const currentModal = useModalStore((state) => state.currentModal);
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
 
-  const [query, setQuery] = useState<string>('');
+  const { query, deferredQuery, onQueryChange, onClear } = useSearch();
 
   const listId = useId();
   const isIngredientOpen = currentModal?.type === 'ingredient';
@@ -62,8 +63,6 @@ export const IngredientPanel = memo((): JSX.Element => {
   const allIngredients = useMemo<ReadonlyArray<IngredientProps>>(() => {
     return ingredientRegistry.getAll();
   }, [registryVersion]);
-
-  const deferredQuery = useDeferredValue(query);
 
   const { favoritesList, regularList, visibleIngredientsCount } = useMemo(() => {
     const favs: IngredientProps[] = [];
@@ -114,14 +113,6 @@ export const IngredientPanel = memo((): JSX.Element => {
     errorHandler.assert(item.id, 'Ingredient unique name not found on dragged element.', 'Ingredient Drag');
     event.dataTransfer.setData(DATA_TYPE_INGREDIENT, item.id);
     event.dataTransfer.effectAllowed = 'copy';
-  }, []);
-
-  const handleQueryChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setQuery(event.target.value);
-  }, []);
-
-  const handleClearQuery = useCallback(() => {
-    setQuery('');
   }, []);
 
   const headerActions = useMemo(
@@ -201,8 +192,8 @@ export const IngredientPanel = memo((): JSX.Element => {
               value={query}
               placeholder="Search Ingredients..."
               showClearButton
-              onChange={handleQueryChange}
-              onClear={handleClearQuery}
+              onChange={onQueryChange}
+              onClear={onClear}
             />
           </div>
           <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>

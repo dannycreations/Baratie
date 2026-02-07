@@ -3,7 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_RECIPE, STORAGE_SETTINGS } from '../app/constants';
 import { storage } from '../app/container';
-import { shallowEqual } from '../utilities/objectUtil';
+import { persistStore } from '../utilities/storeUtil';
 
 interface SettingProps {
   readonly multipleOpen: boolean;
@@ -44,13 +44,11 @@ export const useSettingStore = create<SettingState>()(
   })),
 );
 
-useSettingStore.subscribe(
-  (state) => ({ multipleOpen: state.multipleOpen, persistRecipe: state.persistRecipe }),
-  ({ multipleOpen, persistRecipe }) => {
-    const newSettings = { multipleOpen, persistRecipe };
-    storage.set(STORAGE_SETTINGS, newSettings, 'App Settings');
-  },
-  {
-    equalityFn: shallowEqual,
-  },
-);
+persistStore(useSettingStore, {
+  key: STORAGE_SETTINGS,
+  context: 'App Settings',
+  pick: (state) => ({
+    multipleOpen: state.multipleOpen,
+    persistRecipe: state.persistRecipe,
+  }),
+});

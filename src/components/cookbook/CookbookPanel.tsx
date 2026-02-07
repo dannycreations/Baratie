@@ -1,7 +1,8 @@
-import { memo, useCallback, useDeferredValue, useMemo, useRef } from 'react';
+import { memo, useCallback, useMemo, useRef } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { useAutoFocus } from '../../hooks/useAutoFocus';
+import { useSearch } from '../../hooks/useSearch';
 import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
@@ -71,11 +72,9 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const currentModal = useModalStore((state) => state.currentModal);
   const closeModal = useModalStore((state) => state.closeModal);
   const nameInput = useCookbookStore((state) => state.nameInput);
-  const query = useCookbookStore((state) => state.query);
   const recipes = useCookbookStore((state) => state.recipes);
   const resetModal = useCookbookStore((state) => state.resetModal);
   const setName = useCookbookStore((state) => state.setName);
-  const setQuery = useCookbookStore((state) => state.setQuery);
   const upsert = useCookbookStore((state) => state.upsert);
   const deleteRecipe = useCookbookStore((state) => state.delete);
   const load = useCookbookStore((state) => state.load);
@@ -100,7 +99,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const focusRef = activeMode === 'save' ? nameRef : searchRef;
   useAutoFocus(focusRef, isModalOpen);
 
-  const deferredQuery = useDeferredValue(query);
+  const { query, deferredQuery, onQueryChange, onClear } = useSearch();
 
   const filteredRecipes = useMemo(() => {
     const lowerQuery = deferredQuery.toLowerCase().trim();
@@ -147,7 +146,16 @@ export const CookbookPanel = memo((): JSX.Element | null => {
 
   const bodyContent = useMemo(() => {
     if (activeMode === 'save') {
-      return <CookbookSave isRecipeEmpty={isRecipeEmpty} nameRef={nameRef} nameInput={nameInput} onNameChange={setName} onSave={handleSave} />;
+      return (
+        <CookbookSave
+          isRecipeEmpty={isRecipeEmpty}
+          nameRef={nameRef}
+          nameInput={nameInput}
+          onNameChange={(e) => setName(e.target.value)}
+          onClear={() => setName('')}
+          onSave={handleSave}
+        />
+      );
     }
     return (
       <CookbookLoad
@@ -157,13 +165,37 @@ export const CookbookPanel = memo((): JSX.Element | null => {
         totalRecipes={recipes.length}
         onDelete={deleteRecipe}
         onLoad={handleLoad}
-        onQueryChange={setQuery}
+        onQueryChange={onQueryChange}
+        onClear={onClear}
       />
     );
-  }, [activeMode, isRecipeEmpty, nameInput, setName, handleSave, query, filteredRecipes, recipes.length, deleteRecipe, handleLoad, setQuery]);
+  }, [
+    activeMode,
+    isRecipeEmpty,
+    nameInput,
+    setName,
+    handleSave,
+    query,
+    onQueryChange,
+    onClear,
+    filteredRecipes,
+    recipes.length,
+    deleteRecipe,
+    handleLoad,
+  ]);
 
   return (
-    <Modal isOpen={isModalOpen} size="lg" title={title} headerActions={headerActions} onClose={closeModal} onExited={resetModal}>
+    <Modal
+      isOpen={isModalOpen}
+      size="lg"
+      title={title}
+      headerActions={headerActions}
+      onClose={closeModal}
+      onExited={() => {
+        resetModal();
+        onClear();
+      }}
+    >
       {bodyContent}
     </Modal>
   );

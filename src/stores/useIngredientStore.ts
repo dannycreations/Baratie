@@ -3,7 +3,8 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_FILTERS } from '../app/constants';
 import { ingredientRegistry, storage } from '../app/container';
-import { shallowEqual, toggleSetItem } from '../utilities/objectUtil';
+import { toggleSetItem } from '../utilities/objectUtil';
+import { persistStore } from '../utilities/storeUtil';
 
 interface IngredientState {
   readonly disabledCategories: ReadonlySet<string>;
@@ -67,19 +68,11 @@ export const useIngredientStore = create<IngredientState>()(
   })),
 );
 
-useIngredientStore.subscribe(
-  (state) => ({ disabledCategories: state.disabledCategories, disabledIngredients: state.disabledIngredients }),
-  ({ disabledCategories, disabledIngredients }) => {
-    storage.set(
-      STORAGE_FILTERS,
-      {
-        categories: [...disabledCategories],
-        ingredients: [...disabledIngredients],
-      },
-      'Ingredient Filters',
-    );
-  },
-  {
-    equalityFn: shallowEqual,
-  },
-);
+persistStore(useIngredientStore, {
+  key: STORAGE_FILTERS,
+  context: 'Ingredient Filters',
+  pick: (state) => ({
+    categories: [...state.disabledCategories],
+    ingredients: [...state.disabledIngredients],
+  }),
+});

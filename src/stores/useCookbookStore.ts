@@ -23,7 +23,6 @@ export type CookbookModalProps =
 
 interface CookbookState {
   readonly nameInput: string;
-  readonly query: string;
   readonly recipes: ReadonlyArray<RecipebookItem>;
   readonly recipeIdMap: ReadonlyMap<string, RecipebookItem>;
   readonly delete: (id: string) => void;
@@ -36,14 +35,12 @@ interface CookbookState {
   readonly prepareToOpen: (args: Readonly<CookbookModalProps>) => void;
   readonly resetModal: () => void;
   readonly setName: (name: string) => void;
-  readonly setQuery: (term: string) => void;
   readonly setRecipes: (recipes: ReadonlyArray<RecipebookItem>) => void;
   readonly upsert: () => void;
 }
 
 export const useCookbookStore = create<CookbookState>()((set, get) => ({
   nameInput: '',
-  query: '',
   recipes: [],
   recipeIdMap: new Map(),
 
@@ -232,15 +229,10 @@ export const useCookbookStore = create<CookbookState>()((set, get) => ({
 
   resetModal: () => {
     get().setName('');
-    get().setQuery('');
   },
 
   setName: (nameInput) => {
     set({ nameInput });
-  },
-
-  setQuery: (query) => {
-    set({ query });
   },
 
   setRecipes: (newRecipes: ReadonlyArray<RecipebookItem>) => {

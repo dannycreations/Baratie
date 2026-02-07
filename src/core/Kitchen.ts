@@ -159,119 +159,81 @@ export class Kitchen {
 
   public async executeSubRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string, context?: Partial<IngredientContext>): Promise<string> {
     let currentData = initialInput;
-
     for (const [index, ingredient] of recipe.entries()) {
       const definition = ingredientRegistry.get(ingredient.ingredientId);
       errorHandler.assert(definition, `Definition for '${ingredient.name}' not found during sub-recipe execution.`);
-
-      const subContext: IngredientContext = {
+      const res = await this.runIngredient(ingredient, definition, currentData, recipe, index, initialInput, {
         currentIndex: index,
         ingredient,
         initialInput,
         recipe,
         ...context,
-      };
-
-      const result = await this.runIngredient(ingredient, definition, currentData, recipe, index, initialInput, subContext);
-
-      if (result.status === 'error') {
-        throw new AppError(result.nextData, 'Sub-recipe Execution');
-      }
-
-      if (result.status !== 'warning') {
-        currentData = result.nextData;
-      }
+      });
+      if (res.status === 'error') throw new AppError(res.nextData, 'Sub-recipe Execution');
+      if (res.status !== 'warning') currentData = res.nextData;
     }
-
     return currentData;
   }
 
   private async cookRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeCookResult> {
-    const loopResult = await this.executeRecipeLoop(recipe, initialInput);
-
-    let finalStatus: CookingStatusType = 'success';
-    if (loopResult.globalError) {
-      finalStatus = 'error';
-    } else if (loopResult.hasWarnings) {
-      finalStatus = 'warning';
-    }
-
-    logger.info(`Cook finished with status: ${finalStatus}.`);
-
+    const loop = await this.executeRecipeLoop(recipe, initialInput);
+    const status: CookingStatusType = loop.globalError ? 'error' : loop.hasWarnings ? 'warning' : 'success';
+    logger.info(`Cook finished with status: ${status}.`);
     return {
-      cookingStatus: finalStatus,
-      ingredientStatuses: loopResult.localStatuses,
-      ingredientWarnings: loopResult.localWarnings,
-      inputPanelConfig: loopResult.lastInputConfig,
-      inputPanelId: loopResult.lastInputPanelId,
-      outputData: loopResult.cookedData,
-      outputPanelConfig: loopResult.lastOutputConfig,
+      cookingStatus: status,
+      ingredientStatuses: loop.localStatuses,
+      ingredientWarnings: loop.localWarnings,
+      inputPanelConfig: loop.lastInputConfig,
+      inputPanelId: loop.lastInputPanelId,
+      outputData: loop.cookedData,
+      outputPanelConfig: loop.lastOutputConfig,
     };
   }
 
-  private updateLoopStateFromResult(state: RecipeLoopState, result: IngredientRunResult, ingredientId: string): void {
-    state.cookedData = result.nextData;
-    state.localStatuses[ingredientId] = result.status;
-
-    if (result.warningMessage) {
-      state.localWarnings[ingredientId] = result.warningMessage;
+  private updateLoopStateFromResult(state: RecipeLoopState, res: IngredientRunResult, id: string): void {
+    state.cookedData = res.nextData;
+    state.localStatuses[id] = res.status;
+    if (res.warningMessage) state.localWarnings[id] = res.warningMessage;
+    if (res.panelInstruction) {
+      if (res.panelInstruction.panelType === 'input') {
+        state.lastInputConfig = res.panelInstruction.config;
+        state.lastInputPanelId = res.inputPanelId ?? null;
+      } else state.lastOutputConfig = res.panelInstruction.config;
     }
-
-    if (result.panelInstruction) {
-      if (result.panelInstruction.panelType === 'input') {
-        state.lastInputConfig = result.panelInstruction.config;
-        state.lastInputPanelId = result.inputPanelId ?? null;
-      } else {
-        state.lastOutputConfig = result.panelInstruction.config;
-      }
-    }
-
-    if (result.hasError) {
-      state.globalError = true;
-    }
-    if (result.status === 'warning') {
-      state.hasWarnings = true;
-    }
+    if (res.hasError) state.globalError = true;
+    if (res.status === 'warning') state.hasWarnings = true;
   }
 
   private async processSingleIngredient(
-    ingredient: IngredientItem,
-    index: number,
+    ing: IngredientItem,
+    idx: number,
     recipe: ReadonlyArray<IngredientItem>,
-    initialInput: string,
-    loopState: RecipeLoopState,
+    init: string,
+    state: RecipeLoopState,
   ): Promise<boolean> {
-    const { pausedIngredientIds } = useRecipeStore.getState();
-
-    if (pausedIngredientIds.has(ingredient.id)) {
-      logger.info(`Skipping paused ingredient: ${ingredient.name}`);
-      loopState.localStatuses[ingredient.id] = 'idle';
-      loopState.localWarnings[ingredient.id] = null;
+    if (useRecipeStore.getState().pausedIngredientIds.has(ing.id)) {
+      logger.info(`Skipping paused ingredient: ${ing.name}`);
+      state.localStatuses[ing.id] = 'idle';
+      state.localWarnings[ing.id] = null;
       return false;
     }
-
-    const definition = ingredientRegistry.get(ingredient.ingredientId);
-
-    if (!definition) {
-      const errorMessage = `Ingredient '${ingredient.name}' is misconfigured or from a removed extension.`;
-      errorHandler.handle(
-        new AppError(`Definition for ID '${ingredient.ingredientId}' (${ingredient.name}) not found.`, 'Recipe Cooking', errorMessage),
-      );
-      loopState.cookedData = `Error: ${errorMessage}`;
-      loopState.localStatuses[ingredient.id] = 'error';
-      loopState.globalError = true;
+    const def = ingredientRegistry.get(ing.ingredientId);
+    if (!def) {
+      const msg = `Ingredient '${ing.name}' is misconfigured or from a removed extension.`;
+      errorHandler.handle(new AppError(`Definition for ID '${ing.ingredientId}' (${ing.name}) not found.`, 'Recipe Cooking', msg));
+      state.cookedData = `Error: ${msg}`;
+      state.localStatuses[ing.id] = 'error';
+      state.globalError = true;
       return true;
     }
-
-    const result = await this.runIngredient(ingredient, definition, loopState.cookedData, recipe, index, initialInput);
-    this.updateLoopStateFromResult(loopState, result, ingredient.id);
-
-    return loopState.globalError;
+    const res = await this.runIngredient(ing, def, state.cookedData, recipe, idx, init);
+    this.updateLoopStateFromResult(state, res, ing.id);
+    return state.globalError;
   }
 
-  private async executeRecipeLoop(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeLoopState> {
+  private async executeRecipeLoop(recipe: ReadonlyArray<IngredientItem>, init: string): Promise<RecipeLoopState> {
     const state: RecipeLoopState = {
-      cookedData: initialInput,
+      cookedData: init,
       globalError: false,
       hasWarnings: false,
       lastInputConfig: null,
@@ -280,61 +242,34 @@ export class Kitchen {
       localStatuses: {},
       localWarnings: {},
     };
-
-    for (const [index, ingredient] of recipe.entries()) {
-      const shouldBreak = await this.processSingleIngredient(ingredient, index, recipe, initialInput, state);
-      if (shouldBreak) {
-        break;
-      }
+    for (const [i, ing] of recipe.entries()) {
+      if (await this.processSingleIngredient(ing, i, recipe, init, state)) break;
     }
     return state;
   }
 
   private async runIngredient(
-    ingredient: IngredientItem,
-    definition: IngredientDefinition,
-    currentData: string,
+    ing: IngredientItem,
+    def: IngredientDefinition,
+    data: string,
     recipe: ReadonlyArray<IngredientItem>,
-    currentIndex: number,
-    initialInput: string,
-    providedContext?: IngredientContext,
+    idx: number,
+    init: string,
+    providedCtx?: IngredientContext,
   ): Promise<IngredientRunResult> {
-    errorHandler.assert(definition.run, `Runner for '${definition.name}' not found.`);
-    logger.debug(`Running ingredient: ${definition.name}`, { id: ingredient.id, index: currentIndex });
-
-    const context: IngredientContext = providedContext ?? { currentIndex, ingredient, initialInput, recipe };
-    const { error, result } = await errorHandler.attemptAsync(() => definition.run(new InputType(currentData), ingredient.spices, context));
-
-    if (error) {
-      return { hasError: true, nextData: `Error: ${error.message}`, status: 'error' };
-    }
-
-    errorHandler.assert(result instanceof InputType, `Ingredient '${definition.name}' returned an invalid result type.`);
-
+    errorHandler.assert(def.run, `Runner for '${def.name}' not found.`);
+    logger.debug(`Running ingredient: ${def.name}`, { id: ing.id, index: idx });
+    const ctx = providedCtx ?? { currentIndex: idx, ingredient: ing, initialInput: init, recipe };
+    const { error, result } = await errorHandler.attemptAsync(() => def.run(new InputType(data), ing.spices, ctx));
+    if (error) return { hasError: true, nextData: `Error: ${error.message}`, status: 'error' };
+    errorHandler.assert(result instanceof InputType, `Ingredient '${def.name}' returned an invalid result type.`);
     if (result.warningMessage !== undefined) {
-      const message = result.warningMessage ? `: ${result.warningMessage}` : '.';
-      logger.info(`Ingredient '${definition.name}' was skipped with a warning${message}`);
-      return {
-        hasError: false,
-        nextData: currentData,
-        status: 'warning',
-        warningMessage: result.warningMessage,
-      };
+      logger.info(`Ingredient '${def.name}' was skipped with a warning${result.warningMessage ? `: ${result.warningMessage}` : '.'}`);
+      return { hasError: false, nextData: data, status: 'warning', warningMessage: result.warningMessage };
     }
-
-    const panelInstruction = result.panelControl;
-    let inputPanelId: string | null = null;
-    if (panelInstruction?.panelType === 'input' && panelInstruction.config.mode === 'spiceEditor') {
-      inputPanelId = panelInstruction.config.targetIngredientId;
-    }
-
-    return {
-      hasError: false,
-      status: 'success',
-      nextData: result.cast('string').value,
-      panelInstruction,
-      inputPanelId,
-    };
+    const panel = result.panelControl;
+    const inputId = panel?.panelType === 'input' && panel.config.mode === 'spiceEditor' ? panel.config.targetIngredientId : null;
+    return { hasError: false, status: 'success', nextData: result.cast('string').value, panelInstruction: panel, inputPanelId: inputId };
   }
 
   private scheduleNextCook(): void {

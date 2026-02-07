@@ -4,7 +4,8 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { STORAGE_RECIPE } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger, storage } from '../app/container';
 import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
-import { shallowEqual, toggleSetItem } from '../utilities/objectUtil';
+import { toggleSetItem } from '../utilities/objectUtil';
+import { persistStore } from '../utilities/storeUtil';
 import { useIngredientStore } from './useIngredientStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useSettingStore } from './useSettingStore';
@@ -233,14 +234,12 @@ useIngredientStore.subscribe(
   },
 );
 
-useRecipeStore.subscribe(
-  (state) => ({ ingredients: state.ingredients, activeRecipeId: state.activeRecipeId }),
-  ({ ingredients, activeRecipeId }) => {
-    if (useSettingStore.getState().persistRecipe) {
-      storage.set(STORAGE_RECIPE, { ingredients, activeRecipeId }, 'Current Recipe');
-    }
-  },
-  {
-    equalityFn: shallowEqual,
-  },
-);
+persistStore(useRecipeStore, {
+  key: STORAGE_RECIPE,
+  context: 'Current Recipe',
+  pick: (state) => ({
+    ingredients: state.ingredients,
+    activeRecipeId: state.activeRecipeId,
+  }),
+  shouldPersist: () => useSettingStore.getState().persistRecipe,
+});

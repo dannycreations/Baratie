@@ -5,27 +5,13 @@ import { ConfirmButton } from '../shared/Button';
 import { BooleanInput } from '../shared/input/BooleanInput';
 import { FormLayout } from '../shared/layout/FormLayout';
 
-import type { ChangeEvent, JSX } from 'react';
+import type { JSX } from 'react';
 
 export const GeneralTab = memo((): JSX.Element => {
   const allowMultipleOpen = useSettingStore((state) => state.multipleOpen);
   const setAllowMultipleOpen = useSettingStore((state) => state.setMultipleOpen);
   const persistRecipe = useSettingStore((state) => state.persistRecipe);
   const setPersistRecipe = useSettingStore((state) => state.setPersistRecipe);
-
-  const handleToggleMultipleOpen = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      setAllowMultipleOpen(event.target.checked);
-    },
-    [setAllowMultipleOpen],
-  );
-
-  const handleTogglePersistRecipe = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      setPersistRecipe(event.target.checked);
-    },
-    [setPersistRecipe],
-  );
 
   const handleResetApp = useCallback((): void => {
     localStorage.clear();
@@ -44,7 +30,14 @@ export const GeneralTab = memo((): JSX.Element => {
             labelWrapperClasses="flex-1-min-0 order-2"
             inputWrapperClasses="order-1 flex-y-center"
           >
-            {(id) => <BooleanInput id={id} checked={allowMultipleOpen} offBackgroundColor="bg-border-primary" onChange={handleToggleMultipleOpen} />}
+            {(id) => (
+              <BooleanInput
+                id={id}
+                checked={allowMultipleOpen}
+                offBackgroundColor="bg-border-primary"
+                onChange={(e) => setAllowMultipleOpen(e.target.checked)}
+              />
+            )}
           </FormLayout>
         </div>
         <div className="list-item-container h-auto border border-border-primary p-3">
@@ -56,7 +49,14 @@ export const GeneralTab = memo((): JSX.Element => {
             labelWrapperClasses="flex-1-min-0 order-2"
             inputWrapperClasses="order-1 flex-y-center"
           >
-            {(id) => <BooleanInput id={id} checked={persistRecipe} offBackgroundColor="bg-border-primary" onChange={handleTogglePersistRecipe} />}
+            {(id) => (
+              <BooleanInput
+                id={id}
+                checked={persistRecipe}
+                offBackgroundColor="bg-border-primary"
+                onChange={(e) => setPersistRecipe(e.target.checked)}
+              />
+            )}
           </FormLayout>
         </div>
       </div>

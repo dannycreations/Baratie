@@ -115,3 +115,7 @@ export const toggleSetItem = <T>(set: ReadonlySet<T>, item: T, force?: boolean):
   }
   return nextSet;
 };
+
+export const filterObject = <T extends object>(obj: T, predicate: (key: string, value: unknown) => boolean): Partial<T> => {
+  return Object.fromEntries(Object.entries(obj).filter(([key, value]) => predicate(key, value))) as Partial<T>;
+};

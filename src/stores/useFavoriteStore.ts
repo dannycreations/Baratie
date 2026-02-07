@@ -5,6 +5,7 @@ import { STORAGE_FAVORITES } from '../app/constants';
 import { errorHandler, ingredientRegistry, storage } from '../app/container';
 import { AppError } from '../core/ErrorHandler';
 import { isSetEqual } from '../utilities/objectUtil';
+import { persistStore } from '../utilities/storeUtil';
 import { useIngredientStore } from './useIngredientStore';
 
 interface FavoriteState {
@@ -77,12 +78,9 @@ useIngredientStore.subscribe(
   },
 );
 
-useFavoriteStore.subscribe(
-  (state) => state.favorites,
-  (favorites) => {
-    storage.set(STORAGE_FAVORITES, [...favorites], 'Favorite Ingredients');
-  },
-  {
-    equalityFn: isSetEqual,
-  },
-);
+persistStore(useFavoriteStore, {
+  key: STORAGE_FAVORITES,
+  context: 'Favorite Ingredients',
+  pick: (state) => ({ favorites: [...state.favorites] }),
+  equalityFn: (a, b) => isSetEqual(new Set(a.favorites), new Set(b.favorites)),
+});
