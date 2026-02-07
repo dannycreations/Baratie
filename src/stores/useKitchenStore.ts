@@ -36,15 +36,7 @@ export const useKitchenStore = create<KitchenState>()(
     outputPanelConfig: null,
 
     setCookingResult: (result) => {
-      set({
-        cookingStatus: result.cookingStatus,
-        ingredientStatuses: result.ingredientStatuses,
-        ingredientWarnings: result.ingredientWarnings,
-        inputPanelConfig: result.inputPanelConfig,
-        inputPanelId: result.inputPanelId,
-        outputData: result.outputData,
-        outputPanelConfig: result.outputPanelConfig,
-      });
+      set(result);
     },
 
     setInputData: (inputData) => {

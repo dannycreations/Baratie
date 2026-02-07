@@ -26,19 +26,10 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
 
   add: (notification) => {
     set((state) => {
-      const newMap = new Map(state.map);
-      newMap.set(notification.id, notification);
-
-      const newOrder = [...state.order, notification.id];
-
-      const newDedupeMap = new Map(state.dedupeMap);
-      newDedupeMap.set(getDedupeKey(notification), notification.id);
-
-      return {
-        map: newMap,
-        order: newOrder,
-        dedupeMap: newDedupeMap,
-      };
+      const map = new Map(state.map).set(notification.id, notification);
+      const order = [...state.order, notification.id];
+      const dedupeMap = new Map(state.dedupeMap).set(getDedupeKey(notification), notification.id);
+      return { map, order, dedupeMap };
     });
   },
 
@@ -53,26 +44,19 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
   remove: (id) => {
     set((state) => {
       const notification = state.map.get(id);
-      if (!notification) {
-        return state;
+      if (!notification) return state;
+
+      const map = new Map(state.map);
+      map.delete(id);
+
+      const order = state.order.filter((item) => item !== id);
+
+      const dedupeMap = new Map(state.dedupeMap);
+      if (dedupeMap.get(getDedupeKey(notification)) === id) {
+        dedupeMap.delete(getDedupeKey(notification));
       }
 
-      const newMap = new Map(state.map);
-      newMap.delete(id);
-
-      const newOrder = state.order.filter((item) => item !== id);
-
-      const newDedupeMap = new Map(state.dedupeMap);
-      const currentId = newDedupeMap.get(getDedupeKey(notification));
-      if (currentId === id) {
-        newDedupeMap.delete(getDedupeKey(notification));
-      }
-
-      return {
-        map: newMap,
-        order: newOrder,
-        dedupeMap: newDedupeMap,
-      };
+      return { map, order, dedupeMap };
     });
   },
 
@@ -101,13 +85,9 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
   update: (id, duration, resetAt) => {
     set((state) => {
       const notification = state.map.get(id);
-      if (!notification) {
-        return state;
-      }
+      if (!notification) return state;
 
-      const map = new Map(state.map);
-      map.set(id, { ...notification, duration, resetAt });
-
+      const map = new Map(state.map).set(id, { ...notification, duration, resetAt });
       return { map };
     });
   },

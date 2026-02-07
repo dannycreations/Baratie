@@ -18,20 +18,14 @@ export const SectionLayout = ({
   className = '',
   contentClasses = '',
   contentRef,
-}: SectionLayoutProps): JSX.Element => {
-  const panelClass = clsx('panel-container', className);
-  const headerClass = 'panel-header';
-  const contentClass = clsx('panel-content', contentClasses);
-
-  return (
-    <section className={panelClass}>
-      <header className={headerClass}>
-        <h2 className="panel-header-title">{headerLeft}</h2>
-        {headerRight && <div className="panel-header-actions">{headerRight}</div>}
-      </header>
-      <div ref={contentRef} className={contentClass}>
-        {children}
-      </div>
-    </section>
-  );
-};
+}: SectionLayoutProps): JSX.Element => (
+  <section className={clsx('panel-container', className)}>
+    <header className="panel-header">
+      <h2 className="panel-header-title">{headerLeft}</h2>
+      {headerRight && <div className="panel-header-actions">{headerRight}</div>}
+    </header>
+    <div ref={contentRef} className={clsx('panel-content', contentClasses)}>
+      {children}
+    </div>
+  </section>
+);

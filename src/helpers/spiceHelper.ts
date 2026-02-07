@@ -33,17 +33,10 @@ const prepareSelectValue = (newValue: SpiceValue, spice: Readonly<SpiceDefinitio
 };
 
 export const getSortedSpices = (definition: Readonly<IngredientDefinition>): ReadonlyArray<SpiceDefinition> => {
-  if (sortedSpicesCache.has(definition)) {
-    return sortedSpicesCache.get(definition)!;
-  }
+  const cached = sortedSpicesCache.get(definition);
+  if (cached) return cached;
 
-  if (!definition.spices || definition.spices.length === 0) {
-    const result: ReadonlyArray<SpiceDefinition> = [];
-    sortedSpicesCache.set(definition, result);
-    return result;
-  }
-
-  const result = [...definition.spices].sort((a, b) => a.id.localeCompare(b.id));
+  const result = definition.spices?.length ? [...definition.spices].sort((a, b) => a.id.localeCompare(b.id)) : [];
   sortedSpicesCache.set(definition, result);
   return result;
 };
@@ -103,14 +96,10 @@ export const updateAndValidate = (
   spiceId: string,
   rawValue: SpiceValue,
 ): Record<string, SpiceValue> => {
-  const spiceMap = getSpiceMap(ingredientDefinition);
-  const spice = spiceMap.get(spiceId);
+  const spice = getSpiceMap(ingredientDefinition).get(spiceId);
   errorHandler.assert(spice, `Could not find spice definition for ID: ${spiceId} in ingredient ${ingredientDefinition.name}`);
 
-  const processedValue = prepareSelectValue(rawValue, spice);
-  const newSpices = { ...currentSpices, [spiceId]: processedValue };
-
-  return validateSpices(ingredientDefinition, newSpices);
+  return validateSpices(ingredientDefinition, { ...currentSpices, [spiceId]: prepareSelectValue(rawValue, spice) });
 };
 
 export const validateSpices = (

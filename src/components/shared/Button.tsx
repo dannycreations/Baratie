@@ -81,7 +81,6 @@ export const Button = memo<ButtonProps>(
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
     const variantClass = BUTTON_VARIANT_MAP[variant] || BUTTON_VARIANT_MAP.primary;
     const sizeClass = BUTTON_SIZE_MAP[size] || BUTTON_SIZE_MAP.sm;
-    const finalClassName = clsx('btn-base', shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className);
 
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
     const loadingSpinner = <Loader2Icon size={ICON_SIZES.XS} className={clsx('animate-spin', iconMarginClass)} />;
@@ -90,11 +89,16 @@ export const Button = memo<ButtonProps>(
     const showIconRight = iconPosition === 'right';
 
     return (
-      <button type={type} className={finalClassName} disabled={loading || disabled} onClick={onClick}>
+      <button
+        type={type}
+        className={clsx('btn-base', shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className)}
+        disabled={loading || disabled}
+        onClick={onClick}
+      >
         {loading && showIconLeft && loadingSpinner}
-        {icon && showIconLeft && <span className={clsx(iconMarginClass)}>{icon}</span>}
+        {icon && showIconLeft && <span className={iconMarginClass}>{icon}</span>}
         {children}
-        {icon && showIconRight && <span className={clsx(iconMarginClass)}>{icon}</span>}
+        {icon && showIconRight && <span className={iconMarginClass}>{icon}</span>}
         {loading && (showIconRight || !children) && loadingSpinner}
       </button>
     );
@@ -151,7 +155,7 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
     const defaultConfirmTooltip = `Confirm ${actionName}`;
     const tooltipContent = isConfirm ? (customConfirmTooltip ?? defaultConfirmTooltip) : (customTooltip ?? defaultTooltip);
 
-    const buttonClass = clsx(className, isConfirm && 'bg-danger-bg! text-accent-fg!');
+    const buttonClass = clsx(isConfirm && 'bg-danger-bg! text-accent-fg!', className);
 
     const defaultIcon = icon ?? <Trash2Icon size={ICON_SIZES.SM} />;
     const defaultConfirmIcon = confirmIcon ?? <AlertTriangleIcon className="text-danger-fg" size={ICON_SIZES.SM} />;

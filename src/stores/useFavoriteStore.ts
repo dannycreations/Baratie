@@ -20,12 +20,12 @@ export const useFavoriteStore = create<FavoriteState>()(
     favorites: new Set(),
 
     init: () => {
-      const parsedFavorites = storage.get<Array<unknown>>(STORAGE_FAVORITES, 'Favorite Ingredients');
+      const stored = storage.get<{ favorites: Array<unknown> }>(STORAGE_FAVORITES, 'Favorite Ingredients');
       let favorites: Array<string> = [];
 
-      if (parsedFavorites) {
-        if (Array.isArray(parsedFavorites)) {
-          favorites = parsedFavorites.reduce<Array<string>>((acc, item) => {
+      if (stored) {
+        if (stored.favorites && Array.isArray(stored.favorites)) {
+          favorites = stored.favorites.reduce<Array<string>>((acc, item) => {
             if (typeof item === 'string' && ingredientRegistry.get(item)) {
               acc.push(item);
             }
