@@ -30,16 +30,16 @@ export interface CreateIconProps<P extends IconProps = IconProps> {
 export const createIcon = <P extends IconProps = IconProps>({ iconName, defaultProps = {}, path }: Readonly<CreateIconProps<P>>) => {
   return memo((props: P): JSX.Element => {
     const { size = ICON_SIZES.LG, className = '', ...rest } = props;
-    const { isFilled: _, ...svgProps } = rest as any;
+    const { isFilled: _, ...svgProps } = rest as Record<string, unknown>;
 
-    const computedDefaultProps = typeof defaultProps === 'function' ? defaultProps(props as P) : defaultProps;
+    const computedDefaultProps = typeof defaultProps === 'function' ? defaultProps(props) : defaultProps;
 
     const finalProps = {
       fill: 'none',
       stroke: 'currentColor',
       strokeWidth: '2',
-      strokeLinecap: 'round',
-      strokeLinejoin: 'round',
+      strokeLinecap: 'round' as const,
+      strokeLinejoin: 'round' as const,
       ...computedDefaultProps,
       ...svgProps,
     };

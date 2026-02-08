@@ -1,7 +1,7 @@
 import { array, intersect, nonEmpty, number, object, optional, pipe, record, string, union } from 'valibot';
 
 import { ingredientRegistry, logger } from '../app/container';
-import { isObjectLike, shallowEqual } from '../utilities/objectUtil';
+import { isArrayEqual, isObjectLike, shallowEqual } from '../utilities/objectUtil';
 
 import type { InferInput } from 'valibot';
 import type { IngredientDefinition, IngredientRegistry } from '../core/IngredientRegistry';
@@ -247,24 +247,14 @@ export const loadAndExecuteExtension = async (
 };
 
 const areEntriesEqual = (a: Extension['entry'], b: Extension['entry']): boolean => {
-  if (a === b) return true;
-  if (typeof a !== typeof b || !Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
-
-  return a.every((val, index) => {
-    const otherVal = b[index];
-    if (typeof val === 'string' || typeof otherVal === 'string') {
-      return val === otherVal;
-    }
-    return shallowEqual(val, otherVal);
-  });
+  if (!Array.isArray(a) || !Array.isArray(b)) return a === b;
+  return isArrayEqual(a as ReadonlyArray<string | ManifestModule>, b as ReadonlyArray<string | ManifestModule>, (i1, i2) =>
+    typeof i1 === 'string' || typeof i2 === 'string' ? i1 === i2 : shallowEqual(i1, i2),
+  );
 };
 
 export const shallowExtensionStorable = (a: ReadonlyArray<StorableExtension>, b: ReadonlyArray<StorableExtension>): boolean => {
-  if (a === b) return true;
-  if (a.length !== b.length) return false;
-
-  return a.every((extA, i) => {
-    const extB = b[i];
+  return isArrayEqual(a, b, (extA, extB) => {
     return (
       extA.id === extB.id &&
       extA.name === extB.name &&

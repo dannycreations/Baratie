@@ -75,7 +75,7 @@ export const shallowEqual = <T>(a: T, b: T): boolean => {
   if (keysA.length !== keysB.length) return false;
 
   for (const key of keysA) {
-    if (!Object.prototype.hasOwnProperty.call(b, key) || !Object.is((a as any)[key], (b as any)[key])) {
+    if (!Object.prototype.hasOwnProperty.call(b, key) || !Object.is((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) {
       return false;
     }
   }
@@ -106,6 +106,16 @@ export const isMapEqual = <K, V>(
   return true;
 };
 
+export const isArrayEqual = <T>(
+  a: ReadonlyArray<T> | undefined,
+  b: ReadonlyArray<T> | undefined,
+  itemEqual: (i1: T, i2: T) => boolean = (i1, i2) => Object.is(i1, i2),
+): boolean => {
+  if (a === b) return true;
+  if (!a || !b || a.length !== b.length) return false;
+  return a.every((item, index) => itemEqual(item, b[index]));
+};
+
 export const toggleSetItem = <T>(set: ReadonlySet<T>, item: T, force?: boolean): Set<T> => {
   const nextSet = new Set(set);
   const shouldInclude = force ?? !nextSet.has(item);
@@ -120,4 +130,12 @@ export const toggleSetItem = <T>(set: ReadonlySet<T>, item: T, force?: boolean):
 
 export const filterObject = <T extends object>(obj: T, predicate: (key: string, value: unknown) => boolean): Partial<T> => {
   return Object.fromEntries(Object.entries(obj).filter(([key, value]) => predicate(key, value))) as Partial<T>;
+};
+
+export const pick = <T extends object, K extends keyof T>(obj: T, keys: ReadonlyArray<K>): Pick<T, K> => {
+  const result = {} as Partial<T>;
+  for (const key of keys) {
+    if (key in obj) result[key] = obj[key];
+  }
+  return result as Pick<T, K>;
 };

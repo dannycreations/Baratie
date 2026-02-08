@@ -1,5 +1,7 @@
 import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 
+import { isTouchDevice } from '../utilities/commonUtil';
+
 interface OverflowStatus {
   readonly hasOverflowX: boolean;
   readonly hasOverflowY: boolean;
@@ -14,16 +16,6 @@ const INITIAL_STATUS: OverflowStatus = {
   hasOverflowX: false,
   hasOverflowY: false,
 };
-
-const isTouchDevice = (): boolean => {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-};
-
-const isMobile = isTouchDevice();
 
 export const useOverflow = <T extends HTMLElement>(): OverflowReturn<T> => {
   const [element, setElement] = useState<T | null>(null);
@@ -83,7 +75,7 @@ export const useOverflow = <T extends HTMLElement>(): OverflowReturn<T> => {
   }, [element]);
 
   const className = useMemo(() => {
-    if (isMobile) {
+    if (isTouchDevice()) {
       return 'scrollbar-hidden';
     }
 

@@ -4,7 +4,8 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { STORAGE_RECIPE } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger, storage } from '../app/container';
 import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
-import { createSetHandlers, persistStore } from '../utilities/storeUtil';
+import { isArrayEqual } from '../utilities/objectUtil';
+import { createListMapHandlers, createSetHandlers, persistStore } from '../utilities/storeUtil';
 import { useIngredientStore } from './useIngredientStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useSettingStore } from './useSettingStore';
@@ -15,6 +16,7 @@ interface RecipeState {
   readonly activeRecipeId: string | null;
   readonly editingIds: Set<string>;
   readonly ingredients: ReadonlyArray<IngredientItem>;
+  readonly ingredientsMap: ReadonlyMap<string, IngredientItem>;
   readonly pausedIngredientIds: Set<string>;
   readonly addIngredient: (ingredientId: string, initialSpices?: Readonly<Record<string, unknown>>) => void;
   readonly clearEditingIds: () => void;
@@ -35,10 +37,18 @@ export const useRecipeStore = create<RecipeState>()(
     const editingHandlers = createSetHandlers<RecipeState, 'editingIds', string>(set, 'editingIds');
     const pausedHandlers = createSetHandlers<RecipeState, 'pausedIngredientIds', string>(set, 'pausedIngredientIds');
 
+    const ingredientHandlers = createListMapHandlers<RecipeState, 'ingredients', 'ingredientsMap', 'id', IngredientItem>(
+      set,
+      'ingredients',
+      'ingredientsMap',
+      'id',
+    );
+
     return {
       activeRecipeId: null,
       editingIds: new Set(),
       ingredients: [],
+      ingredientsMap: new Map(),
       pausedIngredientIds: new Set(),
 
       addIngredient: (ingredientId, initialSpices) => {
@@ -55,13 +65,14 @@ export const useRecipeStore = create<RecipeState>()(
           spices: validSpices,
         };
 
-        set((state) => ({ ingredients: [...state.ingredients, newIngredient] }));
+        ingredientHandlers.upsert(newIngredient);
       },
 
       clearEditingIds: editingHandlers.clear,
 
       clearRecipe: () => {
-        set({ activeRecipeId: null, ingredients: [] });
+        ingredientHandlers.clear();
+        set({ activeRecipeId: null });
         editingHandlers.clear();
         pausedHandlers.clear();
       },
@@ -84,43 +95,23 @@ export const useRecipeStore = create<RecipeState>()(
       },
 
       removeIngredient: (id) => {
-        set((state) => {
-          const ingredients = state.ingredients.filter((ing) => ing.id !== id);
+        const { ingredients, activeRecipeId } = get();
+        ingredientHandlers.remove(id);
 
-          if (ingredients.length === state.ingredients.length) {
-            logger.warn(`Attempted to remove non-existent ingredient with id: ${id}`);
-            return state;
-          }
+        if (get().ingredients.length === ingredients.length) {
+          logger.warn(`Attempted to remove non-existent ingredient with id: ${id}`);
+          return;
+        }
 
-          editingHandlers.remove(id);
-          pausedHandlers.remove(id);
+        editingHandlers.remove(id);
+        pausedHandlers.remove(id);
 
-          return {
-            ingredients,
-            activeRecipeId: ingredients.length > 0 ? state.activeRecipeId : null,
-          };
-        });
+        if (get().ingredients.length === 0 && activeRecipeId) {
+          set({ activeRecipeId: null });
+        }
       },
 
-      reorderIngredients: (draggedId, targetId) => {
-        set((state) => {
-          const { ingredients } = state;
-          const draggedIndex = ingredients.findIndex((ingredient) => ingredient.id === draggedId);
-          const targetIndex = ingredients.findIndex((ingredient) => ingredient.id === targetId);
-
-          if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) {
-            return state;
-          }
-
-          const newIngredients = [...ingredients];
-          const [draggedItem] = newIngredients.splice(draggedIndex, 1);
-          newIngredients.splice(targetIndex, 0, draggedItem);
-
-          return {
-            ingredients: newIngredients,
-          };
-        });
-      },
+      reorderIngredients: ingredientHandlers.reorder,
 
       setActiveRecipeId: (activeRecipeId) => {
         set({
@@ -141,9 +132,9 @@ export const useRecipeStore = create<RecipeState>()(
           return ingredient;
         });
 
+        ingredientHandlers.setAll(validIngredients);
         set({
           activeRecipeId: activeRecipeId,
-          ingredients: validIngredients,
           editingIds: new Set(),
           pausedIngredientIds: new Set(),
         });
@@ -160,38 +151,29 @@ export const useRecipeStore = create<RecipeState>()(
       toggleIngredientPause: pausedHandlers.toggle,
 
       updateSpice: (id, spiceId, rawValue) => {
-        set((state) => {
-          const { ingredients } = state;
-          const index = ingredients.findIndex((ingredient) => ingredient.id === id);
-          errorHandler.assert(index !== -1, `Ingredient with ID "${id}" not found for spice change.`, 'Recipe Change Spice');
+        const { ingredients } = get();
+        const ingredientToUpdate = ingredients.find((ing) => ing.id === id);
+        errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${id}" not found for spice change.`, 'Recipe Change Spice');
 
-          const ingredientToUpdate = ingredients[index];
-          const ingredientDefinition = ingredientRegistry.get(ingredientToUpdate.ingredientId);
-          errorHandler.assert(
-            ingredientDefinition,
-            `Ingredient definition not found for ID "${ingredientToUpdate.ingredientId}".`,
-            'Recipe Change Spice',
-          );
+        const ingredientDefinition = ingredientRegistry.get(ingredientToUpdate.ingredientId);
+        errorHandler.assert(
+          ingredientDefinition,
+          `Ingredient definition not found for ID "${ingredientToUpdate.ingredientId}".`,
+          'Recipe Change Spice',
+        );
 
-          const isSpiceInDefinition = ingredientDefinition.spices?.some((s) => s.id === spiceId);
-          errorHandler.assert(
-            isSpiceInDefinition,
-            `Spice with ID "${spiceId}" is not a valid spice for ingredient "${ingredientDefinition.name}".`,
-            'Recipe Change Spice',
-            {
-              genericMessage: `An internal error occurred while updating options for "${ingredientDefinition.name}".`,
-            },
-          );
+        const isSpiceInDefinition = ingredientDefinition.spices?.some((s) => s.id === spiceId);
+        errorHandler.assert(
+          isSpiceInDefinition,
+          `Spice with ID "${spiceId}" is not a valid spice for ingredient "${ingredientDefinition.name}".`,
+          'Recipe Change Spice',
+          {
+            genericMessage: `An internal error occurred while updating options for "${ingredientDefinition.name}".`,
+          },
+        );
 
-          const newValidSpices = updateAndValidate(ingredientDefinition, ingredientToUpdate.spices, spiceId, rawValue);
-          const updatedIngredient = { ...ingredientToUpdate, spices: newValidSpices };
-          const newIngredients = [...ingredients];
-          newIngredients[index] = updatedIngredient;
-
-          return {
-            ingredients: newIngredients,
-          };
-        });
+        const newValidSpices = updateAndValidate(ingredientDefinition, ingredientToUpdate.spices, spiceId, rawValue);
+        ingredientHandlers.upsert({ ...ingredientToUpdate, spices: newValidSpices });
       },
     };
   }),
@@ -223,5 +205,6 @@ persistStore(useRecipeStore, {
     ingredients: state.ingredients,
     activeRecipeId: state.activeRecipeId,
   }),
+  equalityFn: (a, b) => a.activeRecipeId === b.activeRecipeId && isArrayEqual(a.ingredients, b.ingredients),
   shouldPersist: () => useSettingStore.getState().persistRecipe,
 });

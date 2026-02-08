@@ -4,7 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { STORAGE_FAVORITES } from '../app/constants';
 import { errorHandler, ingredientRegistry, storage } from '../app/container';
 import { AppError } from '../core/ErrorHandler';
-import { isSetEqual } from '../utilities/objectUtil';
+import { isArrayEqual } from '../utilities/objectUtil';
 import { createSetHandlers, persistStore } from '../utilities/storeUtil';
 import { useIngredientStore } from './useIngredientStore';
 
@@ -74,5 +74,5 @@ persistStore(useFavoriteStore, {
   key: STORAGE_FAVORITES,
   context: 'Favorite Ingredients',
   pick: (state) => ({ favorites: [...state.favorites] }),
-  equalityFn: (a, b) => isSetEqual(new Set(a.favorites), new Set(b.favorites)),
+  equalityFn: (a, b) => isArrayEqual(a.favorites as any, b.favorites as any),
 });

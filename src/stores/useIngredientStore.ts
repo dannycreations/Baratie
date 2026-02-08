@@ -3,6 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_FILTERS } from '../app/constants';
 import { ingredientRegistry, storage } from '../app/container';
+import { isArrayEqual } from '../utilities/objectUtil';
 import { createSetHandlers, persistStore } from '../utilities/storeUtil';
 
 interface IngredientState {
@@ -64,4 +65,5 @@ persistStore(useIngredientStore, {
     categories: [...state.disabledCategories],
     ingredients: [...state.disabledIngredients],
   }),
+  equalityFn: (a, b) => isArrayEqual((a as any).categories, (b as any).categories) && isArrayEqual((a as any).ingredients, (b as any).ingredients),
 });

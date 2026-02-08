@@ -12,11 +12,11 @@ import {
   shallowExtensionStorable,
   StorableExtensionSchema,
 } from '../helpers/extensionHelper';
-import { isObjectLike } from '../utilities/objectUtil';
+import { isObjectLike, pick } from '../utilities/objectUtil';
 import { createMapHandlers } from '../utilities/storeUtil';
 import { useNotificationStore } from './useNotificationStore';
 
-import type { Extension, ExtensionManifest, ManifestModule } from '../helpers/extensionHelper';
+import type { Extension, ExtensionManifest, ManifestModule, StorableExtension } from '../helpers/extensionHelper';
 
 export interface ExtensionState {
   readonly extensions: ReadonlyArray<Extension>;
@@ -70,6 +70,10 @@ const fetchAndValidateManifest = async (repoInfo: {
 export const useExtensionStore = create<ExtensionState>()(
   subscribeWithSelector((set, get) => {
     const handlers = createMapHandlers<ExtensionState, 'extensionMap', string, Extension>(set, 'extensionMap');
+
+    const syncExtensions = (state: ExtensionState): Partial<ExtensionState> => ({
+      extensions: [...state.extensionMap.values()],
+    });
 
     return {
       extensions: [],
@@ -262,8 +266,7 @@ export const useExtensionStore = create<ExtensionState>()(
 
       remove: (id) => {
         const { show } = useNotificationStore.getState();
-        const { extensionMap, setExtensions, extensions } = get();
-        const extension = extensionMap.get(id);
+        const extension = get().extensionMap.get(id);
 
         if (!extension) {
           logger.warn(`Attempted to remove non-existent extension with id: ${id}`);
@@ -277,7 +280,8 @@ export const useExtensionStore = create<ExtensionState>()(
           ingredientRegistry.unregister(ingredientsToRemove);
         }
 
-        setExtensions(extensions.filter((ext) => ext.id !== id));
+        handlers.remove(id);
+        set(syncExtensions);
         show(`Extension '${displayName}' has been successfully uninstalled.`, 'success', 'Extension Manager');
       },
 
@@ -298,8 +302,8 @@ export const useExtensionStore = create<ExtensionState>()(
       },
 
       setExtensions: (extensions) => {
-        handlers.setAll(extensions.map((ext) => [ext.id, ext] as const));
-        set({ extensions });
+        handlers.setAll(extensions.map((ext) => [ext.id, ext]));
+        set(syncExtensions);
       },
 
       setIngredients: (id, ingredients) => {
@@ -307,16 +311,8 @@ export const useExtensionStore = create<ExtensionState>()(
       },
 
       upsert: (extension) => {
-        const { extensions, extensionMap } = get();
-        if (extensionMap.has(extension.id)) {
-          const updated = extensions.map((e) => (e.id === extension.id ? { ...e, ...extension } : e));
-          handlers.setAll(updated.map((ext) => [ext.id, ext] as const));
-          set({ extensions: updated });
-        } else {
-          const updated = [...extensions, extension as Extension];
-          handlers.setAll(updated.map((ext) => [ext.id, ext] as const));
-          set({ extensions: updated });
-        }
+        handlers.upsert(extension.id, extension);
+        set(syncExtensions);
       },
     };
   }),
@@ -333,15 +329,7 @@ useExtensionStore.subscribe(
           !!ext.scripts &&
           Object.keys(ext.scripts).length > 0,
       )
-      .map(({ id, name, fetchedAt, scripts, entry }) => {
-        return {
-          id: id,
-          name: name,
-          entry: entry,
-          scripts: { ...scripts },
-          fetchedAt: fetchedAt!,
-        };
-      }),
+      .map((ext) => pick(ext, ['id', 'name', 'entry', 'scripts', 'fetchedAt']) as StorableExtension),
   (storable) => {
     storage.set(STORAGE_EXTENSIONS, storable, 'Extensions');
   },

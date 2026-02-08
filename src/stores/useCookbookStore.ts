@@ -4,7 +4,7 @@ import { STORAGE_COOKBOOK } from '../app/constants';
 import { errorHandler, logger, storage } from '../app/container';
 import { computeInitialRecipeName, processAndSanitizeRecipes, saveAllRecipes } from '../helpers/cookbookHelper';
 import { readFile, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
-import { createMapHandlers } from '../utilities/storeUtil';
+import { createListMapHandlers } from '../utilities/storeUtil';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
 
@@ -41,7 +41,13 @@ interface CookbookState {
 }
 
 export const useCookbookStore = create<CookbookState>()((set, get) => {
-  const recipeHandlers = createMapHandlers<CookbookState, 'recipeIdMap', string, RecipebookItem>(set, 'recipeIdMap');
+  const recipeHandlers = createListMapHandlers<CookbookState, 'recipes', 'recipeIdMap', 'id', RecipebookItem>(
+    set,
+    'recipes',
+    'recipeIdMap',
+    'id',
+    (a, b) => b.updatedAt - a.updatedAt,
+  );
 
   return {
     nameInput: '',
@@ -50,14 +56,13 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
 
     delete: (id) => {
       const { show } = useNotificationStore.getState();
-      const { recipes, recipeIdMap, setRecipes } = get();
+      const { recipeIdMap } = get();
       const recipeToDelete = recipeIdMap.get(id);
 
       if (!recipeToDelete) return;
 
-      const updatedList = recipes.filter((r) => r.id !== id);
-      if (saveAllRecipes(updatedList)) {
-        setRecipes(updatedList);
+      recipeHandlers.remove(id);
+      if (saveAllRecipes(get().recipes)) {
         show(`Recipe '${recipeToDelete.name}' was deleted.`, 'info', 'Cookbook Action');
       }
     },
@@ -92,12 +97,13 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
         return;
       }
 
+      const now = Date.now();
       const recipeToExport: RecipebookItem = {
         id: crypto.randomUUID(),
         name: trimmedName,
         ingredients: ingredients,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+        createdAt: now,
+        updatedAt: now,
       };
       const fileName = `${sanitizeFileName(recipeToExport.name, 'recipe')}.json`;
       triggerDownload(JSON.stringify(recipeToExport, null, 2), fileName);
@@ -237,14 +243,10 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
       set({ nameInput });
     },
 
-    setRecipes: (newRecipes: ReadonlyArray<RecipebookItem>) => {
-      const recipes = [...newRecipes].sort((a, b) => b.updatedAt - a.updatedAt);
-      recipeHandlers.setAll(recipes.map((r) => [r.id, r] as const));
-      set({ recipes });
-    },
+    setRecipes: recipeHandlers.setAll,
 
     upsert: () => {
-      const { nameInput, recipes, recipeIdMap, setRecipes } = get();
+      const { nameInput, recipeIdMap } = get();
       const { ingredients, activeRecipeId, setActiveRecipeId } = useRecipeStore.getState();
       const { show } = useNotificationStore.getState();
       const trimmedName = nameInput.trim();
@@ -259,25 +261,19 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
       const isUpdateAction = !!recipeToUpdate && isNameMatching && ingredients.length > 0;
       const now = Date.now();
 
-      if (isUpdateAction) {
-        const updatedRecipe = { ...recipeToUpdate, name: trimmedName, ingredients, updatedAt: now };
-        const finalRecipes = recipes.map((r) => (r.id === activeRecipeId ? updatedRecipe : r));
+      const baseRecipe = { name: trimmedName, ingredients, updatedAt: now };
+      const finalRecipe = isUpdateAction ? { ...recipeToUpdate, ...baseRecipe } : { ...baseRecipe, id: crypto.randomUUID(), createdAt: now };
 
-        if (saveAllRecipes(finalRecipes)) {
-          setRecipes(finalRecipes);
-          setActiveRecipeId(updatedRecipe.id);
-          show(`Recipe '${trimmedName}' was updated.`, 'success', 'Cookbook Action');
-        }
-      } else {
-        const newRecipe = { id: crypto.randomUUID(), name: trimmedName, ingredients, createdAt: now, updatedAt: now };
-        const finalRecipes = [newRecipe, ...recipes];
+      recipeHandlers.upsert(finalRecipe as RecipebookItem);
 
-        if (saveAllRecipes(finalRecipes)) {
-          setRecipes(finalRecipes);
-          setActiveRecipeId(newRecipe.id);
-          const message = recipeToUpdate ? `Recipe '${trimmedName}' saved as a new copy.` : `Recipe '${trimmedName}' was saved.`;
-          show(message, 'success', 'Cookbook Action');
-        }
+      if (saveAllRecipes(get().recipes)) {
+        setActiveRecipeId(finalRecipe.id);
+        const message = isUpdateAction
+          ? `Recipe '${trimmedName}' was updated.`
+          : recipeToUpdate
+            ? `Recipe '${trimmedName}' saved as a new copy.`
+            : `Recipe '${trimmedName}' was saved.`;
+        show(message, 'success', 'Cookbook Action');
       }
     },
   };

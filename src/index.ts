@@ -30,20 +30,15 @@ const BARATIE_API = {
     notification: {
       clear: () => getNotificationState().clear(),
       remove: (id: string) => getNotificationState().remove(id),
-      show: (message: string, type?: NotificationType, title?: string, duration?: number) => {
-        return getNotificationState().show(message, type, title, duration);
-      },
+      show: (message: string, type?: NotificationType, title?: string, duration?: number) =>
+        getNotificationState().show(message, type, title, duration),
     },
     recipe: {
-      add: (ingredientId: string, initialSpices?: Readonly<Record<string, unknown>>) => {
-        return getRecipeState().addIngredient(ingredientId, initialSpices);
-      },
+      add: (ingredientId: string, initialSpices?: Readonly<Record<string, unknown>>) => getRecipeState().addIngredient(ingredientId, initialSpices),
       clear: () => getRecipeState().clearRecipe(),
       getActiveId: () => getRecipeState().getActiveRecipeId(),
       remove: (id: string) => getRecipeState().removeIngredient(id),
-      update: (id: string, spiceId: string, rawValue: SpiceValue) => {
-        return getRecipeState().updateSpice(id, spiceId, rawValue);
-      },
+      update: (id: string, spiceId: string, rawValue: SpiceValue) => getRecipeState().updateSpice(id, spiceId, rawValue),
     },
     theme: {
       get: () => useThemeStore((state) => state.id),
