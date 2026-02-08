@@ -68,7 +68,7 @@ export const createMapHandlers = <T extends object, K extends keyof T, VK, VV>(s
     }),
 });
 
-export const createListMapHandlers = <T extends object, LK extends keyof T, MK extends keyof T, IDK extends keyof V & string, V extends object>(
+export const createListHandlers = <T extends object, LK extends keyof T, MK extends keyof T, IDK extends keyof V & string, V extends object>(
   set: (fn: (state: T) => Partial<T> | T) => void,
   listKey: LK,
   mapKey: MK,
@@ -145,6 +145,21 @@ export const createListMapHandlers = <T extends object, LK extends keyof T, MK e
       }),
   };
 };
+
+export const createStackHandlers = <T extends object, K extends keyof T, V>(set: (fn: (state: T) => Partial<T> | T) => void, key: K) => ({
+  push: (item: V) =>
+    set((state) => {
+      const current = (state[key] as unknown as ReadonlyArray<V>) || [];
+      return { [key]: [...current, item] } as unknown as Partial<T>;
+    }),
+  pop: () =>
+    set((state) => {
+      const current = (state[key] as unknown as ReadonlyArray<V>) || [];
+      if (current.length === 0) return state as unknown as Partial<T> | T;
+      return { [key]: current.slice(0, -1) } as unknown as Partial<T>;
+    }),
+  clear: () => set(() => ({ [key]: [] }) as unknown as Partial<T>),
+});
 
 export const persistStore = <T extends object>(useStore: UseBoundStore<StoreApi<T>>, options: PersistOptions<T>): (() => void) => {
   const { key, context, pick, onHydrate, equalityFn = shallowEqual, shouldPersist } = options;

@@ -14,7 +14,7 @@ import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { TooltipButton } from '../shared/Button';
 import { PlusIcon, PreferencesIcon, SettingsIcon, StarIcon } from '../shared/Icon';
-import { StringInput } from '../shared/input/StringInput';
+import { SearchInput } from '../shared/input/SearchInput';
 import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
 import { GroupListLayout } from '../shared/layout/ListLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
@@ -186,15 +186,7 @@ export const IngredientPanel = memo((): JSX.Element => {
         {isDragOverRecipe && <DropZoneLayout mode="overlay" text="Drop to Remove from Recipe" variant="remove" />}
         <div className="flex h-full flex-col gap-2 min-h-0">
           <div>
-            <StringInput
-              id="ingredient-search"
-              type="search"
-              value={query}
-              placeholder="Search Ingredients..."
-              showClearButton
-              onChange={onQueryChange}
-              onClear={onClear}
-            />
+            <SearchInput id="ingredient-search" value={query} placeholder="Search Ingredients..." onChange={onQueryChange} onClear={onClear} />
           </div>
           <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>
             <GroupListLayout

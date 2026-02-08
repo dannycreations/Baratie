@@ -5,7 +5,7 @@ import { STORAGE_RECIPE } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger, storage } from '../app/container';
 import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
 import { isArrayEqual } from '../utilities/objectUtil';
-import { createListMapHandlers, createSetHandlers, persistStore } from '../utilities/storeUtil';
+import { createListHandlers, createSetHandlers, persistStore } from '../utilities/storeUtil';
 import { useIngredientStore } from './useIngredientStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useSettingStore } from './useSettingStore';
@@ -37,7 +37,7 @@ export const useRecipeStore = create<RecipeState>()(
     const editingHandlers = createSetHandlers<RecipeState, 'editingIds', string>(set, 'editingIds');
     const pausedHandlers = createSetHandlers<RecipeState, 'pausedIngredientIds', string>(set, 'pausedIngredientIds');
 
-    const ingredientHandlers = createListMapHandlers<RecipeState, 'ingredients', 'ingredientsMap', 'id', IngredientItem>(
+    const ingredientHandlers = createListHandlers<RecipeState, 'ingredients', 'ingredientsMap', 'id', IngredientItem>(
       set,
       'ingredients',
       'ingredientsMap',

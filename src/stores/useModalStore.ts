@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { createStackHandlers } from '../utilities/storeUtil';
+
 import type { ExtensionManifest } from '../helpers/extensionHelper';
 import type { CookbookModalProps } from './useCookbookStore';
 
@@ -24,28 +26,29 @@ interface ModalState {
   readonly closeModal: () => void;
 }
 
-export const useModalStore = create<ModalState>()((set, get) => ({
-  currentModal: null,
-  previousModals: [],
+export const useModalStore = create<ModalState>()((set, get) => {
+  const stackHandlers = createStackHandlers<ModalState, 'previousModals', ModalPayload>(set, 'previousModals');
 
-  openModal: (payload, options) => {
-    const { currentModal, previousModals } = get();
-    const newPreviousModals = [...previousModals];
+  return {
+    currentModal: null,
+    previousModals: [],
 
-    if (currentModal && !options?.replace) {
-      newPreviousModals.push(currentModal);
-    }
+    openModal: (payload, options) => {
+      const { currentModal } = get();
 
-    set({
-      currentModal: payload,
-      previousModals: newPreviousModals,
-    });
-  },
+      if (currentModal && !options?.replace) {
+        stackHandlers.push(currentModal);
+      }
 
-  closeModal: () => {
-    set((state) => ({
-      currentModal: state.previousModals[state.previousModals.length - 1] || null,
-      previousModals: state.previousModals.slice(0, -1),
-    }));
-  },
-}));
+      set({ currentModal: payload });
+    },
+
+    closeModal: () => {
+      const { previousModals } = get();
+      const lastModal = previousModals[previousModals.length - 1] || null;
+
+      set({ currentModal: lastModal });
+      stackHandlers.pop();
+    },
+  };
+});

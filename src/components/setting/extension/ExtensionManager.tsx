@@ -7,7 +7,7 @@ import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
 import { Button } from '../../shared/Button';
 import { BooleanInput } from '../../shared/input/BooleanInput';
-import { StringInput } from '../../shared/input/StringInput';
+import { SearchInput } from '../../shared/input/SearchInput';
 import { GroupListLayout } from '../../shared/layout/ListLayout';
 import { Modal } from '../../shared/Modal';
 
@@ -92,7 +92,7 @@ export const ExtensionManager = memo((): JSX.Element | null => {
     return result;
   }, [groupedModules, deferredQuery]);
 
-  const handleQueryChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+  const handleQueryChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setQuery(event.target.value);
   }, []);
 
@@ -211,13 +211,11 @@ export const ExtensionManager = memo((): JSX.Element | null => {
     >
       <div className="flex h-full flex-col gap-2 min-h-0">
         <div>
-          <StringInput
+          <SearchInput
             id="module-install-search"
-            type="search"
             inputRef={searchRef}
             value={query}
             placeholder="Search Modules..."
-            showClearButton
             disabled={isLoading}
             onChange={handleQueryChange}
             onClear={handleClearQuery}

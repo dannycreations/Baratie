@@ -9,7 +9,7 @@ import { useSearch } from '../../hooks/useSearch';
 import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { BooleanInput } from '../shared/input/BooleanInput';
-import { StringInput } from '../shared/input/StringInput';
+import { SearchInput } from '../shared/input/SearchInput';
 import { GroupListLayout } from '../shared/layout/ListLayout';
 import { Modal } from '../shared/Modal';
 
@@ -113,13 +113,11 @@ export const IngredientManager = memo((): JSX.Element => {
     <Modal isOpen={isModalOpen} size="lg" title="Manage Ingredients" onClose={closeModal}>
       <div className="flex h-full flex-col gap-2 min-h-0">
         <div>
-          <StringInput
+          <SearchInput
             id="ingredient-manager-search"
-            type="search"
             inputRef={searchRef}
             value={query}
             placeholder="Search Ingredients..."
-            showClearButton
             onChange={onQueryChange}
             onClear={onClear}
           />

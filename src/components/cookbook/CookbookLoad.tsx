@@ -4,7 +4,7 @@ import { memo, useId, useMemo } from 'react';
 import { ICON_SIZES } from '../../app/constants';
 import { useOverflow } from '../../hooks/useOverflow';
 import { SaveIcon } from '../shared/Icon';
-import { StringInput } from '../shared/input/StringInput';
+import { SearchInput } from '../shared/input/SearchInput';
 import { EmptyView } from '../shared/View';
 import { CookbookItem } from './CookbookItem';
 
@@ -51,13 +51,11 @@ export const CookbookLoad = memo<CookbookLoadProps>(
     return (
       <div className="flex h-full flex-col gap-2 min-h-0">
         <div className="border-b border-border-primary pb-2">
-          <StringInput
+          <SearchInput
             id="recipe-search"
             inputRef={searchRef}
-            type="search"
             value={query}
             placeholder="Search Saved Recipes..."
-            showClearButton
             onChange={onQueryChange}
             onClear={onClear}
           />

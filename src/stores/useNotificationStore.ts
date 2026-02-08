@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { NOTIFICATION_SHOW_MS } from '../app/constants';
+import { createMapHandlers, createStackHandlers } from '../utilities/storeUtil';
 
 import type { NotificationMessage, NotificationType } from '../app/types';
 
@@ -19,86 +20,66 @@ const getDedupeKey = (notification: Readonly<Pick<NotificationMessage, 'type' | 
   return [notification.type, notification.title || '', notification.message].join('|');
 };
 
-export const useNotificationStore = create<NotificationState>()((set, get) => ({
-  order: [],
-  map: new Map(),
-  dedupeMap: new Map(),
+export const useNotificationStore = create<NotificationState>()((set, get) => {
+  const mapHandlers = createMapHandlers<NotificationState, 'map', string, NotificationMessage>(set, 'map');
+  const dedupeHandlers = createMapHandlers<NotificationState, 'dedupeMap', string, string>(set, 'dedupeMap');
+  const orderHandlers = createStackHandlers<NotificationState, 'order', string>(set, 'order');
 
-  add: (notification) => {
-    set((state) => {
-      const map = new Map(state.map);
-      const dedupeMap = new Map(state.dedupeMap);
+  return {
+    order: [],
+    map: new Map(),
+    dedupeMap: new Map(),
 
-      map.set(notification.id, notification);
-      dedupeMap.set(getDedupeKey(notification), notification.id);
+    add: (notification) => {
+      mapHandlers.set(notification.id, notification);
+      dedupeHandlers.set(getDedupeKey(notification), notification.id);
+      orderHandlers.push(notification.id);
+    },
 
-      return {
-        map,
-        dedupeMap,
-        order: [...state.order, notification.id],
-      };
-    });
-  },
+    clear: () => {
+      mapHandlers.clear();
+      dedupeHandlers.clear();
+      orderHandlers.clear();
+    },
 
-  clear: () => {
-    set({
-      order: [],
-      map: new Map(),
-      dedupeMap: new Map(),
-    });
-  },
+    remove: (id) => {
+      const { map, dedupeMap, order } = get();
+      const notification = map.get(id);
+      if (!notification) return;
 
-  remove: (id) => {
-    set((state) => {
-      const notification = state.map.get(id);
-      if (!notification) return state;
-
-      const map = new Map(state.map);
-      const dedupeMap = new Map(state.dedupeMap);
-
-      map.delete(id);
+      mapHandlers.remove(id);
       if (dedupeMap.get(getDedupeKey(notification)) === id) {
-        dedupeMap.delete(getDedupeKey(notification));
+        dedupeHandlers.remove(getDedupeKey(notification));
       }
+      set({ order: order.filter((item) => item !== id) });
+    },
 
-      return {
-        map,
-        dedupeMap,
-        order: state.order.filter((item) => item !== id),
+    show: (message, type, title, duration) => {
+      const { add, update, dedupeMap } = get();
+      const details = {
+        message,
+        title,
+        type: type ?? 'info',
       };
-    });
-  },
+      const existingId = dedupeMap.get(getDedupeKey(details));
 
-  show: (message, type, title, duration) => {
-    const { add, update, dedupeMap } = get();
-    const finalType: NotificationType = type ?? 'info';
-    const details = {
-      message,
-      title,
-      type: finalType,
-    };
-    const existingId = dedupeMap.get(getDedupeKey(details));
+      if (existingId) {
+        update(existingId, duration ?? NOTIFICATION_SHOW_MS, Date.now());
+      } else {
+        add({
+          ...details,
+          id: crypto.randomUUID(),
+          duration: duration ?? NOTIFICATION_SHOW_MS,
+        });
+      }
+    },
 
-    if (existingId) {
-      update(existingId, duration ?? NOTIFICATION_SHOW_MS, Date.now());
-    } else {
-      const newNotification: NotificationMessage = {
-        ...details,
-        id: crypto.randomUUID(),
-        duration: duration ?? NOTIFICATION_SHOW_MS,
-      };
-      add(newNotification);
-    }
-  },
+    update: (id, duration, resetAt) => {
+      const { map } = get();
+      const existing = map.get(id);
+      if (!existing) return;
 
-  update: (id, duration, resetAt) => {
-    set((state) => {
-      const notification = state.map.get(id);
-      if (!notification) return state;
-
-      const map = new Map(state.map);
-      map.set(id, { ...notification, duration, resetAt });
-      return { map };
-    });
-  },
-}));
+      mapHandlers.set(id, { ...existing, duration, resetAt });
+    },
+  };
+});

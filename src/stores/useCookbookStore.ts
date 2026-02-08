@@ -4,7 +4,7 @@ import { STORAGE_COOKBOOK } from '../app/constants';
 import { errorHandler, logger, storage } from '../app/container';
 import { computeInitialRecipeName, processAndSanitizeRecipes, saveAllRecipes } from '../helpers/cookbookHelper';
 import { readFile, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
-import { createListMapHandlers } from '../utilities/storeUtil';
+import { createListHandlers } from '../utilities/storeUtil';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
 
@@ -41,7 +41,7 @@ interface CookbookState {
 }
 
 export const useCookbookStore = create<CookbookState>()((set, get) => {
-  const recipeHandlers = createListMapHandlers<CookbookState, 'recipes', 'recipeIdMap', 'id', RecipebookItem>(
+  const recipeHandlers = createListHandlers<CookbookState, 'recipes', 'recipeIdMap', 'id', RecipebookItem>(
     set,
     'recipes',
     'recipeIdMap',
