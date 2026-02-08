@@ -29,7 +29,7 @@ export const FormLayout = ({
 }: FormLayoutProps): JSX.Element => {
   const isRow = direction === 'row';
 
-  const containerClass = clsx(isRow ? 'flex-y-center justify-start gap-2' : 'flex flex-col gap-2', className);
+  const containerClass = clsx(isRow ? 'flex-y-center justify-start gap-2' : 'stack-v-medium', className);
   const finalLabelWrapClass = clsx(isRow ? 'flex-1-min-0' : '', labelWrapperClasses);
   const finalInputWrapClass = clsx(isRow ? 'flex h-8 shrink-0 items-center' : 'w-full', inputWrapperClasses);
   const finalLabelClass = clsx('label-base', labelClasses);

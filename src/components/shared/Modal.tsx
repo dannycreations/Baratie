@@ -92,13 +92,10 @@ export const Modal = ({
     return null;
   }
 
-  const backdropClass = clsx(
-    'fixed inset-0 z-[500] flex items-center justify-center p-3 backdrop-blur-sm bg-backdrop',
-    isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active',
-  );
+  const backdropClass = clsx('modal-backdrop', isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active');
   const modalClass = clsx(
     'panel-container border border-border-primary',
-    MODAL_SIZE_MAP[size] || MODAL_SIZE_MAP.lg,
+    MODAL_SIZE_MAP[size] || 'modal-lg',
     isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active',
     contentClasses,
   );

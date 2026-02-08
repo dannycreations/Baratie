@@ -32,11 +32,6 @@ export const StringInput = memo<StringInputProps>(
       inputRef?.current?.focus();
     }, [onClear, inputRef]);
 
-    const clearButtonClass = clsx(
-      'absolute top-1/2 right-2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full transition-colors',
-      'text-content-tertiary hover:bg-surface-muted hover:text-content-primary',
-    );
-
     return (
       <div className={finalWrapperClass}>
         <input
@@ -51,7 +46,7 @@ export const StringInput = memo<StringInputProps>(
           onKeyDown={onKeyDown}
         />
         {hasClearButton && (
-          <button type="button" className={clearButtonClass} onClick={handleClear}>
+          <button type="button" className="input-clear-button" onClick={handleClear}>
             <XIcon size={ICON_SIZES.XS} />
           </button>
         )}

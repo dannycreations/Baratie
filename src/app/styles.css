@@ -324,6 +324,10 @@
     @apply py-2 px-2;
   }
 
+  .input-clear-button {
+    @apply absolute top-1/2 right-2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full transition-colors text-content-tertiary hover:bg-surface-muted hover:text-content-primary;
+  }
+
   .label-base {
     @apply font-medium text-sm text-content-secondary;
   }
@@ -424,6 +428,14 @@
 
   .notification-item {
     @apply relative w-full overflow-hidden rounded-lg border-l-4 bg-surface-secondary shadow-lg;
+  }
+
+  .notification-content {
+    @apply flex items-start gap-2 p-3;
+  }
+
+  .notification-progress-container {
+    @apply absolute inset-x-0 bottom-0 h-1 bg-surface-tertiary;
   }
 
   .info-message-box {
@@ -556,6 +568,10 @@
     @apply max-w-full sm:h-[90vh] sm:max-h-[90vh];
   }
 
+  .modal-backdrop {
+    @apply fixed inset-0 z-[500] flex items-center justify-center p-3 backdrop-blur-sm bg-backdrop;
+  }
+
   .modal-header-title {
     @apply grow truncate pr-2 font-semibold text-xl;
   }
@@ -566,6 +582,10 @@
 
   .modal-body {
     @apply flex min-h-0 flex-1 flex-col overflow-hidden p-3;
+  }
+
+  .modal-footer {
+    @apply flex shrink-0 items-center justify-end gap-2 border-t border-border-primary p-3;
   }
 
   /* Screens & Large Views */
@@ -597,12 +617,72 @@
     @apply flex min-h-0 flex-1 flex-col pt-3;
   }
 
+  .tab-content-container {
+    @apply flex min-h-0 flex-1 flex-col gap-2;
+  }
+
   .tab-panel {
     @apply flex h-full flex-col gap-3;
   }
 
   .tab-panel-hidden {
     @apply hidden;
+  }
+
+  .theme-item-container {
+    @apply flex h-16 w-full items-center justify-between rounded-md p-2 transition-colors duration-150 bg-surface-tertiary border-2;
+  }
+
+  .theme-item-active {
+    @apply border-info-border bg-surface-muted;
+  }
+
+  .theme-item-inactive {
+    @apply border-border-primary hover:border-border-secondary hover:bg-surface-muted;
+  }
+
+  .list-item-container-bordered {
+    @apply flex h-auto w-full items-center justify-between rounded-md p-3 transition-colors duration-150 bg-surface-tertiary border border-border-primary;
+  }
+
+  .list-item-header {
+    @apply flex min-w-0 items-center gap-2;
+  }
+
+  .list-item-label {
+    @apply cursor-pointer truncate font-medium;
+  }
+
+  .recipe-item-header {
+    @apply flex h-12 w-full shrink-0 cursor-default items-center justify-between p-2 group-hover:text-info-fg;
+  }
+
+  .recipe-item-info {
+    @apply p-2 pt-0;
+  }
+
+  .recipe-spice-editor-container {
+    @apply max-h-96 p-1 overflow-y-auto;
+  }
+
+  .recipe-spice-editor-wrapper {
+    @apply rounded-md border border-border-secondary bg-surface-hover p-2;
+  }
+
+  .extension-item-id-button {
+    @apply cursor-pointer rounded-sm text-left text-xs text-content-tertiary transition-colors duration-150 hover:bg-surface-muted hover:text-info-fg;
+  }
+
+  .extension-status-badge {
+    @apply flex items-center gap-2 text-xs font-medium;
+  }
+
+  .danger-zone-container {
+    @apply rounded-md border border-danger-border bg-surface-tertiary p-3;
+  }
+
+  .danger-zone-content {
+    @apply flex items-center justify-between gap-4;
   }
 
   .error-view-details {
@@ -615,6 +695,22 @@
 
   .error-view-pre {
     @apply mt-2 whitespace-pre-wrap text-content-secondary;
+  }
+
+  .dialog-backdrop {
+    @apply fixed inset-0 z-[800] flex items-center justify-center bg-backdrop p-3 backdrop-blur-sm;
+  }
+
+  .dialog-container {
+    @apply w-full max-w-md rounded-lg bg-surface-secondary p-3 text-center sm:max-w-lg md:max-w-2xl;
+  }
+
+  .dialog-title-large {
+    @apply mb-2 text-2xl font-bold text-danger-fg;
+  }
+
+  .dialog-icon-large {
+    @apply mb-3 text-5xl text-danger-fg;
   }
 
   .flex-center {
@@ -686,6 +782,31 @@
 
   .dropzone-placeholder {
     @apply h-14 text-sm select-none;
+  }
+
+  /* Utility aliases for common patterns */
+  .grid-standard {
+    @apply grid grid-cols-1 gap-2 sm:grid-cols-2;
+  }
+
+  .stack-v-small {
+    @apply flex flex-col gap-1;
+  }
+
+  .stack-v-medium {
+    @apply flex flex-col gap-2;
+  }
+
+  .stack-h-small {
+    @apply flex items-center gap-2;
+  }
+
+  .text-title-medium {
+    @apply text-sm font-medium text-content-primary;
+  }
+
+  .text-description-small {
+    @apply text-xs text-content-secondary;
   }
 }
 

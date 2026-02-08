@@ -35,7 +35,7 @@ const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }):
 
   const current = statusMap[status] || statusMap.error;
   const content = (
-    <div className={clsx('flex items-center gap-2 text-xs font-medium', current.colorClass)}>
+    <div className={clsx('extension-status-badge', current.colorClass)}>
       {current.icon}
       <span>{current.text}</span>
     </div>
@@ -73,10 +73,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
     <div className="flex flex-col">
       <h3 className="list-item-title font-medium text-content-primary">{displayName}</h3>
       <Tooltip content={isCopied ? 'Copied URL!' : 'Click to copy URL'} position="top">
-        <button
-          className="cursor-pointer rounded-sm text-left text-xs text-content-tertiary transition-colors duration-150 hover:bg-surface-muted hover:text-info-fg"
-          onClick={handleCopyId}
-        >
+        <button className="extension-item-id-button" onClick={handleCopyId}>
           {id}
         </button>
       </Tooltip>

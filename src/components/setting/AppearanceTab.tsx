@@ -36,12 +36,7 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
     onSelect(item.id);
   }, [onSelect, item.id]);
 
-  const liClass = clsx('list-none rounded-md cursor-pointer outline-none');
-
-  const itemLayoutClass = clsx(
-    'list-item-container flex h-16 w-full items-center justify-between border-2 p-2',
-    isChecked ? 'border-info-border bg-surface-muted' : 'border-border-primary hover:border-border-secondary hover:bg-surface-muted',
-  );
+  const itemLayoutClass = clsx('theme-item-container', isChecked ? 'theme-item-active' : 'theme-item-inactive');
 
   const leftContent = (
     <div className="flex flex-col justify-center gap-1">
@@ -51,13 +46,13 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
   );
 
   const rightContent = isChecked ? (
-    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-500/20">
+    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-bg/20">
       <CheckIcon className="text-info-fg" size={ICON_SIZES.XS} />
     </div>
   ) : null;
 
   return (
-    <li className={liClass} onClick={handleClick}>
+    <li className="list-none cursor-pointer outline-none" onClick={handleClick}>
       <div className={itemLayoutClass}>
         <div className="flex-1-min-0">{leftContent}</div>
         <div className="list-item-actions">{rightContent}</div>
@@ -78,7 +73,7 @@ export const AppearanceTab = memo((): JSX.Element => {
   );
 
   return (
-    <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+    <ul className="grid-standard">
       {THEME_VARIANT.map((item) => (
         <ThemeItem key={item.id} item={item} isChecked={id === item.id} onSelect={handleSelectTheme} />
       ))}

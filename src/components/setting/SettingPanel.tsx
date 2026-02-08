@@ -89,7 +89,7 @@ export const SettingPanel = memo((): JSX.Element => {
               )}
             >
               {tab.description && <p className="text-sm text-content-tertiary">{tab.description()}</p>}
-              {tab.component}
+              <div className="tab-content-container">{tab.component}</div>
             </div>
           ))}
         </div>

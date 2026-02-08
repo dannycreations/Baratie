@@ -43,7 +43,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete,
         <h3 className="list-item-title text-content-primary">
           <HighlightText text={recipe.name} highlight={query} />
         </h3>
-        <p className="text-xs text-content-tertiary">
+        <p className="text-description-small">
           Last Updated: {formattedTimestamp} ({recipe.ingredients.length} steps)
         </p>
       </div>

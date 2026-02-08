@@ -42,7 +42,7 @@ export const CookbookSave = memo<CookbookSaveProps>(({ nameInput, onNameChange, 
         )}
       </FormLayout>
       {isRecipeEmpty && (
-        <p className="mt-3 text-center text-sm text-warning-fg">Your recipe is empty. Add ingredients from the panel on the left before saving.</p>
+        <p className="info-message-box mt-3 text-warning-fg">Your recipe is empty. Add ingredients from the panel on the left before saving.</p>
       )}
     </>
   );

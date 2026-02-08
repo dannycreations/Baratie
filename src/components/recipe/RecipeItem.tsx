@@ -142,8 +142,8 @@ const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition
   );
 
   return (
-    <div className="max-h-96 p-1 overflow-y-auto">
-      <div className="rounded-md border border-border-secondary bg-surface-hover p-2">
+    <div className="recipe-spice-editor-container">
+      <div className="recipe-spice-editor-wrapper">
         <SpiceLayout
           ingredient={definition}
           currentSpices={ingredient.spices}
@@ -243,12 +243,12 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
 
   return (
     <li className={itemClass} onDragOver={handleDragOver}>
-      <div className="flex h-12 w-full shrink-0 cursor-default items-center justify-between p-2 list-item-interactive">
+      <div className="recipe-item-header">
         <div className="flex grow items-center min-w-0">{leftColumn}</div>
         <div className="list-item-actions">{rightColumn}</div>
       </div>
 
-      {infoContent && <div className="p-2 pt-0">{infoContent}</div>}
+      {infoContent && <div className="recipe-item-info">{infoContent}</div>}
 
       {hasSpices && (
         <div className={clsx('accordion-grid', isEditorVisible && 'expanded')}>

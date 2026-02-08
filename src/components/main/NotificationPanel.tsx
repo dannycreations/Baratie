@@ -89,18 +89,18 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
 
   return (
     <li className={containerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <div className="flex items-start gap-2 p-3">
-        <div className="flex-shrink-0">{renderedIcon}</div>
+      <div className="notification-content">
+        <div className="shrink-0">{renderedIcon}</div>
         <div className="flex-1-min-0">
           {notification.title && <h3 className="text-sm font-semibold text-content-primary">{notification.title}</h3>}
           <p className={messageClass}>{notification.message}</p>
         </div>
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <Button icon={<XIcon size={ICON_SIZES.MD} />} size="sm" variant="stealth" onClick={handleExit} />
         </div>
       </div>
       {!isExiting && (
-        <div className="absolute inset-x-0 bottom-0 h-1 bg-surface-tertiary">
+        <div className="notification-progress-container">
           <div
             key={`${notification.id}-${notification.resetAt ?? 0}`}
             className={clsx('h-full progress-bar-fill', barClass)}

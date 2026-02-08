@@ -120,11 +120,11 @@ export const SpiceLayout = memo<SpiceLayoutProps>(
     }, [ingredient, currentSpices]);
 
     if (!ingredient.spices || ingredient.spices.length === 0) {
-      return <p className="text-sm italic text-content-tertiary">This ingredient has no configurable options.</p>;
+      return <p className="info-message-box">This ingredient has no configurable options.</p>;
     }
 
     if (visibleSpices.length === 0) {
-      return <p className="text-sm italic text-content-tertiary">No options are available. Adjust other values to see more.</p>;
+      return <p className="info-message-box">No options are available. Adjust other values to see more.</p>;
     }
 
     return (

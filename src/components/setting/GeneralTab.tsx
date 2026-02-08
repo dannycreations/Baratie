@@ -19,9 +19,9 @@ export const GeneralTab = memo((): JSX.Element => {
   }, []);
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <div className="list-item-container h-auto border border-border-primary p-3">
+    <div className="stack-v-medium">
+      <div className="grid-standard">
+        <div className="list-item-container-bordered">
           <FormLayout
             inputId="allow-multiple-open"
             label="Multi-Expand Accordions"
@@ -40,7 +40,7 @@ export const GeneralTab = memo((): JSX.Element => {
             )}
           </FormLayout>
         </div>
-        <div className="list-item-container h-auto border border-border-primary p-3">
+        <div className="list-item-container-bordered">
           <FormLayout
             inputId="persist-recipe"
             label="Persist Current Recipe"
@@ -60,11 +60,11 @@ export const GeneralTab = memo((): JSX.Element => {
           </FormLayout>
         </div>
       </div>
-      <div className="rounded-md border border-danger-border bg-surface-tertiary p-3">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
+      <div className="danger-zone-container">
+        <div className="danger-zone-content">
+          <div className="stack-v-small">
             <h3 className="text-sm font-medium text-danger-fg">Danger Zone</h3>
-            <p className="text-xs text-content-secondary">
+            <p className="text-description-small">
               Resetting the application will permanently delete all your recipes, extensions, settings, and local data. This action cannot be undone.
             </p>
           </div>

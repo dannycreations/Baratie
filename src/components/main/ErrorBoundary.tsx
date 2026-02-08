@@ -20,24 +20,19 @@ interface ErrorBoundaryState {
 
 type ErrorDisplayProps = Omit<ErrorBoundaryState, 'hasError'>;
 
-const ErrorDisplay = ({ error, errorInfo }: ErrorDisplayProps): JSX.Element => {
-  const backdropClass = 'fixed inset-0 z-[800] flex items-center justify-center bg-backdrop p-3 backdrop-blur-sm';
-  const dialogClass = 'w-full max-w-md rounded-lg border border-danger-border bg-surface-secondary p-3 text-center sm:max-w-lg md:max-w-2xl';
-
-  return (
-    <div className={backdropClass}>
-      <div className={dialogClass}>
-        <div className="mb-3 text-5xl text-danger-fg">⚠️</div>
-        <h2 className="mb-2 text-2xl font-bold text-danger-fg">A Kitchen Catastrophe!</h2>
-        <p className="mb-3 text-content-secondary">A sudden squall has hit the galley! Reloading might calm the seas.</p>
-        <Button icon={<RefreshCwIcon size={ICON_SIZES.MD} />} size="sm" variant="primary" onClick={() => window.location.reload()}>
-          Batten Down the Hatches!
-        </Button>
-        {error && <ErrorView error={error} errorInfo={errorInfo} />}
-      </div>
+const ErrorDisplay = ({ error, errorInfo }: ErrorDisplayProps): JSX.Element => (
+  <div className="dialog-backdrop">
+    <div className="dialog-container border border-danger-border">
+      <div className="dialog-icon-large">⚠️</div>
+      <h2 className="dialog-title-large">A Kitchen Catastrophe!</h2>
+      <p className="mb-3 text-content-secondary">A sudden squall has hit the galley! Reloading might calm the seas.</p>
+      <Button icon={<RefreshCwIcon size={ICON_SIZES.MD} />} size="sm" variant="primary" onClick={() => window.location.reload()}>
+        Batten Down the Hatches!
+      </Button>
+      {error && <ErrorView error={error} errorInfo={errorInfo} />}
     </div>
-  );
-};
+  </div>
+);
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   public override state: ErrorBoundaryState = {
