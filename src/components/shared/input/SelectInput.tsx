@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback } from 'react';
 
 import { ChevronDownIcon } from '../Icon';
 
@@ -20,19 +20,15 @@ interface SelectInputProps<T extends SpiceValue> {
 
 export const SelectInput = memo(
   <T extends SpiceValue>({ id, value, onChange, options, disabled = false, className }: SelectInputProps<T>): JSX.Element => {
-    const valueToOptionMap = useMemo(() => {
-      return new Map(options.map((opt) => [String(opt.value), opt]));
-    }, [options]);
-
     const handleChange = useCallback<ChangeEventHandler<HTMLSelectElement>>(
       (event) => {
         const stringValue = event.target.value;
-        const selectedOption = valueToOptionMap.get(stringValue);
+        const selectedOption = options.find((opt) => String(opt.value) === stringValue);
         if (selectedOption) {
           onChange(selectedOption.value);
         }
       },
-      [valueToOptionMap, onChange],
+      [options, onChange],
     );
 
     const finalWrapperClass = clsx('relative', className);

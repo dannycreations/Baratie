@@ -26,9 +26,11 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
 
   add: (notification) => {
     set((state) => {
-      const map = new Map(state.map).set(notification.id, notification);
+      const map = new Map(state.map);
+      map.set(notification.id, notification);
       const order = [...state.order, notification.id];
-      const dedupeMap = new Map(state.dedupeMap).set(getDedupeKey(notification), notification.id);
+      const dedupeMap = new Map(state.dedupeMap);
+      dedupeMap.set(getDedupeKey(notification), notification.id);
       return { map, order, dedupeMap };
     });
   },
@@ -87,7 +89,8 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
       const notification = state.map.get(id);
       if (!notification) return state;
 
-      const map = new Map(state.map).set(id, { ...notification, duration, resetAt });
+      const map = new Map(state.map);
+      map.set(id, { ...notification, duration, resetAt });
       return { map };
     });
   },

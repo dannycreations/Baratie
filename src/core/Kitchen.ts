@@ -158,16 +158,7 @@ export class Kitchen {
   }
 
   public async executeSubRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string, context?: Partial<IngredientContext>): Promise<string> {
-    const state: RecipeLoopState = {
-      cookedData: initialInput,
-      globalError: false,
-      hasWarnings: false,
-      lastInputConfig: null,
-      lastInputPanelId: null,
-      lastOutputConfig: null,
-      localStatuses: {},
-      localWarnings: {},
-    };
+    const state = this.createInitialLoopState(initialInput);
 
     for (const [index, ingredient] of recipe.entries()) {
       const definition = ingredientRegistry.get(ingredient.ingredientId);
@@ -243,8 +234,8 @@ export class Kitchen {
     return state.globalError;
   }
 
-  private async executeRecipeLoop(recipe: ReadonlyArray<IngredientItem>, init: string): Promise<RecipeLoopState> {
-    const state: RecipeLoopState = {
+  private createInitialLoopState(init: string): RecipeLoopState {
+    return {
       cookedData: init,
       globalError: false,
       hasWarnings: false,
@@ -254,6 +245,10 @@ export class Kitchen {
       localStatuses: {},
       localWarnings: {},
     };
+  }
+
+  private async executeRecipeLoop(recipe: ReadonlyArray<IngredientItem>, init: string): Promise<RecipeLoopState> {
+    const state = this.createInitialLoopState(init);
     for (const [i, ing] of recipe.entries()) {
       if (await this.processSingleIngredient(ing, i, recipe, init, state)) break;
     }

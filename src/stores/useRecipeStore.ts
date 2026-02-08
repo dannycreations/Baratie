@@ -151,8 +151,8 @@ export const useRecipeStore = create<RecipeState>()(
       toggleIngredientPause: pausedHandlers.toggle,
 
       updateSpice: (id, spiceId, rawValue) => {
-        const { ingredients } = get();
-        const ingredientToUpdate = ingredients.find((ing) => ing.id === id);
+        const { ingredientsMap } = get();
+        const ingredientToUpdate = ingredientsMap.get(id);
         errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${id}" not found for spice change.`, 'Recipe Change Spice');
 
         const ingredientDefinition = ingredientRegistry.get(ingredientToUpdate.ingredientId);

@@ -76,8 +76,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
         return;
       }
 
-      const fileName = 'baratie_cookbook_export.json';
-      triggerDownload(JSON.stringify(recipes, null, 2), fileName);
+      triggerDownload(JSON.stringify(recipes, null, 2), 'baratie_cookbook_export.json');
       show(`${recipes.length} recipes are ready for download.`, 'success', 'Export All Successful');
     },
 
@@ -105,9 +104,8 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
         createdAt: now,
         updatedAt: now,
       };
-      const fileName = `${sanitizeFileName(recipeToExport.name, 'recipe')}.json`;
-      triggerDownload(JSON.stringify(recipeToExport, null, 2), fileName);
-      show(`Recipe '${recipeToExport.name}' is ready for download.`, 'success', 'Export Successful');
+      triggerDownload(JSON.stringify(recipeToExport, null, 2), `${sanitizeFileName(trimmedName, 'recipe')}.json`);
+      show(`Recipe '${trimmedName}' is ready for download.`, 'success', 'Export Successful');
     },
 
     importFromFile: async (file) => {

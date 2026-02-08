@@ -162,18 +162,16 @@ export const GroupListLayout = memo<GroupListProps>(
     const handleCategoryToggle = useCallback(
       (category: string): void => {
         setExpandedCategories((current) => {
-          const newSet = new Set(current);
-          const isExpanded = newSet.has(category);
-
+          const isExpanded = current.has(category);
           if (isExpanded) {
-            newSet.delete(category);
-          } else {
-            if (!multipleOpen) {
-              newSet.clear();
-            }
-            newSet.add(category);
+            const next = new Set(current);
+            next.delete(category);
+            return next;
           }
-          return newSet;
+
+          const next = multipleOpen ? new Set(current) : new Set<string>();
+          next.add(category);
+          return next;
         });
       },
       [multipleOpen],

@@ -1,14 +1,6 @@
 const canonicalStringify = (obj: unknown, seen: Set<unknown>): string => {
-  if (obj === null || obj === undefined) {
-    return String(obj);
-  }
-
-  const type = typeof obj;
-  if (type !== 'object') {
-    if (type === 'function') {
-      return '';
-    }
-    return JSON.stringify(obj);
+  if (obj === null || typeof obj !== 'object') {
+    return typeof obj === 'function' ? '' : JSON.stringify(obj);
   }
 
   if (seen.has(obj)) {
@@ -19,11 +11,7 @@ const canonicalStringify = (obj: unknown, seen: Set<unknown>): string => {
 
   try {
     if (Array.isArray(obj)) {
-      const arrayString = obj
-        .map((value) => {
-          return canonicalStringify(value, seen);
-        })
-        .join(',');
+      const arrayString = obj.map((value) => canonicalStringify(value, seen)).join(',');
       return `[${arrayString}]`;
     }
 
