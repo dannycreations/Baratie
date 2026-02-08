@@ -21,15 +21,7 @@ export const useSettingStore = create<SettingState>()(
     multipleOpen: false,
     persistRecipe: true,
 
-    init: () => {
-      const settings = storage.get<SettingProps>(STORAGE_SETTINGS, 'App Settings');
-      if (settings) {
-        set({
-          multipleOpen: settings.multipleOpen ?? false,
-          persistRecipe: settings.persistRecipe ?? true,
-        });
-      }
-    },
+    init: () => {},
 
     setMultipleOpen: (multipleOpen) => {
       set({ multipleOpen });
@@ -47,6 +39,7 @@ export const useSettingStore = create<SettingState>()(
 persistStore(useSettingStore, {
   key: STORAGE_SETTINGS,
   context: 'App Settings',
+  autoHydrate: true,
   pick: (state) => ({
     multipleOpen: state.multipleOpen,
     persistRecipe: state.persistRecipe,

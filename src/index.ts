@@ -16,9 +16,6 @@ import type { NotificationType } from './app/types';
 import type { IngredientContext, IngredientDefinition, IngredientItem, RecipebookItem, SpiceDefinition, SpiceValue } from './core/IngredientRegistry';
 import type { InputType } from './core/InputType';
 
-const getNotificationState = useNotificationStore.getState;
-const getRecipeState = useRecipeStore.getState;
-
 const BARATIE_API = {
   LogLevel,
   logger,
@@ -28,20 +25,21 @@ const BARATIE_API = {
   ingredient: ingredientRegistry,
   helpers: {
     notification: {
-      clear: () => getNotificationState().clear(),
-      remove: (id: string) => getNotificationState().remove(id),
+      clear: () => useNotificationStore.getState().clear(),
+      remove: (id: string) => useNotificationStore.getState().remove(id),
       show: (message: string, type?: NotificationType, title?: string, duration?: number) =>
-        getNotificationState().show(message, type, title, duration),
+        useNotificationStore.getState().show(message, type, title, duration),
     },
     recipe: {
-      add: (ingredientId: string, initialSpices?: Readonly<Record<string, unknown>>) => getRecipeState().addIngredient(ingredientId, initialSpices),
-      clear: () => getRecipeState().clearRecipe(),
-      getActiveId: () => getRecipeState().getActiveRecipeId(),
-      remove: (id: string) => getRecipeState().removeIngredient(id),
-      update: (id: string, spiceId: string, rawValue: SpiceValue) => getRecipeState().updateSpice(id, spiceId, rawValue),
+      add: (ingredientId: string, initialSpices?: Readonly<Record<string, unknown>>) =>
+        useRecipeStore.getState().addIngredient(ingredientId, initialSpices),
+      clear: () => useRecipeStore.getState().clearRecipe(),
+      getActiveId: () => useRecipeStore.getState().getActiveRecipeId(),
+      remove: (id: string) => useRecipeStore.getState().removeIngredient(id),
+      update: (id: string, spiceId: string, rawValue: SpiceValue) => useRecipeStore.getState().updateSpice(id, spiceId, rawValue),
     },
     theme: {
-      get: () => useThemeStore((state) => state.id),
+      get: () => useThemeStore.getState().id,
     },
   },
 } as const;

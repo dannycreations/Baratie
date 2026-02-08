@@ -43,7 +43,7 @@ export const useNotificationStore = create<NotificationState>()((set, get) => {
     },
 
     remove: (id) => {
-      const { map, dedupeMap, order } = get();
+      const { map, dedupeMap } = get();
       const notification = map.get(id);
       if (!notification) return;
 
@@ -52,7 +52,7 @@ export const useNotificationStore = create<NotificationState>()((set, get) => {
       if (dedupeMap.get(dedupeKey) === id) {
         dedupeHandlers.remove(dedupeKey);
       }
-      set({ order: order.filter((item) => item !== id) });
+      orderHandlers.remove(id);
     },
 
     show: (message, type, title, duration) => {

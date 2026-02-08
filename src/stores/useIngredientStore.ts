@@ -2,14 +2,15 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_FILTERS } from '../app/constants';
-import { ingredientRegistry, storage } from '../app/container';
-import { isArrayEqual, isString } from '../utilities/objectUtil';
+import { ingredientRegistry } from '../app/container';
+import { isArrayEqual } from '../utilities/objectUtil';
 import { createSetHandlers, persistStore } from '../utilities/storeUtil';
 
 interface IngredientState {
   readonly disabledCategories: ReadonlySet<string>;
   readonly disabledIngredients: ReadonlySet<string>;
   readonly registryVersion: number;
+  readonly isHydrated: boolean;
   readonly init: () => void;
   readonly refreshRegistry: () => void;
   readonly setFilters: (filters: Readonly<{ categories: ReadonlyArray<string>; ingredients: ReadonlyArray<string> }>) => void;
@@ -18,7 +19,7 @@ interface IngredientState {
 }
 
 export const useIngredientStore = create<IngredientState>()(
-  subscribeWithSelector((set) => {
+  subscribeWithSelector((set, get) => {
     const categoryHandlers = createSetHandlers<IngredientState, 'disabledCategories', string>(set, 'disabledCategories');
     const ingredientHandlers = createSetHandlers<IngredientState, 'disabledIngredients', string>(set, 'disabledIngredients');
 
@@ -26,16 +27,14 @@ export const useIngredientStore = create<IngredientState>()(
       disabledCategories: new Set(),
       disabledIngredients: new Set(),
       registryVersion: 0,
+      isHydrated: false,
 
       init: () => {
-        const filters = storage.get<{
-          readonly categories?: ReadonlyArray<string>;
-          readonly ingredients?: ReadonlyArray<string>;
-        }>(STORAGE_FILTERS, 'Ingredient Filters');
-
+        const { disabledCategories, disabledIngredients } = get();
         const allCategories = ingredientRegistry.getAllCategories();
-        const validCategories = (filters?.categories ?? []).filter((c: unknown): c is string => isString(c) && allCategories.has(c));
-        const validIngredients = (filters?.ingredients ?? []).filter((i: unknown): i is string => isString(i) && !!ingredientRegistry.get(i));
+
+        const validCategories = [...disabledCategories].filter((c) => allCategories.has(c));
+        const validIngredients = [...disabledIngredients].filter((i) => !!ingredientRegistry.get(i));
 
         categoryHandlers.set(validCategories);
         ingredientHandlers.set(validIngredients);
@@ -59,11 +58,23 @@ export const useIngredientStore = create<IngredientState>()(
 persistStore(useIngredientStore, {
   key: STORAGE_FILTERS,
   context: 'Ingredient Filters',
+  autoHydrate: true,
   pick: (state) => ({
-    categories: [...state.disabledCategories],
-    ingredients: [...state.disabledIngredients],
+    disabledCategories: [...state.disabledCategories],
+    disabledIngredients: [...state.disabledIngredients],
   }),
+  onHydrate: (state) => {
+    const { disabledCategories, disabledIngredients } = state as unknown as {
+      disabledCategories: string[];
+      disabledIngredients: string[];
+    };
+    useIngredientStore.setState({
+      disabledCategories: new Set(disabledCategories),
+      disabledIngredients: new Set(disabledIngredients),
+      isHydrated: true,
+    });
+  },
   equalityFn: (a, b) =>
-    isArrayEqual((a as Record<string, unknown>).categories as string[], (b as Record<string, unknown>).categories as string[]) &&
-    isArrayEqual((a as Record<string, unknown>).ingredients as string[], (b as Record<string, unknown>).ingredients as string[]),
+    isArrayEqual((a as Record<string, unknown>).disabledCategories as string[], (b as Record<string, unknown>).disabledCategories as string[]) &&
+    isArrayEqual((a as Record<string, unknown>).disabledIngredients as string[], (b as Record<string, unknown>).disabledIngredients as string[]),
 });

@@ -10,6 +10,7 @@ export interface PersistOptions<T> {
   readonly onHydrate?: (state: T) => void;
   readonly equalityFn?: (a: Partial<T>, b: Partial<T>) => boolean;
   readonly shouldPersist?: (state: T) => boolean;
+  readonly autoHydrate?: boolean;
 }
 
 export const createSetHandlers = <T extends object, K extends keyof T, V>(set: (fn: (state: T) => Partial<T> | T) => void, key: K) => {
@@ -169,12 +170,31 @@ export const createStackHandlers = <T extends object, K extends keyof T, V>(set:
         if (current.length === 0) return state;
         return { [key]: current.slice(0, -1) } as unknown as Partial<T>;
       }),
+    remove: (item: V) =>
+      set((state) => {
+        const current = getStack(state);
+        const next = current.filter((i) => i !== item);
+        if (next.length === current.length) return state;
+        return { [key]: next } as unknown as Partial<T>;
+      }),
     clear: () => set(() => ({ [key]: [] }) as unknown as Partial<T>),
   };
 };
 
 export const persistStore = <T extends object>(useStore: UseBoundStore<StoreApi<T>>, options: PersistOptions<T>): (() => void) => {
-  const { key, context, pick, onHydrate, equalityFn = shallowEqual, shouldPersist } = options;
+  const { key, context, pick, onHydrate, equalityFn = shallowEqual, shouldPersist, autoHydrate } = options;
+
+  if (autoHydrate) {
+    setTimeout(() => {
+      const stored = storage.get<Partial<T>>(key, context);
+      if (stored) {
+        useStore.setState(stored as T);
+        if (onHydrate && !autoHydrate) {
+          onHydrate(useStore.getState());
+        }
+      }
+    }, 0);
+  }
 
   const unsubscribe = (
     useStore as StoreApi<T> & {

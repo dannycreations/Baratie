@@ -3,7 +3,7 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 import { useLongPress } from '../../../hooks/useLongPress';
-import { clamp } from '../../../utilities/objectUtil';
+import { clamp, isNumber } from '../../../utilities/objectUtil';
 import { ChevronDownIcon, ChevronUpIcon } from '../Icon';
 
 import type { ChangeEvent, JSX, KeyboardEvent, WheelEvent } from 'react';
@@ -45,7 +45,7 @@ export const NumberInput = memo<NumberInputProps>(
           setInternalValue(val);
 
           const numericValue = parseFloat(val);
-          if (isFinite(numericValue)) {
+          if (isNumber(numericValue)) {
             const clampedValue = clamp(numericValue, min, max);
             if (clampedValue !== value) {
               onChange(clampedValue);
@@ -69,7 +69,7 @@ export const NumberInput = memo<NumberInputProps>(
 
     const handleBlur = useCallback((): void => {
       const numericValue = parseFloat(internalValue);
-      if (isFinite(numericValue)) {
+      if (isNumber(numericValue)) {
         updateAndNotify(numericValue);
       } else {
         setInternalValue(String(value));
@@ -79,7 +79,7 @@ export const NumberInput = memo<NumberInputProps>(
     const handleStep = useCallback(
       (direction: 'up' | 'down'): void => {
         const currentValue = parseFloat(internalValue);
-        const numericValue = isFinite(currentValue) ? currentValue : value;
+        const numericValue = isNumber(currentValue) ? currentValue : value;
         const change = direction === 'up' ? step : -step;
         updateAndNotify(numericValue + change);
       },

@@ -17,6 +17,7 @@ import { useOverflow } from '../hooks/useOverflow';
 import { internalIngredients } from '../ingredients';
 import { useDragMoveStore } from '../stores/useDragMoveStore';
 import { useExtensionStore } from '../stores/useExtensionStore';
+import { useRecipeStore } from '../stores/useRecipeStore';
 import { useTaskStore } from '../stores/useTaskStore';
 import { useThemeStore } from '../stores/useThemeStore';
 import { isString } from '../utilities/objectUtil';
@@ -50,6 +51,7 @@ const Baratie = (): JSX.Element => {
 
   useEffect(() => {
     if (isAppReady) {
+      useRecipeStore.getState().init();
       return kitchen.initAutoCook();
     }
   }, [isAppReady]);

@@ -9,6 +9,7 @@ import { createListHandlers, createSetHandlers, persistStore } from '../utilitie
 import { useIngredientStore } from './useIngredientStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useSettingStore } from './useSettingStore';
+import { useTaskStore } from './useTaskStore';
 
 import type { IngredientItem, SpiceValue } from '../core/IngredientRegistry';
 
@@ -82,15 +83,13 @@ export const useRecipeStore = create<RecipeState>()(
       },
 
       init: () => {
-        if (useSettingStore.getState().persistRecipe) {
-          const stored = storage.get<{
-            ingredients: ReadonlyArray<IngredientItem>;
-            activeRecipeId: string | null;
-          }>(STORAGE_RECIPE, 'Current Recipe');
+        const stored = storage.get<{
+          ingredients: ReadonlyArray<IngredientItem>;
+          activeRecipeId: string | null;
+        }>(STORAGE_RECIPE, 'Current Recipe');
 
-          if (stored && Array.isArray(stored.ingredients)) {
-            get().setRecipe(stored.ingredients, stored.activeRecipeId);
-          }
+        if (stored && Array.isArray(stored.ingredients)) {
+          get().setRecipe(stored.ingredients, stored.activeRecipeId);
         }
       },
 
@@ -180,8 +179,10 @@ export const useRecipeStore = create<RecipeState>()(
 );
 
 useIngredientStore.subscribe(
-  (state) => state.registryVersion,
-  () => {
+  (state) => [state.registryVersion, state.isHydrated] as const,
+  ([, isHydrated]) => {
+    if (!isHydrated || !useTaskStore.getState().isInitialized) return;
+
     const { ingredients, setRecipe, activeRecipeId } = useRecipeStore.getState();
     const updatedIngredients = ingredients.filter((ing) => !!ingredientRegistry.get(ing.ingredientId));
 
