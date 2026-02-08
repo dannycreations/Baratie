@@ -1,4 +1,15 @@
-const canonicalStringify = (obj: unknown, seen: Set<unknown>): string => {
+export const withCircularCache = <T, R>(fn: (value: T, cache: Set<unknown>) => R) => {
+  const cache = new Set<unknown>();
+  return (value: T): R => {
+    try {
+      return fn(value, cache);
+    } finally {
+      cache.clear();
+    }
+  };
+};
+
+const canonicalStringifyFn = (obj: unknown, seen: Set<unknown>): string => {
   if (obj === null || typeof obj !== 'object') {
     return typeof obj === 'function' ? '' : JSON.stringify(obj);
   }
@@ -9,31 +20,29 @@ const canonicalStringify = (obj: unknown, seen: Set<unknown>): string => {
 
   seen.add(obj);
 
-  try {
-    if (Array.isArray(obj)) {
-      const arrayString = obj.map((value) => canonicalStringify(value, seen)).join(',');
-      return `[${arrayString}]`;
-    }
-
-    const sortedKeys = Object.keys(obj).sort();
-    const pairs = sortedKeys
-      .map((key) => {
-        const value = (obj as Record<string, unknown>)[key];
-        if (typeof value === 'function') {
-          return '';
-        }
-        return `${JSON.stringify(key)}:${canonicalStringify(value, seen)}`;
-      })
-      .filter(Boolean);
-
-    return `{${pairs.join(',')}}`;
-  } finally {
-    seen.delete(obj);
+  if (Array.isArray(obj)) {
+    const arrayString = obj.map((value) => canonicalStringifyFn(value, seen)).join(',');
+    return `[${arrayString}]`;
   }
+
+  const sortedKeys = Object.keys(obj).sort();
+  const pairs = sortedKeys
+    .map((key) => {
+      const value = (obj as Record<string, unknown>)[key];
+      if (typeof value === 'function') {
+        return '';
+      }
+      return `${JSON.stringify(key)}:${canonicalStringifyFn(value, seen)}`;
+    })
+    .filter(Boolean);
+
+  return `{${pairs.join(',')}}`;
 };
 
+const canonicalStringify = withCircularCache(canonicalStringifyFn);
+
 export const getObjectHash = (obj: object, namespace?: string): string => {
-  const stringToHash = (namespace || '') + canonicalStringify(obj, new Set());
+  const stringToHash = (namespace || '') + canonicalStringify(obj);
   let hash = 5381;
 
   for (let i = 0; i < stringToHash.length; i++) {

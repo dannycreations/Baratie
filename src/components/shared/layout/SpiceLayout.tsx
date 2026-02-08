@@ -45,16 +45,13 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
 
   const renderInput = (id: string): ReactNode => {
     switch (spice.type) {
-      case 'boolean': {
-        const value = typeof rawValue === 'boolean' ? rawValue : spice.value;
-        return <BooleanInput id={id} checked={value} onChange={handleChange} />;
-      }
-      case 'number': {
-        const value = typeof rawValue === 'number' ? rawValue : spice.value;
+      case 'boolean':
+        return <BooleanInput id={id} checked={typeof rawValue === 'boolean' ? rawValue : spice.value} onChange={handleChange} />;
+      case 'number':
         return (
           <NumberInput
             id={id}
-            value={value}
+            value={typeof rawValue === 'number' ? rawValue : spice.value}
             min={spice.min}
             max={spice.max}
             step={spice.step || 1}
@@ -64,20 +61,34 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
             onChange={handleChange}
           />
         );
-      }
-      case 'string': {
-        const value = typeof rawValue === 'string' ? rawValue : spice.value;
-        return <StringInput id={id} value={value} placeholder={spice.placeholder} onChange={handleChange} />;
-      }
-      case 'textarea': {
-        const value = typeof rawValue === 'string' ? rawValue : spice.value;
-        return <TextareaInput id={id} value={value} placeholder={spice.placeholder} rows={4} onChange={handleChange} />;
-      }
-      case 'select': {
-        const isValid = ['string', 'number', 'boolean'].includes(typeof rawValue);
-        const value = isValid ? (rawValue as SpiceValue) : spice.value;
-        return <SelectInput id={id} value={value} options={spice.options} onChange={handleChange} />;
-      }
+      case 'string':
+        return (
+          <StringInput
+            id={id}
+            value={typeof rawValue === 'string' ? rawValue : spice.value}
+            placeholder={spice.placeholder}
+            onChange={handleChange}
+          />
+        );
+      case 'textarea':
+        return (
+          <TextareaInput
+            id={id}
+            value={typeof rawValue === 'string' ? rawValue : spice.value}
+            placeholder={spice.placeholder}
+            rows={4}
+            onChange={handleChange}
+          />
+        );
+      case 'select':
+        return (
+          <SelectInput
+            id={id}
+            value={['string', 'number', 'boolean'].includes(typeof rawValue) ? (rawValue as SpiceValue) : spice.value}
+            options={spice.options}
+            onChange={handleChange}
+          />
+        );
       default: {
         return null;
       }

@@ -13,6 +13,8 @@ export interface PersistOptions<T> {
   readonly autoHydrate?: boolean;
 }
 
+const asPartial = <T>(obj: any): Partial<T> => obj as unknown as Partial<T>;
+
 export const createSetHandlers = <T extends object, K extends keyof T, V>(set: (fn: (state: T) => Partial<T> | T) => void, key: K) => {
   const getSet = (state: T) => state[key] as unknown as ReadonlySet<V>;
 
@@ -23,24 +25,23 @@ export const createSetHandlers = <T extends object, K extends keyof T, V>(set: (
         if (current.has(item)) return state;
         const next = new Set(current);
         next.add(item);
-        return { [key]: next } as unknown as Partial<T>;
+        return asPartial<T>({ [key]: next });
       }),
-    clear: () => set(() => ({ [key]: new Set<V>() }) as unknown as Partial<T>),
+    clear: () => set(() => asPartial<T>({ [key]: new Set<V>() })),
     remove: (item: V) =>
       set((state) => {
         const current = getSet(state);
         if (!current.has(item)) return state;
         const next = new Set(current);
         next.delete(item);
-        return { [key]: next } as unknown as Partial<T>;
+        return asPartial<T>({ [key]: next });
       }),
-    set: (items: ReadonlyArray<V> | ReadonlySet<V>) => set(() => ({ [key]: new Set(items) }) as unknown as Partial<T>),
+    set: (items: ReadonlyArray<V> | ReadonlySet<V>) => set(() => asPartial<T>({ [key]: new Set(items) })),
     toggle: (item: V) =>
-      set(
-        (state) =>
-          ({
-            [key]: toggleSetItem(getSet(state), item),
-          }) as unknown as Partial<T>,
+      set((state) =>
+        asPartial<T>({
+          [key]: toggleSetItem(getSet(state), item),
+        }),
       ),
   };
 };
@@ -49,14 +50,14 @@ export const createMapHandlers = <T extends object, K extends keyof T, VK, VV>(s
   const getMap = (state: T) => state[key] as unknown as ReadonlyMap<VK, VV>;
 
   return {
-    clear: () => set(() => ({ [key]: new Map<VK, VV>() }) as unknown as Partial<T>),
+    clear: () => set(() => asPartial<T>({ [key]: new Map<VK, VV>() })),
     remove: (mapKey: VK) =>
       set((state) => {
         const current = getMap(state);
         if (!current.has(mapKey)) return state;
         const next = new Map(current);
         next.delete(mapKey);
-        return { [key]: next } as unknown as Partial<T>;
+        return asPartial<T>({ [key]: next });
       }),
     set: (mapKey: VK, value: VV) =>
       set((state) => {
@@ -64,15 +65,15 @@ export const createMapHandlers = <T extends object, K extends keyof T, VK, VV>(s
         if (current.get(mapKey) === value) return state;
         const next = new Map(current);
         next.set(mapKey, value);
-        return { [key]: next } as unknown as Partial<T>;
+        return asPartial<T>({ [key]: next });
       }),
-    setAll: (entries: ReadonlyArray<readonly [VK, VV]> | ReadonlyMap<VK, VV>) => set(() => ({ [key]: new Map(entries) }) as unknown as Partial<T>),
+    setAll: (entries: ReadonlyArray<readonly [VK, VV]> | ReadonlyMap<VK, VV>) => set(() => asPartial<T>({ [key]: new Map(entries) })),
     upsert: (mapKey: VK, value: Partial<VV>) =>
       set((state) => {
         const next = new Map(getMap(state));
         const existing = next.get(mapKey);
         next.set(mapKey, existing ? ({ ...existing, ...value } as VV) : (value as VV));
-        return { [key]: next } as unknown as Partial<T>;
+        return asPartial<T>({ [key]: next });
       }),
   };
 };
@@ -87,15 +88,15 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
   const syncMap = (list: ReadonlyArray<V>) => new Map(list.map((item) => [item[idKey], item]));
 
   return {
-    clear: () => set(() => ({ [listKey]: [], [mapKey]: new Map() }) as unknown as Partial<T>),
+    clear: () => set(() => asPartial<T>({ [listKey]: [], [mapKey]: new Map() })),
 
     setAll: (items: ReadonlyArray<V>) =>
       set(() => {
         const list = sortFn ? [...items].sort(sortFn) : items;
-        return {
+        return asPartial<T>({
           [listKey]: list,
           [mapKey]: syncMap(list),
-        } as unknown as Partial<T>;
+        });
       }),
 
     upsert: (item: Partial<V> & { [P in IDK]: V[IDK] }) =>
@@ -114,10 +115,10 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
 
         if (sortFn) nextList.sort(sortFn);
 
-        return {
+        return asPartial<T>({
           [listKey]: nextList,
           [mapKey]: syncMap(nextList),
-        } as unknown as Partial<T>;
+        });
       }),
 
     remove: (id: V[IDK]) =>
@@ -127,10 +128,10 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
 
         if (nextList.length === currentList.length) return state;
 
-        return {
+        return asPartial<T>({
           [listKey]: nextList,
           [mapKey]: syncMap(nextList),
-        } as unknown as Partial<T>;
+        });
       }),
 
     reorder: (draggedId: V[IDK], targetId: V[IDK]) =>
@@ -147,10 +148,10 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
         const [draggedItem] = nextList.splice(draggedIndex, 1);
         nextList.splice(targetIndex, 0, draggedItem);
 
-        return {
+        return asPartial<T>({
           [listKey]: nextList,
           [mapKey]: syncMap(nextList),
-        } as unknown as Partial<T>;
+        });
       }),
   };
 };
@@ -162,22 +163,22 @@ export const createStackHandlers = <T extends object, K extends keyof T, V>(set:
     push: (item: V) =>
       set((state) => {
         const current = getStack(state);
-        return { [key]: [...current, item] } as unknown as Partial<T>;
+        return asPartial<T>({ [key]: [...current, item] });
       }),
     pop: () =>
       set((state) => {
         const current = getStack(state);
         if (current.length === 0) return state;
-        return { [key]: current.slice(0, -1) } as unknown as Partial<T>;
+        return asPartial<T>({ [key]: current.slice(0, -1) });
       }),
     remove: (item: V) =>
       set((state) => {
         const current = getStack(state);
         const next = current.filter((i) => i !== item);
         if (next.length === current.length) return state;
-        return { [key]: next } as unknown as Partial<T>;
+        return asPartial<T>({ [key]: next });
       }),
-    clear: () => set(() => ({ [key]: [] }) as unknown as Partial<T>),
+    clear: () => set(() => asPartial<T>({ [key]: [] })),
   };
 };
 
@@ -185,15 +186,13 @@ export const persistStore = <T extends object>(useStore: UseBoundStore<StoreApi<
   const { key, context, pick, onHydrate, equalityFn = shallowEqual, shouldPersist, autoHydrate } = options;
 
   if (autoHydrate) {
-    setTimeout(() => {
+    queueMicrotask(() => {
       const stored = storage.get<Partial<T>>(key, context);
       if (stored) {
         useStore.setState(stored as T);
-        if (onHydrate && !autoHydrate) {
-          onHydrate(useStore.getState());
-        }
+        onHydrate?.(useStore.getState());
       }
-    }, 0);
+    });
   }
 
   const unsubscribe = (

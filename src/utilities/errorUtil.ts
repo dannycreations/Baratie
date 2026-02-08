@@ -1,5 +1,5 @@
 import { AppError } from '../core/ErrorHandler';
-import { isObjectLike } from './objectUtil';
+import { isObjectLike, withCircularCache } from './objectUtil';
 
 export const createErrorObject = (error: Error): Record<string, unknown> => {
   const errorObject: Record<string, unknown> = {
@@ -38,17 +38,19 @@ export const objectStringify = (data: unknown, space?: string | number): string 
   if (data === null || data === undefined) return String(data);
   if (typeof data !== 'object' && typeof data !== 'function') return String(data);
 
-  const cache = new Set<unknown>();
-  const replacer = (_key: string, value: unknown): unknown => {
-    if (isObjectLike(value)) {
-      if (cache.has(value)) return '[Circular]';
-      cache.add(value);
-    }
-    return value instanceof Error ? createErrorObject(value) : value;
-  };
+  const stringifier = withCircularCache((val, cache) => {
+    const replacer = (_key: string, value: unknown): unknown => {
+      if (isObjectLike(value)) {
+        if (cache.has(value)) return '[Circular]';
+        cache.add(value);
+      }
+      return value instanceof Error ? createErrorObject(value) : value;
+    };
+    return JSON.stringify(val, replacer, space);
+  });
 
   try {
-    const jsonString = JSON.stringify(data, replacer, space);
+    const jsonString = stringifier(data);
     return jsonString.replace(/[a-zA-Z0-9+/=]{30,}/g, '[REDACTED]');
   } catch (e) {
     const error = e instanceof Error ? e : new Error(String(e));

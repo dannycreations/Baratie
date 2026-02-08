@@ -151,18 +151,17 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
   }): JSX.Element => {
     const { isConfirm, trigger } = useConfirmAction(onConfirm, CONFIRM_SHOW_MS);
 
-    const defaultTooltip = `${actionName} ${itemType}`;
-    const defaultConfirmTooltip = `Confirm ${actionName}`;
-    const tooltipContent = isConfirm ? (customConfirmTooltip ?? defaultConfirmTooltip) : (customTooltip ?? defaultTooltip);
+    const tooltipContent = isConfirm ? (customConfirmTooltip ?? `Confirm ${actionName}`) : (customTooltip ?? `${actionName} ${itemType}`);
 
     const buttonClass = clsx(isConfirm && 'bg-danger-bg! text-accent-fg!', className);
 
-    const defaultIcon = icon ?? <Trash2Icon size={ICON_SIZES.SM} />;
-    const defaultConfirmIcon = confirmIcon ?? <AlertTriangleIcon className="text-danger-fg" size={ICON_SIZES.SM} />;
-
     return (
       <TooltipButton
-        icon={isConfirm ? defaultConfirmIcon : defaultIcon}
+        icon={
+          isConfirm
+            ? (confirmIcon ?? <AlertTriangleIcon className="text-danger-fg" size={ICON_SIZES.SM} />)
+            : (icon ?? <Trash2Icon size={ICON_SIZES.SM} />)
+        }
         size="sm"
         variant="danger"
         className={buttonClass}
