@@ -13,6 +13,7 @@ import {
   StorableExtensionSchema,
 } from '../helpers/extensionHelper';
 import { isObjectLike } from '../utilities/objectUtil';
+import { createMapHandlers } from '../utilities/storeUtil';
 import { useNotificationStore } from './useNotificationStore';
 
 import type { Extension, ExtensionManifest, ManifestModule } from '../helpers/extensionHelper';
@@ -67,252 +68,258 @@ const fetchAndValidateManifest = async (repoInfo: {
 };
 
 export const useExtensionStore = create<ExtensionState>()(
-  subscribeWithSelector((set, get) => ({
-    extensions: [],
-    extensionMap: new Map(),
+  subscribeWithSelector((set, get) => {
+    const handlers = createMapHandlers<ExtensionState, 'extensionMap', string, Extension>(set, 'extensionMap');
 
-    add: async (url, options) => {
-      const { show } = useNotificationStore.getState();
-      const repoInfo = parseGitHubUrl(url);
+    return {
+      extensions: [],
+      extensionMap: new Map(),
 
-      if (!repoInfo) {
-        show('Invalid GitHub URL. Use `owner/repo`, `owner/repo@branch`, or a full GitHub URL.', 'error', 'Add Extension Error');
-        return;
-      }
+      add: async (url, options) => {
+        const { show } = useNotificationStore.getState();
+        const repoInfo = parseGitHubUrl(url);
 
-      const { extensionMap, refresh } = get();
-      const id = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
-      const existing = extensionMap.get(id);
+        if (!repoInfo) {
+          show('Invalid GitHub URL. Use `owner/repo`, `owner/repo@branch`, or a full GitHub URL.', 'error', 'Add Extension Error');
+          return;
+        }
 
-      if (existing && isCacheValid(existing.fetchedAt)) {
-        show('This extension is already installed and up-to-date.', 'info', 'Add Extension');
-        return;
-      }
+        const { extensionMap, refresh } = get();
+        const id = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
+        const existing = extensionMap.get(id);
 
-      await refresh(id, { ...options, context: 'add' });
-    },
+        if (existing && isCacheValid(existing.fetchedAt)) {
+          show('This extension is already installed and up-to-date.', 'info', 'Add Extension');
+          return;
+        }
 
-    cancelPendingInstall: () => {
-      const { setExtensions, extensions } = get();
-      const pendingExtension = extensions.find((e) => e.status === 'awaiting');
+        await refresh(id, { ...options, context: 'add' });
+      },
 
-      if (pendingExtension) {
-        const displayName = pendingExtension.name || pendingExtension.id;
-        logger.info(`Installation cancelled for extension '${displayName}'. Removing from store.`);
-        setExtensions(extensions.filter((ext) => ext.id !== pendingExtension.id));
-      } else {
-        logger.warn(`Attempted to cancel non-existent pending extension.`);
-      }
-    },
+      cancelPendingInstall: () => {
+        const { setExtensions, extensions } = get();
+        const pendingExtension = extensions.find((e) => e.status === 'awaiting');
 
-    init: async () => {
-      const rawExtensions = storage.get<Array<unknown>>(STORAGE_EXTENSIONS, 'Extensions') || [];
-      const extensions: Array<Extension> = [];
-      let hadCorruption = false;
-
-      for (const rawExt of rawExtensions) {
-        const { success, output } = safeParse(StorableExtensionSchema, rawExt);
-        if (success) {
-          extensions.push({ ...output, status: 'loading' });
+        if (pendingExtension) {
+          const displayName = pendingExtension.name || pendingExtension.id;
+          logger.info(`Installation cancelled for extension '${displayName}'. Removing from store.`);
+          setExtensions(extensions.filter((ext) => ext.id !== pendingExtension.id));
         } else {
-          hadCorruption = true;
-          if (isObjectLike(rawExt) && typeof rawExt?.id === 'string') {
-            const id = rawExt.id;
-            const name = typeof rawExt.name === 'string' ? rawExt.name : id;
-            extensions.push({
-              id: id,
-              name: name,
-              status: 'error',
-              errors: ['Corrupted data in storage. Please refresh the extension.'],
-            });
+          logger.warn(`Attempted to cancel non-existent pending extension.`);
+        }
+      },
+
+      init: async () => {
+        const rawExtensions = storage.get<Array<unknown>>(STORAGE_EXTENSIONS, 'Extensions') || [];
+        const extensions: Array<Extension> = [];
+        let hadCorruption = false;
+
+        for (const rawExt of rawExtensions) {
+          const { success, output } = safeParse(StorableExtensionSchema, rawExt);
+          if (success) {
+            extensions.push({ ...output, status: 'loading' });
+          } else {
+            hadCorruption = true;
+            if (isObjectLike(rawExt) && typeof rawExt?.id === 'string') {
+              const id = rawExt.id;
+              const name = typeof rawExt.name === 'string' ? rawExt.name : id;
+              extensions.push({
+                id: id,
+                name: name,
+                status: 'error',
+                errors: ['Corrupted data in storage. Please refresh the extension.'],
+              });
+            }
           }
         }
-      }
 
-      if (hadCorruption) {
-        logger.warn('Corrupted extension data in storage; some extensions may be marked as errored.');
-      }
-
-      get().setExtensions(extensions);
-
-      const loadPromises = extensions.map((ext) => {
-        if (ext.status === 'error') {
-          return Promise.resolve();
+        if (hadCorruption) {
+          logger.warn('Corrupted extension data in storage; some extensions may be marked as errored.');
         }
 
-        if (isCacheValid(ext.fetchedAt)) {
-          return loadAndExecuteExtension(ext, {
-            getExtensionMap: () => get().extensionMap,
-            setExtensionStatus: get().setExtensionStatus,
-            setIngredients: get().setIngredients,
-            upsert: get().upsert,
-          });
-        }
-        return get().refresh(ext.id, { force: true });
-      });
+        get().setExtensions(extensions);
 
-      await Promise.all(
-        loadPromises.map((p) => {
-          return p.catch((err) => {
-            logger.error('Error during extension init:', err);
-          });
-        }),
-      );
-    },
+        const loadPromises = extensions.map((ext) => {
+          if (ext.status === 'error') {
+            return Promise.resolve();
+          }
 
-    installSelectedModules: async (id, selectedModules) => {
-      const { setExtensionStatus, setIngredients, upsert, extensionMap } = get();
-      const extension = extensionMap.get(id);
-
-      if (!extension) {
-        logger.error(`Attempted to install modules for a non-existent extension: ${id}`);
-        return;
-      }
-
-      if (extension.ingredients) {
-        ingredientRegistry.unregister(extension.ingredients);
-        setIngredients(id, []);
-      }
-
-      const updatedExtension: Extension = { ...extension, status: 'loading', entry: [...selectedModules] };
-      upsert(updatedExtension);
-
-      await loadAndExecuteExtension(
-        updatedExtension,
-        {
-          getExtensionMap: () => get().extensionMap,
-          setExtensionStatus: setExtensionStatus,
-          setIngredients: setIngredients,
-          upsert: upsert,
-        },
-        undefined,
-      );
-    },
-
-    refresh: async (id, options) => {
-      const { upsert, setIngredients, setExtensionStatus, extensionMap } = get();
-      const storeExtension = extensionMap.get(id);
-      const context = options?.context;
-      const isNew = !storeExtension;
-
-      const logMessage = context === 'refresh' || (context === 'add' && !isNew) ? 'Refreshing' : 'Fetching';
-      logger.info(`${logMessage} extension: ${storeExtension?.name || id}`);
-
-      let displayName = storeExtension?.name || id;
-      if (logMessage === 'Refreshing') {
-        displayName = 'Refreshing...';
-      } else if (isNew) {
-        displayName = 'Fetching...';
-      }
-
-      upsert({ id, status: 'loading', name: displayName, fetchedAt: undefined });
-
-      const repoInfo = parseGitHubUrl(id);
-      if (!repoInfo) {
-        setExtensionStatus(id, 'error', ['Invalid GitHub URL format.']);
-        upsert({ id, name: storeExtension?.name || 'Error' });
-        return;
-      }
-
-      try {
-        const manifest = await fetchAndValidateManifest(repoInfo);
-
-        if (storeExtension?.ingredients) {
-          ingredientRegistry.unregister(storeExtension.ingredients);
-          setIngredients(id, []);
-        }
-
-        const isModuleBased = Array.isArray(manifest.entry) && typeof manifest.entry[0] === 'object';
-        if (isModuleBased && !options?.force) {
-          upsert({ id, name: manifest.name, status: 'awaiting', manifest, scripts: {} });
-        } else {
-          const entryToUse = isModuleBased && storeExtension?.entry ? storeExtension.entry : manifest.entry;
-          upsert({ id, manifest, entry: entryToUse, scripts: {} });
-          const currentExtState = get().extensionMap.get(id)!;
-
-          await loadAndExecuteExtension(
-            currentExtState,
-            {
+          if (isCacheValid(ext.fetchedAt)) {
+            return loadAndExecuteExtension(ext, {
               getExtensionMap: () => get().extensionMap,
               setExtensionStatus: get().setExtensionStatus,
               setIngredients: get().setIngredients,
               upsert: get().upsert,
-            },
-            options?.onProgress,
-          );
-
-          const finalState = get().extensionMap.get(id)!;
-          if (finalState.status === 'loaded' || finalState.status === 'partial') {
-            upsert({ id, name: manifest.name });
-          } else if (finalState.status === 'error') {
-            upsert({ id, name: storeExtension?.name || 'Error' });
+            });
           }
+          return get().refresh(ext.id, { force: true });
+        });
+
+        await Promise.all(
+          loadPromises.map((p) => {
+            return p.catch((err) => {
+              logger.error('Error during extension init:', err);
+            });
+          }),
+        );
+      },
+
+      installSelectedModules: async (id, selectedModules) => {
+        const { setExtensionStatus, setIngredients, upsert, extensionMap } = get();
+        const extension = extensionMap.get(id);
+
+        if (!extension) {
+          logger.error(`Attempted to install modules for a non-existent extension: ${id}`);
+          return;
         }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        setExtensionStatus(id, 'error', [errorMessage]);
-        upsert({ id, name: storeExtension?.name || 'Error' });
-        logger.error(`Error refreshing extension ${id}:`, error);
-      }
-    },
 
-    remove: (id) => {
-      const { show } = useNotificationStore.getState();
-      const { extensionMap, setExtensions, extensions } = get();
-      const extension = extensionMap.get(id);
+        if (extension.ingredients) {
+          ingredientRegistry.unregister(extension.ingredients);
+          setIngredients(id, []);
+        }
 
-      if (!extension) {
-        logger.warn(`Attempted to remove non-existent extension with id: ${id}`);
-        return;
-      }
+        const updatedExtension: Extension = { ...extension, status: 'loading', entry: [...selectedModules] };
+        upsert(updatedExtension);
 
-      const displayName = extension.name || id;
-      const ingredientsToRemove = extension.ingredients || [];
+        await loadAndExecuteExtension(
+          updatedExtension,
+          {
+            getExtensionMap: () => get().extensionMap,
+            setExtensionStatus: setExtensionStatus,
+            setIngredients: setIngredients,
+            upsert: upsert,
+          },
+          undefined,
+        );
+      },
 
-      if (ingredientsToRemove.length > 0) {
-        ingredientRegistry.unregister(ingredientsToRemove);
-      }
+      refresh: async (id, options) => {
+        const { upsert, setIngredients, setExtensionStatus, extensionMap } = get();
+        const storeExtension = extensionMap.get(id);
+        const context = options?.context;
+        const isNew = !storeExtension;
 
-      setExtensions(extensions.filter((ext) => ext.id !== id));
-      show(`Extension '${displayName}' has been successfully uninstalled.`, 'success', 'Extension Manager');
-    },
+        const logMessage = context === 'refresh' || (context === 'add' && !isNew) ? 'Refreshing' : 'Fetching';
+        logger.info(`${logMessage} extension: ${storeExtension?.name || id}`);
 
-    setExtensionStatus: (id, status, errors) => {
-      const extension = get().extensionMap.get(id);
-      if (!extension) {
-        return;
-      }
-      const updates: Partial<Extension> = {
-        status: status,
-        errors: errors,
-        ...((status === 'loaded' || status === 'partial') && { fetchedAt: Date.now() }),
-      };
-      if (status === 'error' && extension.name === 'Refreshing...') {
-        updates.name = 'Error';
-      }
-      get().upsert({ ...updates, id });
-    },
+        let displayName = storeExtension?.name || id;
+        if (logMessage === 'Refreshing') {
+          displayName = 'Refreshing...';
+        } else if (isNew) {
+          displayName = 'Fetching...';
+        }
 
-    setExtensions: (extensions) => {
-      set({
-        extensions,
-        extensionMap: new Map(extensions.map((ext) => [ext.id, ext])),
-      });
-    },
+        upsert({ id, status: 'loading', name: displayName, fetchedAt: undefined });
 
-    setIngredients: (id, ingredients) => {
-      get().upsert({ id, ingredients });
-    },
+        const repoInfo = parseGitHubUrl(id);
+        if (!repoInfo) {
+          setExtensionStatus(id, 'error', ['Invalid GitHub URL format.']);
+          upsert({ id, name: storeExtension?.name || 'Error' });
+          return;
+        }
 
-    upsert: (extension) => {
-      const { extensions, extensionMap, setExtensions } = get();
-      if (extensionMap.has(extension.id)) {
-        setExtensions(extensions.map((e) => (e.id === extension.id ? { ...e, ...extension } : e)));
-      } else {
-        setExtensions([...extensions, extension as Extension]);
-      }
-    },
-  })),
+        try {
+          const manifest = await fetchAndValidateManifest(repoInfo);
+
+          if (storeExtension?.ingredients) {
+            ingredientRegistry.unregister(storeExtension.ingredients);
+            setIngredients(id, []);
+          }
+
+          const isModuleBased = Array.isArray(manifest.entry) && typeof manifest.entry[0] === 'object';
+          if (isModuleBased && !options?.force) {
+            upsert({ id, name: manifest.name, status: 'awaiting', manifest, scripts: {} });
+          } else {
+            const entryToUse = isModuleBased && storeExtension?.entry ? storeExtension.entry : manifest.entry;
+            upsert({ id, manifest, entry: entryToUse, scripts: {} });
+            const currentExtState = get().extensionMap.get(id)!;
+
+            await loadAndExecuteExtension(
+              currentExtState,
+              {
+                getExtensionMap: () => get().extensionMap,
+                setExtensionStatus: get().setExtensionStatus,
+                setIngredients: get().setIngredients,
+                upsert: get().upsert,
+              },
+              options?.onProgress,
+            );
+
+            const finalState = get().extensionMap.get(id)!;
+            if (finalState.status === 'loaded' || finalState.status === 'partial') {
+              upsert({ id, name: manifest.name });
+            } else if (finalState.status === 'error') {
+              upsert({ id, name: storeExtension?.name || 'Error' });
+            }
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          setExtensionStatus(id, 'error', [errorMessage]);
+          upsert({ id, name: storeExtension?.name || 'Error' });
+          logger.error(`Error refreshing extension ${id}:`, error);
+        }
+      },
+
+      remove: (id) => {
+        const { show } = useNotificationStore.getState();
+        const { extensionMap, setExtensions, extensions } = get();
+        const extension = extensionMap.get(id);
+
+        if (!extension) {
+          logger.warn(`Attempted to remove non-existent extension with id: ${id}`);
+          return;
+        }
+
+        const displayName = extension.name || id;
+        const ingredientsToRemove = extension.ingredients || [];
+
+        if (ingredientsToRemove.length > 0) {
+          ingredientRegistry.unregister(ingredientsToRemove);
+        }
+
+        setExtensions(extensions.filter((ext) => ext.id !== id));
+        show(`Extension '${displayName}' has been successfully uninstalled.`, 'success', 'Extension Manager');
+      },
+
+      setExtensionStatus: (id, status, errors) => {
+        const extension = get().extensionMap.get(id);
+        if (!extension) {
+          return;
+        }
+        const updates: Partial<Extension> = {
+          status: status,
+          errors: errors,
+          ...((status === 'loaded' || status === 'partial') && { fetchedAt: Date.now() }),
+        };
+        if (status === 'error' && extension.name === 'Refreshing...') {
+          updates.name = 'Error';
+        }
+        get().upsert({ ...updates, id });
+      },
+
+      setExtensions: (extensions) => {
+        handlers.setAll(extensions.map((ext) => [ext.id, ext] as const));
+        set({ extensions });
+      },
+
+      setIngredients: (id, ingredients) => {
+        get().upsert({ id, ingredients });
+      },
+
+      upsert: (extension) => {
+        const { extensions, extensionMap } = get();
+        if (extensionMap.has(extension.id)) {
+          const updated = extensions.map((e) => (e.id === extension.id ? { ...e, ...extension } : e));
+          handlers.setAll(updated.map((ext) => [ext.id, ext] as const));
+          set({ extensions: updated });
+        } else {
+          const updated = [...extensions, extension as Extension];
+          handlers.setAll(updated.map((ext) => [ext.id, ext] as const));
+          set({ extensions: updated });
+        }
+      },
+    };
+  }),
 );
 
 useExtensionStore.subscribe(

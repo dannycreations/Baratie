@@ -31,46 +31,23 @@ interface SpiceLayoutProps {
 const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpiceChange, onLongPressStart, onLongPressEnd }): JSX.Element => {
   const { id: spiceId } = spice;
 
-  const handleBooleanChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>): void => {
-      onSpiceChange(spiceId, event.target.checked);
+  const handleChange = useCallback(
+    (value: SpiceValue | ChangeEvent<HTMLInputElement>): void => {
+      if (typeof value === 'object' && 'target' in value) {
+        const target = value.target as HTMLInputElement;
+        onSpiceChange(spiceId, spice.type === 'boolean' ? target.checked : target.value);
+      } else {
+        onSpiceChange(spiceId, value);
+      }
     },
-    [onSpiceChange, spiceId],
-  );
-
-  const handleValueChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>): void => {
-      onSpiceChange(spiceId, event.target.value);
-    },
-    [onSpiceChange, spiceId],
-  );
-
-  const handleTextareaChange = useCallback(
-    (newValue: string): void => {
-      onSpiceChange(spiceId, newValue);
-    },
-    [onSpiceChange, spiceId],
-  );
-
-  const handleNumberChange = useCallback(
-    (newValue: number): void => {
-      onSpiceChange(spiceId, newValue);
-    },
-    [onSpiceChange, spiceId],
-  );
-
-  const handleSelectChange = useCallback(
-    (newValue: SpiceValue): void => {
-      onSpiceChange(spiceId, newValue);
-    },
-    [onSpiceChange, spiceId],
+    [onSpiceChange, spiceId, spice.type],
   );
 
   const renderInput = (id: string): ReactNode => {
     switch (spice.type) {
       case 'boolean': {
         const value = typeof rawValue === 'boolean' ? rawValue : spice.value;
-        return <BooleanInput id={id} checked={value} onChange={handleBooleanChange} />;
+        return <BooleanInput id={id} checked={value} onChange={handleChange} />;
       }
       case 'number': {
         const value = typeof rawValue === 'number' ? rawValue : spice.value;
@@ -84,22 +61,22 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
             placeholder={spice.placeholder}
             onLongPressEnd={onLongPressEnd}
             onLongPressStart={onLongPressStart}
-            onChange={handleNumberChange}
+            onChange={handleChange}
           />
         );
       }
       case 'string': {
         const value = typeof rawValue === 'string' ? rawValue : spice.value;
-        return <StringInput id={id} value={value} placeholder={spice.placeholder} onChange={handleValueChange} />;
+        return <StringInput id={id} value={value} placeholder={spice.placeholder} onChange={handleChange} />;
       }
       case 'textarea': {
         const value = typeof rawValue === 'string' ? rawValue : spice.value;
-        return <TextareaInput id={id} value={value} placeholder={spice.placeholder} rows={4} onChange={handleTextareaChange} />;
+        return <TextareaInput id={id} value={value} placeholder={spice.placeholder} rows={4} onChange={handleChange} />;
       }
       case 'select': {
         const isValid = ['string', 'number', 'boolean'].includes(typeof rawValue);
         const value = isValid ? (rawValue as SpiceValue) : spice.value;
-        return <SelectInput id={id} value={value} options={spice.options} onChange={handleSelectChange} />;
+        return <SelectInput id={id} value={value} options={spice.options} onChange={handleChange} />;
       }
       default: {
         return null;

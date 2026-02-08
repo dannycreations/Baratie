@@ -92,17 +92,12 @@ export const useRecipeStore = create<RecipeState>()(
             return state;
           }
 
-          const editingIds = new Set(state.editingIds);
-          editingIds.delete(id);
-
-          const pausedIngredientIds = new Set(state.pausedIngredientIds);
-          pausedIngredientIds.delete(id);
+          editingHandlers.remove(id);
+          pausedHandlers.remove(id);
 
           return {
             ingredients,
             activeRecipeId: ingredients.length > 0 ? state.activeRecipeId : null,
-            editingIds,
-            pausedIngredientIds,
           };
         });
       },
