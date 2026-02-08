@@ -47,6 +47,8 @@ export const isObjectLike = (value?: unknown): value is Record<string, unknown> 
   return typeof value === 'object' && value !== null;
 };
 
+export const isString = (value: unknown): value is string => typeof value === 'string';
+
 export const clamp = (value: number, min?: number, max?: number): number => {
   let result = value;
   if (min !== undefined) result = Math.max(min, result);

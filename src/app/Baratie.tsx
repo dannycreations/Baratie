@@ -19,6 +19,7 @@ import { useDragMoveStore } from '../stores/useDragMoveStore';
 import { useExtensionStore } from '../stores/useExtensionStore';
 import { useTaskStore } from '../stores/useTaskStore';
 import { useThemeStore } from '../stores/useThemeStore';
+import { isString } from '../utilities/objectUtil';
 import { errorHandler, ingredientRegistry, kitchen, taskRegistry } from './container';
 
 import type { JSX } from 'react';
@@ -109,8 +110,10 @@ export const createRoot = (element: HTMLElement | null, options: Readonly<Barati
       handler: async () => {
         const { add, extensionMap } = useExtensionStore.getState();
         const { setLoadingMessage } = useTaskStore.getState();
-        const extensionsToLoad = Array.isArray(defaultExtensions) ? defaultExtensions : [defaultExtensions];
+        const extensionsToLoad = (Array.isArray(defaultExtensions) ? defaultExtensions : [defaultExtensions]).filter(isString);
         const totalExtensions = extensionsToLoad.length;
+        if (totalExtensions === 0) return;
+
         const progressMap = new Array(totalExtensions).fill(0);
 
         const updateProgress = () => {

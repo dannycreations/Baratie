@@ -260,9 +260,11 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
       const now = Date.now();
 
       const baseRecipe = { name: trimmedName, ingredients, updatedAt: now };
-      const finalRecipe = isUpdateAction ? { ...recipeToUpdate, ...baseRecipe } : { ...baseRecipe, id: crypto.randomUUID(), createdAt: now };
+      const finalRecipe = (
+        isUpdateAction ? { ...recipeToUpdate, ...baseRecipe } : { ...baseRecipe, id: crypto.randomUUID(), createdAt: now }
+      ) as RecipebookItem;
 
-      recipeHandlers.upsert(finalRecipe as RecipebookItem);
+      recipeHandlers.upsert(finalRecipe);
 
       if (saveAllRecipes(get().recipes)) {
         setActiveRecipeId(finalRecipe.id);

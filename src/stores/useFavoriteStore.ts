@@ -4,7 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { STORAGE_FAVORITES } from '../app/constants';
 import { errorHandler, ingredientRegistry, storage } from '../app/container';
 import { AppError } from '../core/ErrorHandler';
-import { isArrayEqual } from '../utilities/objectUtil';
+import { isArrayEqual, isString } from '../utilities/objectUtil';
 import { createSetHandlers, persistStore } from '../utilities/storeUtil';
 import { useIngredientStore } from './useIngredientStore';
 
@@ -27,13 +27,8 @@ export const useFavoriteStore = create<FavoriteState>()(
         let favorites: Array<string> = [];
 
         if (stored) {
-          if (stored.favorites && Array.isArray(stored.favorites)) {
-            favorites = stored.favorites.reduce<Array<string>>((acc, item) => {
-              if (typeof item === 'string' && ingredientRegistry.get(item)) {
-                acc.push(item);
-              }
-              return acc;
-            }, []);
+          if (Array.isArray(stored.favorites)) {
+            favorites = stored.favorites.filter((item): item is string => isString(item) && !!ingredientRegistry.get(item));
           } else {
             errorHandler.handle(
               new AppError('Corrupted favorites data in storage.', 'Favorites Storage', 'Your favorites data were corrupted and have been reset.'),

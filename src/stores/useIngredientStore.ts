@@ -3,7 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_FILTERS } from '../app/constants';
 import { ingredientRegistry, storage } from '../app/container';
-import { isArrayEqual } from '../utilities/objectUtil';
+import { isArrayEqual, isString } from '../utilities/objectUtil';
 import { createSetHandlers, persistStore } from '../utilities/storeUtil';
 
 interface IngredientState {
@@ -34,10 +34,8 @@ export const useIngredientStore = create<IngredientState>()(
         }>(STORAGE_FILTERS, 'Ingredient Filters');
 
         const allCategories = ingredientRegistry.getAllCategories();
-        const validCategories = (filters?.categories ?? []).filter((c: unknown) => typeof c === 'string' && allCategories.has(c)) as string[];
-        const validIngredients = (filters?.ingredients ?? []).filter(
-          (i: unknown) => typeof i === 'string' && !!ingredientRegistry.get(i),
-        ) as string[];
+        const validCategories = (filters?.categories ?? []).filter((c: unknown): c is string => isString(c) && allCategories.has(c));
+        const validIngredients = (filters?.ingredients ?? []).filter((i: unknown): i is string => isString(i) && !!ingredientRegistry.get(i));
 
         categoryHandlers.set(validCategories);
         ingredientHandlers.set(validIngredients);

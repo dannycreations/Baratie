@@ -16,7 +16,7 @@ export const createSetHandlers = <T extends object, K extends keyof T, V>(set: (
   add: (item: V) =>
     set((state) => {
       const current = state[key] as unknown as ReadonlySet<V>;
-      if (current.has(item)) return state as unknown as Partial<T>;
+      if (current.has(item)) return state as unknown as Partial<T> | T;
       const next = new Set(current);
       next.add(item);
       return { [key]: next } as unknown as Partial<T>;
@@ -25,7 +25,7 @@ export const createSetHandlers = <T extends object, K extends keyof T, V>(set: (
   remove: (item: V) =>
     set((state) => {
       const current = state[key] as unknown as ReadonlySet<V>;
-      if (!current.has(item)) return state as unknown as Partial<T>;
+      if (!current.has(item)) return state as unknown as Partial<T> | T;
       const next = new Set(current);
       next.delete(item);
       return { [key]: next } as unknown as Partial<T>;
@@ -45,7 +45,7 @@ export const createMapHandlers = <T extends object, K extends keyof T, VK, VV>(s
   remove: (mapKey: VK) =>
     set((state) => {
       const current = state[key] as unknown as ReadonlyMap<VK, VV>;
-      if (!current.has(mapKey)) return state as unknown as Partial<T>;
+      if (!current.has(mapKey)) return state as unknown as Partial<T> | T;
       const next = new Map(current);
       next.delete(mapKey);
       return { [key]: next } as unknown as Partial<T>;
@@ -53,7 +53,7 @@ export const createMapHandlers = <T extends object, K extends keyof T, VK, VV>(s
   set: (mapKey: VK, value: VV) =>
     set((state) => {
       const current = state[key] as unknown as ReadonlyMap<VK, VV>;
-      if (current.get(mapKey) === value) return state as unknown as Partial<T>;
+      if (current.get(mapKey) === value) return state as unknown as Partial<T> | T;
       const next = new Map(current);
       next.set(mapKey, value);
       return { [key]: next } as unknown as Partial<T>;
@@ -116,7 +116,7 @@ export const createListMapHandlers = <T extends object, LK extends keyof T, MK e
         const currentList = (state[listKey] as unknown as ReadonlyArray<V>) || [];
         const nextList = currentList.filter((item) => item[idKey] !== id);
 
-        if (nextList.length === currentList.length) return state as unknown as Partial<T>;
+        if (nextList.length === currentList.length) return state as unknown as Partial<T> | T;
 
         return {
           [listKey]: nextList,
@@ -131,7 +131,7 @@ export const createListMapHandlers = <T extends object, LK extends keyof T, MK e
         const targetIndex = list.findIndex((item) => item[idKey] === targetId);
 
         if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) {
-          return state as unknown as Partial<T>;
+          return state as unknown as Partial<T> | T;
         }
 
         const nextList = [...list];

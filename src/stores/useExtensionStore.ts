@@ -12,7 +12,7 @@ import {
   shallowExtensionStorable,
   StorableExtensionSchema,
 } from '../helpers/extensionHelper';
-import { isObjectLike, pick } from '../utilities/objectUtil';
+import { isObjectLike, isString, pick } from '../utilities/objectUtil';
 import { createMapHandlers } from '../utilities/storeUtil';
 import { useNotificationStore } from './useNotificationStore';
 
@@ -124,12 +124,12 @@ export const useExtensionStore = create<ExtensionState>()(
             extensions.push({ ...output, status: 'loading' });
           } else {
             hadCorruption = true;
-            if (isObjectLike(rawExt) && typeof rawExt?.id === 'string') {
+            if (isObjectLike(rawExt) && isString(rawExt.id)) {
               const id = rawExt.id;
-              const name = typeof rawExt.name === 'string' ? rawExt.name : id;
+              const name = isString(rawExt.name) ? rawExt.name : id;
               extensions.push({
-                id: id,
-                name: name,
+                id,
+                name,
                 status: 'error',
                 errors: ['Corrupted data in storage. Please refresh the extension.'],
               });
