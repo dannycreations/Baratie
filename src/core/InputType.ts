@@ -144,13 +144,9 @@ export class InputType<T = unknown> {
     if (Array.isArray(this.value)) {
       return this.cloneValue(this.value);
     }
-    if (typeof this.value === 'string') {
-      try {
-        const parsed = JSON.parse(this.value);
-        if (Array.isArray(parsed)) {
-          return this.cloneValue(parsed);
-        }
-      } catch {}
+    const parsed = this.tryParseJson();
+    if (Array.isArray(parsed)) {
+      return this.cloneValue(parsed);
     }
     return this.cloneValue(castFail(this.value, 'array', options));
   }
@@ -259,13 +255,9 @@ export class InputType<T = unknown> {
     if (isObjectLike(this.value) && !Array.isArray(this.value)) {
       return this.cloneValue<object>(this.value);
     }
-    if (typeof this.value === 'string') {
-      try {
-        const parsed = JSON.parse(this.value);
-        if (isObjectLike(parsed) && !Array.isArray(parsed)) {
-          return this.cloneValue(parsed);
-        }
-      } catch {}
+    const parsed = this.tryParseJson();
+    if (isObjectLike(parsed) && !Array.isArray(parsed)) {
+      return this.cloneValue(parsed);
     }
     return this.cloneValue(castFail(this.value, 'object', options));
   }
@@ -283,6 +275,17 @@ export class InputType<T = unknown> {
       } catch {}
     }
     return this.cloneValue(String(this.value ?? ''));
+  }
+
+  private tryParseJson(): unknown {
+    if (typeof this.value === 'string') {
+      try {
+        return JSON.parse(this.value);
+      } catch {
+        return undefined;
+      }
+    }
+    return undefined;
   }
 
   private cloneValue<U>(newValue: U): InputType<U> {

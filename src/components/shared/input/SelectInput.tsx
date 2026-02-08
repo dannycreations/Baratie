@@ -23,9 +23,9 @@ export const SelectInput = memo(
     const handleChange = useCallback<ChangeEventHandler<HTMLSelectElement>>(
       (event) => {
         const stringValue = event.target.value;
-        const selectedOption = options.find((opt) => String(opt.value) === stringValue);
-        if (selectedOption) {
-          onChange(selectedOption.value);
+        const selectedValue = options.find((opt) => String(opt.value) === stringValue)?.value;
+        if (selectedValue !== undefined) {
+          onChange(selectedValue);
         }
       },
       [options, onChange],

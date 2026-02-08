@@ -122,33 +122,27 @@ export const validateSpices = (
 
     const input = new InputType(rawValue);
 
-    switch (spice.type) {
-      case 'number': {
-        validatedSpices[spice.id] = input.cast('number', { max: spice.max, min: spice.min, value: spice.value }).value;
-        break;
+    const getValidatedValue = (): SpiceValue => {
+      switch (spice.type) {
+        case 'number':
+          return input.cast('number', { max: spice.max, min: spice.min, value: spice.value }).value;
+        case 'boolean':
+          return input.cast('boolean', { value: spice.value }).value;
+        case 'select':
+          const selectedValue = input.value;
+          const isValidOption = spice.options.some((opt) => String(opt.value) === String(selectedValue));
+          return isValidOption ? prepareSelectValue(selectedValue as SpiceValue, spice) : spice.value;
+        case 'string':
+        case 'textarea':
+          return input.cast('string', { value: spice.value }).value;
+        default:
+          const unhandled = spice as SpiceDefinition;
+          logger.warn(`An unhandled spice type was encountered: ${unhandled.id}`);
+          return input.value as SpiceValue;
       }
-      case 'boolean': {
-        validatedSpices[spice.id] = input.cast('boolean', { value: spice.value }).value;
-        break;
-      }
-      case 'select': {
-        const selectedValue = input.value;
-        const isValidOption = spice.options.some((opt) => String(opt.value) === String(selectedValue));
-        validatedSpices[spice.id] = isValidOption ? prepareSelectValue(selectedValue as SpiceValue, spice) : spice.value;
-        break;
-      }
-      case 'string':
-      case 'textarea': {
-        validatedSpices[spice.id] = input.cast('string', { value: spice.value }).value;
-        break;
-      }
-      default: {
-        const unhandled = spice as SpiceDefinition;
-        logger.warn(`An unhandled spice type was encountered: ${unhandled.id}`);
-        validatedSpices[unhandled.id] = input.value as SpiceValue;
-        break;
-      }
-    }
+    };
+
+    validatedSpices[spice.id] = getValidatedValue();
   }
   return validatedSpices;
 };

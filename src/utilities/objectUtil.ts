@@ -81,11 +81,7 @@ export const isSetEqual = <T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean => 
   return true;
 };
 
-export const isMapEqual = <K, V>(
-  a: ReadonlyMap<K, V>,
-  b: ReadonlyMap<K, V>,
-  valueEqual: (v1: V, v2: V) => boolean = (v1, v2) => Object.is(v1, v2),
-): boolean => {
+export const isMapEqual = <K, V>(a: ReadonlyMap<K, V>, b: ReadonlyMap<K, V>, valueEqual: (v1: V, v2: V) => boolean = Object.is): boolean => {
   if (a === b) return true;
   if (a.size !== b.size) return false;
   for (const [key, value] of a) {
@@ -99,7 +95,7 @@ export const isMapEqual = <K, V>(
 export const isArrayEqual = <T>(
   a: ReadonlyArray<T> | undefined,
   b: ReadonlyArray<T> | undefined,
-  itemEqual: (i1: T, i2: T) => boolean = (i1, i2) => Object.is(i1, i2),
+  itemEqual: (i1: T, i2: T) => boolean = Object.is,
 ): boolean => {
   if (a === b) return true;
   if (!a || !b || a.length !== b.length) return false;

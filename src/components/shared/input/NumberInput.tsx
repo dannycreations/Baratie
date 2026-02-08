@@ -56,32 +56,34 @@ export const NumberInput = memo<NumberInputProps>(
       [min, max, onChange, value],
     );
 
-    const handleBlur = useCallback((): void => {
-      const numericValue = parseFloat(internalValue);
-      if (isFinite(numericValue)) {
-        const clampedValue = clamp(numericValue, min, max);
+    const updateAndNotify = useCallback(
+      (newNumericValue: number): void => {
+        const clampedValue = clamp(newNumericValue, min, max);
         setInternalValue(String(clampedValue));
         if (clampedValue !== value) {
           onChange(clampedValue);
         }
+      },
+      [min, max, onChange, value],
+    );
+
+    const handleBlur = useCallback((): void => {
+      const numericValue = parseFloat(internalValue);
+      if (isFinite(numericValue)) {
+        updateAndNotify(numericValue);
       } else {
         setInternalValue(String(value));
       }
-    }, [internalValue, min, max, onChange, value]);
+    }, [internalValue, updateAndNotify, value]);
 
     const handleStep = useCallback(
       (direction: 'up' | 'down'): void => {
         const currentValue = parseFloat(internalValue);
         const numericValue = isFinite(currentValue) ? currentValue : value;
         const change = direction === 'up' ? step : -step;
-        const finalValue = clamp(numericValue + change, min, max);
-
-        setInternalValue(String(finalValue));
-        if (finalValue !== value) {
-          onChange(finalValue);
-        }
+        updateAndNotify(numericValue + change);
       },
-      [internalValue, value, step, min, max, onChange],
+      [internalValue, value, step, updateAndNotify],
     );
 
     const handleKeyDown = useCallback(

@@ -79,8 +79,10 @@ export class TaskRegistry {
       const postTasks = this.userTasks.filter((task) => task.type === 'postInit');
       const allTasks = [...preTasks, ...this.systemTasks, ...postTasks];
 
+      const taskStore = useTaskStore.getState();
+
       for (const task of allTasks) {
-        useTaskStore.getState().setLoadingMessage(task.message);
+        taskStore.setLoadingMessage(task.message);
         logger.debug(`Executing init task: ${task.message}`);
 
         if (task.handler) {
@@ -90,14 +92,12 @@ export class TaskRegistry {
           });
 
           if (error) {
-            useTaskStore.getState().setLoadingMessage(error.userMessage || error.message, true);
+            taskStore.setLoadingMessage(error.userMessage || error.message, true);
             return;
           }
         }
 
-        await new Promise((resolve) => {
-          setTimeout(resolve, 200);
-        });
+        await new Promise((resolve) => setTimeout(resolve, 200));
       }
 
       useTaskStore.getState().setInitialized(true);

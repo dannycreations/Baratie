@@ -71,10 +71,10 @@ export const TextareaInput = memo<TextareaInputProps>(
     const handleScroll = useCallback(
       (event: UIEvent<HTMLTextAreaElement>): void => {
         const newScrollTop = event.currentTarget.scrollTop;
-        if (lineNumbersRef.current) {
-          lineNumbersRef.current.scrollTop = newScrollTop;
-        }
         if (showLineNumbers) {
+          if (lineNumbersRef.current) {
+            lineNumbersRef.current.scrollTop = newScrollTop;
+          }
           setScrollTop(newScrollTop);
         }
       },

@@ -142,7 +142,7 @@ export class IngredientRegistry {
 
   public getByName(name: string): IngredientProps | undefined {
     const id = this.nameToIdMap.get(name);
-    return id ? this.ingredients.get(id) : undefined;
+    return id ? this.get(id) : undefined;
   }
 
   public getAllCategories(): ReadonlySet<string> {
@@ -163,7 +163,7 @@ export class IngredientRegistry {
     const { run, ...restOfDefinition } = definition;
     const id = getObjectHash(restOfDefinition, namespace);
 
-    errorHandler.assert(typeof id === 'string' && id.length > 0, `Ingredient definition "${definition.name}" failed to generate a valid ID.`);
+    errorHandler.assert(!!id, `Ingredient definition "${definition.name}" failed to generate a valid ID.`);
 
     if (this.ingredients.has(id)) {
       logger.warn(
@@ -172,9 +172,7 @@ export class IngredientRegistry {
     }
 
     this.ingredients.set(id, { ...definition, id } as IngredientProps);
-    if (this.batchDepth === 0) {
-      this.resort();
-    }
+    this.checkAndResort();
     return id;
   }
 
@@ -186,7 +184,13 @@ export class IngredientRegistry {
         logger.info(`Unregistered ingredient: ${id}`);
       }
     }
-    if (changed && this.batchDepth === 0) {
+    if (changed) {
+      this.checkAndResort();
+    }
+  }
+
+  private checkAndResort(): void {
+    if (this.batchDepth === 0) {
       this.resort();
     }
   }

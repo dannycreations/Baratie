@@ -47,9 +47,10 @@ export const useNotificationStore = create<NotificationState>()((set, get) => {
       const notification = map.get(id);
       if (!notification) return;
 
+      const dedupeKey = getDedupeKey(notification);
       mapHandlers.remove(id);
-      if (dedupeMap.get(getDedupeKey(notification)) === id) {
-        dedupeHandlers.remove(getDedupeKey(notification));
+      if (dedupeMap.get(dedupeKey) === id) {
+        dedupeHandlers.remove(dedupeKey);
       }
       set({ order: order.filter((item) => item !== id) });
     },
@@ -61,15 +62,18 @@ export const useNotificationStore = create<NotificationState>()((set, get) => {
         title,
         type: type ?? 'info',
       };
-      const existingId = dedupeMap.get(getDedupeKey(details));
+      const dedupeKey = getDedupeKey(details);
+      const existingId = dedupeMap.get(dedupeKey);
+
+      const finalDuration = duration ?? NOTIFICATION_SHOW_MS;
 
       if (existingId) {
-        update(existingId, duration ?? NOTIFICATION_SHOW_MS, Date.now());
+        update(existingId, finalDuration, Date.now());
       } else {
         add({
           ...details,
           id: crypto.randomUUID(),
-          duration: duration ?? NOTIFICATION_SHOW_MS,
+          duration: finalDuration,
         });
       }
     },

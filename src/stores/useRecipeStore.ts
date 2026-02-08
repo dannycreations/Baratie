@@ -98,7 +98,8 @@ export const useRecipeStore = create<RecipeState>()(
         const { ingredients, activeRecipeId } = get();
         ingredientHandlers.remove(id);
 
-        if (get().ingredients.length === ingredients.length) {
+        const nextIngredients = get().ingredients;
+        if (nextIngredients.length === ingredients.length) {
           logger.warn(`Attempted to remove non-existent ingredient with id: ${id}`);
           return;
         }
@@ -106,7 +107,7 @@ export const useRecipeStore = create<RecipeState>()(
         editingHandlers.remove(id);
         pausedHandlers.remove(id);
 
-        if (get().ingredients.length === 0 && activeRecipeId) {
+        if (nextIngredients.length === 0 && activeRecipeId) {
           set({ activeRecipeId: null });
         }
       },
@@ -151,8 +152,7 @@ export const useRecipeStore = create<RecipeState>()(
       toggleIngredientPause: pausedHandlers.toggle,
 
       updateSpice: (id, spiceId, rawValue) => {
-        const { ingredientsMap } = get();
-        const ingredientToUpdate = ingredientsMap.get(id);
+        const ingredientToUpdate = get().ingredientsMap.get(id);
         errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${id}" not found for spice change.`, 'Recipe Change Spice');
 
         const ingredientDefinition = ingredientRegistry.get(ingredientToUpdate.ingredientId);

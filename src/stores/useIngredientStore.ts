@@ -63,5 +63,7 @@ persistStore(useIngredientStore, {
     categories: [...state.disabledCategories],
     ingredients: [...state.disabledIngredients],
   }),
-  equalityFn: (a, b) => isArrayEqual((a as any).categories, (b as any).categories) && isArrayEqual((a as any).ingredients, (b as any).ingredients),
+  equalityFn: (a, b) =>
+    isArrayEqual((a as Record<string, unknown>).categories as string[], (b as Record<string, unknown>).categories as string[]) &&
+    isArrayEqual((a as Record<string, unknown>).ingredients as string[], (b as Record<string, unknown>).ingredients as string[]),
 });

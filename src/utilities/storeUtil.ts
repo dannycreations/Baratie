@@ -12,61 +12,69 @@ export interface PersistOptions<T> {
   readonly shouldPersist?: (state: T) => boolean;
 }
 
-export const createSetHandlers = <T extends object, K extends keyof T, V>(set: (fn: (state: T) => Partial<T> | T) => void, key: K) => ({
-  add: (item: V) =>
-    set((state) => {
-      const current = state[key] as unknown as ReadonlySet<V>;
-      if (current.has(item)) return state as unknown as Partial<T> | T;
-      const next = new Set(current);
-      next.add(item);
-      return { [key]: next } as unknown as Partial<T>;
-    }),
-  clear: () => set(() => ({ [key]: new Set<V>() }) as unknown as Partial<T>),
-  remove: (item: V) =>
-    set((state) => {
-      const current = state[key] as unknown as ReadonlySet<V>;
-      if (!current.has(item)) return state as unknown as Partial<T> | T;
-      const next = new Set(current);
-      next.delete(item);
-      return { [key]: next } as unknown as Partial<T>;
-    }),
-  set: (items: ReadonlyArray<V> | ReadonlySet<V>) => set(() => ({ [key]: new Set(items) }) as unknown as Partial<T>),
-  toggle: (item: V) =>
-    set(
-      (state) =>
-        ({
-          [key]: toggleSetItem(state[key] as unknown as ReadonlySet<V>, item),
-        }) as unknown as Partial<T>,
-    ),
-});
+export const createSetHandlers = <T extends object, K extends keyof T, V>(set: (fn: (state: T) => Partial<T> | T) => void, key: K) => {
+  const getSet = (state: T) => state[key] as unknown as ReadonlySet<V>;
 
-export const createMapHandlers = <T extends object, K extends keyof T, VK, VV>(set: (fn: (state: T) => Partial<T> | T) => void, key: K) => ({
-  clear: () => set(() => ({ [key]: new Map<VK, VV>() }) as unknown as Partial<T>),
-  remove: (mapKey: VK) =>
-    set((state) => {
-      const current = state[key] as unknown as ReadonlyMap<VK, VV>;
-      if (!current.has(mapKey)) return state as unknown as Partial<T> | T;
-      const next = new Map(current);
-      next.delete(mapKey);
-      return { [key]: next } as unknown as Partial<T>;
-    }),
-  set: (mapKey: VK, value: VV) =>
-    set((state) => {
-      const current = state[key] as unknown as ReadonlyMap<VK, VV>;
-      if (current.get(mapKey) === value) return state as unknown as Partial<T> | T;
-      const next = new Map(current);
-      next.set(mapKey, value);
-      return { [key]: next } as unknown as Partial<T>;
-    }),
-  setAll: (entries: ReadonlyArray<readonly [VK, VV]> | ReadonlyMap<VK, VV>) => set(() => ({ [key]: new Map(entries) }) as unknown as Partial<T>),
-  upsert: (mapKey: VK, value: Partial<VV>) =>
-    set((state) => {
-      const next = new Map(state[key] as unknown as ReadonlyMap<VK, VV>);
-      const existing = next.get(mapKey);
-      next.set(mapKey, existing ? ({ ...existing, ...value } as VV) : (value as VV));
-      return { [key]: next } as unknown as Partial<T>;
-    }),
-});
+  return {
+    add: (item: V) =>
+      set((state) => {
+        const current = getSet(state);
+        if (current.has(item)) return state;
+        const next = new Set(current);
+        next.add(item);
+        return { [key]: next } as unknown as Partial<T>;
+      }),
+    clear: () => set(() => ({ [key]: new Set<V>() }) as unknown as Partial<T>),
+    remove: (item: V) =>
+      set((state) => {
+        const current = getSet(state);
+        if (!current.has(item)) return state;
+        const next = new Set(current);
+        next.delete(item);
+        return { [key]: next } as unknown as Partial<T>;
+      }),
+    set: (items: ReadonlyArray<V> | ReadonlySet<V>) => set(() => ({ [key]: new Set(items) }) as unknown as Partial<T>),
+    toggle: (item: V) =>
+      set(
+        (state) =>
+          ({
+            [key]: toggleSetItem(getSet(state), item),
+          }) as unknown as Partial<T>,
+      ),
+  };
+};
+
+export const createMapHandlers = <T extends object, K extends keyof T, VK, VV>(set: (fn: (state: T) => Partial<T> | T) => void, key: K) => {
+  const getMap = (state: T) => state[key] as unknown as ReadonlyMap<VK, VV>;
+
+  return {
+    clear: () => set(() => ({ [key]: new Map<VK, VV>() }) as unknown as Partial<T>),
+    remove: (mapKey: VK) =>
+      set((state) => {
+        const current = getMap(state);
+        if (!current.has(mapKey)) return state;
+        const next = new Map(current);
+        next.delete(mapKey);
+        return { [key]: next } as unknown as Partial<T>;
+      }),
+    set: (mapKey: VK, value: VV) =>
+      set((state) => {
+        const current = getMap(state);
+        if (current.get(mapKey) === value) return state;
+        const next = new Map(current);
+        next.set(mapKey, value);
+        return { [key]: next } as unknown as Partial<T>;
+      }),
+    setAll: (entries: ReadonlyArray<readonly [VK, VV]> | ReadonlyMap<VK, VV>) => set(() => ({ [key]: new Map(entries) }) as unknown as Partial<T>),
+    upsert: (mapKey: VK, value: Partial<VV>) =>
+      set((state) => {
+        const next = new Map(getMap(state));
+        const existing = next.get(mapKey);
+        next.set(mapKey, existing ? ({ ...existing, ...value } as VV) : (value as VV));
+        return { [key]: next } as unknown as Partial<T>;
+      }),
+  };
+};
 
 export const createListHandlers = <T extends object, LK extends keyof T, MK extends keyof T, IDK extends keyof V & string, V extends object>(
   set: (fn: (state: T) => Partial<T> | T) => void,
@@ -116,7 +124,7 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
         const currentList = (state[listKey] as unknown as ReadonlyArray<V>) || [];
         const nextList = currentList.filter((item) => item[idKey] !== id);
 
-        if (nextList.length === currentList.length) return state as unknown as Partial<T> | T;
+        if (nextList.length === currentList.length) return state;
 
         return {
           [listKey]: nextList,
@@ -146,20 +154,24 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
   };
 };
 
-export const createStackHandlers = <T extends object, K extends keyof T, V>(set: (fn: (state: T) => Partial<T> | T) => void, key: K) => ({
-  push: (item: V) =>
-    set((state) => {
-      const current = (state[key] as unknown as ReadonlyArray<V>) || [];
-      return { [key]: [...current, item] } as unknown as Partial<T>;
-    }),
-  pop: () =>
-    set((state) => {
-      const current = (state[key] as unknown as ReadonlyArray<V>) || [];
-      if (current.length === 0) return state as unknown as Partial<T> | T;
-      return { [key]: current.slice(0, -1) } as unknown as Partial<T>;
-    }),
-  clear: () => set(() => ({ [key]: [] }) as unknown as Partial<T>),
-});
+export const createStackHandlers = <T extends object, K extends keyof T, V>(set: (fn: (state: T) => Partial<T> | T) => void, key: K) => {
+  const getStack = (state: T) => (state[key] as unknown as ReadonlyArray<V>) || [];
+
+  return {
+    push: (item: V) =>
+      set((state) => {
+        const current = getStack(state);
+        return { [key]: [...current, item] } as unknown as Partial<T>;
+      }),
+    pop: () =>
+      set((state) => {
+        const current = getStack(state);
+        if (current.length === 0) return state;
+        return { [key]: current.slice(0, -1) } as unknown as Partial<T>;
+      }),
+    clear: () => set(() => ({ [key]: [] }) as unknown as Partial<T>),
+  };
+};
 
 export const persistStore = <T extends object>(useStore: UseBoundStore<StoreApi<T>>, options: PersistOptions<T>): (() => void) => {
   const { key, context, pick, onHydrate, equalityFn = shallowEqual, shouldPersist } = options;

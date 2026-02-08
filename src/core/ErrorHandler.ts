@@ -83,18 +83,22 @@ export class ErrorHandler {
     }
 
     if (handlerOptions.shouldNotify) {
-      const messageToShow = displayMessage.trim() || handlerOptions.defaultMessage!;
-      try {
-        useNotificationStore.getState().show(messageToShow, 'error', notificationTitle, 7000);
-      } catch (notificationError) {
-        logger.error('ErrorHandler: Failed to show a notification due to an internal notification system error.', {
-          notificationSystemError: notificationError,
-          originalError: newError.message,
-        });
-      }
+      this.notify(displayMessage, notificationTitle, handlerOptions.defaultMessage!, newError.message);
     }
 
     return newError;
+  }
+
+  private notify(displayMessage: string, title: string, defaultMessage: string, originalMessage: string): void {
+    const messageToShow = displayMessage.trim() || defaultMessage;
+    try {
+      useNotificationStore.getState().show(messageToShow, 'error', title, 7000);
+    } catch (notificationError) {
+      logger.error('ErrorHandler: Failed to show a notification due to an internal notification system error.', {
+        notificationSystemError: notificationError,
+        originalError: originalMessage,
+      });
+    }
   }
 
   private buildError(error: unknown, callerContext?: string, defaultMessage?: string, genericMessage?: string): AppError {

@@ -72,7 +72,8 @@ export class Kitchen {
   }
 
   public async cook(): Promise<void> {
-    if (useKitchenStore.getState().isBatchingUpdates) {
+    const kitchenState = useKitchenStore.getState();
+    if (kitchenState.isBatchingUpdates) {
       return;
     }
     if (this.isCooking) {
@@ -82,9 +83,10 @@ export class Kitchen {
     }
 
     const recipe = useRecipeStore.getState().ingredients;
-    const inputData = useKitchenStore.getState().inputData;
+    const inputData = kitchenState.inputData;
+
     if (recipe.length === 0) {
-      useKitchenStore.getState().setCookingResult({
+      kitchenState.setCookingResult({
         cookingStatus: inputData ? 'success' : 'idle',
         ingredientStatuses: {},
         ingredientWarnings: {},
@@ -101,19 +103,15 @@ export class Kitchen {
     logger.info('Starting cook.');
 
     try {
-      if (this.timeoutId) {
-        clearTimeout(this.timeoutId);
-        this.timeoutId = null;
-      }
+      this.clearScheduledCook();
 
       const hasIntervalSetter = recipe.some((ing) => ing.name === KEY_REPEAT_STEP);
-
       if (!hasIntervalSetter && this.intervalMs > 0) {
         this.setCookingInterval(0);
       }
 
       const result = await this.cookRecipe(recipe, inputData);
-      useKitchenStore.getState().setCookingResult(result);
+      kitchenState.setCookingResult(result);
       this.scheduleNextCook();
     } catch (error) {
       this.scheduleNextCook();
@@ -142,17 +140,14 @@ export class Kitchen {
   }
 
   public toggleAutoCook(): void {
-    const wasEnabled = useKitchenStore.getState().isAutoCookEnabled;
-    useKitchenStore.getState().toggleAutoCookState();
+    const kitchenStore = useKitchenStore.getState();
+    const wasEnabled = kitchenStore.isAutoCookEnabled;
+    kitchenStore.toggleAutoCookState();
 
     if (!wasEnabled) {
       this.cook();
     } else {
-      if (this.timeoutId) {
-        clearTimeout(this.timeoutId);
-        this.timeoutId = null;
-        logger.info('Auto-cook disabled, pending scheduled cook cancelled.');
-      }
+      this.clearScheduledCook('Auto-cook disabled, pending scheduled cook cancelled.');
       this.hasPendingCook = false;
     }
   }
@@ -194,17 +189,26 @@ export class Kitchen {
   }
 
   private updateLoopStateFromResult(state: RecipeLoopState, res: IngredientRunResult, id: string): void {
-    state.cookedData = res.nextData;
-    state.localStatuses[id] = res.status;
-    if (res.warningMessage) state.localWarnings[id] = res.warningMessage;
-    if (res.panelInstruction) {
-      if (res.panelInstruction.panelType === 'input') {
-        state.lastInputConfig = res.panelInstruction.config;
-        state.lastInputPanelId = res.inputPanelId ?? null;
-      } else state.lastOutputConfig = res.panelInstruction.config;
+    const { nextData, status, warningMessage, panelInstruction, inputPanelId, hasError } = res;
+
+    state.cookedData = nextData;
+    state.localStatuses[id] = status;
+
+    if (warningMessage) {
+      state.localWarnings[id] = warningMessage;
     }
-    if (res.hasError) state.globalError = true;
-    if (res.status === 'warning') state.hasWarnings = true;
+
+    if (panelInstruction) {
+      if (panelInstruction.panelType === 'input') {
+        state.lastInputConfig = panelInstruction.config;
+        state.lastInputPanelId = inputPanelId ?? null;
+      } else {
+        state.lastOutputConfig = panelInstruction.config;
+      }
+    }
+
+    if (hasError) state.globalError = true;
+    if (status === 'warning') state.hasWarnings = true;
   }
 
   private async processSingleIngredient(
@@ -279,11 +283,16 @@ export class Kitchen {
     return { hasError: false, status: 'success', nextData: result.cast('string').value, panelInstruction: panel, inputPanelId: inputId };
   }
 
-  private scheduleNextCook(): void {
+  private clearScheduledCook(logMessage?: string): void {
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
+      if (logMessage) logger.info(logMessage);
     }
+  }
+
+  private scheduleNextCook(): void {
+    this.clearScheduledCook();
     if (this.intervalMs > 0 && useKitchenStore.getState().isAutoCookEnabled) {
       this.timeoutId = window.setTimeout(() => {
         this.cook();
