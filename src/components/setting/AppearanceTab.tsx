@@ -15,12 +15,12 @@ interface PalettePreviewProps {
 const PalettePreview = memo<PalettePreviewProps>(({ themeId }): JSX.Element => {
   return (
     <div className={clsx('flex items-center space-x-1', themeId)}>
-      <div className="h-4 w-4 rounded-full border border-border-primary bg-surface-primary" title="Page BG" />
-      <div className="h-4 w-4 rounded-full border border-border-primary bg-surface-secondary" title="Card BG" />
-      <div className="h-4 w-4 rounded-full border border-border-primary bg-accent-bg" title="Accent" />
-      <div className="h-4 w-4 rounded-full border border-border-primary bg-content-primary" title="Text" />
-      <div className="h-4 w-4 rounded-full border border-border-primary bg-success-fg" title="Success" />
-      <div className="h-4 w-4 rounded-full border border-border-primary bg-danger-fg" title="Error" />
+      <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--surface-primary)]" title="Page BG" />
+      <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--surface-secondary)]" title="Card BG" />
+      <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--accent-bg)]" title="Accent" />
+      <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--content-primary)]" title="Text" />
+      <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--success-fg)]" title="Success" />
+      <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--danger-fg)]" title="Error" />
     </div>
   );
 });

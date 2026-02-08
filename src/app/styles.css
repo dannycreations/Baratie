@@ -128,7 +128,8 @@
   }
 }
 
-:root {
+:root,
+.dark {
   --theme-color: #0f172a;
   --backdrop: rgba(15, 23, 42, 0.7);
   --ring-theme: #0284c7; /* sky-600 */
