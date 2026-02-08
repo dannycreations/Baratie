@@ -1,9 +1,15 @@
+import { ingredientRegistry } from '../app/container';
+
 import type { IngredientProps } from '../core/IngredientRegistry';
 
 const categorySortFn = ([catA]: readonly [string, unknown], [catB]: readonly [string, unknown]): number => catA.localeCompare(catB);
 
 export const createIngredientSearchPredicate = (lowerQuery: string): ((ing: IngredientProps) => boolean) => {
   return (ing: IngredientProps): boolean => ing.name.toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
+};
+
+export const filterExistingIngredients = <T extends { readonly ingredientId: string }>(items: ReadonlyArray<T>): T[] => {
+  return items.filter((item) => !!ingredientRegistry.get(item.ingredientId));
 };
 
 export const groupAndSortIngredients = (ingredients: ReadonlyArray<IngredientProps>): ReadonlyMap<string, ReadonlyArray<IngredientProps>> => {

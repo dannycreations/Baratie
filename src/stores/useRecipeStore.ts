@@ -3,6 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_RECIPE } from '../app/constants';
 import { errorHandler, ingredientRegistry, logger, storage } from '../app/container';
+import { filterExistingIngredients } from '../helpers/ingredientHelper';
 import { updateAndValidate, validateSpices } from '../helpers/spiceHelper';
 import { isArrayEqual } from '../utilities/objectUtil';
 import { createListHandlers, createSetHandlers, persistStore } from '../utilities/storeUtil';
@@ -184,7 +185,7 @@ useIngredientStore.subscribe(
     if (!isHydrated || !useTaskStore.getState().isInitialized) return;
 
     const { ingredients, setRecipe, activeRecipeId } = useRecipeStore.getState();
-    const updatedIngredients = ingredients.filter((ing) => !!ingredientRegistry.get(ing.ingredientId));
+    const updatedIngredients = filterExistingIngredients(ingredients);
 
     if (updatedIngredients.length < ingredients.length) {
       useNotificationStore

@@ -155,27 +155,21 @@ export class InputType<T = unknown> {
     if (this.value instanceof ArrayBuffer) {
       return this.cloneValue(this.value);
     }
-    if (this.value instanceof Uint8Array) {
-      return this.cloneValue(this.value.slice().buffer);
+    try {
+      const bytes = this.asUint8Array();
+      return this.cloneValue(bytes.buffer as ArrayBuffer);
+    } catch {
+      return this.cloneValue(castFail(this.value, 'ArrayBuffer', options));
     }
-    if (typeof this.value === 'string') {
-      return this.cloneValue(stringToUint8Array(this.value).slice().buffer);
-    }
-    return this.cloneValue(castFail(this.value, 'ArrayBuffer', options));
   }
 
   private castToBase64(options?: Readonly<{ value?: unknown }>): InputType<string> {
-    if (this.value instanceof Uint8Array) {
-      return this.cloneValue(uint8ArrayToBase64(this.value));
+    try {
+      const bytes = typeof this.value === 'string' ? textEncoder.encode(this.value) : this.asUint8Array();
+      return this.cloneValue(uint8ArrayToBase64(bytes));
+    } catch {
+      return this.cloneValue(castFail(this.value, 'Base64', options));
     }
-    if (this.value instanceof ArrayBuffer) {
-      return this.cloneValue(uint8ArrayToBase64(new Uint8Array(this.value)));
-    }
-    if (typeof this.value === 'string') {
-      const utf8Bytes = textEncoder.encode(this.value);
-      return this.cloneValue(uint8ArrayToBase64(utf8Bytes));
-    }
-    return this.cloneValue(castFail(this.value, 'Base64', options));
   }
 
   private castToBoolean(options?: Readonly<{ value?: unknown }>): InputType<boolean> {
@@ -207,30 +201,20 @@ export class InputType<T = unknown> {
   }
 
   private castToByteArray(options?: Readonly<{ value?: unknown }>): InputType<Uint8Array> {
-    if (this.value instanceof Uint8Array) {
-      return this.cloneValue(this.value);
+    try {
+      return this.cloneValue(this.asUint8Array());
+    } catch {
+      return this.cloneValue(castFail(this.value, 'Uint8Array', options));
     }
-    if (this.value instanceof ArrayBuffer) {
-      return this.cloneValue(new Uint8Array(this.value));
-    }
-    if (typeof this.value === 'string') {
-      return this.cloneValue(stringToUint8Array(this.value));
-    }
-    return this.cloneValue(castFail(this.value, 'Uint8Array', options));
   }
 
   private castToHex(options?: Readonly<{ value?: unknown }>): InputType<string> {
-    if (this.value instanceof Uint8Array) {
-      return this.cloneValue(uint8ArrayToHex(this.value));
+    try {
+      const bytes = typeof this.value === 'string' ? textEncoder.encode(this.value) : this.asUint8Array();
+      return this.cloneValue(uint8ArrayToHex(bytes));
+    } catch {
+      return this.cloneValue(castFail(this.value, 'Hex', options));
     }
-    if (this.value instanceof ArrayBuffer) {
-      return this.cloneValue(uint8ArrayToHex(new Uint8Array(this.value)));
-    }
-    if (typeof this.value === 'string') {
-      const utf8Bytes = textEncoder.encode(this.value);
-      return this.cloneValue(uint8ArrayToHex(utf8Bytes));
-    }
-    return this.cloneValue(castFail(this.value, 'Hex', options));
   }
 
   private castToNumber(
@@ -286,6 +270,19 @@ export class InputType<T = unknown> {
       }
     }
     return undefined;
+  }
+
+  private asUint8Array(): Uint8Array {
+    if (this.value instanceof Uint8Array) {
+      return this.value;
+    }
+    if (this.value instanceof ArrayBuffer) {
+      return new Uint8Array(this.value);
+    }
+    if (typeof this.value === 'string') {
+      return stringToUint8Array(this.value);
+    }
+    throw new Error('Not binary data');
   }
 
   private cloneValue<U>(newValue: U): InputType<U> {

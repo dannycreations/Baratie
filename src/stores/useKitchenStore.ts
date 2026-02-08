@@ -23,36 +23,38 @@ export interface KitchenState {
 }
 
 export const useKitchenStore = create<KitchenState>()(
-  subscribeWithSelector((set) => ({
-    cookingStatus: 'idle',
-    ingredientStatuses: {},
-    ingredientWarnings: {},
-    inputData: '',
-    inputPanelConfig: null,
-    inputPanelId: null,
-    isAutoCookEnabled: true,
-    isBatchingUpdates: false,
-    outputData: '',
-    outputPanelConfig: null,
+  subscribeWithSelector((set) => {
+    return {
+      cookingStatus: 'idle',
+      ingredientStatuses: {},
+      ingredientWarnings: {},
+      inputData: '',
+      inputPanelConfig: null,
+      inputPanelId: null,
+      isAutoCookEnabled: true,
+      isBatchingUpdates: false,
+      outputData: '',
+      outputPanelConfig: null,
 
-    setCookingResult: (result) => {
-      set(result);
-    },
+      setCookingResult: (result) => {
+        set(result);
+      },
 
-    setInputData: (inputData) => {
-      set({ inputData });
-    },
+      setInputData: (inputData) => {
+        set({ inputData });
+      },
 
-    startUpdateBatch: () => {
-      set({ isBatchingUpdates: true });
-    },
+      startUpdateBatch: () => {
+        set({ isBatchingUpdates: true });
+      },
 
-    endUpdateBatch: () => {
-      set({ isBatchingUpdates: false });
-    },
+      endUpdateBatch: () => {
+        set({ isBatchingUpdates: false });
+      },
 
-    toggleAutoCookState: () => {
-      set((state) => ({ isAutoCookEnabled: !state.isAutoCookEnabled }));
-    },
-  })),
+      toggleAutoCookState: () => {
+        set((state) => ({ isAutoCookEnabled: !state.isAutoCookEnabled }));
+      },
+    };
+  }),
 );

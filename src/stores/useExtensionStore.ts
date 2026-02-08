@@ -13,7 +13,7 @@ import {
   StorableExtensionSchema,
 } from '../helpers/extensionHelper';
 import { isObjectLike, isString, pick } from '../utilities/objectUtil';
-import { createMapHandlers } from '../utilities/storeUtil';
+import { createListHandlers, persistStore } from '../utilities/storeUtil';
 import { useNotificationStore } from './useNotificationStore';
 
 import type { Extension, ExtensionManifest, ManifestModule, StorableExtension } from '../helpers/extensionHelper';
@@ -69,11 +69,7 @@ const fetchAndValidateManifest = async (repoInfo: {
 
 export const useExtensionStore = create<ExtensionState>()(
   subscribeWithSelector((set, get) => {
-    const handlers = createMapHandlers<ExtensionState, 'extensionMap', string, Extension>(set, 'extensionMap');
-
-    const syncExtensions = (state: ExtensionState): Partial<ExtensionState> => ({
-      extensions: [...state.extensionMap.values()],
-    });
+    const handlers = createListHandlers<ExtensionState, 'extensions', 'extensionMap', 'id', Extension>(set, 'extensions', 'extensionMap', 'id');
 
     return {
       extensions: [],
@@ -281,7 +277,6 @@ export const useExtensionStore = create<ExtensionState>()(
         }
 
         handlers.remove(id);
-        set(syncExtensions);
         show(`Extension '${displayName}' has been successfully uninstalled.`, 'success', 'Extension Manager');
       },
 
@@ -301,25 +296,21 @@ export const useExtensionStore = create<ExtensionState>()(
         get().upsert({ ...updates, id });
       },
 
-      setExtensions: (extensions) => {
-        handlers.setAll(extensions.map((ext) => [ext.id, ext]));
-        set(syncExtensions);
-      },
+      setExtensions: handlers.setAll,
 
       setIngredients: (id, ingredients) => {
         get().upsert({ id, ingredients });
       },
 
-      upsert: (extension) => {
-        handlers.upsert(extension.id, extension);
-        set(syncExtensions);
-      },
+      upsert: handlers.upsert,
     };
   }),
 );
 
-useExtensionStore.subscribe(
-  (state) =>
+persistStore(useExtensionStore, {
+  key: STORAGE_EXTENSIONS,
+  context: 'Extensions',
+  pick: (state) =>
     state.extensions
       .filter(
         (ext) =>
@@ -330,10 +321,5 @@ useExtensionStore.subscribe(
           Object.keys(ext.scripts).length > 0,
       )
       .map((ext) => pick(ext, ['id', 'name', 'entry', 'scripts', 'fetchedAt']) as StorableExtension),
-  (storable) => {
-    storage.set(STORAGE_EXTENSIONS, storable, 'Extensions');
-  },
-  {
-    equalityFn: shallowExtensionStorable,
-  },
-);
+  equalityFn: (a, b) => shallowExtensionStorable(a as any, b as any),
+});
