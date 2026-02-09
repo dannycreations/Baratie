@@ -25,7 +25,7 @@ export const CookbookSave = memo<CookbookSaveProps>(({ nameInput, onNameChange, 
   );
 
   return (
-    <>
+    <div className="flex-col-gap-3">
       <FormLayout label="Recipe Name:" inputId="recipeName" inputWrapperClasses="w-full">
         {(id) => (
           <StringInput
@@ -44,6 +44,6 @@ export const CookbookSave = memo<CookbookSaveProps>(({ nameInput, onNameChange, 
       {isRecipeEmpty && (
         <p className="info-message-box mt-3 text-warning-fg">Your recipe is empty. Add ingredients from the panel on the left before saving.</p>
       )}
-    </>
+    </div>
   );
 });

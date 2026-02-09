@@ -533,6 +533,18 @@
     animation: var(--animate-fade-in-text);
   }
 
+  .flex-col-gap-2 {
+    @apply flex flex-col gap-2 min-h-0;
+  }
+
+  .flex-col-gap-3 {
+    @apply flex flex-col gap-3 min-h-0;
+  }
+
+  .flex-1-overflow-auto {
+    @apply flex-1 overflow-auto;
+  }
+
   .modal-backdrop-enter-active {
     animation: var(--animate-fade-in);
   }

@@ -198,7 +198,7 @@ export const RecipePanel = memo((): JSX.Element => {
       contentRef={scrollRef}
     >
       <div className="flex h-full flex-col" {...dropZoneProps}>
-        <div id={listId} className={clsx('grow overflow-y-auto', listClass, scrollClasses)}>
+        <div id={listId} className={clsx('flex-1-overflow-auto', listClass, scrollClasses)}>
           {content}
         </div>
       </div>

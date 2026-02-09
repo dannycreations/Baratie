@@ -179,7 +179,7 @@ export const GroupListLayout = memo<GroupListProps>(
 
     if (itemsByCategory.length === 0) {
       const message = hasQuery ? noResultsMessage(query) : emptyMessage;
-      return <EmptyView className="flex grow flex-col items-center justify-center py-3">{message}</EmptyView>;
+      return <EmptyView className="flex-col-center grow py-3">{message}</EmptyView>;
     }
 
     return (

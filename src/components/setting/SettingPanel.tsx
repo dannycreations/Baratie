@@ -85,10 +85,10 @@ export const SettingPanel = memo((): JSX.Element => {
               key={tab.id}
               className={clsx(
                 activeTab === tab.id ? 'tab-panel' : 'tab-panel-hidden',
-                tab.id === 'extensions' ? 'overflow-hidden' : 'overflow-y-auto',
+                tab.id === 'extensions' ? 'overflow-hidden' : 'flex-1-overflow-auto',
               )}
             >
-              {tab.description && <p className="text-sm text-content-tertiary">{tab.description()}</p>}
+              {tab.description && <p className="text-description-small text-content-tertiary">{tab.description()}</p>}
               <div className="tab-content-container">{tab.component}</div>
             </div>
           ))}

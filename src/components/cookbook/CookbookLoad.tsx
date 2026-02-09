@@ -49,8 +49,8 @@ export const CookbookLoad = memo<CookbookLoadProps>(
     }, [recipes, onDelete, onLoad, query, totalRecipes]);
 
     return (
-      <div className="flex h-full flex-col gap-2 min-h-0">
-        <div className="border-b border-border-primary pb-2">
+      <div className="flex-col-gap-2 h-full">
+        <div className="shrink-0 border-b border-border-primary pb-2">
           <SearchInput
             id="recipe-search"
             inputRef={searchRef}
@@ -60,7 +60,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(
             onClear={onClear}
           />
         </div>
-        <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>
+        <div id={listId} ref={scrollRef} className={clsx('flex-1-overflow-auto', scrollClasses)}>
           {listContent}
         </div>
       </div>

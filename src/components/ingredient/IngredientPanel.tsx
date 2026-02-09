@@ -184,11 +184,11 @@ export const IngredientPanel = memo((): JSX.Element => {
     >
       <div className="flex h-full flex-col text-content-tertiary" {...recipeDropZoneProps}>
         {isDragOverRecipe && <DropZoneLayout mode="overlay" text="Drop to Remove from Recipe" variant="remove" />}
-        <div className="flex h-full flex-col gap-2 min-h-0">
+        <div className="flex-col-gap-2 h-full">
           <div>
             <SearchInput id="ingredient-search" value={query} placeholder="Search Ingredients..." onChange={onQueryChange} onClear={onClear} />
           </div>
-          <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>
+          <div id={listId} ref={scrollRef} className={clsx('flex-1-overflow-auto', scrollClasses)}>
             <GroupListLayout
               query={query}
               itemsByCategory={filteredIngredients}

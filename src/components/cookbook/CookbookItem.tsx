@@ -39,7 +39,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete,
 
   return (
     <li className="list-item-container h-16 transition-colors duration-150 hover:bg-surface-hover">
-      <div className="mr-2 flex-1-min-0">
+      <div className="flex-1-min-0 mr-2">
         <h3 className="list-item-title text-content-primary">
           <HighlightText text={recipe.name} highlight={query} />
         </h3>
