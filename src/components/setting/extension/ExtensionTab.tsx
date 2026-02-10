@@ -99,10 +99,10 @@ export const ExtensionTab = memo((): JSX.Element => {
 
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="stack-h-small">
         <StringInput
           id="extension-url-input"
-          className="grow"
+          className="flex-1-min-0"
           value={url}
           disabled={isLoading}
           placeholder="user/repo@branch or full GitHub URL"
@@ -122,9 +122,9 @@ export const ExtensionTab = memo((): JSX.Element => {
         </Button>
       </div>
 
-      <div className="flex flex-1 flex-col min-h-0">
-        <h4 className="label-base mb-3 !text-base">Installed Extensions</h4>
-        <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>
+      <div className="flex-col-gap-2">
+        <h4 className="label-base mb-1 !text-base">Installed Extensions</h4>
+        <div id={listId} ref={scrollRef} className={clsx('flex-1-overflow-auto', scrollClasses)}>
           {listContent}
         </div>
       </div>

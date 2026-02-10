@@ -102,8 +102,8 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
   return (
     <li className="missing-item-container group">
       <div className="missing-item-header">
-        <div className="flex min-w-0 grow items-center">
-          <div className="flex items-center gap-1">
+        <div className="flex-1-min-0 flex-y-center">
+          <div className="flex-y-center gap-1">
             <AlertTriangleIcon className="text-danger-fg" size={ICON_SIZES.MD} />
             <h3 className="missing-item-title">{ingredientItem.name} (Missing)</h3>
           </div>

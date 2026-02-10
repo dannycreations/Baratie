@@ -180,9 +180,9 @@ export const IngredientPanel = memo((): JSX.Element => {
       headerLeft="Ingredients"
       headerRight={headerActions}
       className="panel-full-height-flex"
-      contentClasses="relative flex h-full flex-col"
+      contentClasses="relative flex-col-gap-2 h-full"
     >
-      <div className="flex h-full flex-col text-content-tertiary" {...recipeDropZoneProps}>
+      <div className="flex-col-gap-2 h-full text-content-tertiary" {...recipeDropZoneProps}>
         {isDragOverRecipe && <DropZoneLayout mode="overlay" text="Drop to Remove from Recipe" variant="remove" />}
         <div className="flex-col-gap-2 h-full">
           <div>

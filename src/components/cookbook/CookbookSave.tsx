@@ -25,7 +25,7 @@ export const CookbookSave = memo<CookbookSaveProps>(({ nameInput, onNameChange, 
   );
 
   return (
-    <div className="flex-col-gap-3">
+    <div className="flex-col-gap-2">
       <FormLayout label="Recipe Name:" inputId="recipeName" inputWrapperClasses="w-full">
         {(id) => (
           <StringInput

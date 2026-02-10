@@ -171,7 +171,7 @@ export const ExtensionManager = memo((): JSX.Element | null => {
       const areAllSelected = items.length > 0 && items.every((item) => selectedEntries.has(item.id));
 
       return (
-        <div className="flex min-w-0 items-center gap-2">
+        <div className="flex-y-center min-w-0 gap-2">
           <BooleanInput id={`${categoryId}-toggle`} checked={areAllSelected} disabled={isLoading} onChange={() => handleToggleCategory(items)} />
           <span className="cursor-pointer truncate font-medium text-content-secondary list-item-interactive">{category}</span>
         </div>
@@ -209,7 +209,7 @@ export const ExtensionManager = memo((): JSX.Element | null => {
       onClose={handleClose}
       onExited={resetState}
     >
-      <div className="flex h-full flex-col gap-2 min-h-0">
+      <div className="flex-col-gap-2 h-full">
         <div>
           <SearchInput
             id="module-install-search"
@@ -221,7 +221,7 @@ export const ExtensionManager = memo((): JSX.Element | null => {
             onClear={handleClearQuery}
           />
         </div>
-        <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>
+        <div id={listId} ref={scrollRef} className={clsx('flex-1-overflow-auto', scrollClasses)}>
           {content}
         </div>
       </div>

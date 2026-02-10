@@ -79,8 +79,8 @@ export const Button = memo<ButtonProps>(
     variant = 'primary',
   }): JSX.Element => {
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
-    const variantClass = BUTTON_VARIANT_MAP[variant] || 'btn-primary';
-    const sizeClass = BUTTON_SIZE_MAP[size] || 'btn-sm';
+    const variantClass = BUTTON_VARIANT_MAP[variant] ?? 'btn-primary';
+    const sizeClass = BUTTON_SIZE_MAP[size] ?? 'btn-sm';
 
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
     const loadingSpinner = <Loader2Icon size={ICON_SIZES.XS} className={clsx('animate-spin', iconMarginClass)} />;

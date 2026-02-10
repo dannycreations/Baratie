@@ -14,7 +14,7 @@ interface PalettePreviewProps {
 
 const PalettePreview = memo<PalettePreviewProps>(({ themeId }): JSX.Element => {
   return (
-    <div className={clsx('flex items-center space-x-1', themeId)}>
+    <div className={clsx('flex-y-center space-x-1', themeId)}>
       <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--surface-primary)]" title="Page BG" />
       <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--surface-secondary)]" title="Card BG" />
       <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--accent-bg)]" title="Accent" />
@@ -39,14 +39,14 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
   const itemLayoutClass = clsx('theme-item-container', isChecked ? 'theme-item-active' : 'theme-item-inactive');
 
   const leftContent = (
-    <div className="flex flex-col justify-center gap-1">
+    <div className="stack-v-small justify-center">
       <h3 className={clsx('list-item-title font-medium', isChecked ? 'text-info-fg' : 'text-content-primary')}>{item.name}</h3>
       <PalettePreview themeId={item.id} />
     </div>
   );
 
   const rightContent = isChecked ? (
-    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-bg/20">
+    <div className="flex-center h-6 w-6 shrink-0 rounded-full bg-accent-bg/20">
       <CheckIcon className="text-info-fg" size={ICON_SIZES.XS} />
     </div>
   ) : null;

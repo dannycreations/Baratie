@@ -106,7 +106,7 @@ export const IngredientManager = memo((): JSX.Element => {
 
   return (
     <Modal isOpen={isModalOpen} size="lg" title="Manage Ingredients" onClose={closeModal}>
-      <div className="flex h-full flex-col gap-2 min-h-0">
+      <div className="flex-col-gap-2 h-full">
         <div>
           <SearchInput
             id="ingredient-manager-search"
@@ -117,7 +117,7 @@ export const IngredientManager = memo((): JSX.Element => {
             onClear={onClear}
           />
         </div>
-        <div id={listId} ref={scrollRef} className={clsx('grow overflow-y-auto', scrollClasses)}>
+        <div id={listId} ref={scrollRef} className={clsx('flex-1-overflow-auto', scrollClasses)}>
           {content}
         </div>
       </div>

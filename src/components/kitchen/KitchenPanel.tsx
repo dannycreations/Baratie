@@ -265,7 +265,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   ]);
 
   return (
-    <SectionLayout headerLeft={title} headerRight={renderActions} className="panel-half-height" contentClasses="flex flex-col">
+    <SectionLayout headerLeft={title} headerRight={renderActions} className="panel-half-height" contentClasses="flex-col-gap-2 h-full">
       {renderContent}
     </SectionLayout>
   );

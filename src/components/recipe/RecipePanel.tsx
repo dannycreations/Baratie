@@ -194,10 +194,10 @@ export const RecipePanel = memo((): JSX.Element => {
       headerLeft="Recipe"
       headerRight={headerActions}
       className="panel-full-height-flex"
-      contentClasses={clsx('relative flex h-full flex-col text-content-tertiary', scrollClasses)}
+      contentClasses={clsx('relative flex-col-gap-2 h-full text-content-tertiary', scrollClasses)}
       contentRef={scrollRef}
     >
-      <div className="flex h-full flex-col" {...dropZoneProps}>
+      <div className="flex-col-gap-2 h-full" {...dropZoneProps}>
         <div id={listId} className={clsx('flex-1-overflow-auto', listClass, scrollClasses)}>
           {content}
         </div>

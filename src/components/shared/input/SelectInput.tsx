@@ -43,7 +43,7 @@ export const SelectInput = memo(
             </option>
           ))}
         </select>
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-content-tertiary">
+        <div className="flex-y-center pointer-events-none absolute inset-y-0 right-0 px-2 text-content-tertiary">
           <ChevronDownIcon size={18} />
         </div>
       </div>

@@ -70,7 +70,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
   }, [id, onRefresh]);
 
   const leftContent = (
-    <div className="flex flex-col">
+    <div className="flex-col-gap-2">
       <h3 className="list-item-title font-medium text-content-primary">{displayName}</h3>
       <Tooltip content={isCopied ? 'Copied URL!' : 'Click to copy URL'} position="top">
         <button className="extension-item-id-button" onClick={handleCopyId}>
@@ -97,7 +97,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
 
   return (
     <li className="list-item-container h-16 transition-colors duration-150 hover:bg-surface-muted">
-      <div className="mr-2 flex-1-min-0">{leftContent}</div>
+      <div className="flex-1-min-0 mr-2">{leftContent}</div>
       <div className="list-item-actions">{rightContent}</div>
     </li>
   );

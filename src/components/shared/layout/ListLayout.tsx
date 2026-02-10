@@ -69,7 +69,7 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
         <div className="flex min-w-0 grow items-center gap-2">
           {renderItemPrefix?.(item)}
           <Tooltip
-            className="min-w-0 flex-1"
+            className="flex-1-min-0"
             content={<HighlightText highlight={query} text={item.description} />}
             position="top"
             tooltipClasses="max-w-xs"
