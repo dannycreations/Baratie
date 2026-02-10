@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useSettingStore } from '../../../stores/useSettingStore';
 import { HighlightText } from '../HighlightText';
@@ -159,6 +159,13 @@ export const GroupListLayout = memo<GroupListProps>(
     const [expandedCategories, setExpandedCategories] = useState<ReadonlySet<string>>(() => new Set());
     const hasQuery = !!query.trim();
 
+    const sections = useMemo(() => {
+      return itemsByCategory.map(([category, items]) => {
+        const isExpanded = hasQuery || expandedCategories.has(category);
+        return { category, items, isExpanded };
+      });
+    }, [itemsByCategory, hasQuery, expandedCategories]);
+
     const handleCategoryToggle = useCallback(
       (category: string): void => {
         setExpandedCategories((current) => {
@@ -184,26 +191,22 @@ export const GroupListLayout = memo<GroupListProps>(
 
     return (
       <div className="list-container">
-        {itemsByCategory.map(([category, items]) => {
-          const isExpanded = hasQuery || expandedCategories.has(category);
-
-          return (
-            <CategorySection
-              key={category}
-              category={category}
-              items={items}
-              isExpanded={isExpanded}
-              onToggle={handleCategoryToggle}
-              query={query}
-              renderHeader={renderHeader}
-              isItemDisabled={isItemDisabled}
-              onItemDragStart={onItemDragStart}
-              renderItemActions={renderItemActions}
-              renderItemPrefix={renderItemPrefix}
-              disabled={disabled}
-            />
-          );
-        })}
+        {sections.map(({ category, items, isExpanded }) => (
+          <CategorySection
+            key={category}
+            category={category}
+            items={items}
+            isExpanded={isExpanded}
+            onToggle={handleCategoryToggle}
+            query={query}
+            renderHeader={renderHeader}
+            isItemDisabled={isItemDisabled}
+            onItemDragStart={onItemDragStart}
+            renderItemActions={renderItemActions}
+            renderItemPrefix={renderItemPrefix}
+            disabled={disabled}
+          />
+        ))}
       </div>
     );
   },

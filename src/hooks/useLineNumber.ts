@@ -55,6 +55,7 @@ export const useLineNumber = ({ textareaRef, value, showLineNumbers, scrollTop }
   const [visualLinePrefixSum, setVisualLinePrefixSum] = useState<ReadonlyArray<number>>([]);
 
   const metricsRef = useRef<TextareaMetrics | null>(null);
+  const pendingValueRef = useRef<string | null>(null);
   const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
 
   const getCanvasContext = useCallback((): CanvasRenderingContext2D | null => {
@@ -67,9 +68,14 @@ export const useLineNumber = ({ textareaRef, value, showLineNumbers, scrollTop }
 
   const calculateLineCounts = useCallback(
     (currentValue: string) => {
-      if (!showLineNumbers || !metricsRef.current) {
+      if (!showLineNumbers) {
         setLineMetrics([]);
         setVisualLinePrefixSum([]);
+        return;
+      }
+
+      if (!metricsRef.current) {
+        pendingValueRef.current = currentValue;
         return;
       }
 
@@ -127,7 +133,13 @@ export const useLineNumber = ({ textareaRef, value, showLineNumbers, scrollTop }
         contentWidth: contentWidth,
         charWidth: charWidth,
       };
-      calculateLineCounts(textarea.value);
+
+      if (pendingValueRef.current !== null) {
+        calculateLineCounts(pendingValueRef.current);
+        pendingValueRef.current = null;
+      } else {
+        calculateLineCounts(textarea.value);
+      }
     };
 
     document.fonts.ready.then(measureAndCalculate).catch(measureAndCalculate);
