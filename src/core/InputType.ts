@@ -173,31 +173,22 @@ export class InputType<T = unknown> {
   }
 
   private castToBoolean(options?: Readonly<{ value?: unknown }>): InputType<boolean> {
-    if (typeof this.value === 'boolean') {
-      return this.cloneValue(this.value);
+    const val = this.value;
+    if (typeof val === 'boolean') {
+      return this.cloneValue(val);
     }
-    if (this.value === null || this.value === undefined) {
+    if (val === null || val === undefined || val === 0 || val === '') {
       return this.cloneValue(false);
     }
-    if (this.value === 1) {
+    if (val === 1) {
       return this.cloneValue(true);
     }
-    if (this.value === 0) {
-      return this.cloneValue(false);
-    }
 
-    const stringValue = String(this.value).trim().toLowerCase();
-    switch (stringValue) {
-      case 'true':
-      case '1':
-        return this.cloneValue(true);
-      case 'false':
-      case '0':
-      case '':
-        return this.cloneValue(false);
-      default:
-        return this.cloneValue(castFail(this.value, 'boolean', options));
-    }
+    const str = String(val).trim().toLowerCase();
+    if (str === 'true' || str === '1') return this.cloneValue(true);
+    if (str === 'false' || str === '0' || str === '') return this.cloneValue(false);
+
+    return this.cloneValue(castFail(val, 'boolean', options));
   }
 
   private castToByteArray(options?: Readonly<{ value?: unknown }>): InputType<Uint8Array> {
@@ -224,15 +215,23 @@ export class InputType<T = unknown> {
       value?: unknown;
     }>,
   ): InputType<number> {
-    const stringValue = String(this.value ?? '');
-    let numericValue = Number(stringValue);
+    const val = this.value;
+    let num: number;
 
-    if (isNaN(numericValue) || !isFinite(numericValue)) {
-      return this.cloneValue(castFail(this.value, 'number', options));
+    if (typeof val === 'number') {
+      num = val;
+    } else if (typeof val === 'boolean') {
+      num = val ? 1 : 0;
+    } else {
+      num = Number(val);
+    }
+
+    if (!Number.isFinite(num)) {
+      return this.cloneValue(castFail(val, 'number', options));
     }
 
     const { min, max } = options || {};
-    return this.cloneValue(clamp(numericValue, min, max));
+    return this.cloneValue(clamp(num, min, max));
   }
 
   private castToObject(options?: Readonly<{ value?: unknown }>): InputType<object> {

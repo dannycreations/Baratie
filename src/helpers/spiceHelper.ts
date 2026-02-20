@@ -120,29 +120,49 @@ export const validateSpices = (
       continue;
     }
 
+    if (spice.type === 'number' && typeof rawValue === 'number') {
+      const min = spice.min;
+      const max = spice.max;
+      let num = rawValue;
+      if (min !== undefined) num = Math.max(min, num);
+      if (max !== undefined) num = Math.min(max, num);
+      validatedSpices[spice.id] = num;
+      continue;
+    }
+
+    if (spice.type === 'boolean' && typeof rawValue === 'boolean') {
+      validatedSpices[spice.id] = rawValue;
+      continue;
+    }
+
+    if ((spice.type === 'string' || spice.type === 'textarea') && typeof rawValue === 'string') {
+      validatedSpices[spice.id] = rawValue;
+      continue;
+    }
+
+    const spiceId = spice.id;
     const input = new InputType(rawValue);
-
-    const getValidatedValue = (): SpiceValue => {
-      switch (spice.type) {
-        case 'number':
-          return input.cast('number', { max: spice.max, min: spice.min, value: spice.value }).value;
-        case 'boolean':
-          return input.cast('boolean', { value: spice.value }).value;
-        case 'select':
-          const selectedValue = input.value;
-          const isValidOption = spice.options.some((opt) => String(opt.value) === String(selectedValue));
-          return isValidOption ? prepareSelectValue(selectedValue as SpiceValue, spice) : spice.value;
-        case 'string':
-        case 'textarea':
-          return input.cast('string', { value: spice.value }).value;
-        default:
-          const unhandled = spice as SpiceDefinition;
-          logger.warn(`An unhandled spice type was encountered: ${unhandled.id}`);
-          return input.value as SpiceValue;
+    switch (spice.type) {
+      case 'number':
+        validatedSpices[spiceId] = input.cast('number', { max: spice.max, min: spice.min, value: spice.value }).value;
+        break;
+      case 'boolean':
+        validatedSpices[spiceId] = input.cast('boolean', { value: spice.value }).value;
+        break;
+      case 'select': {
+        const selectedValue = input.value;
+        const isValidOption = spice.options.some((opt) => String(opt.value) === String(selectedValue));
+        validatedSpices[spiceId] = isValidOption ? prepareSelectValue(selectedValue as SpiceValue, spice) : spice.value;
+        break;
       }
-    };
-
-    validatedSpices[spice.id] = getValidatedValue();
+      case 'string':
+      case 'textarea':
+        validatedSpices[spiceId] = input.cast('string', { value: spice.value }).value;
+        break;
+      default:
+        logger.warn(`An unhandled spice type was encountered for spice: ${spiceId}`);
+        validatedSpices[spiceId] = input.value as SpiceValue;
+    }
   }
   return validatedSpices;
 };

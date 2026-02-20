@@ -196,9 +196,18 @@ export class IngredientRegistry {
   }
 
   private resort(): void {
-    const sortedEntries = [...this.ingredients.entries()].sort(([, a], [, b]) => a.name.localeCompare(b.name));
-    this.ingredients = new Map(sortedEntries);
-    this.nameToIdMap = new Map(sortedEntries.map(([id, ingredient]) => [ingredient.name, id]));
+    const ingredientsArray = Array.from(this.ingredients.values()).sort((a, b) => a.name.localeCompare(b.name));
+    const nextIngredients = new Map<string, IngredientProps>();
+    const nextNameToIdMap = new Map<string, string>();
+
+    for (let i = 0; i < ingredientsArray.length; i++) {
+      const ing = ingredientsArray[i];
+      nextIngredients.set(ing.id, ing);
+      nextNameToIdMap.set(ing.name, ing.id);
+    }
+
+    this.ingredients = nextIngredients;
+    this.nameToIdMap = nextNameToIdMap;
     this.categories = null;
     useIngredientStore.getState().refreshRegistry();
   }

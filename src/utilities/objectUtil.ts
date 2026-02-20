@@ -21,22 +21,27 @@ const canonicalStringifyFn = (obj: unknown, seen: Set<unknown>): string => {
   seen.add(obj);
 
   if (Array.isArray(obj)) {
-    const arrayString = obj.map((value) => canonicalStringifyFn(value, seen)).join(',');
-    return `[${arrayString}]`;
+    let res = '[';
+    for (let i = 0; i < obj.length; i++) {
+      if (i > 0) res += ',';
+      res += canonicalStringifyFn(obj[i], seen);
+    }
+    return res + ']';
   }
 
-  const sortedKeys = Object.keys(obj).sort();
-  const pairs = sortedKeys
-    .map((key) => {
-      const value = (obj as Record<string, unknown>)[key];
-      if (typeof value === 'function') {
-        return '';
-      }
-      return `${JSON.stringify(key)}:${canonicalStringifyFn(value, seen)}`;
-    })
-    .filter(Boolean);
+  const keys = Object.keys(obj).sort();
+  let res = '{';
+  let first = true;
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const value = (obj as Record<string, unknown>)[key];
+    if (typeof value === 'function') continue;
 
-  return `{${pairs.join(',')}}`;
+    if (!first) res += ',';
+    res += JSON.stringify(key) + ':' + canonicalStringifyFn(value, seen);
+    first = false;
+  }
+  return res + '}';
 };
 
 const canonicalStringify = withCircularCache(canonicalStringifyFn);
@@ -68,15 +73,17 @@ export const clamp = (value: number, min?: number, max?: number): number => {
 };
 
 export const shallowEqual = <T>(a: T, b: T): boolean => {
-  if (Object.is(a, b)) return true;
+  if (a === b) return true;
   if (!isObjectLike(a) || !isObjectLike(b)) return false;
 
   const keysA = Object.keys(a);
   const keysB = Object.keys(b);
-  if (keysA.length !== keysB.length) return false;
+  const len = keysA.length;
+  if (len !== keysB.length) return false;
 
-  for (const key of keysA) {
-    if (!Object.prototype.hasOwnProperty.call(b, key) || !Object.is((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) {
+  for (let i = 0; i < len; i++) {
+    const key = keysA[i];
+    if (!Object.prototype.hasOwnProperty.call(b, key) || (a as Record<string, unknown>)[key] !== (b as Record<string, unknown>)[key]) {
       return false;
     }
   }

@@ -13,7 +13,7 @@ export interface PersistOptions<T> {
   readonly autoHydrate?: boolean;
 }
 
-const asPartial = <T>(obj: any): Partial<T> => obj as unknown as Partial<T>;
+const asPartial = <T>(obj: unknown): Partial<T> => obj as unknown as Partial<T>;
 
 export const createSetHandlers = <T extends object, K extends keyof T, V>(set: (fn: (state: T) => Partial<T> | T) => void, key: K) => {
   const getSet = (state: T) => state[key] as unknown as ReadonlySet<V>;
@@ -101,56 +101,72 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
 
     upsert: (item: Partial<V> & { [P in IDK]: V[IDK] }) =>
       set((state) => {
-        const id = item[idKey];
+        const id = item[idKey] as V[IDK];
         const currentList = (state[listKey] as unknown as ReadonlyArray<V>) || [];
-        const existingIndex = currentList.findIndex((existing) => existing[idKey] === id);
+        const currentMap = (state[mapKey] as unknown as ReadonlyMap<V[IDK], V>) || new Map();
 
+        const existing = currentMap.get(id);
+        const nextMap = new Map(currentMap);
         let nextList: Array<V>;
-        if (existingIndex !== -1) {
+
+        if (existing) {
+          const index = currentList.indexOf(existing);
+          const updated = { ...existing, ...item } as V;
           nextList = [...currentList];
-          nextList[existingIndex] = { ...nextList[existingIndex], ...item };
+          nextList[index] = updated;
+          nextMap.set(id, updated);
         } else {
-          nextList = [...currentList, item as V];
+          const newItem = item as V;
+          nextList = [...currentList, newItem];
+          nextMap.set(id, newItem);
         }
 
         if (sortFn) nextList.sort(sortFn);
 
         return asPartial<T>({
           [listKey]: nextList,
-          [mapKey]: syncMap(nextList),
+          [mapKey]: nextMap,
         });
       }),
 
     remove: (id: V[IDK]) =>
       set((state) => {
+        const currentMap = (state[mapKey] as unknown as ReadonlyMap<V[IDK], V>) || new Map();
+        if (!currentMap.has(id)) return state;
+
         const currentList = (state[listKey] as unknown as ReadonlyArray<V>) || [];
         const nextList = currentList.filter((item) => item[idKey] !== id);
-
-        if (nextList.length === currentList.length) return state;
+        const nextMap = new Map(currentMap);
+        nextMap.delete(id);
 
         return asPartial<T>({
           [listKey]: nextList,
-          [mapKey]: syncMap(nextList),
+          [mapKey]: nextMap,
         });
       }),
 
     reorder: (draggedId: V[IDK], targetId: V[IDK]) =>
       set((state) => {
-        const list = state[listKey] as unknown as ReadonlyArray<V>;
-        const draggedIndex = list.findIndex((item) => item[idKey] === draggedId);
-        const targetIndex = list.findIndex((item) => item[idKey] === targetId);
+        if (draggedId === targetId) return state;
 
-        if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) {
-          return state as unknown as Partial<T> | T;
-        }
+        const list = state[listKey] as unknown as ReadonlyArray<V>;
+        const currentMap = (state[mapKey] as unknown as ReadonlyMap<V[IDK], V>) || new Map();
+
+        const draggedItem = currentMap.get(draggedId);
+        const targetItem = currentMap.get(targetId);
+
+        if (!draggedItem || !targetItem) return state;
+
+        const draggedIndex = list.indexOf(draggedItem);
+        const targetIndex = list.indexOf(targetItem);
 
         const nextList = [...list];
-        const [draggedItem] = nextList.splice(draggedIndex, 1);
+        nextList.splice(draggedIndex, 1);
         nextList.splice(targetIndex, 0, draggedItem);
 
         return asPartial<T>({
           [listKey]: nextList,
-          [mapKey]: syncMap(nextList),
+          [mapKey]: currentMap,
         });
       }),
   };

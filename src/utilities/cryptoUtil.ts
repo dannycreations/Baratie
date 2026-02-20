@@ -30,19 +30,31 @@ export const hexToUint8Array = (hex: string): Uint8Array => {
   return bytes;
 };
 
+const HEX_REGEX = /^(?:0x)?[0-9a-fA-F]+$/;
+const BASE64_REGEX = /^[A-Za-z0-9+/]+={0,2}$/;
+
 export const stringToUint8Array = (str: string): Uint8Array => {
   const cleanValue = str.trim();
-  if (!cleanValue) {
+  const len = cleanValue.length;
+  if (len === 0) {
     return new Uint8Array();
   }
 
-  try {
-    return hexToUint8Array(cleanValue);
-  } catch {}
+  if (len % 2 === 0 && HEX_REGEX.test(cleanValue)) {
+    try {
+      return hexToUint8Array(cleanValue);
+    } catch {
+      // Not valid hex, continue
+    }
+  }
 
-  try {
-    return base64ToUint8Array(cleanValue);
-  } catch {}
+  if (len % 4 === 0 && BASE64_REGEX.test(cleanValue)) {
+    try {
+      return base64ToUint8Array(cleanValue);
+    } catch {
+      // Not valid base64, continue
+    }
+  }
 
   return new TextEncoder().encode(str);
 };
