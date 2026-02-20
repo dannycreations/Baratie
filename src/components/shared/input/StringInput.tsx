@@ -1,8 +1,8 @@
 import { clsx } from 'clsx';
+import { X } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
-import { XIcon } from '../Icon';
 
 import type { ChangeEventHandler, JSX, KeyboardEvent, RefObject } from 'react';
 
@@ -47,7 +47,7 @@ export const StringInput = memo<StringInputProps>(
         />
         {hasClearButton && (
           <button type="button" className="input-clear-button" onClick={handleClear}>
-            <XIcon size={ICON_SIZES.XS} />
+            <X size={ICON_SIZES.XS} />
           </button>
         )}
       </div>

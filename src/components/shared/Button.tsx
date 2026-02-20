@@ -1,10 +1,10 @@
 import { clsx } from 'clsx';
+import { AlertTriangle, Check, Copy, Loader2, Trash2 } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
 import { CONFIRM_SHOW_MS, ICON_SIZES } from '../../app/constants';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { useCopyAction } from '../../hooks/useCopyAction';
-import { AlertTriangleIcon, CheckIcon, CopyIcon, Loader2Icon, Trash2Icon } from './Icon';
 import { Tooltip } from './Tooltip';
 
 import type { JSX, MouseEvent, ReactNode } from 'react';
@@ -83,7 +83,7 @@ export const Button = memo<ButtonProps>(
     const sizeClass = BUTTON_SIZE_MAP[size] ?? 'btn-sm';
 
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
-    const loadingSpinner = <Loader2Icon size={ICON_SIZES.XS} className={clsx('animate-spin', iconMarginClass)} />;
+    const loadingSpinner = <Loader2 size={ICON_SIZES.XS} className={clsx('animate-spin', iconMarginClass)} />;
 
     const showIconLeft = iconPosition === 'left';
     const showIconRight = iconPosition === 'right';
@@ -114,7 +114,7 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
 
   return (
     <TooltipButton
-      icon={isCopied ? <CheckIcon size={ICON_SIZES.SM} /> : <CopyIcon size={ICON_SIZES.SM} />}
+      icon={isCopied ? <Check size={ICON_SIZES.SM} /> : <Copy size={ICON_SIZES.SM} />}
       size="sm"
       variant="stealth"
       className={clsx(isCopied && 'text-success-fg')}
@@ -158,9 +158,7 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
     return (
       <TooltipButton
         icon={
-          isConfirm
-            ? (confirmIcon ?? <AlertTriangleIcon className="text-danger-fg" size={ICON_SIZES.SM} />)
-            : (icon ?? <Trash2Icon size={ICON_SIZES.SM} />)
+          isConfirm ? (confirmIcon ?? <AlertTriangle className="text-danger-fg" size={ICON_SIZES.SM} />) : (icon ?? <Trash2 size={ICON_SIZES.SM} />)
         }
         size="sm"
         variant="danger"

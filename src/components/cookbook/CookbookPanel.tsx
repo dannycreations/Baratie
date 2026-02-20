@@ -1,3 +1,4 @@
+import { DownloadCloud, Save, UploadCloud } from 'lucide-react';
 import { memo, useCallback, useMemo, useRef } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
@@ -7,7 +8,6 @@ import { useCookbookStore } from '../../stores/useCookbookStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { TooltipButton } from '../shared/Button';
-import { DownloadCloudIcon, SaveIcon, UploadCloudIcon } from '../shared/Icon';
 import { FilePicker } from '../shared/input/FilePicker';
 import { Modal } from '../shared/Modal';
 import { CookbookLoad } from './CookbookLoad';
@@ -33,14 +33,14 @@ const SEARCH_KEYS: ReadonlyArray<keyof RecipebookItem> = ['name'];
 const SaveHeaderActions = memo<SaveHeaderActionsProps>(({ isSaveDisabled, onExportCurrent, onSave }) => (
   <>
     <TooltipButton
-      icon={<DownloadCloudIcon size={ICON_SIZES.SM} />}
+      icon={<DownloadCloud size={ICON_SIZES.SM} />}
       variant="stealth"
       disabled={isSaveDisabled}
       tooltipContent="Export Recipe to JSON"
       onClick={onExportCurrent}
     />
     <TooltipButton
-      icon={<SaveIcon size={ICON_SIZES.SM} />}
+      icon={<Save size={ICON_SIZES.SM} />}
       variant="primary"
       disabled={isSaveDisabled}
       tooltipContent="Save to Browser Storage"
@@ -55,11 +55,11 @@ const LoadHeaderActions = memo<LoadHeaderActionsProps>(({ isExportDisabled, onFi
   <>
     <FilePicker accept=".json" onFileSelect={onFileImport}>
       {({ trigger }) => (
-        <TooltipButton icon={<UploadCloudIcon size={ICON_SIZES.SM} />} variant="stealth" tooltipContent="Import from JSON File" onClick={trigger} />
+        <TooltipButton icon={<UploadCloud size={ICON_SIZES.SM} />} variant="stealth" tooltipContent="Import from JSON File" onClick={trigger} />
       )}
     </FilePicker>
     <TooltipButton
-      icon={<DownloadCloudIcon size={ICON_SIZES.SM} />}
+      icon={<DownloadCloud size={ICON_SIZES.SM} />}
       variant="stealth"
       disabled={isExportDisabled}
       tooltipContent="Export All Saved Recipes"

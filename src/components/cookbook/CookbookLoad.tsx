@@ -1,10 +1,10 @@
 import { clsx } from 'clsx';
+import { Save } from 'lucide-react';
 import { memo, useId, useMemo } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
+import { SearchInput } from '../../components/shared/input/SearchInput';
 import { useOverflow } from '../../hooks/useOverflow';
-import { SaveIcon } from '../shared/Icon';
-import { SearchInput } from '../shared/input/SearchInput';
 import { EmptyView } from '../shared/View';
 import { CookbookItem } from './CookbookItem';
 
@@ -40,7 +40,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(
       return (
         <EmptyView
           className="h-full"
-          icon={totalRecipes === 0 ? <SaveIcon size={ICON_SIZES.XXL} /> : undefined}
+          icon={totalRecipes === 0 ? <Save size={ICON_SIZES.XXL} /> : undefined}
           title={totalRecipes > 0 ? 'No Matches Found' : 'Cookbook is Empty'}
         >
           {totalRecipes === 0 ? 'Build a recipe and save it to your cookbook!' : `No recipes found for "${query}".`}

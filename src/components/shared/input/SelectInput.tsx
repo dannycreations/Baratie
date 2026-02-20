@@ -1,7 +1,6 @@
 import { clsx } from 'clsx';
+import { ChevronDown } from 'lucide-react';
 import { memo, useCallback } from 'react';
-
-import { ChevronDownIcon } from '../Icon';
 
 import type { ChangeEventHandler, JSX } from 'react';
 import type { SpiceValue } from '../../../core/IngredientRegistry';
@@ -44,7 +43,7 @@ export const SelectInput = memo(
           ))}
         </select>
         <div className="flex-y-center pointer-events-none absolute inset-y-0 right-0 px-2 text-content-tertiary">
-          <ChevronDownIcon size={18} />
+          <ChevronDown size={18} />
         </div>
       </div>
     );

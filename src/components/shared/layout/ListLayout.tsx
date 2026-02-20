@@ -1,9 +1,9 @@
 import { clsx } from 'clsx';
+import { ChevronRight } from 'lucide-react';
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useSettingStore } from '../../../stores/useSettingStore';
 import { HighlightText } from '../HighlightText';
-import { ChevronRightIcon } from '../Icon';
 import { Tooltip } from '../Tooltip';
 import { EmptyView } from '../View';
 
@@ -107,10 +107,7 @@ const CategorySection = memo<CategorySectionProps>((props) => {
   const header = (
     <button className="list-item-container outline-none hover:bg-surface-hover text-content-secondary" onClick={handleToggle} disabled={disabled}>
       {renderHeader ? renderHeader(category, items) : <span className="truncate font-medium">{category}</span>}
-      <ChevronRightIcon
-        className={clsx('transform transition-transform duration-200 ease-in-out', isExpanded ? 'rotate-90' : 'rotate-0')}
-        size={20}
-      />
+      <ChevronRight className={clsx('transform transition-transform duration-200 ease-in-out', isExpanded ? 'rotate-90' : 'rotate-0')} size={20} />
     </button>
   );
 

@@ -1,9 +1,9 @@
 import { clsx } from 'clsx';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { useTaskStore } from '../../stores/useTaskStore';
-import { AlertTriangleIcon, Loader2Icon } from '../shared/Icon';
 
 import type { JSX } from 'react';
 
@@ -35,9 +35,9 @@ export const LoadingScreen = (): JSX.Element | null => {
     <div className={containerClass}>
       <div className="flex-col-center p-3">
         {isError ? (
-          <AlertTriangleIcon className="text-danger-fg" size={ICON_SIZES.XXL} />
+          <AlertTriangle className="text-danger-fg" size={ICON_SIZES.XXL} />
         ) : (
-          <Loader2Icon size={ICON_SIZES.XXL} className="animate-spin text-info-fg" />
+          <Loader2 size={ICON_SIZES.XXL} className="animate-spin text-info-fg" />
         )}
         <h1 className={titleClass}>{isError ? 'Kitchen on Fire!' : 'Opening the Baratie'}</h1>
         <p key={message} className="fade-in-text mt-2 text-content-tertiary">

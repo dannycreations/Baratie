@@ -1,4 +1,5 @@
 import { clsx } from 'clsx';
+import { AlertTriangle, GripVertical, Pause, Play, SlidersHorizontal, X } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
@@ -7,7 +8,6 @@ import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { TooltipButton } from '../shared/Button';
-import { AlertTriangleIcon, GrabIcon, PauseIcon, PlayIcon, PreferencesIcon, XIcon } from '../shared/Icon';
 import { SpiceLayout } from '../shared/layout/SpiceLayout';
 import { Tooltip } from '../shared/Tooltip';
 
@@ -48,7 +48,7 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
     return (
       <>
         <TooltipButton
-          icon={isPaused ? <PlayIcon size={ICON_SIZES.SM} /> : <PauseIcon size={ICON_SIZES.SM} />}
+          icon={isPaused ? <Play size={ICON_SIZES.SM} /> : <Pause size={ICON_SIZES.SM} />}
           size="sm"
           variant="stealth"
           className={clsx('list-item-group-actions', isPaused ? 'text-success-fg hover:!bg-success-bg' : 'text-warning-fg hover:!bg-warning-bg')}
@@ -58,7 +58,7 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
         />
         {hasSpices && (
           <TooltipButton
-            icon={<PreferencesIcon size={ICON_SIZES.SM} />}
+            icon={<SlidersHorizontal size={ICON_SIZES.SM} />}
             size="sm"
             variant={isEditorVisible ? 'primary' : 'stealth'}
             className={clsx(!isEditorVisible && 'text-content-tertiary hover:text-info-fg')}
@@ -68,7 +68,7 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
           />
         )}
         <TooltipButton
-          icon={<XIcon size={ICON_SIZES.SM} />}
+          icon={<X size={ICON_SIZES.SM} />}
           size="sm"
           variant="danger"
           className="list-item-group-actions"
@@ -104,13 +104,13 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
       <div className="missing-item-header">
         <div className="flex-1-min-0 flex-y-center">
           <div className="flex-y-center gap-1">
-            <AlertTriangleIcon className="text-danger-fg" size={ICON_SIZES.MD} />
+            <AlertTriangle className="text-danger-fg" size={ICON_SIZES.MD} />
             <h3 className="missing-item-title">{ingredientItem.name} (Missing)</h3>
           </div>
         </div>
         <div className="list-item-actions">
           <TooltipButton
-            icon={<XIcon size={ICON_SIZES.SM} />}
+            icon={<X size={ICON_SIZES.SM} />}
             size="sm"
             variant="danger"
             tooltipContent="Remove Missing Ingredient"
@@ -218,7 +218,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
     <>
       <Tooltip content="Drag to reorder" position="top">
         <span className={grabHandleClass} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <GrabIcon size={ICON_SIZES.MD} />
+          <GripVertical size={ICON_SIZES.MD} />
         </span>
       </Tooltip>
       <div className="flex-1-min-0">

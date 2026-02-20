@@ -1,9 +1,9 @@
+import { RefreshCw } from 'lucide-react';
 import { Component } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { logger } from '../../app/container';
 import { Button } from '../shared/Button';
-import { RefreshCwIcon } from '../shared/Icon';
 import { ErrorView } from '../shared/View';
 
 import type { ErrorInfo, JSX, ReactNode } from 'react';
@@ -26,7 +26,7 @@ const ErrorDisplay = ({ error, errorInfo }: ErrorDisplayProps): JSX.Element => (
       <div className="dialog-icon-large">⚠️</div>
       <h2 className="dialog-title-large">A Kitchen Catastrophe!</h2>
       <p className="mb-3 text-content-secondary">A sudden squall has hit the galley! Reloading might calm the seas.</p>
-      <Button icon={<RefreshCwIcon size={ICON_SIZES.MD} />} size="sm" variant="primary" onClick={() => window.location.reload()}>
+      <Button icon={<RefreshCw size={ICON_SIZES.MD} />} size="sm" variant="primary" onClick={() => window.location.reload()}>
         Batten Down the Hatches!
       </Button>
       {error && <ErrorView error={error} errorInfo={errorInfo} />}

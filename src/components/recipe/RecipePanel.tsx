@@ -1,4 +1,5 @@
 import { clsx } from 'clsx';
+import { FolderOpen, Pause, Play, Save } from 'lucide-react';
 import { memo, useCallback, useEffect, useId, useMemo, useRef } from 'react';
 
 import { DATA_TYPE_INGREDIENT, DATA_TYPE_RECIPE_ITEM, ICON_SIZES } from '../../app/constants';
@@ -12,7 +13,6 @@ import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
-import { FolderOpenIcon, PauseIcon, PlayIcon, SaveIcon } from '../shared/Icon';
 import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
 import { EmptyView } from '../shared/View';
@@ -113,7 +113,7 @@ export const RecipePanel = memo((): JSX.Element => {
     return (
       <>
         <TooltipButton
-          icon={<SaveIcon size={ICON_SIZES.SM} />}
+          icon={<Save size={ICON_SIZES.SM} />}
           size="sm"
           variant="stealth"
           disabled={ingredients.length === 0}
@@ -123,7 +123,7 @@ export const RecipePanel = memo((): JSX.Element => {
           onClick={() => openCookbook({ mode: 'save' })}
         />
         <TooltipButton
-          icon={<FolderOpenIcon size={ICON_SIZES.SM} />}
+          icon={<FolderOpen size={ICON_SIZES.SM} />}
           size="sm"
           variant="stealth"
           tooltipContent="Open Cookbook"
@@ -132,7 +132,7 @@ export const RecipePanel = memo((): JSX.Element => {
           onClick={() => openCookbook({ mode: 'load' })}
         />
         <TooltipButton
-          icon={isAutoCookEnabled ? <PauseIcon size={ICON_SIZES.SM} /> : <PlayIcon size={ICON_SIZES.SM} />}
+          icon={isAutoCookEnabled ? <Pause size={ICON_SIZES.SM} /> : <Play size={ICON_SIZES.SM} />}
           size="sm"
           variant="stealth"
           className={autoCookClass}

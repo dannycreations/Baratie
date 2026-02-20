@@ -1,3 +1,4 @@
+import { DownloadCloud, FileText, Trash2 } from 'lucide-react';
 import { Fragment, memo, useCallback, useMemo, useRef } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
@@ -7,7 +8,6 @@ import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { readFile, triggerDownload } from '../../utilities/fileUtil';
 import { CopyButton, TooltipButton } from '../shared/Button';
-import { DownloadCloudIcon, FileTextIcon, Trash2Icon } from '../shared/Icon';
 import { FilePicker } from '../shared/input/FilePicker';
 import { TextareaInput } from '../shared/input/TextareaInput';
 import { SectionLayout } from '../shared/layout/SectionLayout';
@@ -157,7 +157,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const renderFilePickerTrigger = useCallback(
     ({ trigger }: FilePickerRenderProps) => (
       <TooltipButton
-        icon={<FileTextIcon size={ICON_SIZES.SM} />}
+        icon={<FileText size={ICON_SIZES.SM} />}
         size="sm"
         variant="stealth"
         tooltipContent="Open File..."
@@ -184,7 +184,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
         defaultInputActions.push(
           <TooltipButton
             key="clear-button"
-            icon={<Trash2Icon size={ICON_SIZES.SM} />}
+            icon={<Trash2 size={ICON_SIZES.SM} />}
             size="sm"
             variant="danger"
             disabled={data.length === 0}
@@ -204,7 +204,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
     const defaultOutputActions: ReactNode[] = [
       <TooltipButton
         key="download-button"
-        icon={<DownloadCloudIcon size={ICON_SIZES.SM} />}
+        icon={<DownloadCloud size={ICON_SIZES.SM} />}
         size="sm"
         variant="stealth"
         disabled={data.length === 0}

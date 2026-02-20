@@ -1,9 +1,9 @@
+import { UploadCloud } from 'lucide-react';
 import { memo, useCallback, useMemo } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
 import { HighlightText } from '../shared/HighlightText';
-import { UploadCloudIcon } from '../shared/Icon';
 
 import type { JSX } from 'react';
 import type { RecipebookItem } from '../../core/IngredientRegistry';
@@ -49,7 +49,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete,
       </div>
       <div className="list-item-actions">
         <TooltipButton
-          icon={<UploadCloudIcon size={ICON_SIZES.SM} />}
+          icon={<UploadCloud size={ICON_SIZES.SM} />}
           size="sm"
           variant="primary"
           tooltipContent="Load Recipe"

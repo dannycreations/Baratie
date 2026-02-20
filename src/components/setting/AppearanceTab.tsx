@@ -1,9 +1,9 @@
 import { clsx } from 'clsx';
+import { Check } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
 import { ICON_SIZES, THEME_VARIANT } from '../../app/constants';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { CheckIcon } from '../shared/Icon';
 
 import type { JSX } from 'react';
 import type { ThemeId } from '../../stores/useThemeStore';
@@ -47,7 +47,7 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
 
   const rightContent = isChecked ? (
     <div className="flex-center h-6 w-6 shrink-0 rounded-full bg-accent-bg/20">
-      <CheckIcon className="text-info-fg" size={ICON_SIZES.XS} />
+      <Check className="text-info-fg" size={ICON_SIZES.XS} />
     </div>
   ) : null;
 

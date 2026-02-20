@@ -1,4 +1,5 @@
 import { clsx } from 'clsx';
+import { X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -6,7 +7,6 @@ import { ICON_SIZES, MODAL_SHOW_MS } from '../../app/constants';
 import { errorHandler } from '../../app/container';
 import { ModalSize } from '../../app/types';
 import { Button } from './Button';
-import { XIcon } from './Icon';
 
 import type { JSX, KeyboardEvent, MouseEvent, ReactNode } from 'react';
 
@@ -109,7 +109,7 @@ export const Modal = ({
           <h2 className="modal-header-title">{title}</h2>
           <div className="modal-header-actions-wrapper">
             {headerActions && <div className="panel-header-actions">{headerActions}</div>}
-            <Button icon={<XIcon size={ICON_SIZES.MD} />} size="sm" variant="stealth" onClick={onClose} />
+            <Button icon={<X size={ICON_SIZES.MD} />} size="sm" variant="stealth" onClick={onClose} />
           </div>
         </header>
         <div className="modal-body">{children}</div>

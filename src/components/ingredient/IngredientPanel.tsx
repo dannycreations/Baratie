@@ -1,4 +1,5 @@
 import { clsx } from 'clsx';
+import { Plus, Settings, SlidersHorizontal, Star } from 'lucide-react';
 import { memo, useCallback, useId, useMemo } from 'react';
 
 import { CATEGORY_FAVORITES, DATA_TYPE_INGREDIENT, DATA_TYPE_RECIPE_ITEM, ICON_SIZES } from '../../app/constants';
@@ -13,7 +14,6 @@ import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { TooltipButton } from '../shared/Button';
-import { PlusIcon, PreferencesIcon, SettingsIcon, StarIcon } from '../shared/Icon';
 import { SearchInput } from '../shared/input/SearchInput';
 import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
 import { GroupListLayout } from '../shared/layout/ListLayout';
@@ -119,7 +119,7 @@ export const IngredientPanel = memo((): JSX.Element => {
     () => (
       <>
         <TooltipButton
-          icon={<PreferencesIcon size={ICON_SIZES.SM} />}
+          icon={<SlidersHorizontal size={ICON_SIZES.SM} />}
           size="sm"
           variant="stealth"
           tooltipContent={`Manage Ingredients\n${visibleIngredients} of ${totalIngredients} visible`}
@@ -128,7 +128,7 @@ export const IngredientPanel = memo((): JSX.Element => {
           onClick={() => openModal({ type: 'ingredient', props: undefined })}
         />
         <TooltipButton
-          icon={<SettingsIcon size={ICON_SIZES.SM} />}
+          icon={<Settings size={ICON_SIZES.SM} />}
           size="sm"
           variant="stealth"
           tooltipContent="Settings"
@@ -152,7 +152,7 @@ export const IngredientPanel = memo((): JSX.Element => {
       return (
         <>
           <TooltipButton
-            icon={<StarIcon isFilled={isFavorite} size={ICON_SIZES.SM} />}
+            icon={<Star size={ICON_SIZES.SM} fill={isFavorite ? 'currentColor' : 'none'} strokeWidth={isFavorite ? 0 : 2} />}
             size="sm"
             variant="stealth"
             className={starClasses}
@@ -161,7 +161,7 @@ export const IngredientPanel = memo((): JSX.Element => {
             onClick={() => toggleFavorite(item.id)}
           />
           <TooltipButton
-            icon={<PlusIcon size={ICON_SIZES.SM} />}
+            icon={<Plus size={ICON_SIZES.SM} />}
             size="sm"
             variant="primary"
             className="list-item-group-actions"

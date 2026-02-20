@@ -1,13 +1,13 @@
 import { clsx } from 'clsx';
+import { AlertTriangle, Check, Info, X } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ICON_SIZES, NOTIFICATION_EXIT_MS, NOTIFICATION_SHOW_MS } from '../../app/constants';
 import { useControlTimer } from '../../hooks/useControlTimer';
 import { useNotificationStore } from '../../stores/useNotificationStore';
 import { Button } from '../shared/Button';
-import { AlertTriangleIcon, CheckIcon, InfoIcon, XIcon } from '../shared/Icon';
 
-import type { ElementType, JSX } from 'react';
+import type { JSX } from 'react';
 import type { NotificationMessage, NotificationType } from '../../app/types';
 
 interface NotificationItemProps {
@@ -27,11 +27,11 @@ const NOTIFICATION_THEME_MAP: Readonly<Record<NotificationType, NotificationThem
   info: { barClass: 'bg-info-bg', borderClass: 'border-info-border', iconClass: 'text-info-fg' },
 } as const;
 
-const NOTIFICATION_ICON_MAP: Readonly<Record<NotificationType, ElementType>> = {
-  success: CheckIcon,
-  error: AlertTriangleIcon,
-  warning: AlertTriangleIcon,
-  info: InfoIcon,
+const NOTIFICATION_ICON_MAP = {
+  success: Check,
+  error: AlertTriangle,
+  warning: AlertTriangle,
+  info: Info,
 } as const;
 
 const getNotificationTheme = (type: NotificationType): NotificationTheme => {
@@ -77,7 +77,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   }, [isExiting, notification.id, removeNotification]);
 
   const { iconClass, borderClass, barClass } = getNotificationTheme(notification.type);
-  const IconComponent = NOTIFICATION_ICON_MAP[notification.type] || InfoIcon;
+  const IconComponent = NOTIFICATION_ICON_MAP[notification.type] || Info;
   const renderedIcon = <IconComponent className={iconClass} size={ICON_SIZES.MD} />;
 
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
@@ -96,7 +96,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
           <p className={messageClass}>{notification.message}</p>
         </div>
         <div className="shrink-0">
-          <Button icon={<XIcon size={ICON_SIZES.MD} />} size="sm" variant="stealth" onClick={handleExit} />
+          <Button icon={<X size={ICON_SIZES.MD} />} size="sm" variant="stealth" onClick={handleExit} />
         </div>
       </div>
       {!isExiting && (

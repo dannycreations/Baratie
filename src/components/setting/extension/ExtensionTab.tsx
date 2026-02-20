@@ -1,4 +1,5 @@
 import { clsx } from 'clsx';
+import { GitMerge } from 'lucide-react';
 import { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
@@ -7,7 +8,6 @@ import { useOverflow } from '../../../hooks/useOverflow';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
 import { Button } from '../../shared/Button';
-import { GitMergeIcon } from '../../shared/Icon';
 import { StringInput } from '../../shared/input/StringInput';
 import { EmptyView } from '../../shared/View';
 import { ExtensionItem } from './ExtensionItem';
@@ -111,13 +111,7 @@ export const ExtensionTab = memo((): JSX.Element => {
           onKeyDown={handleKeyDown}
           onClear={() => setUrl('')}
         />
-        <Button
-          icon={<GitMergeIcon size={ICON_SIZES.MD} />}
-          size="sm"
-          loading={isLoading}
-          disabled={validationStatus !== 'valid'}
-          onClick={handleAdd}
-        >
+        <Button icon={<GitMerge size={ICON_SIZES.MD} />} size="sm" loading={isLoading} disabled={validationStatus !== 'valid'} onClick={handleAdd}>
           Add
         </Button>
       </div>

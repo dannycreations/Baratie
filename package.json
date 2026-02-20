@@ -22,6 +22,7 @@
   "homepage": "https://github.com/dannycreations/Baratie",
   "dependencies": {
     "clsx": "^2.1.1",
+    "lucide-react": "^0.575.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "valibot": "^1.2.0",
@@ -29,18 +30,18 @@
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-    "@tailwindcss/vite": "^4.1.18",
+    "@tailwindcss/vite": "^4.2.0",
     "@types/node": "^22.19.11",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.4",
     "husky": "^9.1.7",
-    "npm-check-updates": "^19.3.2",
+    "npm-check-updates": "^19.4.1",
     "prettier": "^3.8.1",
     "terser": "^5.46.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-checker": "^0.12.0"
   },
-  "packageManager": "bun@1.3.8"
+  "packageManager": "bun@1.3.9"
 }

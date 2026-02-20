@@ -1,10 +1,10 @@
 import { clsx } from 'clsx';
+import { AlertTriangle, Check, Loader2, RefreshCw } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 import { useCopyAction } from '../../../hooks/useCopyAction';
 import { ConfirmButton, TooltipButton } from '../../shared/Button';
-import { AlertTriangleIcon, CheckIcon, Loader2Icon, RefreshCwIcon } from '../../shared/Icon';
 import { Tooltip } from '../../shared/Tooltip';
 
 import type { JSX } from 'react';
@@ -26,11 +26,19 @@ export interface ExtensionItemProps extends ExtensionItemStatusProps, ExtensionI
 
 const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }): JSX.Element => {
   const statusMap = {
-    loading: { icon: <Loader2Icon className="animate-spin" size={ICON_SIZES.XS} />, text: 'Loading...', colorClass: 'text-content-tertiary' },
-    loaded: { icon: <CheckIcon size={ICON_SIZES.XS} />, text: 'Loaded', colorClass: 'text-success-fg' },
-    error: { icon: <AlertTriangleIcon size={ICON_SIZES.XS} />, text: 'Error', colorClass: 'text-danger-fg' },
-    partial: { icon: <AlertTriangleIcon size={ICON_SIZES.XS} />, text: 'Partial', colorClass: 'text-warning-fg' },
-    awaiting: { icon: <Loader2Icon className="animate-spin" size={ICON_SIZES.XS} />, text: 'Awaiting Install...', colorClass: 'text-info-fg' },
+    loading: {
+      icon: <Loader2 className="animate-spin" size={ICON_SIZES.XS} />,
+      text: 'Loading...',
+      colorClass: 'text-content-tertiary',
+    },
+    loaded: { icon: <Check size={ICON_SIZES.XS} />, text: 'Loaded', colorClass: 'text-success-fg' },
+    error: { icon: <AlertTriangle size={ICON_SIZES.XS} />, text: 'Error', colorClass: 'text-danger-fg' },
+    partial: { icon: <AlertTriangle size={ICON_SIZES.XS} />, text: 'Partial', colorClass: 'text-warning-fg' },
+    awaiting: {
+      icon: <Loader2 className="animate-spin" size={ICON_SIZES.XS} />,
+      text: 'Awaiting Install...',
+      colorClass: 'text-info-fg',
+    },
   };
 
   const current = statusMap[status] || statusMap.error;
@@ -84,7 +92,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
     <>
       <ExtensionItemStatus status={status} errors={errors} />
       <TooltipButton
-        icon={<RefreshCwIcon size={ICON_SIZES.SM} />}
+        icon={<RefreshCw size={ICON_SIZES.SM} />}
         size="sm"
         variant="stealth"
         disabled={isLoading}

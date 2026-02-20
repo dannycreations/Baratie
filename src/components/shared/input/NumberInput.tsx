@@ -1,10 +1,10 @@
 import { clsx } from 'clsx';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 import { useLongPress } from '../../../hooks/useLongPress';
 import { clamp, isNumber } from '../../../utilities/objectUtil';
-import { ChevronDownIcon, ChevronUpIcon } from '../Icon';
 
 import type { ChangeEvent, JSX, KeyboardEvent, WheelEvent } from 'react';
 
@@ -145,7 +145,7 @@ export const NumberInput = memo<NumberInputProps>(
             disabled={disabled || (max !== undefined && value >= max)}
             {...incrementPressHandlers}
           >
-            <ChevronUpIcon size={ICON_SIZES.XXS} />
+            <ChevronUp size={ICON_SIZES.XXS} />
           </button>
           <button
             type="button"
@@ -153,7 +153,7 @@ export const NumberInput = memo<NumberInputProps>(
             disabled={disabled || (min !== undefined && value <= min)}
             {...decrementPressHandlers}
           >
-            <ChevronDownIcon size={ICON_SIZES.XXS} />
+            <ChevronDown size={ICON_SIZES.XXS} />
           </button>
         </div>
       </div>
