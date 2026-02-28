@@ -217,8 +217,9 @@ export class Kitchen {
     recipe: ReadonlyArray<IngredientItem>,
     init: string,
     state: RecipeLoopState,
+    pausedIds: ReadonlySet<string>,
   ): Promise<boolean> {
-    if (useRecipeStore.getState().pausedIngredientIds.has(ing.id)) {
+    if (pausedIds.has(ing.id)) {
       logger.info(`Skipping paused ingredient: ${ing.name}`);
       state.localStatuses[ing.id] = 'idle';
       state.localWarnings[ing.id] = null;
@@ -253,8 +254,9 @@ export class Kitchen {
 
   private async executeRecipeLoop(recipe: ReadonlyArray<IngredientItem>, init: string): Promise<RecipeLoopState> {
     const state = this.createInitialLoopState(init);
+    const pausedIds = useRecipeStore.getState().pausedIngredientIds;
     for (const [i, ing] of recipe.entries()) {
-      if (await this.processSingleIngredient(ing, i, recipe, init, state)) break;
+      if (await this.processSingleIngredient(ing, i, recipe, init, state, pausedIds)) break;
     }
     return state;
   }

@@ -5,7 +5,14 @@ import type { IngredientProps } from '../core/IngredientRegistry';
 const categorySortFn = ([catA]: readonly [string, unknown], [catB]: readonly [string, unknown]): number => catA.localeCompare(catB);
 
 export const createIngredientSearchPredicate = (lowerQuery: string): ((ing: IngredientProps) => boolean) => {
-  return (ing: IngredientProps): boolean => ing.name.toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
+  return (ing: IngredientProps): boolean => {
+    const name = ing.name;
+    const desc = ing.description;
+    return (
+      (name.length >= lowerQuery.length && name.toLowerCase().indexOf(lowerQuery) !== -1) ||
+      (desc.length >= lowerQuery.length && desc.toLowerCase().indexOf(lowerQuery) !== -1)
+    );
+  };
 };
 
 export const filterExistingIngredients = <T extends { readonly ingredientId: string }>(items: ReadonlyArray<T>): T[] => {

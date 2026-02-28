@@ -45,8 +45,8 @@ export const getVisibleSpices = (
   ingredientDefinition: Readonly<IngredientDefinition>,
   currentSpices: Readonly<Record<string, SpiceValue>>,
 ): Array<SpiceDefinition> => {
-  const allSpices = ingredientDefinition.spices || [];
-  if (!allSpices.length) {
+  const allSpices = ingredientDefinition.spices;
+  if (!allSpices || allSpices.length === 0) {
     return [];
   }
 
@@ -54,40 +54,38 @@ export const getVisibleSpices = (
   const visibilityCache = new Map<string, boolean>();
 
   const checkVisibility = (spiceId: string): boolean => {
-    if (visibilityCache.has(spiceId)) {
-      return visibilityCache.get(spiceId)!;
-    }
+    const cached = visibilityCache.get(spiceId);
+    if (cached !== undefined) return cached;
 
     const spice = spiceMap.get(spiceId);
-
     if (!spice || !spice.dependsOn || spice.dependsOn.length === 0) {
-      if (spice) {
-        visibilityCache.set(spiceId, true);
-      }
+      if (spice) visibilityCache.set(spiceId, true);
       return true;
     }
 
     const isVisible = spice.dependsOn.every((rule) => {
-      errorHandler.assert(spiceMap.has(rule.spiceId), `Dependency target spice ID was not found: ${rule.spiceId}`);
+      const targetId = rule.spiceId;
+      if (!checkVisibility(targetId)) return false;
 
-      if (!checkVisibility(rule.spiceId)) {
-        return false;
-      }
+      const targetValue = currentSpices[targetId];
+      if (targetValue === undefined || targetValue === null) return false;
 
-      const targetValue = currentSpices[rule.spiceId];
-      const isValueMet =
-        targetValue !== undefined &&
-        targetValue !== null &&
-        (Array.isArray(rule.value) ? rule.value.includes(targetValue) : targetValue === rule.value);
-
-      return isValueMet;
+      const ruleVal = rule.value;
+      return Array.isArray(ruleVal) ? ruleVal.includes(targetValue) : targetValue === ruleVal;
     });
 
     visibilityCache.set(spiceId, isVisible);
     return isVisible;
   };
 
-  return allSpices.filter((spice) => checkVisibility(spice.id));
+  const result: SpiceDefinition[] = [];
+  for (let i = 0; i < allSpices.length; i++) {
+    const spice = allSpices[i];
+    if (checkVisibility(spice.id)) {
+      result.push(spice);
+    }
+  }
+  return result;
 };
 
 export const updateAndValidate = (

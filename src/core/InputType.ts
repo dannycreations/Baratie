@@ -93,28 +93,15 @@ export class InputType<T = unknown> {
 
   public get type(): InputDataType {
     const value = this.value;
-    if (value instanceof Uint8Array) {
-      return 'bytearray';
-    }
-    if (value instanceof ArrayBuffer) {
-      return 'arraybuffer';
-    }
-    if (Array.isArray(value)) {
-      return 'array';
-    }
-    if (typeof value === 'string') {
-      return 'string';
-    }
-    if (typeof value === 'number') {
-      return 'number';
-    }
-    if (typeof value === 'boolean') {
-      return 'boolean';
-    }
-    if (isObjectLike(value)) {
-      return 'object';
-    }
-    throw new Error(`Cannot determine InputDataType: Unknown value type (${String(value)})`);
+    const type = typeof value;
+    if (type === 'string') return 'string';
+    if (type === 'number') return 'number';
+    if (type === 'boolean') return 'boolean';
+    if (value instanceof Uint8Array) return 'bytearray';
+    if (value instanceof ArrayBuffer) return 'arraybuffer';
+    if (Array.isArray(value)) return 'array';
+    if (isObjectLike(value)) return 'object';
+    throw new Error(`Cannot determine InputDataType: Unknown value type (${type})`);
   }
 
   public update<U>(newValue: U): InputType<U> {
@@ -246,18 +233,19 @@ export class InputType<T = unknown> {
   }
 
   private castToString(): InputType<string> {
-    if (this.value instanceof ArrayBuffer) {
-      return this.cloneValue(toUtf8OrHex(new Uint8Array(this.value)));
+    const val = this.value;
+    if (val instanceof Uint8Array) {
+      return this.cloneValue(toUtf8OrHex(val));
     }
-    if (this.value instanceof Uint8Array) {
-      return this.cloneValue(toUtf8OrHex(this.value));
+    if (val instanceof ArrayBuffer) {
+      return this.cloneValue(toUtf8OrHex(new Uint8Array(val)));
     }
-    if (isObjectLike(this.value)) {
+    if (isObjectLike(val)) {
       try {
-        return this.cloneValue(JSON.stringify(this.value));
+        return this.cloneValue(JSON.stringify(val));
       } catch {}
     }
-    return this.cloneValue(String(this.value ?? ''));
+    return this.cloneValue(String(val ?? ''));
   }
 
   private tryParseJson(): unknown {

@@ -60,23 +60,19 @@ export const stringToUint8Array = (str: string): Uint8Array => {
 };
 
 export const uint8ArrayToHex = (bytes: Uint8Array): string => {
-  const length = bytes.length;
-  const out = new Array(length);
-  for (let i = 0; i < length; i++) {
-    out[i] = HEX_TABLE[bytes[i]];
+  let out = '';
+  for (let i = 0; i < bytes.length; i++) {
+    out += HEX_TABLE[bytes[i]];
   }
-  return out.join('');
+  return out;
 };
 
 export const uint8ArrayToBase64 = (bytes: Uint8Array): string => {
   const CHUNK_SIZE = 8192;
-  const length = bytes.length;
-  const chunks: string[] = [];
-
-  for (let i = 0; i < length; i += CHUNK_SIZE) {
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
     const chunk = bytes.subarray(i, i + CHUNK_SIZE);
-    chunks.push(String.fromCharCode.apply(null, chunk as unknown as number[]));
+    binary += String.fromCharCode(...chunk);
   }
-
-  return btoa(chunks.join(''));
+  return btoa(binary);
 };

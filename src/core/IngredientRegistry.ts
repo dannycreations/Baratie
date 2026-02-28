@@ -146,17 +146,17 @@ export class IngredientRegistry {
   }
 
   public getAllCategories(): ReadonlySet<string> {
-    if (this.categories) {
-      return this.categories;
-    }
+    const cached = this.categories;
+    if (cached) return cached;
 
     const categorySet = new Set<string>();
-    for (const ingredient of this.ingredients.values()) {
+    const ings = this.ingredients.values();
+    for (const ingredient of ings) {
       categorySet.add(ingredient.category);
     }
 
     this.categories = categorySet;
-    return this.categories;
+    return categorySet;
   }
 
   public register<T>(definition: IngredientDefinition<T>, namespace?: string): string {

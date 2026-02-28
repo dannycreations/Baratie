@@ -31,15 +31,13 @@ const canonicalStringifyFn = (obj: unknown, seen: Set<unknown>): string => {
 
   const keys = Object.keys(obj).sort();
   let res = '{';
-  let first = true;
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
     const value = (obj as Record<string, unknown>)[key];
     if (typeof value === 'function') continue;
 
-    if (!first) res += ',';
+    if (res.length > 1) res += ',';
     res += JSON.stringify(key) + ':' + canonicalStringifyFn(value, seen);
-    first = false;
   }
   return res + '}';
 };

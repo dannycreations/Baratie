@@ -110,8 +110,9 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
         let nextList: Array<V>;
 
         if (existing) {
-          const index = currentList.indexOf(existing);
           const updated = { ...existing, ...item } as V;
+          if (shallowEqual(existing, updated)) return state;
+          const index = currentList.indexOf(existing);
           nextList = [...currentList];
           nextList[index] = updated;
           nextMap.set(id, updated);
