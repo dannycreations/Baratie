@@ -118,6 +118,7 @@ export class IngredientRegistry {
   private ingredients: Map<string, IngredientProps> = new Map();
   private nameToIdMap: Map<string, string> = new Map();
   private categories: ReadonlySet<string> | null = null;
+  private sortedArray: ReadonlyArray<IngredientProps> | null = null;
   private batchDepth = 0;
 
   public startBatch(): void {
@@ -128,7 +129,7 @@ export class IngredientRegistry {
     this.batchDepth--;
     if (this.batchDepth <= 0) {
       this.batchDepth = 0;
-      this.resort();
+      this.invalidate();
     }
   }
 
@@ -137,21 +138,21 @@ export class IngredientRegistry {
   }
 
   public getAll(): ReadonlyArray<IngredientProps> {
-    return [...this.ingredients.values()];
+    if (this.sortedArray) return this.sortedArray;
+    this.sortedArray = Array.from(this.ingredients.values()).sort((a, b) => a.name.localeCompare(b.name));
+    return this.sortedArray;
   }
 
   public getByName(name: string): IngredientProps | undefined {
     const id = this.nameToIdMap.get(name);
-    return id ? this.get(id) : undefined;
+    return id ? this.ingredients.get(id) : undefined;
   }
 
   public getAllCategories(): ReadonlySet<string> {
-    const cached = this.categories;
-    if (cached) return cached;
+    if (this.categories) return this.categories;
 
     const categorySet = new Set<string>();
-    const ings = this.ingredients.values();
-    for (const ingredient of ings) {
+    for (const ingredient of this.ingredients.values()) {
       categorySet.add(ingredient.category);
     }
 
@@ -160,55 +161,48 @@ export class IngredientRegistry {
   }
 
   public register<T>(definition: IngredientDefinition<T>, namespace?: string): string {
-    const { run, ...restOfDefinition } = definition;
+    const { run: _run, ...restOfDefinition } = definition;
     const id = getObjectHash(restOfDefinition, namespace);
 
     errorHandler.assert(!!id, `Ingredient definition "${definition.name}" failed to generate a valid ID.`);
 
-    if (this.ingredients.has(id)) {
-      logger.warn(
-        `IngredientRegistry: Re-registering type with generated ID "${id}" (${definition.name}), which overwrites the existing definition.`,
-      );
+    const existing = this.ingredients.get(id);
+    if (existing) {
+      if (existing.name === definition.name) {
+        this.ingredients.set(id, { ...definition, id } as IngredientProps);
+        this.invalidate();
+        return id;
+      }
+      logger.warn(`IngredientRegistry: ID collision for "${definition.name}" with existing "${existing.name}". Overwriting.`);
+      this.nameToIdMap.delete(existing.name);
     }
 
     this.ingredients.set(id, { ...definition, id } as IngredientProps);
-    this.checkAndResort();
+    this.nameToIdMap.set(definition.name, id);
+    this.invalidate();
     return id;
   }
 
   public unregister(ids: ReadonlyArray<string>): void {
     let changed = false;
     for (const id of ids) {
-      if (this.ingredients.delete(id)) {
+      const ing = this.ingredients.get(id);
+      if (ing) {
+        this.nameToIdMap.delete(ing.name);
+        this.ingredients.delete(id);
         changed = true;
         logger.info(`Unregistered ingredient: ${id}`);
       }
     }
     if (changed) {
-      this.checkAndResort();
+      this.invalidate();
     }
   }
 
-  private checkAndResort(): void {
-    if (this.batchDepth === 0) {
-      this.resort();
-    }
-  }
-
-  private resort(): void {
-    const ingredientsArray = Array.from(this.ingredients.values()).sort((a, b) => a.name.localeCompare(b.name));
-    const nextIngredients = new Map<string, IngredientProps>();
-    const nextNameToIdMap = new Map<string, string>();
-
-    for (let i = 0; i < ingredientsArray.length; i++) {
-      const ing = ingredientsArray[i];
-      nextIngredients.set(ing.id, ing);
-      nextNameToIdMap.set(ing.name, ing.id);
-    }
-
-    this.ingredients = nextIngredients;
-    this.nameToIdMap = nextNameToIdMap;
+  private invalidate(): void {
+    if (this.batchDepth > 0) return;
     this.categories = null;
+    this.sortedArray = null;
     useIngredientStore.getState().refreshRegistry();
   }
 }

@@ -78,12 +78,20 @@ export const NumberInput = memo<NumberInputProps>(
 
     const handleStep = useCallback(
       (direction: 'up' | 'down'): void => {
+        if (disabled) return;
+
         const currentValue = parseFloat(internalValue);
         const numericValue = isNumber(currentValue) ? currentValue : value;
-        const change = direction === 'up' ? step : -step;
-        updateAndNotify(numericValue + change);
+
+        if (direction === 'up') {
+          if (max !== undefined && numericValue >= max) return;
+          updateAndNotify(numericValue + step);
+        } else {
+          if (min !== undefined && numericValue <= min) return;
+          updateAndNotify(numericValue - step);
+        }
       },
-      [internalValue, value, step, updateAndNotify],
+      [disabled, internalValue, value, max, min, step, updateAndNotify],
     );
 
     const handleKeyDown = useCallback(
@@ -114,14 +122,22 @@ export const NumberInput = memo<NumberInputProps>(
     const handleIncrement = useCallback(() => handleStep('up'), [handleStep]);
     const handleDecrement = useCallback(() => handleStep('down'), [handleStep]);
 
-    const pressHandlersConfig = { onStart: onLongPressStart, onEnd: onLongPressEnd };
-    const incrementPressHandlers = useLongPress(handleIncrement, pressHandlersConfig);
-    const decrementPressHandlers = useLongPress(handleDecrement, pressHandlersConfig);
+    const isAtMax = max !== undefined && value >= max;
+    const isAtMin = min !== undefined && value <= min;
+
+    const incrementPressHandlers = useLongPress(handleIncrement, {
+      onStart: disabled || isAtMax ? undefined : onLongPressStart,
+      onEnd: disabled || isAtMax ? undefined : onLongPressEnd,
+    });
+    const decrementPressHandlers = useLongPress(handleDecrement, {
+      onStart: disabled || isAtMin ? undefined : onLongPressStart,
+      onEnd: disabled || isAtMin ? undefined : onLongPressEnd,
+    });
 
     const standardInputStyle = clsx('input-base input-base-padding pr-8 number-input-no-spinner');
     const containerClass = clsx('input-number-container', className);
     const buttonGroupClass = clsx('input-number-button-group');
-    const stepButtonClass = clsx('input-number-button');
+    const stepButtonClass = 'input-number-button';
 
     return (
       <div className={containerClass}>
@@ -141,16 +157,16 @@ export const NumberInput = memo<NumberInputProps>(
         <div className={buttonGroupClass}>
           <button
             type="button"
-            className={clsx(stepButtonClass, 'rounded-tr-sm')}
-            disabled={disabled || (max !== undefined && value >= max)}
+            className={clsx(stepButtonClass, 'rounded-tr-sm', (disabled || isAtMax) && 'opacity-50 cursor-not-allowed')}
+            aria-disabled={disabled || isAtMax}
             {...incrementPressHandlers}
           >
             <ChevronUp size={ICON_SIZES.XXS} />
           </button>
           <button
             type="button"
-            className={clsx(stepButtonClass, 'rounded-br-sm')}
-            disabled={disabled || (min !== undefined && value <= min)}
+            className={clsx(stepButtonClass, 'rounded-br-sm', (disabled || isAtMin) && 'opacity-50 cursor-not-allowed')}
+            aria-disabled={disabled || isAtMin}
             {...decrementPressHandlers}
           >
             <ChevronDown size={ICON_SIZES.XXS} />

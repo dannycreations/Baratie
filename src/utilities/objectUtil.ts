@@ -14,30 +14,31 @@ const canonicalStringifyFn = (obj: unknown, seen: Set<unknown>): string => {
     return typeof obj === 'function' ? '' : JSON.stringify(obj);
   }
 
-  if (seen.has(obj)) {
-    return '[Circular]';
-  }
-
+  if (seen.has(obj)) return '[Circular]';
   seen.add(obj);
 
   if (Array.isArray(obj)) {
-    let res = '[';
-    for (let i = 0; i < obj.length; i++) {
-      if (i > 0) res += ',';
-      res += canonicalStringifyFn(obj[i], seen);
+    const len = obj.length;
+    if (len === 0) return '[]';
+    let res = '[' + canonicalStringifyFn(obj[0], seen);
+    for (let i = 1; i < len; i++) {
+      res += ',' + canonicalStringifyFn(obj[i], seen);
     }
     return res + ']';
   }
 
   const keys = Object.keys(obj).sort();
+  const len = keys.length;
   let res = '{';
-  for (let i = 0; i < keys.length; i++) {
+  let first = true;
+  for (let i = 0; i < len; i++) {
     const key = keys[i];
     const value = (obj as Record<string, unknown>)[key];
-    if (typeof value === 'function') continue;
+    if (typeof value === 'function' || value === undefined) continue;
 
-    if (res.length > 1) res += ',';
+    if (!first) res += ',';
     res += JSON.stringify(key) + ':' + canonicalStringifyFn(value, seen);
+    first = false;
   }
   return res + '}';
 };
@@ -46,10 +47,11 @@ const canonicalStringify = withCircularCache(canonicalStringifyFn);
 
 export const getObjectHash = (obj: object, namespace?: string): string => {
   const stringToHash = (namespace || '') + canonicalStringify(obj);
-  let hash = 5381;
+  let hash = 2166136261 >>> 0;
 
-  for (let i = 0; i < stringToHash.length; i++) {
-    hash = (hash * 33) ^ stringToHash.charCodeAt(i);
+  for (let i = 0, len = stringToHash.length; i < len; i++) {
+    hash ^= stringToHash.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
   }
 
   return (hash >>> 0).toString(36);
@@ -81,7 +83,7 @@ export const shallowEqual = <T>(a: T, b: T): boolean => {
 
   for (let i = 0; i < len; i++) {
     const key = keysA[i];
-    if (!Object.prototype.hasOwnProperty.call(b, key) || (a as Record<string, unknown>)[key] !== (b as Record<string, unknown>)[key]) {
+    if ((a as Record<string, unknown>)[key] !== (b as Record<string, unknown>)[key]) {
       return false;
     }
   }

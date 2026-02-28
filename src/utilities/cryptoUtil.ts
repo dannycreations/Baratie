@@ -2,9 +2,9 @@ const HEX_TABLE = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(
 
 export const base64ToUint8Array = (base64: string): Uint8Array => {
   const binaryString = atob(base64);
-  const length = binaryString.length;
-  const bytes = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
     bytes[i] = binaryString.charCodeAt(i);
   }
   return bytes;
@@ -12,20 +12,20 @@ export const base64ToUint8Array = (base64: string): Uint8Array => {
 
 export const hexToUint8Array = (hex: string): Uint8Array => {
   const cleanHex = hex.startsWith('0x') ? hex.slice(2) : hex;
-  const length = cleanHex.length;
+  const len = cleanHex.length;
 
-  if (length % 2 !== 0) {
+  if (len % 2 !== 0) {
     throw new Error('Invalid hex string');
   }
 
-  const bytes = new Uint8Array(length / 2);
-  for (let i = 0; i < length; i += 2) {
+  const bytes = new Uint8Array(len >>> 1);
+  for (let i = 0; i < len; i += 2) {
     const high = parseInt(cleanHex[i], 16);
     const low = parseInt(cleanHex[i + 1], 16);
-    if (isNaN(high) || isNaN(low)) {
+    if (Number.isNaN(high) || Number.isNaN(low)) {
       throw new Error('Invalid hex string');
     }
-    bytes[i / 2] = (high << 4) | low;
+    bytes[i >>> 1] = (high << 4) | low;
   }
   return bytes;
 };
@@ -60,8 +60,9 @@ export const stringToUint8Array = (str: string): Uint8Array => {
 };
 
 export const uint8ArrayToHex = (bytes: Uint8Array): string => {
+  const len = bytes.length;
   let out = '';
-  for (let i = 0; i < bytes.length; i++) {
+  for (let i = 0; i < len; i++) {
     out += HEX_TABLE[bytes[i]];
   }
   return out;
@@ -69,10 +70,13 @@ export const uint8ArrayToHex = (bytes: Uint8Array): string => {
 
 export const uint8ArrayToBase64 = (bytes: Uint8Array): string => {
   const CHUNK_SIZE = 8192;
+  const len = bytes.length;
+  if (len <= CHUNK_SIZE) {
+    return btoa(String.fromCharCode(...bytes));
+  }
   let binary = '';
-  for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
-    const chunk = bytes.subarray(i, i + CHUNK_SIZE);
-    binary += String.fromCharCode(...chunk);
+  for (let i = 0; i < len; i += CHUNK_SIZE) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK_SIZE));
   }
   return btoa(binary);
 };

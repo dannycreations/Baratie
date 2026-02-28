@@ -106,28 +106,33 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
         const currentMap = (state[mapKey] as unknown as ReadonlyMap<V[IDK], V>) || new Map();
 
         const existing = currentMap.get(id);
-        const nextMap = new Map(currentMap);
-        let nextList: Array<V>;
 
         if (existing) {
           const updated = { ...existing, ...item } as V;
           if (shallowEqual(existing, updated)) return state;
-          const index = currentList.indexOf(existing);
-          nextList = [...currentList];
-          nextList[index] = updated;
+
+          const nextMap = new Map(currentMap);
           nextMap.set(id, updated);
+
+          const nextList = currentList.map((i) => (i[idKey] === id ? updated : i));
+
+          return asPartial<T>({
+            [listKey]: nextList,
+            [mapKey]: nextMap,
+          });
         } else {
+          const nextMap = new Map(currentMap);
           const newItem = item as V;
-          nextList = [...currentList, newItem];
+          let nextList = [...currentList, newItem];
           nextMap.set(id, newItem);
+
+          if (sortFn) nextList.sort(sortFn);
+
+          return asPartial<T>({
+            [listKey]: nextList,
+            [mapKey]: nextMap,
+          });
         }
-
-        if (sortFn) nextList.sort(sortFn);
-
-        return asPartial<T>({
-          [listKey]: nextList,
-          [mapKey]: nextMap,
-        });
       }),
 
     remove: (id: V[IDK]) =>
@@ -151,24 +156,16 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
         if (draggedId === targetId) return state;
 
         const list = state[listKey] as unknown as ReadonlyArray<V>;
-        const currentMap = (state[mapKey] as unknown as ReadonlyMap<V[IDK], V>) || new Map();
+        const draggedIndex = list.findIndex((item) => item[idKey] === draggedId);
+        const targetIndex = list.findIndex((item) => item[idKey] === targetId);
 
-        const draggedItem = currentMap.get(draggedId);
-        const targetItem = currentMap.get(targetId);
-
-        if (!draggedItem || !targetItem) return state;
-
-        const draggedIndex = list.indexOf(draggedItem);
-        const targetIndex = list.indexOf(targetItem);
+        if (draggedIndex === -1 || targetIndex === -1) return state;
 
         const nextList = [...list];
-        nextList.splice(draggedIndex, 1);
+        const [draggedItem] = nextList.splice(draggedIndex, 1);
         nextList.splice(targetIndex, 0, draggedItem);
 
-        return asPartial<T>({
-          [listKey]: nextList,
-          [mapKey]: currentMap,
-        });
+        return asPartial<T>({ [listKey]: nextList });
       }),
   };
 };

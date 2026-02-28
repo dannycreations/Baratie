@@ -1,4 +1,4 @@
-import { errorHandler, logger } from '../app/container';
+import { errorHandler } from '../app/container';
 import { InputType } from '../core/InputType';
 
 import type { IngredientDefinition, SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
@@ -79,7 +79,8 @@ export const getVisibleSpices = (
   };
 
   const result: SpiceDefinition[] = [];
-  for (let i = 0; i < allSpices.length; i++) {
+  const len = allSpices.length;
+  for (let i = 0; i < len; i++) {
     const spice = allSpices[i];
     if (checkVisibility(spice.id)) {
       result.push(spice);
@@ -105,42 +106,45 @@ export const validateSpices = (
   rawSpices: Readonly<Record<string, unknown>>,
 ): Record<string, SpiceValue> => {
   const validatedSpices: Record<string, SpiceValue> = {};
+  const spices = ingredientDefinition.spices;
 
-  if (!ingredientDefinition.spices) {
-    return {};
+  if (!spices || spices.length === 0) {
+    return validatedSpices;
   }
 
-  for (const spice of ingredientDefinition.spices) {
-    const rawValue = rawSpices[spice.id];
+  const len = spices.length;
+  for (let i = 0; i < len; i++) {
+    const spice = spices[i];
+    const spiceId = spice.id;
+    const rawValue = rawSpices[spiceId];
 
     if (rawValue === undefined || rawValue === null) {
-      validatedSpices[spice.id] = spice.value;
+      validatedSpices[spiceId] = spice.value;
       continue;
     }
 
-    if (spice.type === 'number' && typeof rawValue === 'number') {
-      const min = spice.min;
-      const max = spice.max;
-      let num = rawValue;
-      if (min !== undefined) num = Math.max(min, num);
-      if (max !== undefined) num = Math.min(max, num);
-      validatedSpices[spice.id] = num;
+    const spiceType = spice.type;
+    const rawValueType = typeof rawValue;
+
+    if (spiceType === 'number' && rawValueType === 'number') {
+      const num = rawValue as number;
+      const { min, max } = spice;
+      validatedSpices[spiceId] = min !== undefined || max !== undefined ? Math.min(max ?? num, Math.max(min ?? num, num)) : num;
       continue;
     }
 
-    if (spice.type === 'boolean' && typeof rawValue === 'boolean') {
-      validatedSpices[spice.id] = rawValue;
+    if (spiceType === 'boolean' && rawValueType === 'boolean') {
+      validatedSpices[spiceId] = rawValue as boolean;
       continue;
     }
 
-    if ((spice.type === 'string' || spice.type === 'textarea') && typeof rawValue === 'string') {
-      validatedSpices[spice.id] = rawValue;
+    if ((spiceType === 'string' || spiceType === 'textarea') && rawValueType === 'string') {
+      validatedSpices[spiceId] = rawValue as string;
       continue;
     }
 
-    const spiceId = spice.id;
     const input = new InputType(rawValue);
-    switch (spice.type) {
+    switch (spiceType) {
       case 'number':
         validatedSpices[spiceId] = input.cast('number', { max: spice.max, min: spice.min, value: spice.value }).value;
         break;
@@ -148,9 +152,9 @@ export const validateSpices = (
         validatedSpices[spiceId] = input.cast('boolean', { value: spice.value }).value;
         break;
       case 'select': {
-        const selectedValue = input.value;
-        const isValidOption = spice.options.some((opt) => String(opt.value) === String(selectedValue));
-        validatedSpices[spiceId] = isValidOption ? prepareSelectValue(selectedValue as SpiceValue, spice) : spice.value;
+        const val = input.value;
+        const isValid = spice.options.some((opt) => String(opt.value) === String(val));
+        validatedSpices[spiceId] = isValid ? prepareSelectValue(val as SpiceValue, spice) : spice.value;
         break;
       }
       case 'string':
@@ -158,7 +162,6 @@ export const validateSpices = (
         validatedSpices[spiceId] = input.cast('string', { value: spice.value }).value;
         break;
       default:
-        logger.warn(`An unhandled spice type was encountered for spice: ${spiceId}`);
         validatedSpices[spiceId] = input.value as SpiceValue;
     }
   }

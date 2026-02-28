@@ -23,7 +23,7 @@ export type RecipeCookResult = Pick<
 >;
 
 interface RecipeLoopState {
-  cookedData: string;
+  cookedData: InputType;
   globalError: boolean;
   hasWarnings: boolean;
   lastInputConfig: InputPanelConfig | null;
@@ -35,7 +35,7 @@ interface RecipeLoopState {
 
 interface IngredientRunResult {
   readonly hasError: boolean;
-  readonly nextData: string;
+  readonly nextData: InputType;
   readonly status: CookingStatusType;
   readonly inputPanelId?: string | null;
   readonly panelInstruction?: PanelControlConfig;
@@ -49,25 +49,40 @@ export class Kitchen {
   private intervalMs = 0;
 
   public initAutoCook(): () => void {
-    const handleStateChange = (): void => {
+    const handleKitchenChange = (state: KitchenState): void => {
+      if (state.isAutoCookEnabled && !state.isBatchingUpdates) {
+        this.cook();
+      }
+    };
+
+    const handleRecipeChange = (): void => {
       if (useKitchenStore.getState().isAutoCookEnabled) {
         this.cook();
       }
     };
 
-    const unsubscribeKitchen = useKitchenStore.subscribe((state) => [state.inputData, state.isBatchingUpdates] as const, handleStateChange, {
-      equalityFn: ([d1, b1], [d2, b2]) => d1 === d2 && b1 === b2,
+    const unsubscribeKitchen = useKitchenStore.subscribe(
+      (state) => state.inputData,
+      () => handleKitchenChange(useKitchenStore.getState()),
+    );
+
+    const unsubscribeRecipe = useRecipeStore.subscribe((state) => [state.ingredients, state.pausedIngredientIds] as const, handleRecipeChange, {
+      equalityFn: (a, b) => a[0] === b[0] && a[1] === b[1],
     });
 
-    const unsubscribeRecipe = useRecipeStore.subscribe(
-      (state) => ({ ingredients: state.ingredients, pausedIds: state.pausedIngredientIds }),
-      handleStateChange,
-      { equalityFn: (a, b) => a.ingredients === b.ingredients && a.pausedIds === b.pausedIds },
+    const unsubscribeBatch = useKitchenStore.subscribe(
+      (state) => state.isBatchingUpdates,
+      (isBatching) => {
+        if (!isBatching && useKitchenStore.getState().isAutoCookEnabled) {
+          this.cook();
+        }
+      },
     );
 
     return () => {
       unsubscribeKitchen();
       unsubscribeRecipe();
+      unsubscribeBatch();
     };
   }
 
@@ -105,13 +120,14 @@ export class Kitchen {
     try {
       this.clearScheduledCook();
 
+      const result = await this.cookRecipe(recipe, inputData);
+      kitchenState.setCookingResult(result);
+
       const hasIntervalSetter = recipe.some((ing) => ing.name === KEY_REPEAT_STEP);
       if (!hasIntervalSetter && this.intervalMs > 0) {
         this.setCookingInterval(0);
       }
 
-      const result = await this.cookRecipe(recipe, inputData);
-      kitchenState.setCookingResult(result);
       this.scheduleNextCook();
     } catch (error) {
       this.scheduleNextCook();
@@ -167,10 +183,10 @@ export class Kitchen {
         ...context,
       });
 
-      if (res.status === 'error') throw new AppError(res.nextData, 'Sub-recipe Execution');
+      if (res.status === 'error') throw new AppError(res.nextData.cast('string').value, 'Sub-recipe Execution');
       this.updateLoopStateFromResult(state, res, ingredient.id);
     }
-    return state.cookedData;
+    return state.cookedData.cast('string').value;
   }
 
   private async cookRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeCookResult> {
@@ -183,7 +199,7 @@ export class Kitchen {
       ingredientWarnings: loop.localWarnings,
       inputPanelConfig: loop.lastInputConfig,
       inputPanelId: loop.lastInputPanelId,
-      outputData: loop.cookedData,
+      outputData: loop.cookedData.cast('string').value,
       outputPanelConfig: loop.lastOutputConfig,
     };
   }
@@ -211,37 +227,9 @@ export class Kitchen {
     if (status === 'warning') state.hasWarnings = true;
   }
 
-  private async processSingleIngredient(
-    ing: IngredientItem,
-    idx: number,
-    recipe: ReadonlyArray<IngredientItem>,
-    init: string,
-    state: RecipeLoopState,
-    pausedIds: ReadonlySet<string>,
-  ): Promise<boolean> {
-    if (pausedIds.has(ing.id)) {
-      logger.info(`Skipping paused ingredient: ${ing.name}`);
-      state.localStatuses[ing.id] = 'idle';
-      state.localWarnings[ing.id] = null;
-      return false;
-    }
-    const def = ingredientRegistry.get(ing.ingredientId);
-    if (!def) {
-      const msg = `Ingredient '${ing.name}' is misconfigured or from a removed extension.`;
-      errorHandler.handle(new AppError(`Definition for ID '${ing.ingredientId}' (${ing.name}) not found.`, 'Recipe Cooking', msg));
-      state.cookedData = `Error: ${msg}`;
-      state.localStatuses[ing.id] = 'error';
-      state.globalError = true;
-      return true;
-    }
-    const res = await this.runIngredient(ing, def, state.cookedData, recipe, idx, init);
-    this.updateLoopStateFromResult(state, res, ing.id);
-    return state.globalError;
-  }
-
   private createInitialLoopState(init: string): RecipeLoopState {
     return {
-      cookedData: init,
+      cookedData: new InputType(init),
       globalError: false,
       hasWarnings: false,
       lastInputConfig: null,
@@ -255,8 +243,27 @@ export class Kitchen {
   private async executeRecipeLoop(recipe: ReadonlyArray<IngredientItem>, init: string): Promise<RecipeLoopState> {
     const state = this.createInitialLoopState(init);
     const pausedIds = useRecipeStore.getState().pausedIngredientIds;
-    for (const [i, ing] of recipe.entries()) {
-      if (await this.processSingleIngredient(ing, i, recipe, init, state, pausedIds)) break;
+    const len = recipe.length;
+
+    for (let i = 0; i < len; i++) {
+      const ing = recipe[i];
+      if (pausedIds.has(ing.id)) {
+        state.localStatuses[ing.id] = 'idle';
+        continue;
+      }
+
+      const def = ingredientRegistry.get(ing.ingredientId);
+      if (!def) {
+        const msg = `Ingredient '${ing.name}' is misconfigured.`;
+        state.cookedData = new InputType(`Error: ${msg}`);
+        state.localStatuses[ing.id] = 'error';
+        state.globalError = true;
+        break;
+      }
+
+      const res = await this.runIngredient(ing, def, state.cookedData, recipe, i, init);
+      this.updateLoopStateFromResult(state, res, ing.id);
+      if (state.globalError) break;
     }
     return state;
   }
@@ -264,25 +271,36 @@ export class Kitchen {
   private async runIngredient(
     ing: IngredientItem,
     def: IngredientDefinition,
-    data: string,
+    data: InputType,
     recipe: ReadonlyArray<IngredientItem>,
     idx: number,
     init: string,
     providedCtx?: IngredientContext,
   ): Promise<IngredientRunResult> {
-    errorHandler.assert(def.run, `Runner for '${def.name}' not found.`);
-    logger.debug(`Running ingredient: ${def.name}`, { id: ing.id, index: idx });
     const ctx = providedCtx ?? { currentIndex: idx, ingredient: ing, initialInput: init, recipe };
-    const { error, result } = await errorHandler.attemptAsync(() => def.run(new InputType(data), ing.spices, ctx));
-    if (error) return { hasError: true, nextData: `Error: ${error.message}`, status: 'error' };
-    errorHandler.assert(result instanceof InputType, `Ingredient '${def.name}' returned an invalid result type.`);
-    if (result.warningMessage !== undefined) {
-      logger.info(`Ingredient '${def.name}' was skipped with a warning${result.warningMessage ? `: ${result.warningMessage}` : '.'}`);
-      return { hasError: false, nextData: data, status: 'warning', warningMessage: result.warningMessage };
+    try {
+      const result = await def.run(data, ing.spices, ctx);
+      if (!(result instanceof InputType)) {
+        throw new Error(`Ingredient '${def.name}' returned an invalid result type.`);
+      }
+
+      if (result.warningMessage !== undefined) {
+        return { hasError: false, nextData: data, status: 'warning', warningMessage: result.warningMessage };
+      }
+
+      const panel = result.panelControl;
+      const inputId = panel?.panelType === 'input' && panel.config.mode === 'spiceEditor' ? panel.config.targetIngredientId : null;
+      return {
+        hasError: false,
+        status: 'success',
+        nextData: result,
+        panelInstruction: panel,
+        inputPanelId: inputId,
+      };
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      return { hasError: true, nextData: new InputType(`Error: ${msg}`), status: 'error' };
     }
-    const panel = result.panelControl;
-    const inputId = panel?.panelType === 'input' && panel.config.mode === 'spiceEditor' ? panel.config.targetIngredientId : null;
-    return { hasError: false, status: 'success', nextData: result.cast('string').value, panelInstruction: panel, inputPanelId: inputId };
   }
 
   private clearScheduledCook(logMessage?: string): void {

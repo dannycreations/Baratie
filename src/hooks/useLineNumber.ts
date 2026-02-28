@@ -86,23 +86,17 @@ export const useLineNumber = ({ textareaRef, value, showLineNumbers, scrollTop }
       const newMetrics: Array<LineMetric> = [];
       let visualLineCount = 0;
       let logicalLineNumber = 1;
-      let lastIndex = 0;
 
-      do {
-        let nextIndex = currentValue.indexOf('\n', lastIndex);
-        if (nextIndex === -1) {
-          nextIndex = currentValue.length;
-        }
-
-        const lineLength = nextIndex - lastIndex;
+      const lines = currentValue.split('\n');
+      const len = lines.length;
+      for (let i = 0; i < len; i++) {
+        const lineLength = lines[i].length;
         const count = maxLineChars > 0 ? Math.max(1, Math.ceil(lineLength / maxLineChars)) : 1;
         visualLineCount += count;
         newPrefixSum.push(visualLineCount);
         newMetrics.push({ number: logicalLineNumber, count: count });
-
         logicalLineNumber++;
-        lastIndex = nextIndex + 1;
-      } while (lastIndex <= currentValue.length);
+      }
 
       setLineMetrics(newMetrics);
       setVisualLinePrefixSum(newPrefixSum);
@@ -189,13 +183,12 @@ export const useLineNumber = ({ textareaRef, value, showLineNumbers, scrollTop }
       const startLogicalIndex = findStartLogicalLineIndex(visualLinePrefixSum, startIndex + 1);
       let currentVisualLine = startLogicalIndex > 0 ? visualLinePrefixSum[startLogicalIndex - 1] : 0;
 
-      for (let logicalIndex = startLogicalIndex; logicalIndex < lineMetrics.length; logicalIndex++) {
+      const metricsLen = lineMetrics.length;
+      for (let logicalIndex = startLogicalIndex; logicalIndex < metricsLen; logicalIndex++) {
         const metric = lineMetrics[logicalIndex];
-        if (!metric) {
-          continue;
-        }
+        const count = metric.count;
 
-        for (let i = 0; i < metric.count; i++) {
+        for (let i = 0; i < count; i++) {
           const visualIndex = currentVisualLine + i;
           if (visualIndex >= startIndex && visualIndex < endIndex) {
             visibleItems.push({
@@ -205,7 +198,7 @@ export const useLineNumber = ({ textareaRef, value, showLineNumbers, scrollTop }
           }
         }
 
-        currentVisualLine += metric.count;
+        currentVisualLine += count;
         if (currentVisualLine >= endIndex) {
           break;
         }

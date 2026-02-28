@@ -128,14 +128,11 @@ export class InputType<T = unknown> {
   }
 
   private castToArray(options?: Readonly<{ value?: unknown }>): InputType<ReadonlyArray<unknown>> {
-    if (Array.isArray(this.value)) {
-      return this.cloneValue(this.value);
-    }
+    const val = this.value;
+    if (Array.isArray(val)) return this.cloneValue(val);
     const parsed = this.tryParseJson();
-    if (Array.isArray(parsed)) {
-      return this.cloneValue(parsed);
-    }
-    return this.cloneValue(castFail(this.value, 'array', options));
+    if (Array.isArray(parsed)) return this.cloneValue(parsed);
+    return this.cloneValue(castFail(val, 'array', options));
   }
 
   private castToArrayBuffer(options?: Readonly<{ value?: unknown }>): InputType<ArrayBuffer> {
@@ -151,29 +148,24 @@ export class InputType<T = unknown> {
   }
 
   private castToBase64(options?: Readonly<{ value?: unknown }>): InputType<string> {
+    const val = this.value;
     try {
-      const bytes = typeof this.value === 'string' ? textEncoder.encode(this.value) : this.asUint8Array();
+      const bytes = typeof val === 'string' ? textEncoder.encode(val) : this.asUint8Array();
       return this.cloneValue(uint8ArrayToBase64(bytes));
     } catch {
-      return this.cloneValue(castFail(this.value, 'Base64', options));
+      return this.cloneValue(castFail(val, 'Base64', options));
     }
   }
 
   private castToBoolean(options?: Readonly<{ value?: unknown }>): InputType<boolean> {
     const val = this.value;
-    if (typeof val === 'boolean') {
-      return this.cloneValue(val);
-    }
-    if (val === null || val === undefined || val === 0 || val === '') {
-      return this.cloneValue(false);
-    }
-    if (val === 1) {
-      return this.cloneValue(true);
-    }
+    if (typeof val === 'boolean') return this.cloneValue(val);
+    if (!val) return this.cloneValue(false);
+    if (val === 1) return this.cloneValue(true);
 
     const str = String(val).trim().toLowerCase();
-    if (str === 'true' || str === '1') return this.cloneValue(true);
-    if (str === 'false' || str === '0' || str === '') return this.cloneValue(false);
+    const isTrue = str === 'true' || str === '1';
+    if (isTrue || str === 'false' || str === '0') return this.cloneValue(isTrue);
 
     return this.cloneValue(castFail(val, 'boolean', options));
   }
@@ -187,11 +179,12 @@ export class InputType<T = unknown> {
   }
 
   private castToHex(options?: Readonly<{ value?: unknown }>): InputType<string> {
+    const val = this.value;
     try {
-      const bytes = typeof this.value === 'string' ? textEncoder.encode(this.value) : this.asUint8Array();
+      const bytes = typeof val === 'string' ? textEncoder.encode(val) : this.asUint8Array();
       return this.cloneValue(uint8ArrayToHex(bytes));
     } catch {
-      return this.cloneValue(castFail(this.value, 'Hex', options));
+      return this.cloneValue(castFail(val, 'Hex', options));
     }
   }
 
@@ -234,18 +227,16 @@ export class InputType<T = unknown> {
 
   private castToString(): InputType<string> {
     const val = this.value;
-    if (val instanceof Uint8Array) {
-      return this.cloneValue(toUtf8OrHex(val));
-    }
-    if (val instanceof ArrayBuffer) {
-      return this.cloneValue(toUtf8OrHex(new Uint8Array(val)));
-    }
+    if (typeof val === 'string') return this as unknown as InputType<string>;
+    if (val instanceof Uint8Array) return this.cloneValue(toUtf8OrHex(val));
+    if (val instanceof ArrayBuffer) return this.cloneValue(toUtf8OrHex(new Uint8Array(val)));
     if (isObjectLike(val)) {
       try {
-        return this.cloneValue(JSON.stringify(val));
+        const str = JSON.stringify(val);
+        return this.cloneValue(str);
       } catch {}
     }
-    return this.cloneValue(String(val ?? ''));
+    return this.cloneValue(val === null || val === undefined ? '' : String(val));
   }
 
   private tryParseJson(): unknown {
