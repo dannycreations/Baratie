@@ -169,87 +169,93 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   );
 
   const renderActions = useMemo(() => {
-    if (isInput) {
-      const showClearButton = !inputPanelConfig || (inputPanelConfig.mode === 'textarea' && inputPanelConfig.showClear);
-
-      const defaultInputActions: ReactNode[] = [
-        <Fragment key="file-picker">
-          <FilePicker accept="*/*" onFileSelect={handleFileRead}>
-            {renderFilePickerTrigger}
-          </FilePicker>
-        </Fragment>,
+    if (!isInput) {
+      const defaultOutputActions: ReactNode[] = [
+        <TooltipButton
+          key="download-button"
+          icon={<DownloadCloud size={ICON_SIZES.SM} />}
+          size="sm"
+          variant="stealth"
+          disabled={data.length === 0}
+          tooltipContent="Save Output"
+          tooltipPosition="left"
+          onClick={handleDownloadOutput}
+        />,
+        <CopyButton key="copy-button" textToCopy={data} tooltipPosition="left" />,
       ];
 
-      if (showClearButton) {
-        defaultInputActions.push(
-          <TooltipButton
-            key="clear-button"
-            icon={<Trash2 size={ICON_SIZES.SM} />}
-            size="sm"
-            variant="danger"
-            disabled={data.length === 0}
-            tooltipContent="Clear Input"
-            tooltipPosition="left"
-            onClick={handleClearInput}
-          />,
-        );
+      if (outputPanelConfig?.mode === 'custom' && typeof outputPanelConfig.actions === 'function') {
+        return outputPanelConfig.actions(defaultOutputActions);
       }
 
-      if (inputPanelConfig?.mode === 'custom' && typeof inputPanelConfig.actions === 'function') {
-        return inputPanelConfig.actions(defaultInputActions);
-      }
-      return defaultInputActions;
+      return defaultOutputActions;
     }
 
-    const defaultOutputActions: ReactNode[] = [
-      <TooltipButton
-        key="download-button"
-        icon={<DownloadCloud size={ICON_SIZES.SM} />}
-        size="sm"
-        variant="stealth"
-        disabled={data.length === 0}
-        tooltipContent="Save Output"
-        tooltipPosition="left"
-        onClick={handleDownloadOutput}
-      />,
-      <CopyButton key="copy-button" textToCopy={data} tooltipPosition="left" />,
+    const showClearButton = !inputPanelConfig || (inputPanelConfig.mode === 'textarea' && inputPanelConfig.showClear);
+
+    const defaultInputActions: ReactNode[] = [
+      <Fragment key="file-picker">
+        <FilePicker accept="*/*" onFileSelect={handleFileRead}>
+          {renderFilePickerTrigger}
+        </FilePicker>
+      </Fragment>,
     ];
-    if (outputPanelConfig?.mode === 'custom' && typeof outputPanelConfig.actions === 'function') {
-      return outputPanelConfig.actions(defaultOutputActions);
+
+    if (showClearButton) {
+      defaultInputActions.push(
+        <TooltipButton
+          key="clear-button"
+          icon={<Trash2 size={ICON_SIZES.SM} />}
+          size="sm"
+          variant="danger"
+          disabled={data.length === 0}
+          tooltipContent="Clear Input"
+          tooltipPosition="left"
+          onClick={handleClearInput}
+        />,
+      );
     }
-    return defaultOutputActions;
+
+    if (inputPanelConfig?.mode === 'custom' && typeof inputPanelConfig.actions === 'function') {
+      return inputPanelConfig.actions(defaultInputActions);
+    }
+
+    return defaultInputActions;
   }, [data, handleClearInput, handleDownloadOutput, handleFileRead, inputPanelConfig, isInput, outputPanelConfig, renderFilePickerTrigger]);
 
   const renderContent = useMemo((): ReactNode => {
-    if (isInput) {
-      if (inputPanelConfig?.mode === 'custom' && typeof inputPanelConfig.content === 'function') {
-        return inputPanelConfig.content();
-      }
-      if (inputPanelConfig?.mode === 'spiceEditor' && targetIngredient) {
-        return (
-          <SpiceContent
-            targetIngredient={targetIngredient}
-            onSpiceChange={handleSpiceChange}
-            onLongPressStart={startUpdateBatch}
-            onLongPressEnd={endUpdateBatch}
-          />
-        );
-      }
-      return (
-        <DefaultContent
-          config={inputPanelConfig}
-          data={inputData}
-          onDataChange={handleSetInputData}
-          onFileDrop={handleFileRead}
-          textareaRef={inputRef}
-        />
-      );
-    } else {
+    if (!isInput) {
       if (outputPanelConfig?.mode === 'custom' && typeof outputPanelConfig.content === 'function') {
         return outputPanelConfig.content();
       }
+
       return <OutputContent config={outputPanelConfig} data={outputData} />;
     }
+
+    if (inputPanelConfig?.mode === 'custom' && typeof inputPanelConfig.content === 'function') {
+      return inputPanelConfig.content();
+    }
+
+    if (inputPanelConfig?.mode === 'spiceEditor' && targetIngredient) {
+      return (
+        <SpiceContent
+          targetIngredient={targetIngredient}
+          onSpiceChange={handleSpiceChange}
+          onLongPressStart={startUpdateBatch}
+          onLongPressEnd={endUpdateBatch}
+        />
+      );
+    }
+
+    return (
+      <DefaultContent
+        config={inputPanelConfig}
+        data={inputData}
+        onDataChange={handleSetInputData}
+        onFileDrop={handleFileRead}
+        textareaRef={inputRef}
+      />
+    );
   }, [
     isInput,
     inputPanelConfig,

@@ -50,15 +50,23 @@ export class Kitchen {
 
   public initAutoCook(): () => void {
     const handleKitchenChange = (state: KitchenState): void => {
-      if (state.isAutoCookEnabled && !state.isBatchingUpdates) {
-        this.cook();
+      if (!state.isAutoCookEnabled) {
+        return;
       }
+
+      if (state.isBatchingUpdates) {
+        return;
+      }
+
+      this.cook();
     };
 
     const handleRecipeChange = (): void => {
-      if (useKitchenStore.getState().isAutoCookEnabled) {
-        this.cook();
+      if (!useKitchenStore.getState().isAutoCookEnabled) {
+        return;
       }
+
+      this.cook();
     };
 
     const unsubscribeKitchen = useKitchenStore.subscribe(
@@ -73,9 +81,15 @@ export class Kitchen {
     const unsubscribeBatch = useKitchenStore.subscribe(
       (state) => state.isBatchingUpdates,
       (isBatching) => {
-        if (!isBatching && useKitchenStore.getState().isAutoCookEnabled) {
-          this.cook();
+        if (isBatching) {
+          return;
         }
+
+        if (!useKitchenStore.getState().isAutoCookEnabled) {
+          return;
+        }
+
+        this.cook();
       },
     );
 
@@ -146,12 +160,15 @@ export class Kitchen {
 
   public setCookingInterval(ms: number): void {
     const newMs = Math.max(0, ms);
-    if (newMs !== this.intervalMs) {
-      this.intervalMs = newMs;
-      logger.info(`Cooking interval set to ${this.intervalMs}ms.`);
-      if (!this.isCooking) {
-        this.scheduleNextCook();
-      }
+    if (newMs === this.intervalMs) {
+      return;
+    }
+
+    this.intervalMs = newMs;
+    logger.info(`Cooking interval set to ${this.intervalMs}ms.`);
+
+    if (!this.isCooking) {
+      this.scheduleNextCook();
     }
   }
 
@@ -160,12 +177,13 @@ export class Kitchen {
     const wasEnabled = kitchenStore.isAutoCookEnabled;
     kitchenStore.toggleAutoCookState();
 
-    if (!wasEnabled) {
-      this.cook();
-    } else {
+    if (wasEnabled) {
       this.clearScheduledCook('Auto-cook disabled, pending scheduled cook cancelled.');
       this.hasPendingCook = false;
+      return;
     }
+
+    this.cook();
   }
 
   public async executeSubRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string, context?: Partial<IngredientContext>): Promise<string> {
@@ -183,7 +201,10 @@ export class Kitchen {
         ...context,
       });
 
-      if (res.status === 'error') throw new AppError(res.nextData.cast('string').value, 'Sub-recipe Execution');
+      if (res.status === 'error') {
+        throw new AppError(res.nextData.cast('string').value, 'Sub-recipe Execution');
+      }
+
       this.updateLoopStateFromResult(state, res, ingredient.id);
     }
     return state.cookedData.cast('string').value;
@@ -191,7 +212,14 @@ export class Kitchen {
 
   private async cookRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeCookResult> {
     const loop = await this.executeRecipeLoop(recipe, initialInput);
-    const status: CookingStatusType = loop.globalError ? 'error' : loop.hasWarnings ? 'warning' : 'success';
+
+    let status: CookingStatusType = 'success';
+    if (loop.globalError) {
+      status = 'error';
+    } else if (loop.hasWarnings) {
+      status = 'warning';
+    }
+
     logger.info(`Cook finished with status: ${status}.`);
     return {
       cookingStatus: status,
@@ -214,17 +242,27 @@ export class Kitchen {
       state.localWarnings[id] = warningMessage;
     }
 
-    if (panelInstruction) {
-      if (panelInstruction.panelType === 'input') {
-        state.lastInputConfig = panelInstruction.config;
-        state.lastInputPanelId = inputPanelId ?? null;
-      } else {
-        state.lastOutputConfig = panelInstruction.config;
-      }
+    if (hasError) {
+      state.globalError = true;
     }
 
-    if (hasError) state.globalError = true;
-    if (status === 'warning') state.hasWarnings = true;
+    if (status === 'warning') {
+      state.hasWarnings = true;
+    }
+
+    if (!panelInstruction) {
+      return;
+    }
+
+    if (panelInstruction.panelType === 'output') {
+      state.lastOutputConfig = panelInstruction.config;
+      return;
+    }
+
+    if (panelInstruction.panelType === 'input') {
+      state.lastInputConfig = panelInstruction.config;
+      state.lastInputPanelId = inputPanelId ?? null;
+    }
   }
 
   private createInitialLoopState(init: string): RecipeLoopState {
@@ -263,7 +301,10 @@ export class Kitchen {
 
       const res = await this.runIngredient(ing, def, state.cookedData, recipe, i, init);
       this.updateLoopStateFromResult(state, res, ing.id);
-      if (state.globalError) break;
+
+      if (state.globalError) {
+        break;
+      }
     }
     return state;
   }
@@ -280,16 +321,28 @@ export class Kitchen {
     const ctx = providedCtx ?? { currentIndex: idx, ingredient: ing, initialInput: init, recipe };
     try {
       const result = await def.run(data, ing.spices, ctx);
+
       if (!(result instanceof InputType)) {
         throw new Error(`Ingredient '${def.name}' returned an invalid result type.`);
       }
 
       if (result.warningMessage !== undefined) {
-        return { hasError: false, nextData: data, status: 'warning', warningMessage: result.warningMessage };
+        return {
+          hasError: false,
+          nextData: data,
+          status: 'warning',
+          warningMessage: result.warningMessage,
+        };
       }
 
       const panel = result.panelControl;
-      const inputId = panel?.panelType === 'input' && panel.config.mode === 'spiceEditor' ? panel.config.targetIngredientId : null;
+      const isSpiceEditor = panel?.panelType === 'input' && panel.config.mode === 'spiceEditor';
+
+      let inputId: string | null = null;
+      if (isSpiceEditor && panel?.panelType === 'input' && panel.config.mode === 'spiceEditor') {
+        inputId = panel.config.targetIngredientId;
+      }
+
       return {
         hasError: false,
         status: 'success',
@@ -304,20 +357,24 @@ export class Kitchen {
   }
 
   private clearScheduledCook(logMessage?: string): void {
-    if (this.timeoutId) {
-      clearTimeout(this.timeoutId);
-      this.timeoutId = null;
-      if (logMessage) logger.info(logMessage);
+    if (!this.timeoutId) return;
+
+    clearTimeout(this.timeoutId);
+    this.timeoutId = null;
+
+    if (logMessage) {
+      logger.info(logMessage);
     }
   }
 
   private scheduleNextCook(): void {
     this.clearScheduledCook();
-    if (this.intervalMs > 0 && useKitchenStore.getState().isAutoCookEnabled) {
-      this.timeoutId = window.setTimeout(() => {
-        this.cook();
-      }, this.intervalMs);
-      logger.info(`Next cook scheduled in ${this.intervalMs}ms.`);
-    }
+
+    if (this.intervalMs <= 0) return;
+    if (!useKitchenStore.getState().isAutoCookEnabled) return;
+
+    this.timeoutId = window.setTimeout(() => this.cook(), this.intervalMs);
+
+    logger.info(`Next cook scheduled in ${this.intervalMs}ms.`);
   }
 }

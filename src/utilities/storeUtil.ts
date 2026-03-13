@@ -107,32 +107,37 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
 
         const existing = currentMap.get(id);
 
-        if (existing) {
-          const updated = { ...existing, ...item } as V;
-          if (shallowEqual(existing, updated)) return state;
-
-          const nextMap = new Map(currentMap);
-          nextMap.set(id, updated);
-
-          const nextList = currentList.map((i) => (i[idKey] === id ? updated : i));
-
-          return asPartial<T>({
-            [listKey]: nextList,
-            [mapKey]: nextMap,
-          });
-        } else {
+        if (!existing) {
           const nextMap = new Map(currentMap);
           const newItem = item as V;
-          let nextList = [...currentList, newItem];
+          const nextList = [...currentList, newItem];
           nextMap.set(id, newItem);
 
-          if (sortFn) nextList.sort(sortFn);
+          if (sortFn) {
+            nextList.sort(sortFn);
+          }
 
           return asPartial<T>({
             [listKey]: nextList,
             [mapKey]: nextMap,
           });
         }
+
+        const updated = { ...existing, ...item } as V;
+
+        if (shallowEqual(existing, updated)) {
+          return state;
+        }
+
+        const nextMap = new Map(currentMap);
+        nextMap.set(id, updated);
+
+        const nextList = currentList.map((i) => (i[idKey] === id ? updated : i));
+
+        return asPartial<T>({
+          [listKey]: nextList,
+          [mapKey]: nextMap,
+        });
       }),
 
     remove: (id: V[IDK]) =>

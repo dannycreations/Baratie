@@ -144,26 +144,30 @@ export const validateSpices = (
     }
 
     const input = new InputType(rawValue);
-    switch (spiceType) {
-      case 'number':
-        validatedSpices[spiceId] = input.cast('number', { max: spice.max, min: spice.min, value: spice.value }).value;
-        break;
-      case 'boolean':
-        validatedSpices[spiceId] = input.cast('boolean', { value: spice.value }).value;
-        break;
-      case 'select': {
-        const val = input.value;
-        const isValid = spice.options.some((opt) => String(opt.value) === String(val));
-        validatedSpices[spiceId] = isValid ? prepareSelectValue(val as SpiceValue, spice) : spice.value;
-        break;
-      }
-      case 'string':
-      case 'textarea':
-        validatedSpices[spiceId] = input.cast('string', { value: spice.value }).value;
-        break;
-      default:
-        validatedSpices[spiceId] = input.value as SpiceValue;
+
+    if (spiceType === 'number') {
+      validatedSpices[spiceId] = input.cast('number', { max: spice.max, min: spice.min, value: spice.value }).value;
+      continue;
     }
+
+    if (spiceType === 'boolean') {
+      validatedSpices[spiceId] = input.cast('boolean', { value: spice.value }).value;
+      continue;
+    }
+
+    if (spiceType === 'select') {
+      const val = input.value;
+      const isValid = spice.options.some((opt) => String(opt.value) === String(val));
+      validatedSpices[spiceId] = isValid ? prepareSelectValue(val as SpiceValue, spice) : spice.value;
+      continue;
+    }
+
+    if (spiceType === 'string' || spiceType === 'textarea') {
+      validatedSpices[spiceId] = input.cast('string', { value: spice.value }).value;
+      continue;
+    }
+
+    validatedSpices[spiceId] = input.value as SpiceValue;
   }
   return validatedSpices;
 };

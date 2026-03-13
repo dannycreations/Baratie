@@ -93,6 +93,7 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
     for (let attempt = 0; attempt <= retriesOnError; attempt++) {
       try {
         const collectedOutputs: Array<string> = [];
+
         for (let repetitionIndex = 0; repetitionIndex < repeatCount; repetitionIndex++) {
           const { result: output, error } = await errorHandler.attemptAsync(
             () => kitchen.executeSubRecipe(ingredientsToRepeat, initialInput, context),
@@ -106,29 +107,37 @@ export const REPEAT_STEP_DEF: IngredientDefinition<RepeatStepSpices> = {
           if (error) {
             throw error;
           }
-          if (output !== null) {
-            collectedOutputs.push(output);
+
+          if (output === null) {
+            continue;
           }
+
+          collectedOutputs.push(output);
         }
 
         const processedDelimiter = delimiter.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
         return input.update(collectedOutputs.join(processedDelimiter));
       } catch (error) {
         const isLastAttempt = attempt >= retriesOnError;
-        if (isLastAttempt) {
-          errorHandler.handle(error, `Ingredient: ${ingredientDisplayName}`, {
-            defaultMessage: `The ingredient '${ingredientDisplayName}' failed after ${retriesOnError} retries.`,
-            shouldNotify: true,
-          });
-          throw error;
-        } else {
+
+        if (!isLastAttempt) {
           logger.warn(`Repeat Step: Attempt ${attempt + 1} failed for '${ingredientDisplayName}'. Retrying in ${retryDelayMs}ms...`, error);
+
           if (retryDelayMs > 0) {
             await new Promise((resolve) => {
               setTimeout(resolve, retryDelayMs);
             });
           }
+
+          continue;
         }
+
+        errorHandler.handle(error, `Ingredient: ${ingredientDisplayName}`, {
+          defaultMessage: `The ingredient '${ingredientDisplayName}' failed after ${retriesOnError} retries.`,
+          shouldNotify: true,
+        });
+
+        throw error;
       }
     }
 

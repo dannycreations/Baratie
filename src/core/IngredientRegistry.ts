@@ -127,10 +127,12 @@ export class IngredientRegistry {
 
   public endBatch(): void {
     this.batchDepth--;
-    if (this.batchDepth <= 0) {
-      this.batchDepth = 0;
-      this.invalidate();
+    if (this.batchDepth > 0) {
+      return;
     }
+
+    this.batchDepth = 0;
+    this.invalidate();
   }
 
   public get(id: string): IngredientProps | undefined {
@@ -138,18 +140,28 @@ export class IngredientRegistry {
   }
 
   public getAll(): ReadonlyArray<IngredientProps> {
-    if (this.sortedArray) return this.sortedArray;
+    if (this.sortedArray) {
+      return this.sortedArray;
+    }
+
     this.sortedArray = Array.from(this.ingredients.values()).sort((a, b) => a.name.localeCompare(b.name));
+
     return this.sortedArray;
   }
 
   public getByName(name: string): IngredientProps | undefined {
     const id = this.nameToIdMap.get(name);
-    return id ? this.ingredients.get(id) : undefined;
+    if (!id) {
+      return undefined;
+    }
+
+    return this.ingredients.get(id);
   }
 
   public getAllCategories(): ReadonlySet<string> {
-    if (this.categories) return this.categories;
+    if (this.categories) {
+      return this.categories;
+    }
 
     const categorySet = new Set<string>();
     for (const ingredient of this.ingredients.values()) {
@@ -157,6 +169,7 @@ export class IngredientRegistry {
     }
 
     this.categories = categorySet;
+
     return categorySet;
   }
 
@@ -167,12 +180,15 @@ export class IngredientRegistry {
     errorHandler.assert(!!id, `Ingredient definition "${definition.name}" failed to generate a valid ID.`);
 
     const existing = this.ingredients.get(id);
+
+    if (existing && existing.name === definition.name) {
+      this.ingredients.set(id, { ...definition, id } as IngredientProps);
+      this.invalidate();
+
+      return id;
+    }
+
     if (existing) {
-      if (existing.name === definition.name) {
-        this.ingredients.set(id, { ...definition, id } as IngredientProps);
-        this.invalidate();
-        return id;
-      }
       logger.warn(`IngredientRegistry: ID collision for "${definition.name}" with existing "${existing.name}". Overwriting.`);
       this.nameToIdMap.delete(existing.name);
     }
@@ -180,6 +196,7 @@ export class IngredientRegistry {
     this.ingredients.set(id, { ...definition, id } as IngredientProps);
     this.nameToIdMap.set(definition.name, id);
     this.invalidate();
+
     return id;
   }
 
@@ -187,20 +204,28 @@ export class IngredientRegistry {
     let changed = false;
     for (const id of ids) {
       const ing = this.ingredients.get(id);
-      if (ing) {
-        this.nameToIdMap.delete(ing.name);
-        this.ingredients.delete(id);
-        changed = true;
-        logger.info(`Unregistered ingredient: ${id}`);
+      if (!ing) {
+        continue;
       }
+
+      this.nameToIdMap.delete(ing.name);
+      this.ingredients.delete(id);
+      changed = true;
+      logger.info(`Unregistered ingredient: ${id}`);
     }
-    if (changed) {
-      this.invalidate();
+
+    if (!changed) {
+      return;
     }
+
+    this.invalidate();
   }
 
   private invalidate(): void {
-    if (this.batchDepth > 0) return;
+    if (this.batchDepth > 0) {
+      return;
+    }
+
     this.categories = null;
     this.sortedArray = null;
     useIngredientStore.getState().refreshRegistry();

@@ -46,25 +46,29 @@ const recipeNameFormatter = new Intl.DateTimeFormat(undefined, {
 const ingredientsHashCache = new WeakMap<ReadonlyArray<IngredientItem>, string>();
 
 const findIngredientDefinition = (rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientProps | null => {
-  if (rawIngredient.ingredientId) {
-    const defById = ingredientRegistry.get(rawIngredient.ingredientId);
+  const { ingredientId, name } = rawIngredient;
+
+  if (ingredientId) {
+    const defById = ingredientRegistry.get(ingredientId);
     if (defById) {
       return defById;
     }
   }
 
-  const defByName = ingredientRegistry.getByName(rawIngredient.name);
-  if (defByName) {
-    if (rawIngredient.ingredientId) {
-      logger.warn(
-        `Ingredient '${rawIngredient.name}' in recipe '${recipeName}' from ${source} had a stale ID ('${rawIngredient.ingredientId}'). It has been matched by name and updated to the new ID ('${defByName.id}').`,
-      );
-    }
-    return defByName;
+  const defByName = ingredientRegistry.getByName(name);
+
+  if (!defByName) {
+    logger.warn(`Skipping unknown ingredient '${name}' from ${source} for recipe '${recipeName}'. Its definition could not be found.`);
+    return null;
   }
 
-  logger.warn(`Skipping unknown ingredient '${rawIngredient.name}' from ${source} for recipe '${recipeName}'. Its definition could not be found.`);
-  return null;
+  if (ingredientId) {
+    logger.warn(
+      `Ingredient '${name}' in recipe '${recipeName}' from ${source} had a stale ID ('${ingredientId}'). It has been matched by name and updated to the new ID ('${defByName.id}').`,
+    );
+  }
+
+  return defByName;
 };
 
 export const computeInitialRecipeName = (
@@ -77,11 +81,9 @@ export const computeInitialRecipeName = (
     return '';
   }
 
-  if (activeRecipeId) {
-    const activeRecipe = recipeIdMap.get(activeRecipeId);
-    if (activeRecipe) {
-      return activeRecipe.name;
-    }
+  const activeRecipe = activeRecipeId ? recipeIdMap.get(activeRecipeId) : null;
+  if (activeRecipe) {
+    return activeRecipe.name;
   }
 
   const currentHash = createRecipeHash(ingredients);
@@ -145,18 +147,22 @@ export const sanitizeRecipe = (rawRecipe: RawRecipeBookItem, source: 'fileImport
 
   for (const raw of rawIngredients) {
     const validIngredient = sanitizeIngredient(raw, source, name);
-    if (validIngredient) {
-      validIngredients.push(validIngredient);
+
+    if (!validIngredient) {
+      continue;
     }
+
+    validIngredients.push(validIngredient);
   }
 
   const ingredientDifference = rawIngredients.length - validIngredients.length;
-  const warning =
-    ingredientDifference > 0
-      ? `Recipe '${name}' had ${ingredientDifference} invalid ingredient${
-          ingredientDifference === 1 ? '' : 's'
-        } that ${ingredientDifference === 1 ? 'was' : 'were'} removed.`
-      : null;
+  let warning: string | null = null;
+  if (ingredientDifference > 0) {
+    const pluralSuffix = ingredientDifference === 1 ? '' : 's';
+    const verb = ingredientDifference === 1 ? 'was' : 'were';
+    warning = `Recipe '${name}' had ${ingredientDifference} invalid ingredient${pluralSuffix} that ${verb} removed.`;
+  }
+
   const recipe: RecipebookItem = { id, name, ingredients: validIngredients, createdAt, updatedAt };
   return { recipe, warning };
 };
@@ -168,16 +174,20 @@ export const processAndSanitizeRecipes = (rawItems: ReadonlyArray<unknown>, sour
 
   for (const rawItem of rawItems) {
     const itemValidation = safeParse(RecipeBookItemSchema, rawItem);
-    if (itemValidation.success) {
-      const { recipe, warning } = sanitizeRecipe(itemValidation.output, source);
-      if (recipe) {
-        sanitizedRecipes.push(recipe);
-      }
-      if (warning) {
-        allWarnings.add(warning);
-      }
-    } else {
+
+    if (!itemValidation.success) {
       corruptionCount++;
+      continue;
+    }
+
+    const { recipe, warning } = sanitizeRecipe(itemValidation.output, source);
+
+    if (recipe) {
+      sanitizedRecipes.push(recipe);
+    }
+
+    if (warning) {
+      allWarnings.add(warning);
     }
   }
 

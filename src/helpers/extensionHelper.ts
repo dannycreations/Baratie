@@ -77,6 +77,7 @@ const fetchProvider = async (repoInfo: Readonly<{ owner: string; repo: string; r
   try {
     logger.debug(`Fetching from primary provider: ${primaryUrl}`);
     const response = await fetch(primaryUrl, { cache: 'reload' });
+
     if (response.ok) {
       return response;
     }
@@ -87,29 +88,26 @@ const fetchProvider = async (repoInfo: Readonly<{ owner: string; repo: string; r
   }
 
   logger.debug(`Fetching from mirror provider: ${fallbackUrl}`);
+
   return fetch(fallbackUrl, { cache: 'reload' });
 };
 
 export const isCacheValid = (fetchedAt?: number): boolean => {
-  if (typeof fetchedAt !== 'number') {
-    return false;
-  }
+  if (typeof fetchedAt !== 'number') return false;
+
   return Date.now() - fetchedAt < EXTENSION_CACHE_MS;
 };
 
 export const parseGitHubUrl = (url: string): Readonly<{ owner: string; repo: string; ref: string }> | null => {
   const trimmedUrl = url.trim();
   const match = trimmedUrl.match(GH_URL_SHORTHAND_REGEX);
-  if (!match) {
-    return null;
-  }
+  if (!match) return null;
 
   const owner = match[1] || match[4];
   const repo = match[2] || match[5];
   const ref = match[3] || match[6] || 'latest';
-  if (match[4] && match[4].includes('.')) {
-    return null;
-  }
+
+  if (match[4] && match[4].includes('.')) return null;
   return { owner, repo, ref };
 };
 
@@ -127,7 +125,7 @@ export const loadAndExecuteExtension = async (
     return;
   }
 
-  let entryPointsOrModules: string[] | ManifestModule[];
+  let entryPointsOrModules: ReadonlyArray<string | ManifestModule> = [];
   if (Array.isArray(entry)) {
     entryPointsOrModules = entry;
   } else if (entry) {
@@ -141,11 +139,12 @@ export const loadAndExecuteExtension = async (
     return;
   }
 
-  let entryPoints: string[];
-  if (isObjectLike(entryPointsOrModules[0])) {
+  let entryPoints: ReadonlyArray<string> = [];
+  const firstElement = entryPointsOrModules[0];
+  if (isObjectLike(firstElement)) {
     entryPoints = (entryPointsOrModules as ReadonlyArray<ManifestModule>).map((m) => m.entry);
   } else {
-    entryPoints = entryPointsOrModules as string[];
+    entryPoints = entryPointsOrModules as ReadonlyArray<string>;
   }
 
   const newlyRegisteredKeys: Array<string> = [];
@@ -175,41 +174,44 @@ export const loadAndExecuteExtension = async (
     onProgress?.(totalSteps > 0 ? completedSteps / totalSteps : 1);
   };
 
-  if (scriptsToFetch.length > 0) {
-    await Promise.all(
-      scriptsToFetch.map(async (entryPoint) => {
-        try {
-          const response = await fetchProvider(repoInfo, entryPoint);
-          if (!response.ok) {
-            throw new Error(`Fetch failed: ${response.statusText}`);
-          }
-          const content = await response.text();
-          fetchedScripts[entryPoint] = content;
-        } catch (error) {
-          logger.warn(`Failed to fetch script '${entryPoint}':`, error);
-        } finally {
-          incrementProgress();
-        }
-      }),
-    );
-  }
+  const fetchPromises = scriptsToFetch.map(async (entryPoint) => {
+    try {
+      const response = await fetchProvider(repoInfo, entryPoint);
+
+      if (!response.ok) {
+        throw new Error(`Fetch failed: ${response.statusText}`);
+      }
+
+      const content = await response.text();
+      fetchedScripts[entryPoint] = content;
+    } catch (error) {
+      logger.warn(`Failed to fetch script '${entryPoint}':`, error);
+    } finally {
+      incrementProgress();
+    }
+  });
+
+  await Promise.all(fetchPromises);
 
   try {
     ingredientRegistry.startBatch();
     for (const entryPoint of entryPoints) {
-      if (entryPoint.trim()) {
-        try {
-          const scriptContent = cachedScripts?.[entryPoint] || fetchedScripts[entryPoint];
+      if (!entryPoint.trim()) {
+        incrementProgress();
+        continue;
+      }
 
-          if (!scriptContent) {
-            throw new Error('Script content not found after fetch.');
-          }
+      try {
+        const scriptContent = cachedScripts?.[entryPoint] || fetchedScripts[entryPoint];
 
-          executeScript(scriptContent, customBaratieApi);
-          successCount++;
-        } catch (error) {
-          errorLogs.push(`Error in '${entryPoint}': ${error instanceof Error ? error.message : String(error)}`);
+        if (!scriptContent) {
+          throw new Error('Script content not found after fetch.');
         }
+
+        executeScript(scriptContent, customBaratieApi);
+        successCount++;
+      } catch (error) {
+        errorLogs.push(`Error in '${entryPoint}': ${error instanceof Error ? error.message : String(error)}`);
       }
 
       incrementProgress();
@@ -220,9 +222,11 @@ export const loadAndExecuteExtension = async (
 
   if (!getExtensionMap().has(id)) {
     logger.info(`Extension '${name || id}' was removed during load. Aborting update and cleaning up registered ingredients.`);
+
     if (newlyRegisteredKeys.length > 0) {
       ingredientRegistry.unregister(newlyRegisteredKeys);
     }
+
     return;
   }
 
@@ -233,15 +237,26 @@ export const loadAndExecuteExtension = async (
   if (newlyRegisteredKeys.length > 0) {
     setIngredients(id, newlyRegisteredKeys);
   }
-  const finalStatus: Extension['status'] = successCount > 0 ? (errorLogs.length > 0 ? 'partial' : 'loaded') : 'error';
+
+  let finalStatus: Extension['status'] = 'error';
+  if (successCount > 0) {
+    finalStatus = errorLogs.length > 0 ? 'partial' : 'loaded';
+  }
   setExtensionStatus(id, finalStatus, errorLogs);
 
   const nameForLog = name || id;
+
   if (finalStatus === 'loaded') {
     logger.info(`Extension '${nameForLog}' loaded successfully with ${newlyRegisteredKeys.length} ingredient(s).`);
-  } else if (finalStatus === 'partial') {
+    return;
+  }
+
+  if (finalStatus === 'partial') {
     logger.warn(`Extension '${nameForLog}' partially loaded with ${errorLogs.length} error(s).`, errorLogs);
-  } else {
+    return;
+  }
+
+  if (finalStatus === 'error') {
     logger.error(`Extension '${nameForLog}' failed to load with ${errorLogs.length} error(s).`, errorLogs);
   }
 };

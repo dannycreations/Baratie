@@ -85,19 +85,30 @@ export class TaskRegistry {
         taskStore.setLoadingMessage(task.message);
         logger.debug(`Executing init task: ${task.message}`);
 
-        if (task.handler) {
-          const { error } = await errorHandler.attemptAsync(task.handler, `Init: ${task.message}`, {
-            genericMessage: `Failed during task: ${task.message}`,
-            shouldNotify: false,
+        if (!task.handler) {
+          await new Promise((resolve) => {
+            setTimeout(resolve, 0);
           });
-
-          if (error) {
-            taskStore.setLoadingMessage(error.userMessage || error.message, true);
-            return;
-          }
+          continue;
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        const context = `Init: ${task.message}`;
+        const options = {
+          genericMessage: `Failed during task: ${task.message}`,
+          shouldNotify: false,
+        };
+
+        const { error } = await errorHandler.attemptAsync(task.handler, context, options);
+
+        if (error) {
+          const errorMessage = error.userMessage || error.message;
+          taskStore.setLoadingMessage(errorMessage, true);
+          return;
+        }
+
+        await new Promise((resolve) => {
+          setTimeout(resolve, 0);
+        });
       }
 
       useTaskStore.getState().setInitialized(true);

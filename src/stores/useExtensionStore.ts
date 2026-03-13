@@ -100,13 +100,14 @@ export const useExtensionStore = create<ExtensionState>()(
         const { setExtensions, extensions } = get();
         const pendingExtension = extensions.find((e) => e.status === 'awaiting');
 
-        if (pendingExtension) {
-          const displayName = pendingExtension.name || pendingExtension.id;
-          logger.info(`Installation cancelled for extension '${displayName}'. Removing from store.`);
-          setExtensions(extensions.filter((ext) => ext.id !== pendingExtension.id));
-        } else {
+        if (!pendingExtension) {
           logger.warn(`Attempted to cancel non-existent pending extension.`);
+          return;
         }
+
+        const displayName = pendingExtension.name || pendingExtension.id;
+        logger.info(`Installation cancelled for extension '${displayName}'. Removing from store.`);
+        setExtensions(extensions.filter((ext) => ext.id !== pendingExtension.id));
       },
 
       init: async () => {
@@ -118,19 +119,28 @@ export const useExtensionStore = create<ExtensionState>()(
           const { success, output } = safeParse(StorableExtensionSchema, rawExt);
           if (success) {
             extensions.push({ ...output, status: 'loading' });
-          } else {
-            hadCorruption = true;
-            if (isObjectLike(rawExt) && isString(rawExt.id)) {
-              const id = rawExt.id;
-              const name = isString(rawExt.name) ? rawExt.name : id;
-              extensions.push({
-                id,
-                name,
-                status: 'error',
-                errors: ['Corrupted data in storage. Please refresh the extension.'],
-              });
-            }
+            continue;
           }
+
+          hadCorruption = true;
+
+          if (!isObjectLike(rawExt)) {
+            continue;
+          }
+
+          if (!isString(rawExt.id)) {
+            continue;
+          }
+
+          const id = rawExt.id;
+          const name = isString(rawExt.name) ? rawExt.name : id;
+
+          extensions.push({
+            id,
+            name,
+            status: 'error',
+            errors: ['Corrupted data in storage. Please refresh the extension.'],
+          });
         }
 
         if (hadCorruption) {
@@ -152,6 +162,7 @@ export const useExtensionStore = create<ExtensionState>()(
               upsert: get().upsert,
             });
           }
+
           return get().refresh(ext.id, { force: true });
         });
 
@@ -199,11 +210,17 @@ export const useExtensionStore = create<ExtensionState>()(
         const context = options?.context;
         const isNew = !storeExtension;
 
-        const logMessage = context === 'refresh' || (context === 'add' && !isNew) ? 'Refreshing' : 'Fetching';
+        const isRefreshing = context === 'refresh' || (context === 'add' && !isNew);
+
+        let logMessage = 'Fetching';
+        if (isRefreshing) {
+          logMessage = 'Refreshing';
+        }
+
         logger.info(`${logMessage} extension: ${storeExtension?.name || id}`);
 
         let displayName = storeExtension?.name || id;
-        if (logMessage === 'Refreshing') {
+        if (isRefreshing) {
           displayName = 'Refreshing...';
         } else if (isNew) {
           displayName = 'Fetching...';
@@ -227,30 +244,38 @@ export const useExtensionStore = create<ExtensionState>()(
           }
 
           const isModuleBased = Array.isArray(manifest.entry) && typeof manifest.entry[0] === 'object';
+
           if (isModuleBased && !options?.force) {
             upsert({ id, name: manifest.name, status: 'awaiting', manifest, scripts: {} });
-          } else {
-            const entryToUse = isModuleBased && storeExtension?.entry ? storeExtension.entry : manifest.entry;
-            upsert({ id, manifest, entry: entryToUse, scripts: {} });
-            const currentExtState = get().extensionMap.get(id)!;
+            return;
+          }
 
-            await loadAndExecuteExtension(
-              currentExtState,
-              {
-                getExtensionMap: () => get().extensionMap,
-                setExtensionStatus: get().setExtensionStatus,
-                setIngredients: get().setIngredients,
-                upsert: get().upsert,
-              },
-              options?.onProgress,
-            );
+          const entryToUse = isModuleBased && storeExtension?.entry ? storeExtension.entry : manifest.entry;
+          upsert({ id, manifest, entry: entryToUse, scripts: {} });
 
-            const finalState = get().extensionMap.get(id)!;
-            if (finalState.status === 'loaded' || finalState.status === 'partial') {
-              upsert({ id, name: manifest.name });
-            } else if (finalState.status === 'error') {
-              upsert({ id, name: storeExtension?.name || 'Error' });
-            }
+          const currentExtState = get().extensionMap.get(id)!;
+
+          await loadAndExecuteExtension(
+            currentExtState,
+            {
+              getExtensionMap: () => get().extensionMap,
+              setExtensionStatus: get().setExtensionStatus,
+              setIngredients: get().setIngredients,
+              upsert: get().upsert,
+            },
+            options?.onProgress,
+          );
+
+          const finalState = get().extensionMap.get(id)!;
+          const isSuccess = finalState.status === 'loaded' || finalState.status === 'partial';
+          if (isSuccess) {
+            upsert({ id, name: manifest.name });
+            return;
+          }
+
+          if (finalState.status === 'error') {
+            const errorDisplayName = storeExtension?.name || 'Error';
+            upsert({ id, name: errorDisplayName });
           }
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : String(error);
@@ -282,17 +307,21 @@ export const useExtensionStore = create<ExtensionState>()(
 
       setExtensionStatus: (id, status, errors) => {
         const extension = get().extensionMap.get(id);
+
         if (!extension) {
           return;
         }
+
         const updates: Partial<Extension> = {
           status: status,
           errors: errors,
           ...((status === 'loaded' || status === 'partial') && { fetchedAt: Date.now() }),
         };
+
         if (status === 'error' && extension.name === 'Refreshing...') {
           updates.name = 'Error';
         }
+
         get().upsert({ ...updates, id });
       },
 

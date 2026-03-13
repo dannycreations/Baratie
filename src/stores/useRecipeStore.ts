@@ -89,9 +89,15 @@ export const useRecipeStore = create<RecipeState>()(
           activeRecipeId: string | null;
         }>(STORAGE_RECIPE, 'Current Recipe');
 
-        if (stored && Array.isArray(stored.ingredients)) {
-          get().setRecipe(stored.ingredients, stored.activeRecipeId);
+        if (!stored) {
+          return;
         }
+
+        if (!Array.isArray(stored.ingredients)) {
+          return;
+        }
+
+        get().setRecipe(stored.ingredients, stored.activeRecipeId);
       },
 
       removeIngredient: (id) => {
@@ -123,14 +129,16 @@ export const useRecipeStore = create<RecipeState>()(
       setRecipe: (ingredients, activeRecipeId = null) => {
         const validIngredients = ingredients.map((ingredient) => {
           const ingredientDefinition = ingredientRegistry.get(ingredient.ingredientId);
-          if (ingredientDefinition) {
-            const validatedSpices = validateSpices(ingredientDefinition, ingredient.spices);
-            return { ...ingredient, spices: validatedSpices };
+
+          if (!ingredientDefinition) {
+            logger.warn(
+              `Ingredient definition not found for ID "${ingredient.ingredientId}" (${ingredient.name}) during setRecipe. Options may not be correctly validated.`,
+            );
+            return ingredient;
           }
-          logger.warn(
-            `Ingredient definition not found for ID "${ingredient.ingredientId}" (${ingredient.name}) during setRecipe. Options may not be correctly validated.`,
-          );
-          return ingredient;
+
+          const validatedSpices = validateSpices(ingredientDefinition, ingredient.spices);
+          return { ...ingredient, spices: validatedSpices };
         });
 
         ingredientHandlers.setAll(validIngredients);
@@ -144,9 +152,16 @@ export const useRecipeStore = create<RecipeState>()(
       toggleEditingId: (id) => {
         if (useSettingStore.getState().multipleOpen) {
           editingHandlers.toggle(id);
-        } else {
-          set((state) => ({ editingIds: state.editingIds.has(id) ? new Set() : new Set([id]) }));
+          return;
         }
+
+        const currentEditingIds = get().editingIds;
+        if (currentEditingIds.has(id)) {
+          set({ editingIds: new Set() });
+          return;
+        }
+
+        set({ editingIds: new Set([id]) });
       },
 
       toggleIngredientPause: pausedHandlers.toggle,
@@ -182,21 +197,29 @@ export const useRecipeStore = create<RecipeState>()(
 useIngredientStore.subscribe(
   (state) => [state.registryVersion, state.isHydrated] as const,
   ([, isHydrated]) => {
-    if (!isHydrated || !useTaskStore.getState().isInitialized) return;
+    if (!isHydrated) {
+      return;
+    }
+
+    if (!useTaskStore.getState().isInitialized) {
+      return;
+    }
 
     const { ingredients, setRecipe, activeRecipeId } = useRecipeStore.getState();
     const updatedIngredients = filterExistingIngredients(ingredients);
 
-    if (updatedIngredients.length < ingredients.length) {
-      useNotificationStore
-        .getState()
-        .show(
-          `${ingredients.length - updatedIngredients.length} ingredient(s) were removed from your recipe because their extension was uninstalled.`,
-          'info',
-          'Recipe Updated',
-        );
-      setRecipe(updatedIngredients, activeRecipeId);
+    if (updatedIngredients.length >= ingredients.length) {
+      return;
     }
+
+    useNotificationStore
+      .getState()
+      .show(
+        `${ingredients.length - updatedIngredients.length} ingredient(s) were removed from your recipe because their extension was uninstalled.`,
+        'info',
+        'Recipe Updated',
+      );
+    setRecipe(updatedIngredients, activeRecipeId);
   },
 );
 

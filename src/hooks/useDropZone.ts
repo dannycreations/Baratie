@@ -72,14 +72,20 @@ export const useDropZone = <T, E extends HTMLElement>({
       if (disabled) {
         return;
       }
-      if (onValidate(event.dataTransfer)) {
-        if (onDrop && onExtract) {
-          const data = onExtract(event.dataTransfer);
-          if (data !== undefined) {
-            onDrop(data);
-          }
-        }
+      if (!onValidate(event.dataTransfer)) {
+        return;
       }
+
+      if (!onDrop || !onExtract) {
+        return;
+      }
+
+      const data = onExtract(event.dataTransfer);
+      if (data === undefined) {
+        return;
+      }
+
+      onDrop(data);
     },
     [disabled, onValidate, onDrop, onExtract],
   );

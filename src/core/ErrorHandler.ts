@@ -103,9 +103,14 @@ export class ErrorHandler {
 
   private buildError(error: unknown, callerContext?: string, defaultMessage?: string, genericMessage?: string): AppError {
     const userMsg = genericMessage ?? defaultMessage;
+
     if (error instanceof AppError) {
-      return new AppError(error.message, callerContext ?? error.context, error.userMessage ?? userMsg, error);
+      const techMessage = error.message;
+      const context = callerContext ?? error.context;
+      const displayMessage = error.userMessage ?? userMsg;
+      return new AppError(techMessage, context, displayMessage, error);
     }
+
     if (error instanceof Error) {
       return new AppError(error.message, callerContext, userMsg, error);
     }
@@ -113,9 +118,10 @@ export class ErrorHandler {
     let errorMessage: string;
     try {
       errorMessage = `Unknown error: ${objectStringify(error)}`;
-    } catch {
+    } catch (e: unknown) {
       errorMessage = `Unknown error: ${String(error)}`;
     }
+
     return new AppError(errorMessage, callerContext, userMsg, error);
   }
 }

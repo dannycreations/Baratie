@@ -62,9 +62,11 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
       if (!recipeToDelete) return;
 
       recipeHandlers.remove(id);
-      if (saveAllRecipes(get().recipes)) {
-        show(`Recipe '${recipeToDelete.name}' was deleted.`, 'info', 'Cookbook Action');
+      if (!saveAllRecipes(get().recipes)) {
+        return;
       }
+
+      show(`Recipe '${recipeToDelete.name}' was deleted.`, 'info', 'Cookbook Action');
     },
 
     exportAll: () => {
@@ -132,6 +134,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
       const { recipes, warnings, hasCorruption }: SanitizedRecipesResult = processAndSanitizeRecipes(dataToValidate, 'fileImport');
 
       const mutableWarnings = new Set(warnings);
+
       if (hasCorruption) {
         mutableWarnings.add('Some recipe entries in the file were malformed and have been skipped.');
       }
@@ -171,10 +174,12 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
       const { show } = useNotificationStore.getState();
       const recipeToLoad = get().recipeIdMap.get(id);
 
-      if (recipeToLoad) {
-        useRecipeStore.getState().setRecipe(recipeToLoad.ingredients, recipeToLoad.id);
-        show(`Recipe '${recipeToLoad.name}' loaded.`, 'success', 'Cookbook Action');
+      if (!recipeToLoad) {
+        return;
       }
+
+      useRecipeStore.getState().setRecipe(recipeToLoad.ingredients, recipeToLoad.id);
+      show(`Recipe '${recipeToLoad.name}' loaded.`, 'success', 'Cookbook Action');
     },
 
     merge: (recipesToImport: ReadonlyArray<RecipebookItem>) => {
@@ -193,44 +198,60 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
       for (const item of recipesToImport) {
         const recipeItem = item as RecipebookItem;
         const existingItem = recipeMap.get(recipeItem.id);
+
         if (!existingItem) {
           recipeMap.set(recipeItem.id, recipeItem);
           added++;
-        } else if (recipeItem.updatedAt > existingItem.updatedAt) {
-          recipeMap.set(recipeItem.id, recipeItem);
-          updated++;
-        } else {
-          skipped++;
+          continue;
         }
+
+        if (recipeItem.updatedAt <= existingItem.updatedAt) {
+          skipped++;
+          continue;
+        }
+
+        recipeMap.set(recipeItem.id, recipeItem);
+        updated++;
       }
 
-      if (added > 0 || updated > 0) {
-        const mergedList: ReadonlyArray<RecipebookItem> = [...recipeMap.values()];
-        if (saveAllRecipes(mergedList)) {
-          const summary = [
-            added > 0 ? `${added} new recipe${added > 1 ? 's' : ''} added.` : '',
-            updated > 0 ? `${updated} recipe${updated > 1 ? 's' : ''} updated.` : '',
-            skipped > 0 ? `${skipped} recipe${skipped > 1 ? 's' : ''} skipped (older versions).` : '',
-          ]
-            .filter(Boolean)
-            .join(' ');
-          if (summary) {
-            show(summary, 'success', 'Import Complete');
-          }
-          setRecipes(mergedList);
-        }
-      } else {
+      if (added === 0 && updated === 0) {
         const summary = skipped > 0 ? `${skipped} recipe${skipped > 1 ? 's' : ''} skipped (duplicates or outdated).` : 'No new recipes to import.';
         show(summary, 'info', 'Import Notice');
+        return;
       }
+
+      const mergedList: ReadonlyArray<RecipebookItem> = [...recipeMap.values()];
+
+      const saveSuccess = saveAllRecipes(mergedList);
+      if (!saveSuccess) {
+        return;
+      }
+
+      const addedPart = added > 0 ? `${added} new recipe${added > 1 ? 's' : ''} added.` : '';
+      const updatedPart = updated > 0 ? `${updated} recipe${updated > 1 ? 's' : ''} updated.` : '';
+      const skippedPart = skipped > 0 ? `${skipped} recipe${skipped > 1 ? 's' : ''} skipped (older versions).` : '';
+
+      const summaryParts = [addedPart, updatedPart, skippedPart];
+      const summary = summaryParts.filter(Boolean).join(' ');
+
+      if (!summary) {
+        return;
+      }
+
+      show(summary, 'success', 'Import Complete');
+
+      setRecipes(mergedList);
     },
 
     prepareToOpen: (args) => {
-      if (args.mode === 'save') {
-        const { recipeIdMap, recipes } = get();
-        const initialName = args.name ?? computeInitialRecipeName(args.ingredients, args.activeRecipeId, recipeIdMap, recipes);
-        set({ nameInput: initialName });
+      if (args.mode !== 'save') {
+        return;
       }
+
+      const { recipeIdMap, recipes } = get();
+      const initialName = args.name ?? computeInitialRecipeName(args.ingredients, args.activeRecipeId, recipeIdMap, recipes);
+
+      set({ nameInput: initialName });
     },
 
     resetModal: () => {
@@ -266,15 +287,19 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
 
       recipeHandlers.upsert(finalRecipe);
 
-      if (saveAllRecipes(get().recipes)) {
-        setActiveRecipeId(finalRecipe.id);
-        const message = isUpdateAction
-          ? `Recipe '${trimmedName}' was updated.`
-          : recipeToUpdate
-            ? `Recipe '${trimmedName}' saved as a new copy.`
-            : `Recipe '${trimmedName}' was saved.`;
-        show(message, 'success', 'Cookbook Action');
+      if (!saveAllRecipes(get().recipes)) {
+        return;
       }
+
+      setActiveRecipeId(finalRecipe.id);
+      let message = `Recipe '${trimmedName}' was saved.`;
+      if (isUpdateAction) {
+        message = `Recipe '${trimmedName}' was updated.`;
+      } else if (recipeToUpdate) {
+        message = `Recipe '${trimmedName}' saved as a new copy.`;
+      }
+
+      show(message, 'success', 'Cookbook Action');
     },
   };
 });

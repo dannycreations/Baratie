@@ -50,10 +50,13 @@ const Baratie = (): JSX.Element => {
   }, [isDragging]);
 
   useEffect(() => {
-    if (isAppReady) {
-      useRecipeStore.getState().init();
-      return kitchen.initAutoCook();
+    if (!isAppReady) {
+      return;
     }
+
+    useRecipeStore.getState().init();
+
+    return kitchen.initAutoCook();
   }, [isAppReady]);
 
   const mainContentClass = clsx('main-content-wrapper', isAppReady ? 'opacity-100' : 'opacity-0');
@@ -105,50 +108,70 @@ export const createRoot = (element: HTMLElement | null, options: Readonly<Barati
     });
   }
 
-  if (defaultExtensions) {
-    taskRegistry.register({
-      type: 'postInit',
-      message: 'Gathering exotic provisions...',
-      handler: async () => {
-        const { add, extensionMap } = useExtensionStore.getState();
-        const { setLoadingMessage } = useTaskStore.getState();
-        const extensionsToLoad = (Array.isArray(defaultExtensions) ? defaultExtensions : [defaultExtensions]).filter(isString);
-        const totalExtensions = extensionsToLoad.length;
-        if (totalExtensions === 0) return;
+  if (!defaultExtensions) {
+    taskRegistry.init();
 
-        const progressMap = new Array(totalExtensions).fill(0);
+    const root = createReactRoot(element);
 
-        const updateProgress = (index: number, p: number) => {
-          progressMap[index] = p;
-          const totalProgress = progressMap.reduce((acc, curr) => acc + curr, 0);
-          const percent = Math.min(100, Math.round((totalProgress / totalExtensions) * 100));
-          setLoadingMessage(`Gathering exotic provisions... ${percent}%`);
-        };
+    root.render(
+      <StrictMode>
+        <ErrorBoundary>
+          <Baratie />
+        </ErrorBoundary>
+      </StrictMode>,
+    );
 
-        const loadPromises = extensionsToLoad.map(async (url, index) => {
-          const repoInfo = parseGitHubUrl(url);
-          if (!repoInfo) {
-            updateProgress(index, 1);
-            return;
-          }
+    return;
+  }
 
-          const repoName = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
-          if (extensionMap.has(repoName)) {
-            updateProgress(index, 1);
-            return;
-          }
+  taskRegistry.register({
+    type: 'postInit',
+    message: 'Gathering exotic provisions...',
+    handler: async () => {
+      const { add, extensionMap } = useExtensionStore.getState();
+      const { setLoadingMessage } = useTaskStore.getState();
+      const extensionsToLoad = (Array.isArray(defaultExtensions) ? defaultExtensions : [defaultExtensions]).filter(isString);
+      const totalExtensions = extensionsToLoad.length;
 
-          await add(url, {
-            force: true,
-            onProgress: (p) => updateProgress(index, p),
-          });
+      if (totalExtensions === 0) {
+        return;
+      }
+
+      const progressMap = new Array(totalExtensions).fill(0);
+
+      const updateProgress = (index: number, p: number) => {
+        progressMap[index] = p;
+        const totalProgress = progressMap.reduce((acc, curr) => acc + curr, 0);
+        const percent = Math.min(100, Math.round((totalProgress / totalExtensions) * 100));
+        setLoadingMessage(`Gathering exotic provisions... ${percent}%`);
+      };
+
+      const loadPromises = extensionsToLoad.map(async (url, index) => {
+        const repoInfo = parseGitHubUrl(url);
+
+        if (!repoInfo) {
           updateProgress(index, 1);
+          return;
+        }
+
+        const repoName = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
+
+        if (extensionMap.has(repoName)) {
+          updateProgress(index, 1);
+          return;
+        }
+
+        await add(url, {
+          force: true,
+          onProgress: (p) => updateProgress(index, p),
         });
 
-        await Promise.all(loadPromises);
-      },
-    });
-  }
+        updateProgress(index, 1);
+      });
+
+      await Promise.all(loadPromises);
+    },
+  });
 
   taskRegistry.init();
 

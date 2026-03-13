@@ -30,10 +30,12 @@ export const NumberInput = memo<NumberInputProps>(
     useEffect(() => {
       if (valueRef.current !== value) {
         setInternalValue(String(value));
-      } else {
-        if (internalValue !== '' && internalValue !== '-' && value !== parseFloat(internalValue)) {
-          setInternalValue(String(value));
-        }
+        valueRef.current = value;
+        return;
+      }
+
+      if (internalValue !== '' && internalValue !== '-' && value !== parseFloat(internalValue)) {
+        setInternalValue(String(value));
       }
       valueRef.current = value;
     }, [value, internalValue]);
@@ -41,16 +43,22 @@ export const NumberInput = memo<NumberInputProps>(
     const handleInputChange = useCallback(
       (event: ChangeEvent<HTMLInputElement>): void => {
         const val = event.target.value;
-        if (val === '' || val === '-' || /^-?\d*\.?\d*$/.test(val)) {
-          setInternalValue(val);
+        if (val !== '' && val !== '-' && !/^-?\d*\.?\d*$/.test(val)) {
+          return;
+        }
 
-          const numericValue = parseFloat(val);
-          if (isNumber(numericValue)) {
-            const clampedValue = clamp(numericValue, min, max);
-            if (clampedValue !== value) {
-              onChange(clampedValue);
-            }
-          }
+        setInternalValue(val);
+
+        const numericValue = parseFloat(val);
+
+        if (!isNumber(numericValue)) {
+          return;
+        }
+
+        const clampedValue = clamp(numericValue, min, max);
+
+        if (clampedValue !== value) {
+          onChange(clampedValue);
         }
       },
       [min, max, onChange, value],
@@ -69,11 +77,12 @@ export const NumberInput = memo<NumberInputProps>(
 
     const handleBlur = useCallback((): void => {
       const numericValue = parseFloat(internalValue);
-      if (isNumber(numericValue)) {
-        updateAndNotify(numericValue);
-      } else {
+      if (!isNumber(numericValue)) {
         setInternalValue(String(value));
+        return;
       }
+
+      updateAndNotify(numericValue);
     }, [internalValue, updateAndNotify, value]);
 
     const handleStep = useCallback(
@@ -84,12 +93,19 @@ export const NumberInput = memo<NumberInputProps>(
         const numericValue = isNumber(currentValue) ? currentValue : value;
 
         if (direction === 'up') {
-          if (max !== undefined && numericValue >= max) return;
+          if (max !== undefined && numericValue >= max) {
+            return;
+          }
+
           updateAndNotify(numericValue + step);
-        } else {
-          if (min !== undefined && numericValue <= min) return;
-          updateAndNotify(numericValue - step);
+          return;
         }
+
+        if (min !== undefined && numericValue <= min) {
+          return;
+        }
+
+        updateAndNotify(numericValue - step);
       },
       [disabled, internalValue, value, max, min, step, updateAndNotify],
     );
@@ -99,10 +115,16 @@ export const NumberInput = memo<NumberInputProps>(
         if (event.key === 'ArrowUp') {
           event.preventDefault();
           handleStep('up');
-        } else if (event.key === 'ArrowDown') {
+          return;
+        }
+
+        if (event.key === 'ArrowDown') {
           event.preventDefault();
           handleStep('down');
-        } else if (event.key === 'Enter') {
+          return;
+        }
+
+        if (event.key === 'Enter') {
           (event.target as HTMLInputElement).blur();
         }
       },
