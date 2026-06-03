@@ -9,6 +9,7 @@
     "moduleDetection": "force",
     "isolatedModules": false,
 
+    "rootDir": "src",
     "outDir": "dist",
     "declaration": true,
     "noEmit": false,

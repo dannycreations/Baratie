@@ -10,11 +10,12 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       tailwindcss(),
-      checker({
-        typescript: true,
-        enableBuild: true,
-      }),
-    ],
+      mode !== 'production' &&
+        checker({
+          typescript: true,
+          enableBuild: false,
+        }),
+    ].filter(Boolean),
     build: {
       lib: {
         name: 'Baratie',
