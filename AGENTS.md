@@ -1,4 +1,4 @@
-# React Development Guide
+# Baratie Development Guide
 
 ## Guidelines
 
@@ -8,6 +8,6 @@
 ## Commands
 
 ```cmd
-# Check for compilation errors
-bun run build
+# Check for static errors
+bun run check
 ```
