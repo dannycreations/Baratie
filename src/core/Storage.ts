@@ -9,7 +9,7 @@ export class Storage {
     reviver?: (key: string, value: unknown) => unknown,
     options?: Partial<ErrorOptions>,
   ): T | null {
-    const { result } = errorHandler.attempt<T | null>(
+    return errorHandler.attempt<T | null>(
       () => {
         const storedValue = localStorage.getItem(key);
         if (storedValue) {
@@ -22,8 +22,7 @@ export class Storage {
         genericMessage: `Could not load your ${context.toLowerCase()} data.`,
         ...options,
       },
-    );
-    return result;
+    ).result;
   }
 
   public remove(key: string, context: string, options?: Partial<ErrorOptions>): boolean {
@@ -45,7 +44,6 @@ export class Storage {
   }
 
   private executeAction(action: () => void, context: string, genericMessage: string, options?: Partial<ErrorOptions>): boolean {
-    const { error } = errorHandler.attempt(action, context, { genericMessage, ...options });
-    return !error;
+    return !errorHandler.attempt(action, context, { genericMessage, ...options }).error;
   }
 }

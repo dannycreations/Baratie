@@ -89,7 +89,6 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
 
   return {
     clear: () => set(() => asPartial<T>({ [listKey]: [], [mapKey]: new Map() })),
-
     setAll: (items: ReadonlyArray<V>) =>
       set(() => {
         const list = sortFn ? [...items].sort(sortFn) : items;
@@ -98,7 +97,6 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
           [mapKey]: syncMap(list),
         });
       }),
-
     upsert: (item: Partial<V> & { [P in IDK]: V[IDK] }) =>
       set((state) => {
         const id = item[idKey] as V[IDK];
@@ -139,7 +137,6 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
           [mapKey]: nextMap,
         });
       }),
-
     remove: (id: V[IDK]) =>
       set((state) => {
         const currentMap = (state[mapKey] as unknown as ReadonlyMap<V[IDK], V>) || new Map();
@@ -155,7 +152,6 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
           [mapKey]: nextMap,
         });
       }),
-
     reorder: (draggedId: V[IDK], targetId: V[IDK]) =>
       set((state) => {
         if (draggedId === targetId) return state;

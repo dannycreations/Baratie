@@ -1,14 +1,16 @@
 import { objectStringify } from '../utilities/errorUtil';
 
-export enum LogLevel {
-  TRACE = 10,
-  DEBUG = 20,
-  INFO = 30,
-  WARN = 40,
-  ERROR = 50,
-  FATAL = 60,
-  SILENT = Infinity,
-}
+export const LogLevel = {
+  TRACE: 10,
+  DEBUG: 20,
+  INFO: 30,
+  WARN: 40,
+  ERROR: 50,
+  FATAL: 60,
+  SILENT: Infinity,
+} as const;
+
+export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];
 
 export class Logger {
   public level: LogLevel;
@@ -62,7 +64,9 @@ export class Logger {
         break;
     }
 
-    const prefix = `[${LogLevel[level]}]`;
+    const levelName = (Object.keys(LogLevel) as Array<keyof typeof LogLevel>).find((key) => LogLevel[key] === level) ?? 'UNKNOWN';
+
+    const prefix = `[${levelName}]`;
     const data = args.map((arg) => objectStringify(arg));
 
     consoleMethod(prefix, message, ...data);

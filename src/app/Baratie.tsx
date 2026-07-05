@@ -17,7 +17,6 @@ import { useOverflow } from '../hooks/useOverflow';
 import { internalIngredients } from '../ingredients';
 import { useDragMoveStore } from '../stores/useDragMoveStore';
 import { useExtensionStore } from '../stores/useExtensionStore';
-import { useRecipeStore } from '../stores/useRecipeStore';
 import { useTaskStore } from '../stores/useTaskStore';
 import { useThemeStore } from '../stores/useThemeStore';
 import { isString } from '../utilities/objectUtil';
@@ -53,8 +52,6 @@ const Baratie = (): JSX.Element => {
     if (!isAppReady) {
       return;
     }
-
-    useRecipeStore.getState().init();
 
     return kitchen.initAutoCook();
   }, [isAppReady]);
@@ -108,75 +105,61 @@ export const createRoot = (element: HTMLElement | null, options: Readonly<Barati
     });
   }
 
-  if (!defaultExtensions) {
-    taskRegistry.init();
+  if (defaultExtensions) {
+    taskRegistry.register({
+      type: 'postInit',
+      message: 'Gathering exotic provisions...',
+      isConcurrent: true,
+      handler: async () => {
+        const { add, extensionMap } = useExtensionStore.getState();
+        const { setLoadingMessage } = useTaskStore.getState();
+        const extensionsToLoad = (Array.isArray(defaultExtensions) ? defaultExtensions : [defaultExtensions]).filter(isString);
+        const totalExtensions = extensionsToLoad.length;
 
-    const root = createReactRoot(element);
-
-    root.render(
-      <StrictMode>
-        <ErrorBoundary>
-          <Baratie />
-        </ErrorBoundary>
-      </StrictMode>,
-    );
-
-    return;
-  }
-
-  taskRegistry.register({
-    type: 'postInit',
-    message: 'Gathering exotic provisions...',
-    handler: async () => {
-      const { add, extensionMap } = useExtensionStore.getState();
-      const { setLoadingMessage } = useTaskStore.getState();
-      const extensionsToLoad = (Array.isArray(defaultExtensions) ? defaultExtensions : [defaultExtensions]).filter(isString);
-      const totalExtensions = extensionsToLoad.length;
-
-      if (totalExtensions === 0) {
-        return;
-      }
-
-      const progressMap = new Array(totalExtensions).fill(0);
-
-      const updateProgress = (index: number, p: number) => {
-        progressMap[index] = p;
-        const totalProgress = progressMap.reduce((acc, curr) => acc + curr, 0);
-        const percent = Math.min(100, Math.round((totalProgress / totalExtensions) * 100));
-        setLoadingMessage(`Gathering exotic provisions... ${percent}%`);
-      };
-
-      const loadPromises = extensionsToLoad.map(async (url, index) => {
-        const repoInfo = parseGitHubUrl(url);
-
-        if (!repoInfo) {
-          updateProgress(index, 1);
+        if (totalExtensions === 0) {
           return;
         }
 
-        const repoName = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
+        const progressMap = new Array(totalExtensions).fill(0);
 
-        if (extensionMap.has(repoName)) {
+        const updateProgress = (index: number, p: number) => {
+          progressMap[index] = p;
+          const totalProgress = progressMap.reduce((acc, curr) => acc + curr, 0);
+          const percent = Math.min(100, Math.round((totalProgress / totalExtensions) * 100));
+          setLoadingMessage(`Gathering exotic provisions... ${percent}%`);
+        };
+
+        const loadPromises = extensionsToLoad.map(async (url, index) => {
+          const repoInfo = parseGitHubUrl(url);
+
+          if (!repoInfo) {
+            updateProgress(index, 1);
+            return;
+          }
+
+          const repoName = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
+
+          if (extensionMap.has(repoName)) {
+            updateProgress(index, 1);
+            return;
+          }
+
+          await add(url, {
+            force: true,
+            onProgress: (p) => updateProgress(index, p),
+          });
+
           updateProgress(index, 1);
-          return;
-        }
-
-        await add(url, {
-          force: true,
-          onProgress: (p) => updateProgress(index, p),
         });
 
-        updateProgress(index, 1);
-      });
-
-      await Promise.all(loadPromises);
-    },
-  });
+        await Promise.all(loadPromises);
+      },
+    });
+  }
 
   taskRegistry.init();
 
   const root = createReactRoot(element);
-
   root.render(
     <StrictMode>
       <ErrorBoundary>
