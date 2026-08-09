@@ -4,7 +4,6 @@ import { useExtensionStore } from '../stores/useExtensionStore';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
 import { useIngredientStore } from '../stores/useIngredientStore';
 import { useRecipeStore } from '../stores/useRecipeStore';
-import { useSettingStore } from '../stores/useSettingStore';
 import { useTaskStore } from '../stores/useTaskStore';
 
 interface InitializationTask {
@@ -38,10 +37,6 @@ export class TaskRegistry {
     {
       message: "Consulting the ship's log...",
       handler: () => useIngredientStore.getState().init(),
-    },
-    {
-      message: 'Adjusting the ship sails...',
-      handler: () => useSettingStore.getState().init(),
     },
     {
       message: 'Prepping the Mise en Place...',

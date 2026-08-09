@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 import { X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { ICON_SIZES, MODAL_SHOW_MS } from '../../app/constants';
@@ -40,10 +40,15 @@ export const Modal = ({
   size = 'lg',
   contentClasses = 'max-h-[80vh]',
 }: ModalProps): JSX.Element | null => {
-  const [isRendered, setIsRendered] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   const backdropRef = useRef<HTMLDivElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
+
+  const onExitedRef = useRef(onExited);
+  useEffect(() => {
+    onExitedRef.current = onExited;
+  }, [onExited]);
 
   const handleBackdropClick = useCallback(
     (event: MouseEvent<HTMLDivElement>): void => {
@@ -63,21 +68,23 @@ export const Modal = ({
     [onClose],
   );
 
+  const prevIsOpen = useRef(isOpen);
+  useLayoutEffect(() => {
+    setIsClosing(prevIsOpen.current && !isOpen);
+    prevIsOpen.current = isOpen;
+  }, [isOpen]);
+
   useEffect(() => {
-    if (isOpen) {
-      setIsRendered(true);
-      return;
-    }
-    if (isRendered) {
+    if (!isOpen) {
       const timerId = window.setTimeout(() => {
-        setIsRendered(false);
-        onExited?.();
+        setIsClosing(false);
+        onExitedRef.current?.();
       }, MODAL_SHOW_MS);
       return () => {
         clearTimeout(timerId);
       };
     }
-  }, [isOpen, isRendered, onExited]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -88,7 +95,7 @@ export const Modal = ({
     }
   }, [isOpen, handleEscapeKey]);
 
-  if (!isRendered) {
+  if (!isOpen && !isClosing) {
     return null;
   }
 

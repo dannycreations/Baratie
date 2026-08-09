@@ -90,26 +90,6 @@ export const shallowEqual = <T>(a: T, b: T): boolean => {
   return true;
 };
 
-export const isSetEqual = <T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean => {
-  if (a === b) return true;
-  if (a.size !== b.size) return false;
-  for (const item of a) {
-    if (!b.has(item)) return false;
-  }
-  return true;
-};
-
-export const isMapEqual = <K, V>(a: ReadonlyMap<K, V>, b: ReadonlyMap<K, V>, valueEqual: (v1: V, v2: V) => boolean = Object.is): boolean => {
-  if (a === b) return true;
-  if (a.size !== b.size) return false;
-  for (const [key, value] of a) {
-    const bValue = b.get(key);
-    if (bValue === undefined && !b.has(key)) return false;
-    if (!valueEqual(value, bValue as V)) return false;
-  }
-  return true;
-};
-
 export const isArrayEqual = <T>(
   a: ReadonlyArray<T> | undefined,
   b: ReadonlyArray<T> | undefined,
@@ -130,10 +110,6 @@ export const toggleSetItem = <T>(set: ReadonlySet<T>, item: T, force?: boolean):
     nextSet.delete(item);
   }
   return nextSet;
-};
-
-export const filterObject = <T extends object>(obj: T, predicate: (key: string, value: unknown) => boolean): Partial<T> => {
-  return Object.fromEntries(Object.entries(obj).filter(([key, value]) => predicate(key, value))) as Partial<T>;
 };
 
 export const pick = <T extends object, K extends keyof T>(obj: T, keys: ReadonlyArray<K>): Pick<T, K> => {

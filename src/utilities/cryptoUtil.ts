@@ -10,7 +10,7 @@ export const base64ToUint8Array = (base64: string): Uint8Array => {
   return bytes;
 };
 
-export const hexToUint8Array = (hex: string): Uint8Array => {
+const hexToUint8Array = (hex: string): Uint8Array => {
   const cleanHex = hex.startsWith('0x') ? hex.slice(2) : hex;
   const len = cleanHex.length;
 

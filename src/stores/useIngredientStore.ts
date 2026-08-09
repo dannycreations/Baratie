@@ -65,17 +65,11 @@ persistStore(useIngredientStore, {
     disabledIngredients: [...state.disabledIngredients],
   }),
   onHydrate: (state) => {
-    const { disabledCategories, disabledIngredients } = state as unknown as {
-      disabledCategories: string[];
-      disabledIngredients: string[];
-    };
     useIngredientStore.setState({
-      disabledCategories: new Set(disabledCategories),
-      disabledIngredients: new Set(disabledIngredients),
+      disabledCategories: new Set(state.disabledCategories),
+      disabledIngredients: new Set(state.disabledIngredients),
       isHydrated: true,
     });
   },
-  equalityFn: (a, b) =>
-    isArrayEqual((a as Record<string, unknown>).disabledCategories as string[], (b as Record<string, unknown>).disabledCategories as string[]) &&
-    isArrayEqual((a as Record<string, unknown>).disabledIngredients as string[], (b as Record<string, unknown>).disabledIngredients as string[]),
+  equalityFn: (a, b) => isArrayEqual(a.disabledCategories, b.disabledCategories) && isArrayEqual(a.disabledIngredients, b.disabledIngredients),
 });

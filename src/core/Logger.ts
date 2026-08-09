@@ -12,6 +12,24 @@ export const LogLevel = {
 
 export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];
 
+const LOG_LEVEL_NAMES = Object.fromEntries((Object.keys(LogLevel) as Array<keyof typeof LogLevel>).map((key) => [LogLevel[key], key])) as Record<
+  LogLevel,
+  string
+>;
+
+const getConsoleMethod = (level: LogLevel): ((...data: Array<unknown>) => void) => {
+  if (level >= LogLevel.ERROR) {
+    return console.error;
+  }
+  if (level >= LogLevel.WARN) {
+    return console.warn;
+  }
+  if (level >= LogLevel.INFO) {
+    return console.info;
+  }
+  return console.debug;
+};
+
 export class Logger {
   public level: LogLevel;
 
@@ -48,27 +66,9 @@ export class Logger {
       return;
     }
 
-    let consoleMethod: (...data: Array<unknown>) => void;
-    switch (true) {
-      case level >= LogLevel.ERROR:
-        consoleMethod = console.error;
-        break;
-      case level >= LogLevel.WARN:
-        consoleMethod = console.warn;
-        break;
-      case level >= LogLevel.INFO:
-        consoleMethod = console.info;
-        break;
-      default:
-        consoleMethod = console.debug;
-        break;
-    }
-
-    const levelName = (Object.keys(LogLevel) as Array<keyof typeof LogLevel>).find((key) => LogLevel[key] === level) ?? 'UNKNOWN';
-
-    const prefix = `[${levelName}]`;
+    const prefix = `[${LOG_LEVEL_NAMES[level] ?? 'UNKNOWN'}]`;
     const data = args.map((arg) => objectStringify(arg));
 
-    consoleMethod(prefix, message, ...data);
+    getConsoleMethod(level)(prefix, message, ...data);
   }
 }

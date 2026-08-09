@@ -21,7 +21,7 @@ export interface RecipeItemHandlers {
   readonly onDragEnd: (event: DragEvent<HTMLElement>) => void;
 }
 
-export interface RecipeItemProps {
+interface RecipeItemProps {
   readonly ingredientItem: IngredientItem;
   readonly handlers: RecipeItemHandlers;
 }
@@ -175,12 +175,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
   const toggleEditingId = useRecipeStore((state) => state.toggleEditingId);
   const toggleIngredientPause = useRecipeStore((state) => state.toggleIngredientPause);
 
-  const definition = ingredientRegistry.get(ingredientItem.ingredientId);
   const handleRemove = useCallback(() => removeIngredient(ingredientItem.id), [ingredientItem.id, removeIngredient]);
-
-  if (!definition) {
-    return <MissingRecipeItem ingredientItem={ingredientItem} onRemove={handleRemove} />;
-  }
 
   const handleEditToggleCallback = useCallback(() => {
     if (!isSpiceInInput) {
@@ -190,8 +185,12 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
 
   const handleTogglePauseCallback = useCallback(() => toggleIngredientPause(ingredientItem.id), [ingredientItem.id, toggleIngredientPause]);
   const handleDragStart = useCallback((event: DragEvent<HTMLElement>) => onDragStart(event, ingredientItem), [onDragStart, ingredientItem]);
-  const handleDragEnd = useCallback((event: DragEvent<HTMLElement>) => onDragEnd(event), [onDragEnd]);
   const handleDragOver = useCallback((event: DragEvent<HTMLElement>) => onDragOver(event, ingredientItem.id), [onDragOver, ingredientItem.id]);
+
+  const definition = ingredientRegistry.get(ingredientItem.ingredientId);
+  if (!definition) {
+    return <MissingRecipeItem ingredientItem={ingredientItem} onRemove={handleRemove} />;
+  }
 
   const hasSpices = !!definition.spices && definition.spices.length > 0;
   const isEditorVisible = isEditing && !isSpiceInInput && !isDragged;
@@ -212,12 +211,10 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
     statusBorderClass,
   );
 
-  const grabHandleClass = 'recipe-item-grab-handle';
-
   const leftColumn = (
     <>
       <Tooltip content="Drag to reorder" position="top">
-        <span className={grabHandleClass} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <span className="recipe-item-grab-handle" draggable onDragStart={handleDragStart} onDragEnd={onDragEnd}>
           <GripVertical size={ICON_SIZES.MD} />
         </span>
       </Tooltip>

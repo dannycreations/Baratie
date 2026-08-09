@@ -154,10 +154,6 @@ export class Kitchen {
     }
   }
 
-  public setInputData(data: string): void {
-    useKitchenStore.getState().setInputData(data);
-  }
-
   public setCookingInterval(ms: number): void {
     const newMs = Math.max(0, ms);
     if (newMs === this.intervalMs) {
@@ -336,10 +332,9 @@ export class Kitchen {
       }
 
       const panel = result.panelControl;
-      const isSpiceEditor = panel?.panelType === 'input' && panel.config.mode === 'spiceEditor';
 
       let inputId: string | null = null;
-      if (isSpiceEditor && panel?.panelType === 'input' && panel.config.mode === 'spiceEditor') {
+      if (panel?.panelType === 'input' && panel.config.mode === 'spiceEditor') {
         inputId = panel.config.targetIngredientId;
       }
 

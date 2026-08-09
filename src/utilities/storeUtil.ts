@@ -3,12 +3,12 @@ import { shallowEqual, toggleSetItem } from './objectUtil';
 
 import type { StoreApi, UseBoundStore } from 'zustand';
 
-export interface PersistOptions<T> {
+interface PersistOptions<T, P> {
   readonly key: string;
   readonly context: string;
-  readonly pick?: (state: T) => unknown;
+  readonly pick: (state: T) => P;
   readonly onHydrate?: (state: T) => void;
-  readonly equalityFn?: (a: Partial<T>, b: Partial<T>) => boolean;
+  readonly equalityFn?: (a: P, b: P) => boolean;
   readonly shouldPersist?: (state: T) => boolean;
   readonly autoHydrate?: boolean;
 }
@@ -43,38 +43,6 @@ export const createSetHandlers = <T extends object, K extends keyof T, V>(set: (
           [key]: toggleSetItem(getSet(state), item),
         }),
       ),
-  };
-};
-
-export const createMapHandlers = <T extends object, K extends keyof T, VK, VV>(set: (fn: (state: T) => Partial<T> | T) => void, key: K) => {
-  const getMap = (state: T) => state[key] as unknown as ReadonlyMap<VK, VV>;
-
-  return {
-    clear: () => set(() => asPartial<T>({ [key]: new Map<VK, VV>() })),
-    remove: (mapKey: VK) =>
-      set((state) => {
-        const current = getMap(state);
-        if (!current.has(mapKey)) return state;
-        const next = new Map(current);
-        next.delete(mapKey);
-        return asPartial<T>({ [key]: next });
-      }),
-    set: (mapKey: VK, value: VV) =>
-      set((state) => {
-        const current = getMap(state);
-        if (current.get(mapKey) === value) return state;
-        const next = new Map(current);
-        next.set(mapKey, value);
-        return asPartial<T>({ [key]: next });
-      }),
-    setAll: (entries: ReadonlyArray<readonly [VK, VV]> | ReadonlyMap<VK, VV>) => set(() => asPartial<T>({ [key]: new Map(entries) })),
-    upsert: (mapKey: VK, value: Partial<VV>) =>
-      set((state) => {
-        const next = new Map(getMap(state));
-        const existing = next.get(mapKey);
-        next.set(mapKey, existing ? ({ ...existing, ...value } as VV) : (value as VV));
-        return asPartial<T>({ [key]: next });
-      }),
   };
 };
 
@@ -171,66 +139,36 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
   };
 };
 
-export const createStackHandlers = <T extends object, K extends keyof T, V>(set: (fn: (state: T) => Partial<T> | T) => void, key: K) => {
-  const getStack = (state: T) => (state[key] as unknown as ReadonlyArray<V>) || [];
-
-  return {
-    push: (item: V) =>
-      set((state) => {
-        const current = getStack(state);
-        return asPartial<T>({ [key]: [...current, item] });
-      }),
-    pop: () =>
-      set((state) => {
-        const current = getStack(state);
-        if (current.length === 0) return state;
-        return asPartial<T>({ [key]: current.slice(0, -1) });
-      }),
-    remove: (item: V) =>
-      set((state) => {
-        const current = getStack(state);
-        const next = current.filter((i) => i !== item);
-        if (next.length === current.length) return state;
-        return asPartial<T>({ [key]: next });
-      }),
-    clear: () => set(() => asPartial<T>({ [key]: [] })),
-  };
-};
-
-export const persistStore = <T extends object>(useStore: UseBoundStore<StoreApi<T>>, options: PersistOptions<T>): (() => void) => {
+export const persistStore = <T extends object, P>(useStore: UseBoundStore<StoreApi<T>>, options: PersistOptions<T, P>): (() => void) => {
   const { key, context, pick, onHydrate, equalityFn = shallowEqual, shouldPersist, autoHydrate } = options;
+
+  const subscribeWithSelector = useStore.subscribe as unknown as (
+    selector: (state: T) => P,
+    listener: (selected: P, previous: P) => void,
+  ) => () => void;
+
+  const unsubscribe = subscribeWithSelector(pick, (selectedState, previousSelectedState) => {
+    if (equalityFn(selectedState, previousSelectedState)) {
+      return;
+    }
+
+    if (shouldPersist && !shouldPersist(useStore.getState())) {
+      return;
+    }
+
+    storage.set(key, selectedState, context);
+  });
 
   if (autoHydrate) {
     queueMicrotask(() => {
       const stored = storage.get<Partial<T>>(key, context);
       if (stored) {
         useStore.setState(stored as T);
-        onHydrate?.(useStore.getState());
       }
+      onHydrate?.(useStore.getState());
     });
-  }
-
-  const unsubscribe = (
-    useStore as StoreApi<T> & {
-      subscribe: <U>(selector: (state: T) => U, listener: (selectedState: U, previousSelectedState: U) => void) => () => void;
-    }
-  ).subscribe(
-    (state: T) => (pick ? (pick(state) as Partial<T>) : (state as Partial<T>)),
-    (selectedState: Partial<T>, previousSelectedState: Partial<T>) => {
-      if (equalityFn(selectedState, previousSelectedState)) {
-        return;
-      }
-
-      if (shouldPersist && !shouldPersist(useStore.getState())) {
-        return;
-      }
-
-      storage.set(key, selectedState, context);
-    },
-  );
-
-  if (onHydrate) {
-    onHydrate(useStore.getState());
+  } else {
+    onHydrate?.(useStore.getState());
   }
 
   return unsubscribe;

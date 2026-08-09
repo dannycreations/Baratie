@@ -23,7 +23,6 @@ interface RecipeState {
   readonly addIngredient: (ingredientId: string, initialSpices?: Readonly<Record<string, unknown>>) => void;
   readonly clearEditingIds: () => void;
   readonly clearRecipe: () => void;
-  readonly getActiveRecipeId: () => string | null;
   readonly init: () => void;
   readonly removeIngredient: (id: string) => void;
   readonly reorderIngredients: (draggedId: string, targetId: string) => void;
@@ -77,10 +76,6 @@ export const useRecipeStore = create<RecipeState>()(
         set({ activeRecipeId: null });
         editingHandlers.clear();
         pausedHandlers.clear();
-      },
-
-      getActiveRecipeId: () => {
-        return get().activeRecipeId;
       },
 
       init: () => {

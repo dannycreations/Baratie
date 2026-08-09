@@ -7,17 +7,12 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "moduleResolution": "bundler",
     "moduleDetection": "force",
-    "isolatedModules": false,
 
     "rootDir": "src",
     "outDir": "dist",
     "declaration": true,
     "noEmit": false,
     "stripInternal": true,
-
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false,
 
     "jsx": "react-jsx",
     "types": ["vite/client"],

@@ -339,7 +339,7 @@ export const useExtensionStore = create<ExtensionState>()(
 persistStore(useExtensionStore, {
   key: STORAGE_EXTENSIONS,
   context: 'Extensions',
-  pick: (state) =>
+  pick: (state): ReadonlyArray<StorableExtension> =>
     state.extensions
       .filter(
         (ext) =>
@@ -350,5 +350,5 @@ persistStore(useExtensionStore, {
           Object.keys(ext.scripts).length > 0,
       )
       .map((ext) => pick(ext, ['id', 'name', 'entry', 'scripts', 'fetchedAt']) as StorableExtension),
-  equalityFn: (a, b) => shallowExtensionStorable(a as any, b as any),
+  equalityFn: shallowExtensionStorable,
 });

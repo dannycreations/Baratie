@@ -11,7 +11,6 @@ interface SettingProps {
 }
 
 interface SettingState extends SettingProps {
-  readonly init: () => void;
   readonly setMultipleOpen: (value: boolean) => void;
   readonly setPersistRecipe: (value: boolean) => void;
 }
@@ -20,8 +19,6 @@ export const useSettingStore = create<SettingState>()(
   subscribeWithSelector((set) => ({
     multipleOpen: false,
     persistRecipe: true,
-
-    init: () => {},
 
     setMultipleOpen: (multipleOpen) => {
       set({ multipleOpen });

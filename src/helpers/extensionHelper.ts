@@ -13,7 +13,7 @@ const GH_URL_SHORTHAND_REGEX =
 
 const NonEmptyString = pipe(string(), nonEmpty());
 
-export const ManifestModuleSchema = object({
+const ManifestModuleSchema = object({
   name: NonEmptyString,
   category: NonEmptyString,
   description: NonEmptyString,

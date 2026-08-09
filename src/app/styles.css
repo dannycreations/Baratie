@@ -58,10 +58,10 @@
   /* Animations */
   --animate-slide-in-up: slideInUp 0.35s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
   --animate-fade-out: fadeOut 0.4s ease-out forwards;
-  --animate-fade-in: fadeIn 0.15s ease-out forwards;
-  --animate-fade-out-modal: fadeOutModal 0.2s ease-in forwards;
-  --animate-scale-up: scaleUp 0.2s ease-out forwards;
-  --animate-scale-down: scaleDown 0.2s ease-in forwards;
+  --animate-fade-in: fadeIn 0.18s ease-out forwards;
+  --animate-fade-out-modal: fadeOutModal 0.15s ease-out forwards;
+  --animate-scale-up: scaleUp 0.18s ease-out forwards;
+  --animate-scale-down: scaleDown 0.15s ease-out forwards;
   --animate-fade-in-text: fadeInText 0.4s ease-out forwards;
 
   /* Keyframes */
@@ -370,10 +370,6 @@
   }
 
   /* Typography */
-  .text-title-medium {
-    @apply text-sm font-medium text-content-primary;
-  }
-
   .text-description-small {
     @apply text-xs text-content-secondary;
   }
@@ -578,10 +574,6 @@
     @apply flex min-h-0 flex-1 flex-col overflow-hidden p-3;
   }
 
-  .modal-footer {
-    @apply flex shrink-0 items-center justify-end gap-2 border-t border-border-primary p-3;
-  }
-
   .dialog-backdrop {
     @apply fixed inset-0 z-[800] flex items-center justify-center bg-backdrop p-3 backdrop-blur-sm;
   }
@@ -767,9 +759,6 @@
   .flex-center {
     @apply flex items-center justify-center;
   }
-  .flex-between {
-    @apply flex items-center justify-between;
-  }
   .flex-col-center {
     @apply flex flex-col items-center justify-center;
   }
@@ -785,9 +774,6 @@
 
   .flex-col-gap-2 {
     @apply flex flex-col gap-2 min-h-0;
-  }
-  .flex-col-gap-3 {
-    @apply flex flex-col gap-3 min-h-0;
   }
 
   .grid-standard {
@@ -854,16 +840,20 @@
 
   .modal-backdrop-enter-active {
     animation: var(--animate-fade-in);
+    will-change: opacity;
   }
   .modal-backdrop-exit-active {
     animation: var(--animate-fade-out-modal);
+    will-change: opacity;
   }
 
   .modal-content-enter-active {
     animation: var(--animate-scale-up);
+    will-change: transform, opacity;
   }
   .modal-content-exit-active {
     animation: var(--animate-scale-down);
+    will-change: transform, opacity;
   }
 }
 

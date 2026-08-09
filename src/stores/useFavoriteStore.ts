@@ -63,5 +63,5 @@ persistStore(useFavoriteStore, {
   key: STORAGE_FAVORITES,
   context: 'Favorite Ingredients',
   pick: (state) => ({ favorites: [...state.favorites] }),
-  equalityFn: (a, b) => isArrayEqual(a.favorites as any, b.favorites as any),
+  equalityFn: (a, b) => isArrayEqual(a.favorites, b.favorites),
 });

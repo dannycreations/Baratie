@@ -34,7 +34,7 @@ const BARATIE_API = {
       add: (ingredientId: string, initialSpices?: Readonly<Record<string, unknown>>) =>
         useRecipeStore.getState().addIngredient(ingredientId, initialSpices),
       clear: () => useRecipeStore.getState().clearRecipe(),
-      getActiveId: () => useRecipeStore.getState().getActiveRecipeId(),
+      getActiveId: () => useRecipeStore.getState().activeRecipeId,
       remove: (id: string) => useRecipeStore.getState().removeIngredient(id),
       update: (id: string, spiceId: string, rawValue: SpiceValue) => useRecipeStore.getState().updateSpice(id, spiceId, rawValue),
     },

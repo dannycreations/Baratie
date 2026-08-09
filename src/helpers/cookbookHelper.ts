@@ -97,7 +97,7 @@ export const computeInitialRecipeName = (
   return `My Recipe ${dateString}`;
 };
 
-export const createRecipeHash = (ingredients: ReadonlyArray<IngredientItem>): string => {
+const createRecipeHash = (ingredients: ReadonlyArray<IngredientItem>): string => {
   if (ingredientsHashCache.has(ingredients)) {
     return ingredientsHashCache.get(ingredients)!;
   }
@@ -130,7 +130,7 @@ export const saveAllRecipes = (recipes: ReadonlyArray<RecipebookItem>): boolean 
   return storage.set('baratie-cookbook', recipes, 'Saved Recipes');
 };
 
-export const sanitizeIngredient = (rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientItem | null => {
+const sanitizeIngredient = (rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientItem | null => {
   const definition = findIngredientDefinition(rawIngredient, source, recipeName);
 
   if (!definition) {
@@ -141,7 +141,7 @@ export const sanitizeIngredient = (rawIngredient: RawIngredient, source: 'fileIm
   return { id: rawIngredient.id, name: definition.name, ingredientId: definition.id, spices: validatedSpices };
 };
 
-export const sanitizeRecipe = (rawRecipe: RawRecipeBookItem, source: 'fileImport' | 'storage'): SanitizationResult => {
+const sanitizeRecipe = (rawRecipe: RawRecipeBookItem, source: 'fileImport' | 'storage'): SanitizationResult => {
   const { id, name, createdAt, updatedAt, ingredients: rawIngredients } = rawRecipe;
   const validIngredients: Array<IngredientItem> = [];
 

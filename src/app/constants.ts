@@ -12,16 +12,14 @@ export const KEY_CUSTOM_INPUT = 'Custom Input';
 export const KEY_CUSTOM_OUTPUT = 'Custom Output';
 export const KEY_REPEAT_STEP = 'Repeat Step';
 
-export const THEME_DARK = 'dark';
-export const THEME_LIGHT = 'light';
 export const THEME_VARIANT = [
   {
-    id: THEME_DARK,
+    id: 'dark',
     name: 'Baratie Dark',
     color: '#0f172a',
   },
   {
-    id: THEME_LIGHT,
+    id: 'light',
     name: 'Sunrise Light',
     color: '#FFF8F1',
   },

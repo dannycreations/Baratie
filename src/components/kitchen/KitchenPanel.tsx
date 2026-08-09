@@ -2,7 +2,7 @@ import { DownloadCloud, FileText, Trash2 } from 'lucide-react';
 import { Fragment, memo, useCallback, useMemo, useRef } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
-import { errorHandler, ingredientRegistry, kitchen } from '../../app/container';
+import { errorHandler, ingredientRegistry } from '../../app/container';
 import { InputType } from '../../core/InputType';
 import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
@@ -114,7 +114,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const config = isInput ? inputPanelConfig : outputPanelConfig;
   const title = config?.title?.() || (isInput ? 'Input' : 'Output');
 
-  const handleSetInputData = useCallback((data: string): void => kitchen.setInputData(data), []);
+  const handleSetInputData = useCallback((data: string): void => useKitchenStore.getState().setInputData(data), []);
 
   const handleFileRead = useCallback(
     async (file: File): Promise<void> => {
