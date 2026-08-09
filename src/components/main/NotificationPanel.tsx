@@ -115,12 +115,11 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
 });
 
 export const NotificationPanel = memo((): JSX.Element | null => {
-  const order = useNotificationStore((state) => state.order);
   const map = useNotificationStore((state) => state.map);
 
   const messages = useMemo(() => {
-    return order.map((id) => map.get(id)).filter((n) => !!n);
-  }, [order, map]);
+    return Array.from(map.values());
+  }, [map]);
 
   if (messages.length === 0) {
     return null;

@@ -13,7 +13,7 @@ interface StringInputProps {
   readonly inputRef?: RefObject<HTMLInputElement | null>;
   readonly onClear?: () => void;
   readonly showClearButton?: boolean;
-  readonly type?: 'text' | 'search' | 'email' | 'password' | 'tel' | 'url' | 'number';
+  readonly type?: 'text' | 'search';
   readonly className?: string;
   readonly disabled?: boolean;
   readonly placeholder?: string;

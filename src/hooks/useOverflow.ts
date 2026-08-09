@@ -57,19 +57,11 @@ export const useOverflow = <T extends HTMLElement>(): OverflowReturn<T> => {
     const resizeObserver = new ResizeObserver(checkOverflow);
     resizeObserver.observe(element);
 
-    const mutationObserver = new MutationObserver(checkOverflow);
-    mutationObserver.observe(element, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-    });
-
     return () => {
       if (rafId !== null) {
         cancelAnimationFrame(rafId);
       }
       resizeObserver.disconnect();
-      mutationObserver.disconnect();
     };
   }, [element]);
 

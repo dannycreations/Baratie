@@ -1,5 +1,5 @@
 import { cn } from 'cnfast';
-import { memo, useCallback, useId, useMemo, useRef } from 'react';
+import { memo, useCallback, useMemo, useRef } from 'react';
 
 import { ingredientRegistry } from '../../app/container';
 import { groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
@@ -28,7 +28,6 @@ export const IngredientManager = memo((): JSX.Element => {
 
   const { query, deferredQuery, onQueryChange, onClear } = useSearch();
 
-  const listId = useId();
   const searchRef = useRef<HTMLInputElement>(null);
   const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
@@ -117,7 +116,7 @@ export const IngredientManager = memo((): JSX.Element => {
             onClear={onClear}
           />
         </div>
-        <div id={listId} ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
+        <div ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
           {content}
         </div>
       </div>

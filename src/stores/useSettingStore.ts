@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { STORAGE_RECIPE, STORAGE_SETTINGS } from '../app/constants';
-import { storage } from '../app/container';
+import { STORAGE_SETTINGS } from '../app/constants';
 import { persistStore } from '../utilities/storeUtil';
 
 interface SettingProps {
@@ -25,9 +24,6 @@ export const useSettingStore = create<SettingState>()(
     },
 
     setPersistRecipe: (persistRecipe) => {
-      if (!persistRecipe) {
-        storage.remove(STORAGE_RECIPE, 'Current Recipe');
-      }
       set({ persistRecipe });
     },
   })),

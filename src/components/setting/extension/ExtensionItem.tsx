@@ -53,7 +53,7 @@ interface ExtensionItemProps extends ExtensionItemStatusProps, ExtensionItemActi
 }
 
 const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }): JSX.Element => {
-  const current = EXTENSION_STATUS_META[status] || EXTENSION_STATUS_META.error;
+  const current = EXTENSION_STATUS_META[status];
   const content = (
     <div className={cn('extension-status-badge', current.colorClass)}>
       {current.icon}

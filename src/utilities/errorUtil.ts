@@ -1,6 +1,8 @@
 import { AppError } from '../core/ErrorHandler';
 import { isObjectLike, withCircularCache } from './objectUtil';
 
+const REDACTION_PATTERN = /[a-zA-Z0-9+/=]{30,}/g;
+
 export const createErrorObject = (error: Error): Record<string, unknown> => {
   const errorObject: Record<string, unknown> = {
     message: error.message,
@@ -50,7 +52,7 @@ export const objectStringify = (data: unknown, space?: string | number): string 
 
   try {
     const jsonString = stringifier(data);
-    return jsonString.replace(/[a-zA-Z0-9+/=]{30,}/g, '[REDACTED]');
+    return jsonString.replace(REDACTION_PATTERN, '[REDACTED]');
   } catch (e) {
     const error = e instanceof Error ? e : new Error(String(e));
     const fallback: Record<string, unknown> = {

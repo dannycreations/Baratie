@@ -47,7 +47,6 @@ export const Tooltip = memo(
     const tooltipId = useId();
     const isVisible = useTooltipStore((state) => state.activeId === tooltipId);
     const setActiveId = useTooltipStore((state) => state.setActiveId);
-    const isDragging = useDragMoveStore((state) => !!state.draggedItemId);
 
     const [style, setStyle] = useState<TooltipPositionStyle>(INITIAL_TOOLTIP_STYLE);
 
@@ -55,8 +54,6 @@ export const Tooltip = memo(
     const triggerRef = useRef<HTMLDivElement>(null);
     const tooltipRef = useRef<HTMLDivElement>(null);
     const rafRef = useRef<number | null>(null);
-
-    const finalDisabled = disabled || isDragging;
 
     const clearTimer = () => {
       if (timeoutRef.current) {
@@ -66,7 +63,7 @@ export const Tooltip = memo(
     };
 
     const handleMouseEnter = () => {
-      if (finalDisabled || !content) {
+      if (disabled || !content || useDragMoveStore.getState().draggedItemId) {
         return;
       }
       clearTimer();
@@ -191,7 +188,7 @@ export const Tooltip = memo(
       }
     }, [isVisible, position, content]);
 
-    const arrowClass = TOOLTIP_ARROW_STYLES[position] || TOOLTIP_ARROW_STYLES.top;
+    const arrowClass = TOOLTIP_ARROW_STYLES[position];
     const visibilityClass = isVisible && style.isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
     const tooltipClass = cn('tooltip-base', visibilityClass, tooltipClasses);
     const triggerClass = cn('relative inline-flex', className);
@@ -202,7 +199,7 @@ export const Tooltip = memo(
       </div>
     );
 
-    if (finalDisabled || !content) {
+    if (disabled || !content) {
       return triggerElement;
     }
 

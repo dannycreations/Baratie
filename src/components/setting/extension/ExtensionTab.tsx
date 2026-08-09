@@ -1,6 +1,6 @@
 import { cn } from 'cnfast';
 import { GitMerge } from 'lucide-react';
-import { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 import { parseGitHubUrl } from '../../../helpers/extensionHelper';
@@ -24,7 +24,6 @@ export const ExtensionTab = memo((): JSX.Element => {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const listId = useId();
   const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   useEffect(() => {
@@ -119,7 +118,7 @@ export const ExtensionTab = memo((): JSX.Element => {
 
       <div className="flex-col-gap-2">
         <h4 className="label-base mb-1 !text-base">Installed Extensions</h4>
-        <div id={listId} ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
+        <div ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
           {listContent}
         </div>
       </div>

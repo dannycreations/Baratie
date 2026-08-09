@@ -12,7 +12,6 @@ interface TextareaInputProps {
   readonly onChange?: (value: string) => void;
   readonly onFileDrop?: (file: File) => void;
   readonly showLineNumbers?: boolean;
-  readonly textareaClasses?: string;
   readonly wrapperClasses?: string;
   readonly disabled?: boolean;
   readonly placeholder?: string;
@@ -28,7 +27,6 @@ export const TextareaInput = memo<TextareaInputProps>(
     onChange,
     onFileDrop,
     wrapperClasses = '',
-    textareaClasses = '',
     showLineNumbers = false,
     disabled,
     placeholder = '',
@@ -81,14 +79,10 @@ export const TextareaInput = memo<TextareaInputProps>(
       [showLineNumbers],
     );
 
-    const containerClass = cn('input-textarea-container', disabled && 'opacity-50', wrapperClasses);
-    const gutterClass = cn('input-textarea-gutter');
-    const textareaClass = cn('input-textarea-element', textareaClasses);
-
     return (
-      <div className={containerClass} {...dropZoneProps}>
+      <div className={cn('input-textarea-container', disabled && 'opacity-50', wrapperClasses)} {...dropZoneProps}>
         {showLineNumbers && (
-          <div ref={lineNumbersRef} className={gutterClass}>
+          <div ref={lineNumbersRef} className="input-textarea-gutter">
             <div style={{ paddingTop: `${virtualizedLines.paddingTop}px`, paddingBottom: `${virtualizedLines.paddingBottom}px` }}>
               {virtualizedLines.visibleItems.map(({ key, number }) => (
                 <div key={key} style={{ height: virtualizedLines.lineHeight }}>
@@ -102,7 +96,7 @@ export const TextareaInput = memo<TextareaInputProps>(
           ref={textareaRef}
           id={id}
           value={value}
-          className={textareaClass}
+          className="input-textarea-element"
           disabled={disabled}
           placeholder={placeholder}
           readOnly={readOnly}

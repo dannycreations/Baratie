@@ -89,70 +89,81 @@ const OutputContent = memo<OutputContentProps>(({ config, data }) => {
   return <TextareaInput value={data} readOnly placeholder={placeholder} showLineNumbers wrapperClasses="flex-1-min-0" />;
 });
 
+const DataContent = memo<KitchenPanelProps & { readonly onFileRead: (file: File) => Promise<void> }>(({ type, onFileRead }): ReactNode => {
+  if (type === 'output') {
+    const config = useKitchenStore((state) => state.outputPanelConfig);
+    const data = useKitchenStore((state) => state.outputData);
+    return <OutputContent config={config} data={data} />;
+  }
+
+  const config = useKitchenStore((state) => state.inputPanelConfig);
+  const data = useKitchenStore((state) => state.inputData);
+
+  if (config?.mode === 'spiceEditor') {
+    const targetIngredient = useRecipeStore((state) => state.ingredients.find((ing) => ing.id === config.targetIngredientId));
+    const updateSpice = useRecipeStore((state) => state.updateSpice);
+    const startUpdateBatch = useKitchenStore((state) => state.startUpdateBatch);
+    const endUpdateBatch = useKitchenStore((state) => state.endUpdateBatch);
+
+    if (targetIngredient) {
+      return (
+        <SpiceContent
+          targetIngredient={targetIngredient}
+          onSpiceChange={updateSpice}
+          onLongPressStart={startUpdateBatch}
+          onLongPressEnd={endUpdateBatch}
+        />
+      );
+    }
+  }
+
+  if (config?.mode === 'custom' && typeof config.content === 'function') {
+    return config.content();
+  }
+
+  return <DefaultContent config={config} data={data} onDataChange={useKitchenStore.getState().setInputData} onFileDrop={onFileRead} />;
+});
+
 export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   const inputPanelConfig = useKitchenStore((state) => state.inputPanelConfig);
   const outputPanelConfig = useKitchenStore((state) => state.outputPanelConfig);
-  const inputData = useKitchenStore((state) => state.inputData);
-  const outputData = useKitchenStore((state) => state.outputData);
-  const startUpdateBatch = useKitchenStore((state) => state.startUpdateBatch);
-  const endUpdateBatch = useKitchenStore((state) => state.endUpdateBatch);
-  const ingredients = useRecipeStore((state) => state.ingredients);
-  const updateSpice = useRecipeStore((state) => state.updateSpice);
 
   const importOperationRef = useRef<number>(0);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const targetIngredient = useMemo((): IngredientItem | undefined => {
-    if (inputPanelConfig?.mode === 'spiceEditor') {
-      return ingredients.find((ing) => ing.id === inputPanelConfig.targetIngredientId);
-    }
-    return undefined;
-  }, [ingredients, inputPanelConfig]);
-
   const isInput = type === 'input';
-  const data = isInput ? inputData : outputData;
   const config = isInput ? inputPanelConfig : outputPanelConfig;
   const title = config?.title?.() || (isInput ? 'Input' : 'Output');
 
-  const handleSetInputData = useCallback((data: string): void => useKitchenStore.getState().setInputData(data), []);
+  const data = useKitchenStore((state) => (isInput ? state.inputData : state.outputData));
 
-  const handleFileRead = useCallback(
-    async (file: File): Promise<void> => {
-      const operationId = ++importOperationRef.current;
+  const handleFileRead = useCallback(async (file: File): Promise<void> => {
+    const operationId = ++importOperationRef.current;
 
-      const { result: buffer, error } = await errorHandler.attemptAsync<ArrayBuffer>(() => {
-        return readFile(file, 'readAsArrayBuffer', 'File to ArrayBuffer');
-      }, `Read File: ${file.name}`);
+    const { result: buffer, error } = await errorHandler.attemptAsync<ArrayBuffer>(() => {
+      return readFile(file, 'readAsArrayBuffer', 'File to ArrayBuffer');
+    }, `Read File: ${file.name}`);
 
-      if (operationId !== importOperationRef.current || error || !buffer) {
-        return;
-      }
+    if (operationId !== importOperationRef.current || error || !buffer) {
+      return;
+    }
 
-      const stringResult = new InputType(buffer).cast('string');
-      handleSetInputData(stringResult.value);
-    },
-    [handleSetInputData],
-  );
+    const stringResult = new InputType(buffer).cast('string');
+    useKitchenStore.getState().setInputData(stringResult.value);
+  }, []);
 
   const handleClearInput = useCallback((): void => {
     if (isInput) {
-      handleSetInputData('');
+      useKitchenStore.getState().setInputData('');
       inputRef.current?.focus();
     }
-  }, [isInput, handleSetInputData]);
+  }, [isInput]);
 
   const handleDownloadOutput = useCallback((): void => {
     const timestamp = new Date().toISOString().slice(0, 19).replace(/-/g, '').replace('T', '_').replace(/:/g, '');
     const fileName = `baratie_output_${timestamp}.txt`;
     triggerDownload(data, fileName);
   }, [data]);
-
-  const handleSpiceChange = useCallback(
-    (id: string, spiceId: string, rawValue: SpiceValue): void => {
-      updateSpice(id, spiceId, rawValue);
-    },
-    [updateSpice],
-  );
 
   const renderFilePickerTrigger = useCallback(
     ({ trigger }: FilePickerRenderProps) => (
@@ -224,51 +235,12 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   }, [data, handleClearInput, handleDownloadOutput, handleFileRead, inputPanelConfig, isInput, outputPanelConfig, renderFilePickerTrigger]);
 
   const renderContent = useMemo((): ReactNode => {
-    if (!isInput) {
-      if (outputPanelConfig?.mode === 'custom' && typeof outputPanelConfig.content === 'function') {
-        return outputPanelConfig.content();
-      }
-
-      return <OutputContent config={outputPanelConfig} data={outputData} />;
-    }
-
     if (inputPanelConfig?.mode === 'custom' && typeof inputPanelConfig.content === 'function') {
       return inputPanelConfig.content();
     }
 
-    if (inputPanelConfig?.mode === 'spiceEditor' && targetIngredient) {
-      return (
-        <SpiceContent
-          targetIngredient={targetIngredient}
-          onSpiceChange={handleSpiceChange}
-          onLongPressStart={startUpdateBatch}
-          onLongPressEnd={endUpdateBatch}
-        />
-      );
-    }
-
-    return (
-      <DefaultContent
-        config={inputPanelConfig}
-        data={inputData}
-        onDataChange={handleSetInputData}
-        onFileDrop={handleFileRead}
-        textareaRef={inputRef}
-      />
-    );
-  }, [
-    isInput,
-    inputPanelConfig,
-    targetIngredient,
-    handleSpiceChange,
-    startUpdateBatch,
-    endUpdateBatch,
-    inputData,
-    handleSetInputData,
-    handleFileRead,
-    outputPanelConfig,
-    outputData,
-  ]);
+    return <DataContent type={type} onFileRead={handleFileRead} />;
+  }, [inputPanelConfig, type, handleFileRead]);
 
   return (
     <SectionLayout headerLeft={title} headerRight={renderActions} className="panel-half-height" contentClasses="flex-col-gap-2 h-full">

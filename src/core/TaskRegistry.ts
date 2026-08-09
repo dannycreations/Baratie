@@ -17,29 +17,36 @@ export class TaskRegistry {
   private readonly systemTasks: ReadonlyArray<InitializationTask> = [
     {
       message: 'Sharpening the cutlasses...',
+      isConcurrent: true,
     },
     {
       message: 'Loading supplies from other vessels...',
+      isConcurrent: true,
       handler: () => useExtensionStore.getState().init(),
     },
     {
       message: 'Polishing the favorite knives...',
+      isConcurrent: true,
       handler: () => useFavoriteStore.getState().init(),
     },
     {
       message: 'Unfurling the recipe scrolls...',
+      isConcurrent: true,
       handler: () => useCookbookStore.getState().init(),
     },
     {
       message: 'Remembering the current recipe...',
+      isConcurrent: true,
       handler: () => useRecipeStore.getState().init(),
     },
     {
       message: "Consulting the ship's log...",
+      isConcurrent: true,
       handler: () => useIngredientStore.getState().init(),
     },
     {
       message: 'Prepping the Mise en Place...',
+      isConcurrent: true,
     },
   ];
   private readonly userTasks: Array<InitializationTask> = [];

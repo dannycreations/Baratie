@@ -1,6 +1,6 @@
 const HEX_TABLE = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, '0'));
 
-export const base64ToUint8Array = (base64: string): Uint8Array => {
+const base64ToUint8Array = (base64: string): Uint8Array => {
   const binaryString = atob(base64);
   const len = binaryString.length;
   const bytes = new Uint8Array(len);

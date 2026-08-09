@@ -25,25 +25,11 @@ export class Storage {
     ).result;
   }
 
-  public remove(key: string, context: string, options?: Partial<ErrorOptions>): boolean {
-    return this.executeAction(
-      () => localStorage.removeItem(key),
-      `${context} Storage Remove`,
-      `Failed to remove ${context.toLowerCase()} data from local storage.`,
-      options,
-    );
-  }
-
   public set(key: string, value: unknown, context: string, options?: Partial<ErrorOptions>): boolean {
-    return this.executeAction(
-      () => localStorage.setItem(key, JSON.stringify(value)),
-      `${context} Storage Save`,
-      `Failed to save ${context.toLowerCase()} data to local storage.`,
-      { shouldNotify: true, ...options },
-    );
-  }
-
-  private executeAction(action: () => void, context: string, genericMessage: string, options?: Partial<ErrorOptions>): boolean {
-    return !errorHandler.attempt(action, context, { genericMessage, ...options }).error;
+    return !errorHandler.attempt(() => localStorage.setItem(key, JSON.stringify(value)), `${context} Storage Save`, {
+      genericMessage: `Failed to save ${context.toLowerCase()} data to local storage.`,
+      shouldNotify: true,
+      ...options,
+    }).error;
   }
 }

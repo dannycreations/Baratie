@@ -4,14 +4,14 @@ import { errorHandler } from '../app/container';
 
 import type { DragEvent } from 'react';
 
-export interface DragMoveHookProps<T extends { id: string }> {
+interface DragMoveHookProps<T extends { id: string }> {
   readonly dragId: string | null;
   readonly items: ReadonlyArray<T>;
   readonly onDragMove: (draggedId: string, targetItemId: string) => void;
   readonly setDragId: (id: string | null) => void;
 }
 
-export interface DragMoveHookReturn {
+interface DragMoveHookReturn {
   readonly onDragEnd: (event: DragEvent<HTMLElement>) => void;
   readonly onDragOver: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   readonly onDragStart: (event: DragEvent<HTMLElement>, itemId: string) => void;

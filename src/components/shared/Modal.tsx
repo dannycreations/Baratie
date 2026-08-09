@@ -4,11 +4,10 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { createPortal } from 'react-dom';
 
 import { ICON_SIZES, MODAL_SHOW_MS } from '../../app/constants';
-import { errorHandler } from '../../app/container';
-import { ModalSize } from '../../app/types';
 import { Button } from './Button';
 
-import type { JSX, KeyboardEvent, MouseEvent, ReactNode } from 'react';
+import type { JSX, MouseEvent, ReactNode } from 'react';
+import type { ModalSize } from '../../app/types';
 
 interface ModalProps {
   readonly children?: ReactNode;
@@ -87,9 +86,9 @@ export const Modal = ({
 
   useEffect(() => {
     if (isOpen) {
-      document.addEventListener('keydown', handleEscapeKey as unknown as EventListener);
+      document.addEventListener('keydown', handleEscapeKey);
       return () => {
-        document.removeEventListener('keydown', handleEscapeKey as unknown as EventListener);
+        document.removeEventListener('keydown', handleEscapeKey);
       };
     }
   }, [isOpen, handleEscapeKey]);
@@ -101,12 +100,10 @@ export const Modal = ({
   const backdropClass = cn('modal-backdrop', isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active');
   const modalClass = cn(
     'panel-container border border-border-primary',
-    MODAL_SIZE_MAP[size] || 'modal-lg',
+    MODAL_SIZE_MAP[size],
     isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active',
     contentClasses,
   );
-
-  errorHandler.assert(document.body, 'document.body is not available for Modal portal.', 'Modal Creation');
 
   return createPortal(
     <div ref={backdropRef} className={backdropClass} onClick={handleBackdropClick}>

@@ -2,7 +2,7 @@ import { useCallback, useDeferredValue, useState } from 'react';
 
 import type { ChangeEvent } from 'react';
 
-export interface UseSearchReturn {
+interface UseSearchReturn {
   readonly query: string;
   readonly deferredQuery: string;
   readonly onClear: () => void;

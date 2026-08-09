@@ -117,8 +117,17 @@ export class Kitchen {
     try {
       this.clearScheduledCook();
 
-      const result = await this.cookRecipe(recipe, inputData);
-      kitchenState.setCookingResult(result);
+      const loop = await this.executeRecipeLoop(recipe, inputData);
+
+      logger.info(`Cook finished with globalError=${loop.globalError}, hasWarnings=${loop.hasWarnings}.`);
+      kitchenState.setCookingResult({
+        ingredientStatuses: loop.localStatuses,
+        ingredientWarnings: loop.localWarnings,
+        inputPanelConfig: loop.lastInputConfig,
+        inputPanelId: loop.lastInputPanelId,
+        outputData: loop.cookedData.cast('string').value,
+        outputPanelConfig: loop.lastOutputConfig,
+      });
 
       const hasIntervalSetter = recipe.some((ing) => ing.name === KEY_REPEAT_STEP);
       if (!hasIntervalSetter && this.intervalMs > 0) {
@@ -187,20 +196,6 @@ export class Kitchen {
       this.updateLoopStateFromResult(state, res, ingredient.id);
     }
     return state.cookedData.cast('string').value;
-  }
-
-  private async cookRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeCookResult> {
-    const loop = await this.executeRecipeLoop(recipe, initialInput);
-
-    logger.info(`Cook finished with globalError=${loop.globalError}, hasWarnings=${loop.hasWarnings}.`);
-    return {
-      ingredientStatuses: loop.localStatuses,
-      ingredientWarnings: loop.localWarnings,
-      inputPanelConfig: loop.lastInputConfig,
-      inputPanelId: loop.lastInputPanelId,
-      outputData: loop.cookedData.cast('string').value,
-      outputPanelConfig: loop.lastOutputConfig,
-    };
   }
 
   private updateLoopStateFromResult(state: RecipeLoopState, res: IngredientRunResult, id: string): void {

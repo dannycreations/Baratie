@@ -1,6 +1,6 @@
 import { cn } from 'cnfast';
 import { Plus, Settings, SlidersHorizontal, Star } from 'lucide-react';
-import { memo, useCallback, useId, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { CATEGORY_FAVORITES, DATA_TYPE_INGREDIENT, DATA_TYPE_RECIPE_ITEM, ICON_SIZES } from '../../app/constants';
 import { errorHandler, ingredientRegistry } from '../../app/container';
@@ -38,7 +38,6 @@ export const IngredientPanel = memo((): JSX.Element => {
 
   const { query, deferredQuery, onQueryChange, onClear } = useSearch();
 
-  const listId = useId();
   const isIngredientOpen = currentModal?.type === 'ingredient';
   const isSettingOpen = currentModal?.type === 'settings';
   const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
@@ -105,9 +104,7 @@ export const IngredientPanel = memo((): JSX.Element => {
     return result;
   }, [deferredQuery, favoritesList, groupedRegular]);
 
-  const allIngredientsCount = allIngredients.length;
-  const visibleIngredients = visibleIngredientsCount;
-  const totalIngredients = allIngredientsCount;
+  const totalIngredients = allIngredients.length;
 
   const handleItemDragStart = useCallback((event: DragEvent<HTMLElement>, item: GroupListItem): void => {
     errorHandler.assert(item.id, 'Ingredient unique name not found on dragged element.', 'Ingredient Drag');
@@ -122,7 +119,7 @@ export const IngredientPanel = memo((): JSX.Element => {
           icon={<SlidersHorizontal size={ICON_SIZES.SM} />}
           size="sm"
           variant="stealth"
-          tooltipContent={`Manage Ingredients\n${visibleIngredients} of ${totalIngredients} visible`}
+          tooltipContent={`Manage Ingredients\n${visibleIngredientsCount} of ${totalIngredients} visible`}
           tooltipDisabled={isIngredientOpen}
           tooltipPosition="bottom"
           onClick={() => openModal({ type: 'ingredient', props: undefined })}
@@ -138,7 +135,7 @@ export const IngredientPanel = memo((): JSX.Element => {
         />
       </>
     ),
-    [isIngredientOpen, isSettingOpen, openModal, totalIngredients, visibleIngredients],
+    [isIngredientOpen, isSettingOpen, openModal, totalIngredients, visibleIngredientsCount],
   );
 
   const renderItemActions = useCallback(
@@ -188,7 +185,7 @@ export const IngredientPanel = memo((): JSX.Element => {
           <div>
             <SearchInput id="ingredient-search" value={query} placeholder="Search Ingredients..." onChange={onQueryChange} onClear={onClear} />
           </div>
-          <div id={listId} ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
+          <div ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
             <GroupListLayout
               query={query}
               itemsByCategory={filteredIngredients}

@@ -13,9 +13,7 @@ import type { TooltipProps } from './Tooltip';
 
 interface ButtonProps {
   readonly children?: ReactNode;
-  readonly fullWidth?: boolean;
   readonly icon?: ReactNode;
-  readonly iconPosition?: 'left' | 'right';
   readonly loading?: boolean;
   readonly size?: ButtonSize;
   readonly variant?: ButtonVariant;
@@ -69,9 +67,7 @@ export const Button = memo<ButtonProps>(
     children,
     className = '',
     disabled = false,
-    fullWidth = false,
     icon,
-    iconPosition = 'left',
     loading = false,
     onClick,
     size = 'sm',
@@ -79,27 +75,24 @@ export const Button = memo<ButtonProps>(
     variant = 'primary',
   }): JSX.Element => {
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
-    const variantClass = BUTTON_VARIANT_MAP[variant] ?? 'btn-primary';
-    const sizeClass = BUTTON_SIZE_MAP[size] ?? 'btn-sm';
+    const iconMarginClass = children && icon ? 'mr-2' : '';
 
-    const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
-    const loadingSpinner = <Loader2 size={ICON_SIZES.XS} className={cn('animate-spin', iconMarginClass)} />;
-
-    const showIconLeft = iconPosition === 'left';
-    const showIconRight = iconPosition === 'right';
+    let leading: ReactNode = null;
+    if (loading) {
+      leading = <Loader2 size={ICON_SIZES.XS} className={cn('animate-spin', iconMarginClass)} />;
+    } else if (icon) {
+      leading = <span className={iconMarginClass}>{icon}</span>;
+    }
 
     return (
       <button
         type={type}
-        className={cn('btn-base', shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className)}
+        className={cn('btn-base', shapeClass, BUTTON_VARIANT_MAP[variant], BUTTON_SIZE_MAP[size], loading && 'opacity-60', className)}
         disabled={loading || disabled}
         onClick={onClick}
       >
-        {loading && showIconLeft && loadingSpinner}
-        {icon && showIconLeft && <span className={iconMarginClass}>{icon}</span>}
+        {leading}
         {children}
-        {icon && showIconRight && <span className={iconMarginClass}>{icon}</span>}
-        {loading && (showIconRight || !children) && loadingSpinner}
       </button>
     );
   },

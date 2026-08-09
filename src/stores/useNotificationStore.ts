@@ -5,7 +5,6 @@ import { NOTIFICATION_SHOW_MS } from '../app/constants';
 import type { NotificationMessage, NotificationType } from '../app/types';
 
 interface NotificationState {
-  readonly order: ReadonlyArray<string>;
   readonly map: ReadonlyMap<string, NotificationMessage>;
   readonly dedupeMap: ReadonlyMap<string, string>;
   readonly clear: () => void;
@@ -18,12 +17,11 @@ const getDedupeKey = (notification: Readonly<Pick<NotificationMessage, 'type' | 
 };
 
 export const useNotificationStore = create<NotificationState>()((set) => ({
-  order: [],
   map: new Map(),
   dedupeMap: new Map(),
 
   clear: () => {
-    set({ order: [], map: new Map(), dedupeMap: new Map() });
+    set({ map: new Map(), dedupeMap: new Map() });
   },
 
   remove: (id) => {
@@ -44,7 +42,7 @@ export const useNotificationStore = create<NotificationState>()((set) => ({
         dedupeMap = next;
       }
 
-      return { order: state.order.filter((entry) => entry !== id), map, dedupeMap };
+      return { map, dedupeMap };
     });
   },
 
@@ -70,7 +68,7 @@ export const useNotificationStore = create<NotificationState>()((set) => ({
       const dedupeMap = new Map(state.dedupeMap);
       dedupeMap.set(dedupeKey, id);
 
-      return { order: [...state.order, id], map, dedupeMap };
+      return { map, dedupeMap };
     });
   },
 }));

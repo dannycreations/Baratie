@@ -82,6 +82,10 @@ export const useRecipeStore = create<RecipeState>()(
       },
 
       init: () => {
+        if (!useSettingStore.getState().persistRecipe) {
+          return;
+        }
+
         const stored = storage.get<{
           ingredients: ReadonlyArray<IngredientItem>;
           activeRecipeId: string | null;

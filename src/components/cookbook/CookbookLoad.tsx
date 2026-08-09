@@ -1,6 +1,6 @@
 import { cn } from 'cnfast';
 import { Save } from 'lucide-react';
-import { memo, useId, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { SearchInput } from '../../components/shared/input/SearchInput';
@@ -23,7 +23,6 @@ interface CookbookLoadProps extends CookbookItemHandlers {
 
 export const CookbookLoad = memo<CookbookLoadProps>(
   ({ query, onQueryChange, onClear, recipes, totalRecipes, onLoad, onDelete, searchRef }): JSX.Element => {
-    const listId = useId();
     const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
     const listContent = useMemo(() => {
@@ -60,7 +59,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(
             onClear={onClear}
           />
         </div>
-        <div id={listId} ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
+        <div ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
           {listContent}
         </div>
       </div>

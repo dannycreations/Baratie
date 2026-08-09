@@ -1,6 +1,6 @@
 import { cn } from 'cnfast';
 import { FolderOpen, Pause, Play, Save } from 'lucide-react';
-import { memo, useCallback, useEffect, useId, useMemo, useRef } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { DATA_TYPE_INGREDIENT, DATA_TYPE_RECIPE_ITEM, ICON_SIZES } from '../../app/constants';
 import { kitchen } from '../../app/container';
@@ -39,8 +39,8 @@ export const RecipePanel = memo((): JSX.Element => {
   const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
 
   const prevIngredientsCount = useRef(ingredients.length);
+  const listRef = useRef<HTMLDivElement>(null);
   const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
-  const listId = useId();
 
   const handleDropIngredient = useCallback(
     (ingredientId: string): void => {
@@ -59,18 +59,10 @@ export const RecipePanel = memo((): JSX.Element => {
 
   useEffect(() => {
     if (ingredients.length > prevIngredientsCount.current) {
-      const listElement = document.getElementById(listId);
-      listElement?.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      listRef.current?.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
     prevIngredientsCount.current = ingredients.length;
-  }, [ingredients.length, listId]);
-
-  const handleReorder = useCallback(
-    (draggedId: string, targetId: string): void => {
-      reorderIngredients(draggedId, targetId);
-    },
-    [reorderIngredients],
-  );
+  }, [ingredients.length]);
 
   const {
     onDragStart: onMoveStart,
@@ -80,7 +72,7 @@ export const RecipePanel = memo((): JSX.Element => {
     items: ingredients,
     dragId,
     setDragId: setDraggedItemId,
-    onDragMove: handleReorder,
+    onDragMove: reorderIngredients,
   });
 
   const handleDragStart = useCallback(
@@ -103,8 +95,6 @@ export const RecipePanel = memo((): JSX.Element => {
     },
     [activeRecipeId, ingredients, openModal, prepareCookbook],
   );
-
-  const handleClearRecipe = useCallback((): void => clearRecipe(), [clearRecipe]);
 
   const headerActions = useMemo((): JSX.Element => {
     const autoCookTooltip = isAutoCookEnabled ? 'Pause Auto-Cooking' : 'Resume Auto-Cooking';
@@ -140,16 +130,10 @@ export const RecipePanel = memo((): JSX.Element => {
           tooltipPosition="bottom"
           onClick={() => kitchen.toggleAutoCook()}
         />
-        <ConfirmButton
-          actionName="Clear"
-          itemType="Recipe"
-          disabled={ingredients.length === 0}
-          tooltipPosition="bottom"
-          onConfirm={handleClearRecipe}
-        />
+        <ConfirmButton actionName="Clear" itemType="Recipe" disabled={ingredients.length === 0} tooltipPosition="bottom" onConfirm={clearRecipe} />
       </>
     );
-  }, [ingredients.length, isCookbookOpen, isAutoCookEnabled, openCookbook, handleClearRecipe]);
+  }, [ingredients.length, isCookbookOpen, isAutoCookEnabled, openCookbook, clearRecipe]);
 
   const recipeItemHandlers: RecipeItemHandlers = useMemo(
     () => ({
@@ -189,6 +173,14 @@ export const RecipePanel = memo((): JSX.Element => {
 
   const listClass = cn('grow transition-colors duration-200', isDraggingIngredient && 'bg-surface-muted');
 
+  const setListRef = useCallback(
+    (node: HTMLDivElement | null): void => {
+      listRef.current = node;
+      scrollRef(node);
+    },
+    [scrollRef],
+  );
+
   return (
     <SectionLayout
       headerLeft="Recipe"
@@ -197,7 +189,7 @@ export const RecipePanel = memo((): JSX.Element => {
       contentClasses="relative flex-col-gap-2 h-full text-content-tertiary"
     >
       <div className="flex-col-gap-2 h-full" {...dropZoneProps}>
-        <div id={listId} ref={scrollRef} className={cn('flex-1-overflow-auto', listClass, scrollClasses)}>
+        <div ref={setListRef} className={cn('flex-1-overflow-auto', listClass, scrollClasses)}>
           {content}
         </div>
       </div>

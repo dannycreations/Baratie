@@ -1,8 +1,9 @@
 import { cn } from 'cnfast';
-import { memo, useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAutoFocus } from '../../../hooks/useAutoFocus';
 import { useOverflow } from '../../../hooks/useOverflow';
+import { useSearch } from '../../../hooks/useSearch';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
 import { Button } from '../../shared/Button';
@@ -11,7 +12,7 @@ import { SearchInput } from '../../shared/input/SearchInput';
 import { GroupListLayout } from '../../shared/layout/ListLayout';
 import { Modal } from '../../shared/Modal';
 
-import type { ChangeEvent, JSX } from 'react';
+import type { JSX } from 'react';
 import type { ManifestModule } from '../../../helpers/extensionHelper';
 import type { GroupListItem } from '../../shared/layout/ListLayout';
 
@@ -39,13 +40,12 @@ export const ExtensionManager = memo((): JSX.Element | null => {
   const installSelectedModules = useExtensionStore((state) => state.installSelectedModules);
   const cancelPendingInstall = useExtensionStore((state) => state.cancelPendingInstall);
 
-  const [query, setQuery] = useState('');
   const [selectedEntries, setSelectedEntries] = useState(new Set<string>());
   const [isLoading, setIsLoading] = useState(false);
 
-  const listId = useId();
+  const { query, deferredQuery, onQueryChange, onClear } = useSearch();
+
   const searchRef = useRef<HTMLInputElement>(null);
-  const deferredQuery = useDeferredValue(query);
   const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   const isModalOpen = currentModal?.type === 'extension';
@@ -91,14 +91,6 @@ export const ExtensionManager = memo((): JSX.Element | null => {
     }
     return result;
   }, [groupedModules, deferredQuery]);
-
-  const handleQueryChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setQuery(event.target.value);
-  }, []);
-
-  const handleClearQuery = useCallback(() => {
-    setQuery('');
-  }, []);
 
   const handleToggleModule = useCallback((entry: string): void => {
     setSelectedEntries((prev) => {
@@ -147,10 +139,10 @@ export const ExtensionManager = memo((): JSX.Element | null => {
   }, [cancelPendingInstall, closeModal]);
 
   const resetState = useCallback((): void => {
-    setQuery('');
+    onClear();
     setIsLoading(false);
     setSelectedEntries(new Set());
-  }, [setSelectedEntries]);
+  }, [onClear]);
 
   const renderItemPrefix = useCallback(
     (item: GroupListItem): JSX.Element => (
@@ -214,11 +206,11 @@ export const ExtensionManager = memo((): JSX.Element | null => {
             value={query}
             placeholder="Search Modules..."
             disabled={isLoading}
-            onChange={handleQueryChange}
-            onClear={handleClearQuery}
+            onChange={onQueryChange}
+            onClear={onClear}
           />
         </div>
-        <div id={listId} ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
+        <div ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
           {content}
         </div>
       </div>
