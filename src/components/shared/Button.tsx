@@ -11,7 +11,7 @@ import type { JSX, MouseEvent, ReactNode } from 'react';
 import type { ButtonSize, ButtonVariant } from '../../app/types';
 import type { TooltipProps } from './Tooltip';
 
-export interface ButtonProps {
+interface ButtonProps {
   readonly children?: ReactNode;
   readonly fullWidth?: boolean;
   readonly icon?: ReactNode;
@@ -25,7 +25,7 @@ export interface ButtonProps {
   readonly type?: 'button' | 'submit' | 'reset';
 }
 
-export interface TooltipButtonProps extends ButtonProps {
+interface TooltipButtonProps extends ButtonProps {
   readonly tooltipContent: ReactNode;
   readonly tooltipClasses?: string;
   readonly tooltipDisabled?: boolean;

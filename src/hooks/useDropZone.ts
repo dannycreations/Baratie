@@ -18,7 +18,6 @@ export interface DropZoneReturn<E extends HTMLElement> {
     readonly onDragOver: (event: DragEvent<E>) => void;
     readonly onDrop: (event: DragEvent<E>) => void;
   };
-  readonly reset: () => void;
 }
 
 export const useDropZone = <T, E extends HTMLElement>({
@@ -90,8 +89,6 @@ export const useDropZone = <T, E extends HTMLElement>({
     [disabled, onValidate, onDrop, onExtract],
   );
 
-  const reset = useCallback(() => setIsDragOver(false), []);
-
   return {
     isDragOver,
     dropZoneProps: {
@@ -100,6 +97,5 @@ export const useDropZone = <T, E extends HTMLElement>({
       onDragOver: handleDragOver,
       onDrop: handleDrop,
     },
-    reset,
   };
 };

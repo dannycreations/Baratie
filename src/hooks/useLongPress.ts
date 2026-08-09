@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef } from 'react';
 
 interface LongPressOptions {
   readonly delay?: number;
-  readonly interval?: number;
   readonly onStart?: () => void;
   readonly onEnd?: () => void;
 }

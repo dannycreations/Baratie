@@ -1,5 +1,6 @@
 import { errorHandler } from '../app/container';
 import { InputType } from '../core/InputType';
+import { clamp } from '../utilities/objectUtil';
 
 import type { IngredientDefinition, SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
 
@@ -129,7 +130,7 @@ export const validateSpices = (
     if (spiceType === 'number' && rawValueType === 'number') {
       const num = rawValue as number;
       const { min, max } = spice;
-      validatedSpices[spiceId] = min !== undefined || max !== undefined ? Math.min(max ?? num, Math.max(min ?? num, num)) : num;
+      validatedSpices[spiceId] = clamp(num, min, max);
       continue;
     }
 

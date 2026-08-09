@@ -19,7 +19,7 @@ export type CookingStatusType = 'idle' | 'error' | 'success' | 'warning';
 
 export type RecipeCookResult = Pick<
   KitchenState,
-  'cookingStatus' | 'ingredientStatuses' | 'ingredientWarnings' | 'inputPanelConfig' | 'inputPanelId' | 'outputData' | 'outputPanelConfig'
+  'ingredientStatuses' | 'ingredientWarnings' | 'inputPanelConfig' | 'inputPanelId' | 'outputData' | 'outputPanelConfig'
 >;
 
 interface RecipeLoopState {
@@ -116,7 +116,6 @@ export class Kitchen {
 
     if (recipe.length === 0) {
       kitchenState.setCookingResult({
-        cookingStatus: inputData ? 'success' : 'idle',
         ingredientStatuses: {},
         ingredientWarnings: {},
         inputPanelConfig: null,
@@ -209,16 +208,8 @@ export class Kitchen {
   private async cookRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string): Promise<RecipeCookResult> {
     const loop = await this.executeRecipeLoop(recipe, initialInput);
 
-    let status: CookingStatusType = 'success';
-    if (loop.globalError) {
-      status = 'error';
-    } else if (loop.hasWarnings) {
-      status = 'warning';
-    }
-
-    logger.info(`Cook finished with status: ${status}.`);
+    logger.info(`Cook finished with globalError=${loop.globalError}, hasWarnings=${loop.hasWarnings}.`);
     return {
-      cookingStatus: status,
       ingredientStatuses: loop.localStatuses,
       ingredientWarnings: loop.localWarnings,
       inputPanelConfig: loop.lastInputConfig,

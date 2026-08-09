@@ -14,7 +14,6 @@ interface IngredientState {
   readonly isHydrated: boolean;
   readonly init: () => void;
   readonly refreshRegistry: () => void;
-  readonly setFilters: (filters: Readonly<{ categories: ReadonlyArray<string>; ingredients: ReadonlyArray<string> }>) => void;
   readonly toggleCategory: (category: string) => void;
   readonly toggleIngredient: (id: string) => void;
 }
@@ -43,11 +42,6 @@ export const useIngredientStore = create<IngredientState>()(
 
       refreshRegistry: () => {
         set((state) => ({ registryVersion: state.registryVersion + 1 }));
-      },
-
-      setFilters: ({ categories, ingredients }) => {
-        categoryHandlers.set(categories as string[]);
-        ingredientHandlers.set(ingredients as string[]);
       },
 
       toggleCategory: categoryHandlers.toggle,

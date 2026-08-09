@@ -7,7 +7,6 @@ export interface UseSearchReturn {
   readonly deferredQuery: string;
   readonly onClear: () => void;
   readonly onQueryChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  readonly setQuery: (query: string) => void;
 }
 
 export const useSearch = (initialQuery = ''): UseSearchReturn => {
@@ -22,5 +21,5 @@ export const useSearch = (initialQuery = ''): UseSearchReturn => {
     setQuery('');
   }, []);
 
-  return { query, deferredQuery, onQueryChange, onClear, setQuery };
+  return { query, deferredQuery, onQueryChange, onClear };
 };

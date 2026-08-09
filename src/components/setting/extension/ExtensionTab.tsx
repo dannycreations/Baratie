@@ -28,8 +28,8 @@ export const ExtensionTab = memo((): JSX.Element => {
   const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   useEffect(() => {
-    const pendingInstall = extensions.find((ext) => ext.status === 'awaiting');
-    if (pendingInstall && pendingInstall.manifest) {
+    const pendingInstall = extensions.find((ext) => ext.status === 'awaiting' && ext.manifest);
+    if (pendingInstall && pendingInstall.manifest && !useModalStore.getState().currentModal) {
       openModal({
         type: 'extension',
         props: {

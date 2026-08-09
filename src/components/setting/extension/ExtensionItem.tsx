@@ -18,7 +18,7 @@ interface ExtensionItemActionHandlers {
   readonly onRemove: ExtensionState['remove'];
 }
 
-export interface ExtensionItemProps extends ExtensionItemStatusProps, ExtensionItemActionHandlers {
+interface ExtensionItemProps extends ExtensionItemStatusProps, ExtensionItemActionHandlers {
   readonly id: string;
   readonly displayName: string;
   readonly isLoading: boolean;

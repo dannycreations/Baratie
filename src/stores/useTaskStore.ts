@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { subscribeWithSelector } from 'zustand/middleware';
 
 interface TaskState {
   readonly isInitialized: boolean;
@@ -9,18 +8,16 @@ interface TaskState {
   readonly setLoadingMessage: (message: string, hasError?: boolean) => void;
 }
 
-export const useTaskStore = create<TaskState>()(
-  subscribeWithSelector((set) => ({
-    isInitialized: false,
-    loadingHasError: false,
-    loadingMessage: 'Firing up the galley...',
+export const useTaskStore = create<TaskState>()((set) => ({
+  isInitialized: false,
+  loadingHasError: false,
+  loadingMessage: 'Firing up the galley...',
 
-    setInitialized: (isInitialized) => {
-      set({ isInitialized });
-    },
+  setInitialized: (isInitialized) => {
+    set({ isInitialized });
+  },
 
-    setLoadingMessage: (loadingMessage, loadingHasError = false) => {
-      set({ loadingMessage, loadingHasError });
-    },
-  })),
-);
+  setLoadingMessage: (loadingMessage, loadingHasError = false) => {
+    set({ loadingMessage, loadingHasError });
+  },
+}));

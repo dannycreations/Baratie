@@ -3,6 +3,45 @@ import { shallowEqual, toggleSetItem } from './objectUtil';
 
 import type { StoreApi, UseBoundStore } from 'zustand';
 
+const PERSIST_DEBOUNCE_MS = 250;
+
+interface PendingWrite {
+  readonly value: unknown;
+  readonly context: string;
+}
+
+const pendingWrites = new Map<string, PendingWrite>();
+let flushTimer: number | null = null;
+let flushListenerRegistered = false;
+
+const flushPendingWrites = (): void => {
+  flushTimer = null;
+  if (pendingWrites.size === 0) {
+    return;
+  }
+  for (const [writeKey, { value, context }] of pendingWrites) {
+    storage.set(writeKey, value, context);
+  }
+  pendingWrites.clear();
+};
+
+const schedulePersist = (writeKey: string, value: unknown, context: string): void => {
+  pendingWrites.set(writeKey, { value, context });
+  if (flushTimer !== null) {
+    return;
+  }
+  flushTimer = window.setTimeout(flushPendingWrites, PERSIST_DEBOUNCE_MS);
+  if (!flushListenerRegistered) {
+    flushListenerRegistered = true;
+    window.addEventListener('pagehide', flushPendingWrites);
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        flushPendingWrites();
+      }
+    });
+  }
+};
+
 interface PersistOptions<T, P> {
   readonly key: string;
   readonly context: string;
@@ -156,7 +195,7 @@ export const persistStore = <T extends object, P>(useStore: UseBoundStore<StoreA
       return;
     }
 
-    storage.set(key, selectedState, context);
+    schedulePersist(key, selectedState, context);
   });
 
   if (autoHydrate) {

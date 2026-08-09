@@ -24,7 +24,7 @@ interface GroupListPropsBase {
   readonly renderItemPrefix?: (item: GroupListItem) => ReactNode;
 }
 
-export interface GroupListProps extends GroupListPropsBase {
+interface GroupListProps extends GroupListPropsBase {
   readonly itemsByCategory: ReadonlyArray<readonly [string, ReadonlyArray<GroupListItem>]>;
   readonly emptyMessage?: string;
   readonly noResultsMessage?: (query: string) => string;

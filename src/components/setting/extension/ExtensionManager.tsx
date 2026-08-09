@@ -149,7 +149,8 @@ export const ExtensionManager = memo((): JSX.Element | null => {
   const resetState = useCallback((): void => {
     setQuery('');
     setIsLoading(false);
-  }, []);
+    setSelectedEntries(new Set());
+  }, [setSelectedEntries]);
 
   const renderItemPrefix = useCallback(
     (item: GroupListItem): JSX.Element => (
@@ -179,10 +180,6 @@ export const ExtensionManager = memo((): JSX.Element | null => {
     },
     [selectedEntries, handleToggleCategory, isLoading],
   );
-
-  if (!isModalOpen) {
-    return null;
-  }
 
   const headerActions = (
     <Button loading={isLoading} disabled={selectedEntries.size === 0 || isLoading} onClick={handleInstall}>
