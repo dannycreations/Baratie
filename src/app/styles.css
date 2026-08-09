@@ -129,13 +129,14 @@
       transform: translateY(0);
     }
   }
-  @keyframes progressBarDecrease {
-    from {
-      transform: scaleX(1);
-    }
-    to {
-      transform: scaleX(0);
-    }
+}
+
+@keyframes progressBarDecrease {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
   }
 }
 
@@ -540,7 +541,7 @@
 
   /* Overlays & Modals */
   .modal-backdrop {
-    @apply fixed inset-0 z-[500] flex items-center justify-center p-3 backdrop-blur-sm bg-backdrop;
+    @apply fixed inset-0 z-[500] flex items-center justify-center p-3 bg-backdrop;
   }
 
   .modal-sm {
