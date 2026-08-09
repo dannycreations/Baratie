@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_THEME, THEME_VARIANT } from '../app/constants';
-import { logger, storage } from '../app/container';
+import { storage } from '../app/container';
 import { persistStore } from '../utilities/storeUtil';
 
 export type ThemeId = (typeof THEME_VARIANT)[number]['id'];
@@ -15,18 +15,9 @@ interface ThemeState {
 const DEFAULT_THEME_ID = THEME_VARIANT[0].id;
 
 const getInitialThemeId = (): ThemeId => {
-  try {
-    const storedThemeId = storage.get<ThemeId>(STORAGE_THEME, 'Theme');
-    const themeConfig = THEME_VARIANT.find((theme) => theme.id === storedThemeId);
-
-    if (themeConfig) {
-      return themeConfig.id;
-    }
-  } catch (error) {
-    logger.warn('Could not load theme from storage, using default.', error);
-  }
-
-  return DEFAULT_THEME_ID;
+  const storedThemeId = storage.get<ThemeId>(STORAGE_THEME, 'Theme');
+  const themeConfig = THEME_VARIANT.find((theme) => theme.id === storedThemeId);
+  return themeConfig ? themeConfig.id : DEFAULT_THEME_ID;
 };
 
 export const useThemeStore = create<ThemeState>()(

@@ -58,14 +58,6 @@ export const createSetHandlers = <T extends object, K extends keyof T, V>(set: (
   const getSet = (state: T) => state[key] as unknown as ReadonlySet<V>;
 
   return {
-    add: (item: V) =>
-      set((state) => {
-        const current = getSet(state);
-        if (current.has(item)) return state;
-        const next = new Set(current);
-        next.add(item);
-        return asPartial<T>({ [key]: next });
-      }),
     clear: () => set(() => asPartial<T>({ [key]: new Set<V>() })),
     remove: (item: V) =>
       set((state) => {

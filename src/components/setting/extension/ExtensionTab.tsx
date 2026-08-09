@@ -29,12 +29,13 @@ export const ExtensionTab = memo((): JSX.Element => {
 
   useEffect(() => {
     const pendingInstall = extensions.find((ext) => ext.status === 'awaiting' && ext.manifest);
-    if (pendingInstall && pendingInstall.manifest && !useModalStore.getState().currentModal) {
+    const manifest = pendingInstall?.manifest;
+    if (pendingInstall && manifest && useModalStore.getState().currentModal?.type !== 'extension') {
       openModal({
         type: 'extension',
         props: {
           id: pendingInstall.id,
-          manifest: pendingInstall.manifest,
+          manifest,
         },
       });
     }

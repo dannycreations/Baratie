@@ -109,7 +109,7 @@ export class TaskRegistry {
       await runTaskGroup(this.systemTasks);
       await runTaskGroup(postTasks);
 
-      useTaskStore.getState().setInitialized(true);
+      taskStore.setInitialized(true);
       logger.info('Application initialization sequence completed successfully.');
     } finally {
       this.isRunning = false;

@@ -43,7 +43,6 @@ export const Modal = ({
   const [isClosing, setIsClosing] = useState(false);
 
   const backdropRef = useRef<HTMLDivElement>(null);
-  const modalContentRef = useRef<HTMLDivElement>(null);
 
   const onExitedRef = useRef(onExited);
   useEffect(() => {
@@ -111,7 +110,7 @@ export const Modal = ({
 
   return createPortal(
     <div ref={backdropRef} className={backdropClass} onClick={handleBackdropClick}>
-      <div ref={modalContentRef} className={modalClass}>
+      <div className={modalClass}>
         <header className="panel-header">
           <h2 className="modal-header-title">{title}</h2>
           <div className="modal-header-actions-wrapper">

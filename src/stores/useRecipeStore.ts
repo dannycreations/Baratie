@@ -72,10 +72,13 @@ export const useRecipeStore = create<RecipeState>()(
       clearEditingIds: editingHandlers.clear,
 
       clearRecipe: () => {
-        ingredientHandlers.clear();
-        set({ activeRecipeId: null });
-        editingHandlers.clear();
-        pausedHandlers.clear();
+        set({
+          ingredients: [],
+          ingredientsMap: new Map(),
+          activeRecipeId: null,
+          editingIds: new Set(),
+          pausedIngredientIds: new Set(),
+        });
       },
 
       init: () => {
@@ -136,9 +139,10 @@ export const useRecipeStore = create<RecipeState>()(
           return { ...ingredient, spices: validatedSpices };
         });
 
-        ingredientHandlers.setAll(validIngredients);
         set({
-          activeRecipeId: activeRecipeId,
+          ingredients: validIngredients,
+          ingredientsMap: new Map(validIngredients.map((i) => [i.id, i])),
+          activeRecipeId,
           editingIds: new Set(),
           pausedIngredientIds: new Set(),
         });

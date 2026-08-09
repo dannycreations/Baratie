@@ -9,8 +9,8 @@ export interface UseSearchReturn {
   readonly onQueryChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
-export const useSearch = (initialQuery = ''): UseSearchReturn => {
-  const [query, setQuery] = useState(initialQuery);
+export const useSearch = (): UseSearchReturn => {
+  const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
 
   const onQueryChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

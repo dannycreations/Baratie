@@ -36,8 +36,10 @@ export const useIngredientStore = create<IngredientState>()(
         const validCategories = [...disabledCategories].filter((c) => allCategories.has(c));
         const validIngredients = filterExistingIngredients([...disabledIngredients].map((id) => ({ ingredientId: id }))).map((i) => i.ingredientId);
 
-        categoryHandlers.set(validCategories);
-        ingredientHandlers.set(validIngredients);
+        set({
+          disabledCategories: new Set(validCategories),
+          disabledIngredients: new Set(validIngredients),
+        });
       },
 
       refreshRegistry: () => {

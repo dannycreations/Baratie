@@ -1,5 +1,6 @@
 import { array, boolean, nonEmpty, number, object, optional, pipe, record, safeParse, string, union } from 'valibot';
 
+import { STORAGE_COOKBOOK } from '../app/constants';
 import { ingredientRegistry, logger, storage } from '../app/container';
 import { getSortedSpices, validateSpices } from './spiceHelper';
 
@@ -127,7 +128,7 @@ const createRecipeHash = (ingredients: ReadonlyArray<IngredientItem>): string =>
 
 export const saveAllRecipes = (recipes: ReadonlyArray<RecipebookItem>): boolean => {
   logger.info(`Saving ${recipes.length} recipes to storage.`);
-  return storage.set('baratie-cookbook', recipes, 'Saved Recipes');
+  return storage.set(STORAGE_COOKBOOK, recipes, 'Saved Recipes');
 };
 
 const sanitizeIngredient = (rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientItem | null => {

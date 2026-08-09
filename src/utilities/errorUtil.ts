@@ -28,10 +28,9 @@ export const createErrorObject = (error: Error): Record<string, unknown> => {
   return errorObject;
 };
 
-export const splitLines = (text: string, trim = true): string[] => {
+export const splitLines = (text: string): string[] => {
   if (!text) return [];
-  const lines = text.split('\n');
-  return trim ? lines.map((l) => l.trim()) : lines;
+  return text.split('\n').map((l) => l.trim());
 };
 
 export const objectStringify = (data: unknown, space?: string | number): string => {

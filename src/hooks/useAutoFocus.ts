@@ -4,22 +4,16 @@ import { MODAL_SHOW_MS } from '../app/constants';
 
 import type { RefObject } from 'react';
 
-interface AutoFocusOptions {
-  readonly delay?: number;
-}
-
-export const useAutoFocus = <T extends HTMLElement>(elementRef: RefObject<T | null>, isActive: boolean, options?: AutoFocusOptions): void => {
-  const { delay = MODAL_SHOW_MS } = options || {};
-
+export const useAutoFocus = <T extends HTMLElement>(elementRef: RefObject<T | null>, isActive: boolean): void => {
   useEffect(() => {
     if (isActive) {
       const timer = window.setTimeout(() => {
         elementRef.current?.focus();
-      }, delay);
+      }, MODAL_SHOW_MS);
 
       return () => {
         clearTimeout(timer);
       };
     }
-  }, [isActive, delay, elementRef]);
+  }, [isActive, elementRef]);
 };

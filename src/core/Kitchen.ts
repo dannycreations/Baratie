@@ -49,18 +49,6 @@ export class Kitchen {
   private intervalMs = 0;
 
   public initAutoCook(): () => void {
-    const handleKitchenChange = (state: KitchenState): void => {
-      if (!state.isAutoCookEnabled) {
-        return;
-      }
-
-      if (state.isBatchingUpdates) {
-        return;
-      }
-
-      this.cook();
-    };
-
     const handleRecipeChange = (): void => {
       if (!useKitchenStore.getState().isAutoCookEnabled) {
         return;
@@ -70,33 +58,25 @@ export class Kitchen {
     };
 
     const unsubscribeKitchen = useKitchenStore.subscribe(
-      (state) => state.inputData,
-      () => handleKitchenChange(useKitchenStore.getState()),
+      (state) => [state.inputData, state.isBatchingUpdates] as const,
+      () => {
+        const state = useKitchenStore.getState();
+        if (!state.isAutoCookEnabled || state.isBatchingUpdates) {
+          return;
+        }
+
+        this.cook();
+      },
+      { equalityFn: (a, b) => a[0] === b[0] && a[1] === b[1] },
     );
 
     const unsubscribeRecipe = useRecipeStore.subscribe((state) => [state.ingredients, state.pausedIngredientIds] as const, handleRecipeChange, {
       equalityFn: (a, b) => a[0] === b[0] && a[1] === b[1],
     });
 
-    const unsubscribeBatch = useKitchenStore.subscribe(
-      (state) => state.isBatchingUpdates,
-      (isBatching) => {
-        if (isBatching) {
-          return;
-        }
-
-        if (!useKitchenStore.getState().isAutoCookEnabled) {
-          return;
-        }
-
-        this.cook();
-      },
-    );
-
     return () => {
       unsubscribeKitchen();
       unsubscribeRecipe();
-      unsubscribeBatch();
     };
   }
 

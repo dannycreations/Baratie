@@ -11,6 +11,34 @@ import type { JSX } from 'react';
 import type { Extension } from '../../../helpers/extensionHelper';
 import type { ExtensionState } from '../../../stores/useExtensionStore';
 
+const EXTENSION_STATUS_META = {
+  loading: {
+    icon: <Loader2 className="animate-spin" size={ICON_SIZES.XS} />,
+    text: 'Loading...',
+    colorClass: 'text-content-tertiary',
+  },
+  loaded: {
+    icon: <Check size={ICON_SIZES.XS} />,
+    text: 'Loaded',
+    colorClass: 'text-success-fg',
+  },
+  error: {
+    icon: <AlertTriangle size={ICON_SIZES.XS} />,
+    text: 'Error',
+    colorClass: 'text-danger-fg',
+  },
+  partial: {
+    icon: <AlertTriangle size={ICON_SIZES.XS} />,
+    text: 'Partial',
+    colorClass: 'text-warning-fg',
+  },
+  awaiting: {
+    icon: <Loader2 className="animate-spin" size={ICON_SIZES.XS} />,
+    text: 'Awaiting Install...',
+    colorClass: 'text-info-fg',
+  },
+} as const;
+
 type ExtensionItemStatusProps = Pick<Extension, 'status' | 'errors'>;
 
 interface ExtensionItemActionHandlers {
@@ -25,23 +53,7 @@ interface ExtensionItemProps extends ExtensionItemStatusProps, ExtensionItemActi
 }
 
 const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }): JSX.Element => {
-  const statusMap = {
-    loading: {
-      icon: <Loader2 className="animate-spin" size={ICON_SIZES.XS} />,
-      text: 'Loading...',
-      colorClass: 'text-content-tertiary',
-    },
-    loaded: { icon: <Check size={ICON_SIZES.XS} />, text: 'Loaded', colorClass: 'text-success-fg' },
-    error: { icon: <AlertTriangle size={ICON_SIZES.XS} />, text: 'Error', colorClass: 'text-danger-fg' },
-    partial: { icon: <AlertTriangle size={ICON_SIZES.XS} />, text: 'Partial', colorClass: 'text-warning-fg' },
-    awaiting: {
-      icon: <Loader2 className="animate-spin" size={ICON_SIZES.XS} />,
-      text: 'Awaiting Install...',
-      colorClass: 'text-info-fg',
-    },
-  };
-
-  const current = statusMap[status] || statusMap.error;
+  const current = EXTENSION_STATUS_META[status] || EXTENSION_STATUS_META.error;
   const content = (
     <div className={clsx('extension-status-badge', current.colorClass)}>
       {current.icon}
