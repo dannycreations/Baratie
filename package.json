@@ -27,7 +27,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.0.5",
-    "clsx": "^2.1.1",
+    "cnfast": "^0.1.0",
     "husky": "^9.1.7",
     "lucide-react": "^1.30.0",
     "npm-check-updates": "^23.0.2",

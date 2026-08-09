@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 
 import type { JSX, ReactNode } from 'react';
 
@@ -19,12 +19,12 @@ export const SectionLayout = ({
   contentClasses = '',
   contentRef,
 }: SectionLayoutProps): JSX.Element => (
-  <section className={clsx('panel-container', className)}>
+  <section className={cn('panel-container', className)}>
     <header className="panel-header">
       <h2 className="panel-header-title">{headerLeft}</h2>
       {headerRight && <div className="panel-header-actions">{headerRight}</div>}
     </header>
-    <div ref={contentRef} className={clsx('panel-content', contentClasses)}>
+    <div ref={contentRef} className={cn('panel-content', contentClasses)}>
       {children}
     </div>
   </section>

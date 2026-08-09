@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -193,8 +193,8 @@ export const Tooltip = memo(
 
     const arrowClass = TOOLTIP_ARROW_STYLES[position] || TOOLTIP_ARROW_STYLES.top;
     const visibilityClass = isVisible && style.isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
-    const tooltipClass = clsx('tooltip-base', visibilityClass, tooltipClasses);
-    const triggerClass = clsx('relative inline-flex', className);
+    const tooltipClass = cn('tooltip-base', visibilityClass, tooltipClasses);
+    const triggerClass = cn('relative inline-flex', className);
 
     const triggerElement = (
       <div ref={triggerRef} className={triggerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onDragStart={handleMouseLeave}>

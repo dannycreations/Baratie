@@ -59,7 +59,6 @@ export const useOverflow = <T extends HTMLElement>(): OverflowReturn<T> => {
 
     const mutationObserver = new MutationObserver(checkOverflow);
     mutationObserver.observe(element, {
-      attributes: true,
       childList: true,
       subtree: true,
       characterData: true,

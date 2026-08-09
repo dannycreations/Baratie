@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { FolderOpen, Pause, Play, Save } from 'lucide-react';
 import { memo, useCallback, useEffect, useId, useMemo, useRef } from 'react';
 
@@ -187,18 +187,17 @@ export const RecipePanel = memo((): JSX.Element => {
     );
   }, [ingredients, isDraggingIngredient, recipeItemHandlers]);
 
-  const listClass = clsx('grow transition-colors duration-200', isDraggingIngredient && 'bg-surface-muted');
+  const listClass = cn('grow transition-colors duration-200', isDraggingIngredient && 'bg-surface-muted');
 
   return (
     <SectionLayout
       headerLeft="Recipe"
       headerRight={headerActions}
       className="panel-full-height-flex"
-      contentClasses={clsx('relative flex-col-gap-2 h-full text-content-tertiary', scrollClasses)}
-      contentRef={scrollRef}
+      contentClasses="relative flex-col-gap-2 h-full text-content-tertiary"
     >
       <div className="flex-col-gap-2 h-full" {...dropZoneProps}>
-        <div id={listId} className={clsx('flex-1-overflow-auto', listClass, scrollClasses)}>
+        <div id={listId} ref={scrollRef} className={cn('flex-1-overflow-auto', listClass, scrollClasses)}>
           {content}
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { Plus, Settings, SlidersHorizontal, Star } from 'lucide-react';
 import { memo, useCallback, useId, useMemo } from 'react';
 
@@ -144,7 +144,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   const renderItemActions = useCallback(
     (item: GroupListItem): JSX.Element => {
       const isFavorite = favorites.has(item.id);
-      const starClasses = clsx(
+      const starClasses = cn(
         'list-item-group-actions',
         isFavorite ? 'text-favorite-fg hover:text-favorite-fg-hover' : 'text-content-tertiary hover:text-favorite-fg',
       );
@@ -188,7 +188,7 @@ export const IngredientPanel = memo((): JSX.Element => {
           <div>
             <SearchInput id="ingredient-search" value={query} placeholder="Search Ingredients..." onChange={onQueryChange} onClear={onClear} />
           </div>
-          <div id={listId} ref={scrollRef} className={clsx('flex-1-overflow-auto', scrollClasses)}>
+          <div id={listId} ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
             <GroupListLayout
               query={query}
               itemsByCategory={filteredIngredients}

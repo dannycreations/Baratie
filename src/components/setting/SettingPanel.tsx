@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo, useCallback, useState } from 'react';
 
 import { useModalStore } from '../../stores/useModalStore';
@@ -50,7 +50,7 @@ const TabButton = memo<TabButtonProps>(({ children, isActive, onClick, id }): JS
     onClick(id);
   }, [id, onClick]);
 
-  const tabClass = clsx('tab-button', isActive ? 'tab-button-active' : 'tab-button-inactive');
+  const tabClass = cn('tab-button', isActive ? 'tab-button-active' : 'tab-button-inactive');
 
   return (
     <button className={tabClass} onClick={handleClick}>
@@ -83,7 +83,7 @@ export const SettingPanel = memo((): JSX.Element => {
           {SETTING_TABS.map((tab) => (
             <div
               key={tab.id}
-              className={clsx(
+              className={cn(
                 activeTab === tab.id ? 'tab-panel' : 'tab-panel-hidden',
                 tab.id === 'extensions' ? 'overflow-hidden' : 'flex-1-overflow-auto',
               )}

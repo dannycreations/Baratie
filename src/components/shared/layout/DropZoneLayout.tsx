@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo } from 'react';
 
 import { DropZoneMode, DropZoneVariant } from '../../../app/types';
@@ -23,7 +23,7 @@ const DROPZONE_VARIANT_MAP: Readonly<Record<DropZoneVariant, string>> = {
 };
 
 export const DropZoneLayout = memo<DropZoneProps>(({ text, variant = 'add', mode = 'placeholder', className = '' }): JSX.Element => {
-  const combinedClass = clsx('dropzone-base', DROPZONE_VARIANT_MAP[variant], DROPZONE_MODE_MAP[mode], className);
+  const combinedClass = cn('dropzone-base', DROPZONE_VARIANT_MAP[variant], DROPZONE_MODE_MAP[mode], className);
 
   return (
     <div className={combinedClass}>

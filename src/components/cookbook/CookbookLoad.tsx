@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { Save } from 'lucide-react';
 import { memo, useId, useMemo } from 'react';
 
@@ -60,7 +60,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(
             onClear={onClear}
           />
         </div>
-        <div id={listId} ref={scrollRef} className={clsx('flex-1-overflow-auto', scrollClasses)}>
+        <div id={listId} ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
           {listContent}
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { X } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
@@ -23,9 +23,9 @@ interface StringInputProps {
 export const StringInput = memo<StringInputProps>(
   ({ id, value, onChange, type = 'text', inputRef, showClearButton, onClear, className, disabled, placeholder, onKeyDown }): JSX.Element => {
     const hasClearButton = showClearButton && value && !disabled;
-    const finalWrapperClass = clsx('relative', className);
+    const finalWrapperClass = cn('relative', className);
 
-    const finalInputClass = clsx('input-base input-base-padding', hasClearButton ? 'pr-8' : 'pr-2');
+    const finalInputClass = cn('input-base input-base-padding', hasClearButton ? 'pr-8' : 'pr-2');
 
     const handleClear = useCallback((): void => {
       onClear?.();

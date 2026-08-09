@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
@@ -156,9 +156,9 @@ export const NumberInput = memo<NumberInputProps>(
       onEnd: disabled || isAtMin ? undefined : onLongPressEnd,
     });
 
-    const standardInputStyle = clsx('input-base input-base-padding pr-8 number-input-no-spinner');
-    const containerClass = clsx('input-number-container', className);
-    const buttonGroupClass = clsx('input-number-button-group');
+    const standardInputStyle = cn('input-base input-base-padding pr-8 number-input-no-spinner');
+    const containerClass = cn('input-number-container', className);
+    const buttonGroupClass = cn('input-number-button-group');
     const stepButtonClass = 'input-number-button';
 
     return (
@@ -179,7 +179,7 @@ export const NumberInput = memo<NumberInputProps>(
         <div className={buttonGroupClass}>
           <button
             type="button"
-            className={clsx(stepButtonClass, 'rounded-tr-sm', (disabled || isAtMax) && 'opacity-50 cursor-not-allowed')}
+            className={cn(stepButtonClass, 'rounded-tr-sm', (disabled || isAtMax) && 'opacity-50 cursor-not-allowed')}
             aria-disabled={disabled || isAtMax}
             {...incrementPressHandlers}
           >
@@ -187,7 +187,7 @@ export const NumberInput = memo<NumberInputProps>(
           </button>
           <button
             type="button"
-            className={clsx(stepButtonClass, 'rounded-br-sm', (disabled || isAtMin) && 'opacity-50 cursor-not-allowed')}
+            className={cn(stepButtonClass, 'rounded-br-sm', (disabled || isAtMin) && 'opacity-50 cursor-not-allowed')}
             aria-disabled={disabled || isAtMin}
             {...decrementPressHandlers}
           >

@@ -1,6 +1,5 @@
 import { errorHandler } from '../app/container';
 import { AppError } from '../core/ErrorHandler';
-import { base64ToUint8Array } from './cryptoUtil';
 
 export const readFile = <T>(file: Readonly<File>, readMethod: 'readAsText' | 'readAsArrayBuffer', context: string): Promise<T> => {
   return new Promise<T>((resolve, reject) => {
@@ -75,17 +74,10 @@ export const sanitizeFileName = (name: string, fallbackName = 'file'): string =>
   return `${baseName.toLowerCase()}${extension.toLowerCase()}`;
 };
 
-export const triggerDownload = (data: string, fileName: string, mimeType = 'text/plain', isBase64 = false): void => {
+export const triggerDownload = (data: string, fileName: string, mimeType = 'text/plain'): void => {
   errorHandler.attempt(
     () => {
-      let blob: Blob;
-
-      if (isBase64) {
-        const byteArray = base64ToUint8Array(data);
-        blob = new Blob([new Uint8Array(byteArray)], { type: mimeType });
-      } else {
-        blob = new Blob([data], { type: mimeType });
-      }
+      const blob = new Blob([data], { type: mimeType });
 
       const url = URL.createObjectURL(blob);
       const downloadLink = document.createElement('a');

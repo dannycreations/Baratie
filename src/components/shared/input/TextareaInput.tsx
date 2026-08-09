@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo, useCallback, useRef, useState } from 'react';
 
 import { useDropZone } from '../../../hooks/useDropZone';
@@ -81,9 +81,9 @@ export const TextareaInput = memo<TextareaInputProps>(
       [showLineNumbers],
     );
 
-    const containerClass = clsx('input-textarea-container', disabled && 'opacity-50', wrapperClasses);
-    const gutterClass = clsx('input-textarea-gutter');
-    const textareaClass = clsx('input-textarea-element', textareaClasses);
+    const containerClass = cn('input-textarea-container', disabled && 'opacity-50', wrapperClasses);
+    const gutterClass = cn('input-textarea-gutter');
+    const textareaClass = cn('input-textarea-element', textareaClasses);
 
     return (
       <div className={containerClass} {...dropZoneProps}>

@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { AlertTriangle, Check, Info, X } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -83,9 +83,9 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
   const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
 
-  const containerClass = clsx('notification-item', borderClass, animationClass, isPaused && 'notification-paused');
+  const containerClass = cn('notification-item', borderClass, animationClass, isPaused && 'notification-paused');
 
-  const messageClass = clsx('allow-text-selection text-sm text-content-secondary', notification.title && 'mt-1');
+  const messageClass = cn('allow-text-selection text-sm text-content-secondary', notification.title && 'mt-1');
 
   return (
     <li className={containerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
@@ -103,7 +103,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
         <div className="notification-progress-container">
           <div
             key={`${notification.id}-${notification.resetAt ?? 0}`}
-            className={clsx('h-full progress-bar-fill', barClass)}
+            className={cn('h-full progress-bar-fill', barClass)}
             style={{
               animationDuration: `${duration}ms`,
             }}

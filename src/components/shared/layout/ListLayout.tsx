@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { ChevronRight } from 'lucide-react';
 import { memo, useCallback, useMemo, useState } from 'react';
 
@@ -49,7 +49,7 @@ const GroupItemLayout = memo<GroupItemProps>(({ item, isItemDisabled, renderItem
   const isDisabled = isItemDisabled?.(item) ?? false;
   const isDraggable = !isDisabled && !!onItemDragStart;
 
-  const nameClass = clsx('list-item-title list-item-interactive text-content-secondary', isDisabled && 'line-through');
+  const nameClass = cn('list-item-title list-item-interactive text-content-secondary', isDisabled && 'line-through');
 
   const handleDragStart = useCallback(
     (event: DragEvent<HTMLElement>): void => {
@@ -107,14 +107,14 @@ const CategorySection = memo<CategorySectionProps>((props) => {
   const header = (
     <button className="list-item-container outline-none hover:bg-surface-hover text-content-secondary" onClick={handleToggle} disabled={disabled}>
       {renderHeader ? renderHeader(category, items) : <span className="truncate font-medium">{category}</span>}
-      <ChevronRight className={clsx('transform transition-transform duration-200 ease-in-out', isExpanded ? 'rotate-90' : 'rotate-0')} size={20} />
+      <ChevronRight className={cn('transform transition-transform duration-200 ease-in-out', isExpanded ? 'rotate-90' : 'rotate-0')} size={20} />
     </button>
   );
 
   return (
     <section className="overflow-hidden rounded-md">
       {header}
-      <div className={clsx('accordion-grid', isExpanded && 'expanded')}>
+      <div className={cn('accordion-grid', isExpanded && 'expanded')}>
         <div className="accordion-content">
           <div className="bg-surface-muted p-2">
             <ul className="list-container">

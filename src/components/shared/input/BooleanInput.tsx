@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo } from 'react';
 
 import type { ChangeEvent, JSX } from 'react';
@@ -14,9 +14,9 @@ interface BooleanInputProps {
 
 export const BooleanInput = memo<BooleanInputProps>(
   ({ id, checked, onChange, className = '', disabled = false, offBackgroundColor }): JSX.Element => {
-    const containerClass = clsx('input-boolean-container', className);
+    const containerClass = cn('input-boolean-container', className);
 
-    const switchClass = clsx('input-boolean-switch', !checked && offBackgroundColor);
+    const switchClass = cn('input-boolean-switch', !checked && offBackgroundColor);
 
     return (
       <label className={containerClass}>

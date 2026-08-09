@@ -1,6 +1,6 @@
 import './styles.css';
 
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { StrictMode, useEffect } from 'react';
 import { createRoot as createReactRoot } from 'react-dom/client';
 
@@ -56,8 +56,8 @@ const Baratie = (): JSX.Element => {
     return kitchen.initAutoCook();
   }, [isAppReady]);
 
-  const mainContentClass = clsx('main-content-wrapper', isAppReady ? 'opacity-100' : 'opacity-0');
-  const rootLayoutClass = clsx('main-layout-root', scrollClasses);
+  const mainContentClass = cn('main-content-wrapper', isAppReady ? 'opacity-100' : 'opacity-0');
+  const rootLayoutClass = cn('main-layout-root', scrollClasses);
 
   return (
     <>

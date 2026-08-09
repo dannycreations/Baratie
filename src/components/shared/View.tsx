@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo } from 'react';
 
 import { createErrorObject, objectStringify, splitLines } from '../../utilities/errorUtil';
@@ -27,8 +27,8 @@ const errorStringify = (error: Error, errorInfo: ErrorInfo | null): string => {
 };
 
 export const EmptyView = ({ children, className, textClasses, icon, title }: EmptyViewProps): JSX.Element => {
-  const containerClass = clsx('empty-view-container', className);
-  const textClass = clsx('empty-view-text', textClasses);
+  const containerClass = cn('empty-view-container', className);
+  const textClass = cn('empty-view-text', textClasses);
 
   return (
     <div className={containerClass}>

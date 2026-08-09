@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo, useCallback, useId, useMemo, useRef } from 'react';
 
 import { ingredientRegistry } from '../../app/container';
@@ -59,7 +59,7 @@ export const IngredientManager = memo((): JSX.Element => {
             offBackgroundColor="bg-border-primary"
             onChange={() => toggleCategory(category)}
           />
-          <span className={clsx('list-item-label', isCategoryDisabled ? 'text-content-disabled line-through' : 'text-content-secondary')}>
+          <span className={cn('list-item-label', isCategoryDisabled ? 'text-content-disabled line-through' : 'text-content-secondary')}>
             {category}
           </span>
         </div>
@@ -117,7 +117,7 @@ export const IngredientManager = memo((): JSX.Element => {
             onClear={onClear}
           />
         </div>
-        <div id={listId} ref={scrollRef} className={clsx('flex-1-overflow-auto', scrollClasses)}>
+        <div id={listId} ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
           {content}
         </div>
       </div>

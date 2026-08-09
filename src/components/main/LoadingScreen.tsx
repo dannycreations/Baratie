@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -28,8 +28,8 @@ export const LoadingScreen = (): JSX.Element | null => {
     return null;
   }
 
-  const containerClass = clsx('loading-screen-container', isAppReady ? 'opacity-0' : 'opacity-100');
-  const titleClass = clsx('loading-screen-title', isError ? 'text-danger-fg' : 'text-content-secondary');
+  const containerClass = cn('loading-screen-container', isAppReady ? 'opacity-0' : 'opacity-100');
+  const titleClass = cn('loading-screen-title', isError ? 'text-danger-fg' : 'text-content-secondary');
 
   return (
     <div className={containerClass}>

@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { ChevronDown } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
@@ -30,8 +30,8 @@ export const SelectInput = memo(
       [options, onChange],
     );
 
-    const finalWrapperClass = clsx('relative', className);
-    const selectInputStyle = clsx('input-base input-base-padding appearance-none pr-8 cursor-pointer');
+    const finalWrapperClass = cn('relative', className);
+    const selectInputStyle = cn('input-base input-base-padding appearance-none pr-8 cursor-pointer');
 
     return (
       <div className={finalWrapperClass}>

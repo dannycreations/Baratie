@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { GitMerge } from 'lucide-react';
 import { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 
@@ -119,7 +119,7 @@ export const ExtensionTab = memo((): JSX.Element => {
 
       <div className="flex-col-gap-2">
         <h4 className="label-base mb-1 !text-base">Installed Extensions</h4>
-        <div id={listId} ref={scrollRef} className={clsx('flex-1-overflow-auto', scrollClasses)}>
+        <div id={listId} ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
           {listContent}
         </div>
       </div>

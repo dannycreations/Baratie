@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { AlertTriangle, Check, Copy, Loader2, Trash2 } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
@@ -83,7 +83,7 @@ export const Button = memo<ButtonProps>(
     const sizeClass = BUTTON_SIZE_MAP[size] ?? 'btn-sm';
 
     const iconMarginClass = children && icon ? (iconPosition === 'left' ? 'mr-2' : 'ml-2') : '';
-    const loadingSpinner = <Loader2 size={ICON_SIZES.XS} className={clsx('animate-spin', iconMarginClass)} />;
+    const loadingSpinner = <Loader2 size={ICON_SIZES.XS} className={cn('animate-spin', iconMarginClass)} />;
 
     const showIconLeft = iconPosition === 'left';
     const showIconRight = iconPosition === 'right';
@@ -91,7 +91,7 @@ export const Button = memo<ButtonProps>(
     return (
       <button
         type={type}
-        className={clsx('btn-base', shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className)}
+        className={cn('btn-base', shapeClass, variantClass, sizeClass, loading && 'opacity-60', fullWidth && 'w-full', className)}
         disabled={loading || disabled}
         onClick={onClick}
       >
@@ -117,7 +117,7 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
       icon={isCopied ? <Check size={ICON_SIZES.SM} /> : <Copy size={ICON_SIZES.SM} />}
       size="sm"
       variant="stealth"
-      className={clsx(isCopied && 'text-success-fg')}
+      className={cn(isCopied && 'text-success-fg')}
       disabled={!textToCopy || isCopied}
       tooltipContent={isCopied ? 'Copied!' : 'Copy'}
       tooltipPosition={tooltipPosition}
@@ -153,7 +153,7 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
 
     const tooltipContent = isConfirm ? (customConfirmTooltip ?? `Confirm ${actionName}`) : (customTooltip ?? `${actionName} ${itemType}`);
 
-    const buttonClass = clsx(isConfirm && 'bg-danger-bg! text-accent-fg!', className);
+    const buttonClass = cn(isConfirm && 'bg-danger-bg! text-accent-fg!', className);
 
     return (
       <TooltipButton

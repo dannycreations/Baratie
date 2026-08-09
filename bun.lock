@@ -11,7 +11,7 @@
         "@types/react": "^19.2.18",
         "@types/react-dom": "^19.2.4",
         "@vitejs/plugin-react": "^6.0.5",
-        "clsx": "^2.1.1",
+        "cnfast": "^0.1.0",
         "husky": "^9.1.7",
         "lucide-react": "^1.30.0",
         "npm-check-updates": "^23.0.2",
@@ -192,7 +192,7 @@
 
     "chokidar": ["chokidar@5.0.0", "", { "dependencies": { "readdirp": "^5.0.0" } }, "sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw=="],
 
-    "clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
+    "cnfast": ["cnfast@0.1.0", "", { "bin": { "cnfast": "bin/cli.js" } }, "sha512-rH0jBKeLkVrK7NsZ5Ba2l7WdMBmm1k0FMpABeXUU1PgTUxbz3261gEuCSsrYuXo4BwAe3yCcIbQ93YyS52lOGQ=="],
 
     "commander": ["commander@2.20.3", "", {}, "sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ=="],
 

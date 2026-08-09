@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { AlertTriangle, GripVertical, Pause, Play, SlidersHorizontal, X } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
@@ -51,7 +51,7 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
           icon={isPaused ? <Play size={ICON_SIZES.SM} /> : <Pause size={ICON_SIZES.SM} />}
           size="sm"
           variant="stealth"
-          className={clsx('list-item-group-actions', isPaused ? 'text-success-fg hover:!bg-success-bg' : 'text-warning-fg hover:!bg-warning-bg')}
+          className={cn('list-item-group-actions', isPaused ? 'text-success-fg hover:!bg-success-bg' : 'text-warning-fg hover:!bg-warning-bg')}
           tooltipContent={isPaused ? 'Resume' : 'Pause'}
           tooltipPosition="top"
           onClick={onTogglePause}
@@ -61,7 +61,7 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
             icon={<SlidersHorizontal size={ICON_SIZES.SM} />}
             size="sm"
             variant={isEditorVisible ? 'primary' : 'stealth'}
-            className={clsx(!isEditorVisible && 'text-content-tertiary hover:text-info-fg')}
+            className={cn(!isEditorVisible && 'text-content-tertiary hover:text-info-fg')}
             tooltipContent={settingsTooltip}
             tooltipPosition="top"
             onClick={onEditToggle}
@@ -205,7 +205,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
   }
 
   const statusBorderClass = isAutoCook ? STATUS_BORDER_MAP[status] : '';
-  const itemClass = clsx(
+  const itemClass = cn(
     'recipe-item group outline-none',
     isDragged ? 'z-10 scale-[0.97] opacity-60 !bg-surface-hover' : 'scale-100 opacity-100',
     statusBorderClass,
@@ -248,7 +248,7 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
       {infoContent && <div className="recipe-item-info">{infoContent}</div>}
 
       {hasSpices && (
-        <div className={clsx('accordion-grid', isEditorVisible && 'expanded')}>
+        <div className={cn('accordion-grid', isEditorVisible && 'expanded')}>
           <div className="accordion-content">
             <RecipeSpiceEditor
               ingredient={ingredientItem}

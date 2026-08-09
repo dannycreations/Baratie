@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { AlertTriangle, Check, Loader2, RefreshCw } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
@@ -55,7 +55,7 @@ interface ExtensionItemProps extends ExtensionItemStatusProps, ExtensionItemActi
 const ExtensionItemStatus = memo<ExtensionItemStatusProps>(({ status, errors }): JSX.Element => {
   const current = EXTENSION_STATUS_META[status] || EXTENSION_STATUS_META.error;
   const content = (
-    <div className={clsx('extension-status-badge', current.colorClass)}>
+    <div className={cn('extension-status-badge', current.colorClass)}>
       {current.icon}
       <span>{current.text}</span>
     </div>

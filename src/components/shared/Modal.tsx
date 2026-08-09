@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { X } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -98,8 +98,8 @@ export const Modal = ({
     return null;
   }
 
-  const backdropClass = clsx('modal-backdrop', isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active');
-  const modalClass = clsx(
+  const backdropClass = cn('modal-backdrop', isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active');
+  const modalClass = cn(
     'panel-container border border-border-primary',
     MODAL_SIZE_MAP[size] || 'modal-lg',
     isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active',

@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo, useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { useAutoFocus } from '../../../hooks/useAutoFocus';
@@ -218,7 +218,7 @@ export const ExtensionManager = memo((): JSX.Element | null => {
             onClear={handleClearQuery}
           />
         </div>
-        <div id={listId} ref={scrollRef} className={clsx('flex-1-overflow-auto', scrollClasses)}>
+        <div id={listId} ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
           {content}
         </div>
       </div>

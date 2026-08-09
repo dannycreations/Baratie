@@ -74,6 +74,10 @@ export class Kitchen {
       equalityFn: (a, b) => a[0] === b[0] && a[1] === b[1],
     });
 
+    if (useKitchenStore.getState().isAutoCookEnabled) {
+      handleRecipeChange();
+    }
+
     return () => {
       unsubscribeKitchen();
       unsubscribeRecipe();

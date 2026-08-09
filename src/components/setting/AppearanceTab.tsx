@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { Check } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
@@ -14,7 +14,7 @@ interface PalettePreviewProps {
 
 const PalettePreview = memo<PalettePreviewProps>(({ themeId }): JSX.Element => {
   return (
-    <div className={clsx('flex-y-center space-x-1', themeId)}>
+    <div className={cn('flex-y-center space-x-1', themeId)}>
       <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--surface-primary)]" title="Page BG" />
       <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--surface-secondary)]" title="Card BG" />
       <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--accent-bg)]" title="Accent" />
@@ -36,11 +36,11 @@ const ThemeItem = memo<ThemeItemProps>(({ item, isChecked, onSelect }): JSX.Elem
     onSelect(item.id);
   }, [onSelect, item.id]);
 
-  const itemLayoutClass = clsx('theme-item-container', isChecked ? 'theme-item-active' : 'theme-item-inactive');
+  const itemLayoutClass = cn('theme-item-container', isChecked ? 'theme-item-active' : 'theme-item-inactive');
 
   const leftContent = (
     <div className="stack-v-small justify-center">
-      <h3 className={clsx('list-item-title font-medium', isChecked ? 'text-info-fg' : 'text-content-primary')}>{item.name}</h3>
+      <h3 className={cn('list-item-title font-medium', isChecked ? 'text-info-fg' : 'text-content-primary')}>{item.name}</h3>
       <PalettePreview themeId={item.id} />
     </div>
   );
