@@ -99,7 +99,6 @@ const InputDataContent = memo<{ readonly onFileRead: (file: File) => Promise<voi
     <SpiceLayout
       ingredient={definition}
       currentSpices={targetIngredient.spices}
-      containerClasses="space-y-2"
       onSpiceChange={handleSpiceChange}
       onLongPressStart={startUpdateBatch}
       onLongPressEnd={endUpdateBatch}

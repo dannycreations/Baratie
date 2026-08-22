@@ -139,7 +139,7 @@ export const RecipePanel = memo((): JSX.Element => {
       );
     }
     return (
-      <ul ref={listRef} className="list-container pb-3">
+      <ul ref={listRef} className="list-container">
         {ingredients.map((ingredient: IngredientItem) => (
           <RecipeItem key={ingredient.id} ingredientItem={ingredient} handlers={recipeItemHandlers} />
         ))}

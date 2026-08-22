@@ -14,7 +14,7 @@ interface PalettePreviewProps {
 
 const PalettePreview = memo<PalettePreviewProps>(({ themeId }): JSX.Element => {
   return (
-    <div className={cn('flex-y-center space-x-1', themeId)}>
+    <div className={cn('flex-y-center gap-1', themeId)}>
       <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--surface-primary)]" title="Page BG" />
       <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--surface-secondary)]" title="Card BG" />
       <div className="h-4 w-4 rounded-full border border-border-primary bg-[var(--accent-bg)]" title="Accent" />
