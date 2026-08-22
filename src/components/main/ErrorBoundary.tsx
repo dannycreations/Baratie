@@ -3,8 +3,8 @@ import { Component } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { logger } from '../../app/container';
+import { createErrorObject, objectStringify, splitLines } from '../../utilities/errorUtil';
 import { Button } from '../shared/Button';
-import { ErrorView } from '../shared/View';
 
 import type { ErrorInfo, JSX, ReactNode } from 'react';
 
@@ -58,3 +58,29 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return this.props.children;
   }
 }
+
+interface ErrorViewProps {
+  readonly error: Error | null;
+  readonly errorInfo: ErrorInfo | null;
+}
+
+const errorStringify = (error: Error, errorInfo: ErrorInfo | null): string => {
+  const errorObject = createErrorObject(error);
+  if (errorInfo?.componentStack) {
+    errorObject.componentStack = splitLines(errorInfo.componentStack);
+  }
+  return objectStringify(errorObject, 2);
+};
+
+const ErrorView = ({ error, errorInfo }: ErrorViewProps): JSX.Element | null => {
+  if (!error) {
+    return null;
+  }
+
+  return (
+    <details className="error-view-details">
+      <summary className="error-view-summary">Error Details</summary>
+      <pre className="error-view-pre allow-text-selection">{errorStringify(error, errorInfo)}</pre>
+    </details>
+  );
+};

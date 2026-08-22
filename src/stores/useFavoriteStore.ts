@@ -4,7 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { STORAGE_FAVORITES } from '../app/constants';
 import { errorHandler, ingredientRegistry, storage } from '../app/container';
 import { AppError } from '../core/ErrorHandler';
-import { filterExistingIngredients } from '../helpers/ingredientHelper';
+import { getExistingIngredientIds } from '../helpers/ingredientHelper';
 import { isArrayEqual, isString } from '../utilities/objectUtil';
 import { createSetHandlers, persistStore } from '../utilities/storeUtil';
 import { useIngredientStore } from './useIngredientStore';
@@ -51,7 +51,7 @@ useIngredientStore.subscribe(
   (state) => state.registryVersion,
   () => {
     const { favorites, setFavorites } = useFavoriteStore.getState();
-    const existingIds = filterExistingIngredients([...favorites].map((id) => ({ ingredientId: id }))).map((i) => i.ingredientId);
+    const existingIds = getExistingIngredientIds([...favorites]);
 
     if (existingIds.length < favorites.size) {
       setFavorites(existingIds);

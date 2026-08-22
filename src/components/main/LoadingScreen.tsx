@@ -35,9 +35,9 @@ export const LoadingScreen = (): JSX.Element | null => {
     <div className={containerClass}>
       <div className="flex-col-center p-3">
         {isError ? (
-          <AlertTriangle className="text-danger-fg" size={ICON_SIZES.XXL} />
+          <AlertTriangle className="text-danger-fg" size={ICON_SIZES.LG} />
         ) : (
-          <Loader2 size={ICON_SIZES.XXL} className="animate-spin text-info-fg" />
+          <Loader2 size={ICON_SIZES.LG} className="animate-spin text-info-fg" />
         )}
         <h1 className={titleClass}>{isError ? 'Kitchen on Fire!' : 'Opening the Baratie'}</h1>
         <p key={message} className="fade-in-text mt-2 text-content-tertiary">

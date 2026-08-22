@@ -3,13 +3,13 @@ import { memo, useCallback } from 'react';
 import { StringInput } from '../shared/input/StringInput';
 import { FormLayout } from '../shared/layout/FormLayout';
 
-import type { ChangeEvent, JSX, KeyboardEvent, RefObject } from 'react';
+import type { JSX, KeyboardEvent, RefObject } from 'react';
 
 interface CookbookSaveProps {
   readonly isRecipeEmpty: boolean;
   readonly nameRef: RefObject<HTMLInputElement | null>;
   readonly nameInput: string;
-  readonly onNameChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  readonly onNameChange: (value: string) => void;
   readonly onClear: () => void;
   readonly onSave: () => void;
 }

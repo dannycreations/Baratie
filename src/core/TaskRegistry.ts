@@ -70,42 +70,29 @@ export class TaskRegistry {
       const postTasks = this.userTasks.filter((task) => task.type === 'postInit');
       const taskStore = useTaskStore.getState();
 
-      const runTaskGroup = async (tasks: ReadonlyArray<InitializationTask>) => {
-        const concurrentTasks = tasks.filter((t) => t.isConcurrent);
-        const sequentialTasks = tasks.filter((t) => !t.isConcurrent);
+      const runTask = async (task: InitializationTask): Promise<void> => {
+        logger.debug(`Executing init task: ${task.message}`);
+        if (!task.handler) {
+          return;
+        }
 
-        // Run concurrent tasks
-        const concurrentPromises = concurrentTasks.map(async (task) => {
-          logger.debug(`Executing concurrent init task: ${task.message}`);
-          if (!task.handler) return;
-
-          const context = `Init: ${task.message}`;
-          const options = { genericMessage: `Failed during task: ${task.message}`, shouldNotify: false };
-          const { error } = await errorHandler.attemptAsync(task.handler, context, options);
-
-          if (error) {
-            const errorMessage = error.userMessage || error.message;
-            taskStore.setLoadingMessage(errorMessage, true);
-            throw error;
-          }
+        const { error } = await errorHandler.attemptAsync(task.handler, `Init: ${task.message}`, {
+          genericMessage: `Failed during task: ${task.message}`,
+          shouldNotify: false,
         });
 
-        // Run sequential tasks
-        for (const task of sequentialTasks) {
+        if (error) {
+          taskStore.setLoadingMessage(error.userMessage || error.message, true);
+          throw error;
+        }
+      };
+
+      const runTaskGroup = async (tasks: ReadonlyArray<InitializationTask>) => {
+        const concurrentPromises = tasks.filter((t) => t.isConcurrent).map(runTask);
+
+        for (const task of tasks.filter((t) => !t.isConcurrent)) {
           taskStore.setLoadingMessage(task.message);
-          logger.debug(`Executing init task: ${task.message}`);
-
-          if (task.handler) {
-            const context = `Init: ${task.message}`;
-            const options = { genericMessage: `Failed during task: ${task.message}`, shouldNotify: false };
-            const { error } = await errorHandler.attemptAsync(task.handler, context, options);
-
-            if (error) {
-              const errorMessage = error.userMessage || error.message;
-              taskStore.setLoadingMessage(errorMessage, true);
-              throw error;
-            }
-          }
+          await runTask(task);
           await new Promise((resolve) => setTimeout(resolve, 10));
         }
 

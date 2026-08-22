@@ -12,7 +12,7 @@ import { SpiceLayout } from '../shared/layout/SpiceLayout';
 import { Tooltip } from '../shared/Tooltip';
 
 import type { DragEvent, JSX, ReactNode } from 'react';
-import type { IngredientDefinition, IngredientItem, SpiceValue } from '../../core/IngredientRegistry';
+import type { IngredientItem, SpiceValue } from '../../core/IngredientRegistry';
 import type { CookingStatusType } from '../../core/Kitchen';
 
 export interface RecipeItemHandlers {
@@ -86,14 +86,6 @@ interface MissingRecipeItemProps {
   readonly onRemove: (id: string) => void;
 }
 
-interface RecipeSpiceEditorProps {
-  readonly ingredient: IngredientItem;
-  readonly definition: IngredientDefinition;
-  readonly onSpiceChange: (ingredientId: string, spiceId: string, newValue: SpiceValue) => void;
-  readonly onLongPressEnd: () => void;
-  readonly onLongPressStart: () => void;
-}
-
 const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemove }): JSX.Element => {
   const handleRemove = useCallback((): void => {
     onRemove(ingredientItem.id);
@@ -124,38 +116,6 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
   );
 });
 
-interface InfoMessageProps {
-  type: 'spiceInInput' | 'warning';
-  message?: string;
-}
-
-const InfoMessage = memo<InfoMessageProps>(({ type, message }): JSX.Element => {
-  return <p className="info-message-box">{type === 'spiceInInput' ? 'Options are managed in the Input panel.' : message}</p>;
-});
-
-const RecipeSpiceEditor = memo<RecipeSpiceEditorProps>(({ ingredient, definition, onSpiceChange, onLongPressStart, onLongPressEnd }): JSX.Element => {
-  const handleSpiceChange = useCallback(
-    (spiceId: string, newValue: SpiceValue): void => {
-      onSpiceChange(ingredient.id, spiceId, newValue);
-    },
-    [onSpiceChange, ingredient.id],
-  );
-
-  return (
-    <div className="recipe-spice-editor-container">
-      <div className="recipe-spice-editor-wrapper">
-        <SpiceLayout
-          ingredient={definition}
-          currentSpices={ingredient.spices}
-          onSpiceChange={handleSpiceChange}
-          onLongPressStart={onLongPressStart}
-          onLongPressEnd={onLongPressEnd}
-        />
-      </div>
-    </div>
-  );
-});
-
 export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): JSX.Element => {
   const { onDragStart, onDragEnd, onDragOver } = handlers;
 
@@ -176,6 +136,13 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
   const toggleIngredientPause = useRecipeStore((state) => state.toggleIngredientPause);
 
   const handleRemove = useCallback(() => removeIngredient(ingredientItem.id), [ingredientItem.id, removeIngredient]);
+
+  const handleSpiceChange = useCallback(
+    (spiceId: string, newValue: SpiceValue): void => {
+      updateSpice(ingredientItem.id, spiceId, newValue);
+    },
+    [ingredientItem.id, updateSpice],
+  );
 
   const handleEditToggleCallback = useCallback(() => {
     if (!isSpiceInInput) {
@@ -199,9 +166,9 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
 
   let infoContent: ReactNode = null;
   if (hasWarning) {
-    infoContent = <InfoMessage type="warning" message={warning} />;
+    infoContent = <p className="info-message-box">{warning}</p>;
   } else if (hasSpices && isSpiceInInput) {
-    infoContent = <InfoMessage type="spiceInInput" />;
+    infoContent = <p className="info-message-box">Options are managed in the Input panel.</p>;
   }
 
   const statusBorderClass = isAutoCook ? STATUS_BORDER_MAP[status] : '';
@@ -218,11 +185,9 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
           <GripVertical size={ICON_SIZES.MD} />
         </span>
       </Tooltip>
-      <div className="flex-1-min-0">
-        <Tooltip content={definition.description} position="top" className="inline-block max-w-full">
-          <h3 className="list-item-title font-medium text-content-primary">{definition.name}</h3>
-        </Tooltip>
-      </div>
+      <Tooltip content={definition.description} position="top" className="flex-1-min-0">
+        <h3 className="list-item-title font-medium text-content-primary">{definition.name}</h3>
+      </Tooltip>
     </>
   );
 
@@ -250,13 +215,17 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
       {hasSpices && (
         <div className={cn('accordion-grid', isEditorVisible && 'expanded')}>
           <div className="accordion-content">
-            <RecipeSpiceEditor
-              ingredient={ingredientItem}
-              definition={definition}
-              onSpiceChange={updateSpice}
-              onLongPressStart={startUpdateBatch}
-              onLongPressEnd={endUpdateBatch}
-            />
+            <div className="recipe-spice-editor-container">
+              <div className="recipe-spice-editor-wrapper">
+                <SpiceLayout
+                  ingredient={definition}
+                  currentSpices={ingredientItem.spices}
+                  onSpiceChange={handleSpiceChange}
+                  onLongPressStart={startUpdateBatch}
+                  onLongPressEnd={endUpdateBatch}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -108,6 +108,19 @@ export class InputType<T = unknown> {
     return new InputType(newValue, this.panelControl, this.warningMessage);
   }
 
+  /**
+   * Attaches a custom rendering instruction for the Input or Output panel
+   * without changing the underlying value.
+   *
+   * Intended for extensions: call this from an ingredient's `run()` handler
+   * to replace the default panel content with your own title, actions, and
+   * content renderers.
+   *
+   * @param panelControl - Which panel to target (`panelType` and `providerId`)
+   * and what to render in it (`title`, `actions`, `content`).
+   * @returns A new instance holding the same value and warning message, with
+   * the panel instruction attached.
+   */
   public render(panelControl: InputRenderProps): InputType<T> {
     const panelInstruction: PanelControlConfig = {
       panelType: panelControl.panelType,

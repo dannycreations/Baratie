@@ -1,27 +1,35 @@
+import { cn } from 'cnfast';
 import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 
-import { isTouchDevice } from '../utilities/commonUtil';
+import type { JSX, ReactNode } from 'react';
 
 interface OverflowStatus {
   readonly hasOverflowX: boolean;
   readonly hasOverflowY: boolean;
 }
 
-interface OverflowReturn<T extends HTMLElement> {
-  readonly ref: (element: T | null) => void;
-  readonly className: string;
-}
+const isTouchDevice = (): boolean => {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+};
 
 const INITIAL_STATUS: OverflowStatus = {
   hasOverflowX: false,
   hasOverflowY: false,
 };
 
-export const useOverflow = <T extends HTMLElement>(): OverflowReturn<T> => {
-  const [element, setElement] = useState<T | null>(null);
+interface ScrollAreaProps {
+  readonly children?: ReactNode;
+  readonly className?: string;
+}
+
+export const ScrollArea = ({ children, className }: ScrollAreaProps): JSX.Element => {
+  const [element, setElement] = useState<HTMLDivElement | null>(null);
   const [status, setStatus] = useState<OverflowStatus>(INITIAL_STATUS);
 
-  const ref = useCallback((node: T | null) => {
+  const ref = useCallback((node: HTMLDivElement | null) => {
     setElement(node);
   }, []);
 
@@ -65,7 +73,7 @@ export const useOverflow = <T extends HTMLElement>(): OverflowReturn<T> => {
     };
   }, [element]);
 
-  const className = useMemo(() => {
+  const overflowClasses = useMemo(() => {
     if (isTouchDevice()) {
       return 'scrollbar-hidden';
     }
@@ -84,5 +92,9 @@ export const useOverflow = <T extends HTMLElement>(): OverflowReturn<T> => {
     return classParts.join(' ');
   }, [status.hasOverflowX, status.hasOverflowY]);
 
-  return { ref, className };
+  return (
+    <div ref={ref} className={cn(className, overflowClasses)}>
+      {children}
+    </div>
+  );
 };

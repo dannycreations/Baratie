@@ -1,14 +1,13 @@
-import { cn } from 'cnfast';
 import { Save } from 'lucide-react';
 import { memo, useMemo } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
-import { SearchInput } from '../../components/shared/input/SearchInput';
-import { useOverflow } from '../../hooks/useOverflow';
+import { SearchInput } from '../shared/input/SearchInput';
+import { ScrollArea } from '../shared/ScrollArea';
 import { EmptyView } from '../shared/View';
 import { CookbookItem } from './CookbookItem';
 
-import type { ChangeEvent, JSX, RefObject } from 'react';
+import type { JSX, RefObject } from 'react';
 import type { RecipebookItem } from '../../core/IngredientRegistry';
 import type { CookbookItemHandlers } from './CookbookItem';
 
@@ -17,14 +16,12 @@ interface CookbookLoadProps extends CookbookItemHandlers {
   readonly totalRecipes: number;
   readonly query: string;
   readonly searchRef: RefObject<HTMLInputElement | null>;
-  readonly onQueryChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  readonly onQueryChange: (value: string) => void;
   readonly onClear: () => void;
 }
 
 export const CookbookLoad = memo<CookbookLoadProps>(
   ({ query, onQueryChange, onClear, recipes, totalRecipes, onLoad, onDelete, searchRef }): JSX.Element => {
-    const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
-
     const listContent = useMemo(() => {
       if (recipes.length > 0) {
         return (
@@ -39,7 +36,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(
       return (
         <EmptyView
           className="h-full"
-          icon={totalRecipes === 0 ? <Save size={ICON_SIZES.XXL} /> : undefined}
+          icon={totalRecipes === 0 ? <Save size={ICON_SIZES.LG} /> : undefined}
           title={totalRecipes > 0 ? 'No Matches Found' : 'Cookbook is Empty'}
         >
           {totalRecipes === 0 ? 'Build a recipe and save it to your cookbook!' : `No recipes found for "${query}".`}
@@ -59,9 +56,7 @@ export const CookbookLoad = memo<CookbookLoadProps>(
             onClear={onClear}
           />
         </div>
-        <div ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
-          {listContent}
-        </div>
+        <ScrollArea className="flex-1-overflow-auto">{listContent}</ScrollArea>
       </div>
     );
   },

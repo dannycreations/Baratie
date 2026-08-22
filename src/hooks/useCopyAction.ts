@@ -30,12 +30,7 @@ export const useCopyAction = (): CopyActionReturn => {
     }
   }, []);
 
-  useControlTimer({
-    callback: resetCopiedState,
-    duration: COPY_SHOW_MS,
-    reset: isCopied,
-    state: isCopied,
-  });
+  useControlTimer({ active: isCopied, callback: resetCopiedState, duration: COPY_SHOW_MS });
 
   return { isCopied, copy };
 };

@@ -2,62 +2,14 @@ import { ingredientRegistry } from '../app/container';
 
 import type { IngredientProps } from '../core/IngredientRegistry';
 
-const categorySortFn = ([catA]: readonly [string, unknown], [catB]: readonly [string, unknown]): number => catA.localeCompare(catB);
+export const createIngredientSearchPredicate = (query: string): ((ing: IngredientProps) => boolean) => {
+  const lowerQuery = query.toLowerCase().trim();
 
-export const createIngredientSearchPredicate = (lowerQuery: string): ((ing: IngredientProps) => boolean) => {
   return (ing: IngredientProps): boolean => {
-    const name = ing.name;
-    const desc = ing.description;
-    return (
-      (name.length >= lowerQuery.length && name.toLowerCase().indexOf(lowerQuery) !== -1) ||
-      (desc.length >= lowerQuery.length && desc.toLowerCase().indexOf(lowerQuery) !== -1)
-    );
+    return ing.name.toLowerCase().includes(lowerQuery) || ing.description.toLowerCase().includes(lowerQuery);
   };
 };
 
-export const filterExistingIngredients = <T extends { readonly ingredientId: string }>(items: ReadonlyArray<T>): T[] => {
-  return items.filter((item) => !!ingredientRegistry.get(item.ingredientId));
-};
-
-export const groupAndSortIngredients = (ingredients: ReadonlyArray<IngredientProps>): ReadonlyMap<string, ReadonlyArray<IngredientProps>> => {
-  const grouped = new Map<string, Array<IngredientProps>>();
-
-  for (const ingredient of ingredients) {
-    const categoryList = grouped.get(ingredient.category);
-    if (categoryList) {
-      categoryList.push(ingredient);
-    } else {
-      grouped.set(ingredient.category, [ingredient]);
-    }
-  }
-
-  const sortedEntries = [...grouped.entries()].sort(categorySortFn);
-  return new Map(sortedEntries);
-};
-
-export const searchGroupedIngredients = (
-  groupedIngredients: ReadonlyMap<string, ReadonlyArray<IngredientProps>>,
-  query: string,
-): Array<[string, ReadonlyArray<IngredientProps>]> => {
-  const lowerQuery = query.toLowerCase().trim();
-  if (!lowerQuery) {
-    return [...groupedIngredients.entries()];
-  }
-
-  const result: Array<[string, ReadonlyArray<IngredientProps>]> = [];
-  const searchPredicate = createIngredientSearchPredicate(lowerQuery);
-
-  for (const [category, ingredients] of groupedIngredients.entries()) {
-    if (category.toLowerCase().includes(lowerQuery)) {
-      result.push([category, ingredients]);
-      continue;
-    }
-
-    const matchingIngredients = ingredients.filter(searchPredicate);
-    if (matchingIngredients.length > 0) {
-      result.push([category, matchingIngredients]);
-    }
-  }
-
-  return result;
+export const getExistingIngredientIds = (ids: ReadonlyArray<string>): Array<string> => {
+  return ids.filter((id) => !!ingredientRegistry.get(id));
 };

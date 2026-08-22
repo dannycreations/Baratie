@@ -1,7 +1,6 @@
 import { array, boolean, nonEmpty, number, object, optional, pipe, record, safeParse, string, union } from 'valibot';
 
-import { STORAGE_COOKBOOK } from '../app/constants';
-import { ingredientRegistry, logger, storage } from '../app/container';
+import { ingredientRegistry, logger } from '../app/container';
 import { getSortedSpices, validateSpices } from './spiceHelper';
 
 import type { InferInput } from 'valibot';
@@ -75,14 +74,13 @@ const findIngredientDefinition = (rawIngredient: RawIngredient, source: 'fileImp
 export const computeInitialRecipeName = (
   ingredients: ReadonlyArray<IngredientItem>,
   activeRecipeId: string | null,
-  recipeIdMap: ReadonlyMap<string, RecipebookItem>,
   recipes: ReadonlyArray<RecipebookItem>,
 ): string => {
   if (ingredients.length === 0) {
     return '';
   }
 
-  const activeRecipe = activeRecipeId ? recipeIdMap.get(activeRecipeId) : null;
+  const activeRecipe = recipes.find((recipe) => recipe.id === activeRecipeId);
   if (activeRecipe) {
     return activeRecipe.name;
   }
@@ -124,11 +122,6 @@ const createRecipeHash = (ingredients: ReadonlyArray<IngredientItem>): string =>
   const hash = canonicalParts.join('||');
   ingredientsHashCache.set(ingredients, hash);
   return hash;
-};
-
-export const saveAllRecipes = (recipes: ReadonlyArray<RecipebookItem>): boolean => {
-  logger.info(`Saving ${recipes.length} recipes to storage.`);
-  return storage.set(STORAGE_COOKBOOK, recipes, 'Saved Recipes');
 };
 
 const sanitizeIngredient = (rawIngredient: RawIngredient, source: 'fileImport' | 'storage', recipeName: string): IngredientItem | null => {

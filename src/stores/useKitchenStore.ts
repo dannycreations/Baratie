@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import type { InputPanelConfig, OutputPanelConfig } from '../core/IngredientRegistry';
-import type { CookingStatusType, RecipeCookResult } from '../core/Kitchen';
+import type { CookingStatusType } from '../core/Kitchen';
 
 export interface KitchenState {
   readonly ingredientStatuses: Readonly<Record<string, CookingStatusType>>;
@@ -14,7 +14,6 @@ export interface KitchenState {
   readonly isBatchingUpdates: boolean;
   readonly outputData: string;
   readonly outputPanelConfig: OutputPanelConfig | null;
-  readonly setCookingResult: (result: Readonly<RecipeCookResult>) => void;
   readonly setInputData: (data: string) => void;
   readonly startUpdateBatch: () => void;
   readonly endUpdateBatch: () => void;
@@ -33,10 +32,6 @@ export const useKitchenStore = create<KitchenState>()(
       isBatchingUpdates: false,
       outputData: '',
       outputPanelConfig: null,
-
-      setCookingResult: (result) => {
-        set(result);
-      },
 
       setInputData: (inputData) => {
         set({ inputData });

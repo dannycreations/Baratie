@@ -99,7 +99,7 @@ export class Kitchen {
     const inputData = kitchenState.inputData;
 
     if (recipe.length === 0) {
-      kitchenState.setCookingResult({
+      useKitchenStore.setState({
         ingredientStatuses: {},
         ingredientWarnings: {},
         inputPanelConfig: null,
@@ -120,7 +120,7 @@ export class Kitchen {
       const loop = await this.executeRecipeLoop(recipe, inputData);
 
       logger.info(`Cook finished with globalError=${loop.globalError}, hasWarnings=${loop.hasWarnings}.`);
-      kitchenState.setCookingResult({
+      useKitchenStore.setState({
         ingredientStatuses: loop.localStatuses,
         ingredientWarnings: loop.localWarnings,
         inputPanelConfig: loop.lastInputConfig,

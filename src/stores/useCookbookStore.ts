@@ -2,25 +2,19 @@ import { create } from 'zustand';
 
 import { STORAGE_COOKBOOK } from '../app/constants';
 import { errorHandler, logger, storage } from '../app/container';
-import { computeInitialRecipeName, processAndSanitizeRecipes, saveAllRecipes } from '../helpers/cookbookHelper';
+import { computeInitialRecipeName, processAndSanitizeRecipes } from '../helpers/cookbookHelper';
 import { readFile, sanitizeFileName, triggerDownload } from '../utilities/fileUtil';
 import { createListHandlers } from '../utilities/storeUtil';
+import { useModalStore } from './useModalStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useRecipeStore } from './useRecipeStore';
 
-import type { IngredientItem, RecipebookItem } from '../core/IngredientRegistry';
+import type { RecipebookItem } from '../core/IngredientRegistry';
 import type { SanitizedRecipesResult } from '../helpers/cookbookHelper';
 
-export type CookbookModalProps =
-  | {
-      readonly mode: 'load';
-    }
-  | {
-      readonly mode: 'save';
-      readonly ingredients: ReadonlyArray<IngredientItem>;
-      readonly activeRecipeId: string | null;
-      readonly name?: string;
-    };
+export interface CookbookModalProps {
+  readonly mode: 'save' | 'load';
+}
 
 interface CookbookState {
   readonly nameInput: string;
@@ -33,12 +27,17 @@ interface CookbookState {
   readonly init: () => void;
   readonly load: (id: string) => void;
   readonly merge: (recipesToImport: ReadonlyArray<RecipebookItem>) => void;
-  readonly prepareToOpen: (args: Readonly<CookbookModalProps>) => void;
-  readonly resetModal: () => void;
+  readonly open: (mode: CookbookModalProps['mode']) => void;
   readonly setName: (name: string) => void;
   readonly setRecipes: (recipes: ReadonlyArray<RecipebookItem>) => void;
   readonly upsert: () => void;
 }
+
+const persistRecipes = (recipes: ReadonlyArray<RecipebookItem>): boolean => {
+  return storage.set(STORAGE_COOKBOOK, recipes, 'Saved Recipes');
+};
+
+const countRecipes = (count: number): string => `${count} recipe${count === 1 ? '' : 's'}`;
 
 export const useCookbookStore = create<CookbookState>()((set, get) => {
   const recipeHandlers = createListHandlers<CookbookState, 'recipes', 'recipeIdMap', 'id', RecipebookItem>(
@@ -62,7 +61,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
       if (!recipeToDelete) return;
 
       recipeHandlers.remove(id);
-      if (!saveAllRecipes(get().recipes)) {
+      if (!persistRecipes(get().recipes)) {
         return;
       }
 
@@ -215,21 +214,21 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
       }
 
       if (added === 0 && updated === 0) {
-        const summary = skipped > 0 ? `${skipped} recipe${skipped > 1 ? 's' : ''} skipped (duplicates or outdated).` : 'No new recipes to import.';
+        const summary = skipped > 0 ? `${countRecipes(skipped)} skipped (duplicates or outdated).` : 'No new recipes to import.';
         show(summary, 'info', 'Import Notice');
         return;
       }
 
       const mergedList: ReadonlyArray<RecipebookItem> = [...recipeMap.values()];
 
-      const saveSuccess = saveAllRecipes(mergedList);
+      const saveSuccess = persistRecipes(mergedList);
       if (!saveSuccess) {
         return;
       }
 
-      const addedPart = added > 0 ? `${added} new recipe${added > 1 ? 's' : ''} added.` : '';
-      const updatedPart = updated > 0 ? `${updated} recipe${updated > 1 ? 's' : ''} updated.` : '';
-      const skippedPart = skipped > 0 ? `${skipped} recipe${skipped > 1 ? 's' : ''} skipped (older versions).` : '';
+      const addedPart = added > 0 ? `${countRecipes(added)} added.` : '';
+      const updatedPart = updated > 0 ? `${countRecipes(updated)} updated.` : '';
+      const skippedPart = skipped > 0 ? `${countRecipes(skipped)} skipped (older versions).` : '';
 
       const summaryParts = [addedPart, updatedPart, skippedPart];
       const summary = summaryParts.filter(Boolean).join(' ');
@@ -243,19 +242,14 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
       setRecipes(mergedList);
     },
 
-    prepareToOpen: (args) => {
-      if (args.mode !== 'save') {
-        return;
+    open: (mode) => {
+      if (mode === 'save') {
+        const { recipes } = get();
+        const { activeRecipeId, ingredients } = useRecipeStore.getState();
+        set({ nameInput: computeInitialRecipeName(ingredients, activeRecipeId, recipes) });
       }
 
-      const { recipeIdMap, recipes } = get();
-      const initialName = args.name ?? computeInitialRecipeName(args.ingredients, args.activeRecipeId, recipeIdMap, recipes);
-
-      set({ nameInput: initialName });
-    },
-
-    resetModal: () => {
-      get().setName('');
+      useModalStore.getState().openModal({ type: 'cookbook', props: { mode } });
     },
 
     setName: (nameInput) => {
@@ -287,7 +281,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
 
       recipeHandlers.upsert(finalRecipe);
 
-      if (!saveAllRecipes(get().recipes)) {
+      if (!persistRecipes(get().recipes)) {
         return;
       }
 

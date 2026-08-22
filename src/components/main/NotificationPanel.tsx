@@ -34,10 +34,6 @@ const NOTIFICATION_ICON_MAP = {
   info: Info,
 } as const;
 
-const getNotificationTheme = (type: NotificationType): NotificationTheme => {
-  return NOTIFICATION_THEME_MAP[type] || NOTIFICATION_THEME_MAP.info;
-};
-
 const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Element => {
   const [isExiting, setExiting] = useState(false);
   const [isPaused, setPaused] = useState(false);
@@ -56,12 +52,9 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
     setPaused(false);
   }, []);
 
-  useControlTimer({
-    callback: handleExit,
-    duration: notification.duration ?? NOTIFICATION_SHOW_MS,
-    reset: notification.resetAt,
-    state: !isExiting && !isPaused,
-  });
+  const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
+
+  useControlTimer({ active: !isExiting && !isPaused, callback: handleExit, duration, restartKey: notification.resetAt });
 
   useEffect(() => {
     if (!isExiting) {
@@ -76,12 +69,11 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
     };
   }, [isExiting, notification.id, removeNotification]);
 
-  const { iconClass, borderClass, barClass } = getNotificationTheme(notification.type);
-  const IconComponent = NOTIFICATION_ICON_MAP[notification.type] || Info;
+  const { iconClass, borderClass, barClass } = NOTIFICATION_THEME_MAP[notification.type];
+  const IconComponent = NOTIFICATION_ICON_MAP[notification.type];
   const renderedIcon = <IconComponent className={iconClass} size={ICON_SIZES.MD} />;
 
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
-  const duration = notification.duration ?? NOTIFICATION_SHOW_MS;
 
   const containerClass = cn('notification-item', borderClass, animationClass, isPaused && 'notification-paused');
 

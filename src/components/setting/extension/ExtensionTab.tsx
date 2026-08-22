@@ -1,18 +1,17 @@
-import { cn } from 'cnfast';
 import { GitMerge } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 import { parseGitHubUrl } from '../../../helpers/extensionHelper';
-import { useOverflow } from '../../../hooks/useOverflow';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
 import { Button } from '../../shared/Button';
 import { StringInput } from '../../shared/input/StringInput';
+import { ScrollArea } from '../../shared/ScrollArea';
 import { EmptyView } from '../../shared/View';
 import { ExtensionItem } from './ExtensionItem';
 
-import type { ChangeEvent, JSX, KeyboardEvent } from 'react';
+import type { JSX, KeyboardEvent } from 'react';
 
 export const ExtensionTab = memo((): JSX.Element => {
   const extensions = useExtensionStore((state) => state.extensions);
@@ -23,8 +22,6 @@ export const ExtensionTab = memo((): JSX.Element => {
 
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   useEffect(() => {
     const pendingInstall = extensions.find((ext) => ext.status === 'awaiting' && ext.manifest);
@@ -60,10 +57,6 @@ export const ExtensionTab = memo((): JSX.Element => {
       setIsLoading(false);
     }
   }, [addExtension, isLoading, url, validationStatus]);
-
-  const handleUrlChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
-    setUrl(event.target.value);
-  }, []);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>): void => {
@@ -107,7 +100,7 @@ export const ExtensionTab = memo((): JSX.Element => {
           disabled={isLoading}
           placeholder="user/repo@branch or full GitHub URL"
           showClearButton
-          onChange={handleUrlChange}
+          onChange={setUrl}
           onKeyDown={handleKeyDown}
           onClear={() => setUrl('')}
         />
@@ -118,9 +111,7 @@ export const ExtensionTab = memo((): JSX.Element => {
 
       <div className="flex-col-gap-2">
         <h4 className="label-base mb-1 !text-base">Installed Extensions</h4>
-        <div ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
-          {listContent}
-        </div>
+        <ScrollArea className="flex-1-overflow-auto">{listContent}</ScrollArea>
       </div>
     </>
   );

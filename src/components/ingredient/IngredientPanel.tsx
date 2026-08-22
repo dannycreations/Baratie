@@ -4,9 +4,9 @@ import { memo, useCallback, useMemo } from 'react';
 
 import { CATEGORY_FAVORITES, DATA_TYPE_INGREDIENT, DATA_TYPE_RECIPE_ITEM, ICON_SIZES } from '../../app/constants';
 import { errorHandler, ingredientRegistry } from '../../app/container';
-import { createIngredientSearchPredicate, groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
+import { createIngredientSearchPredicate } from '../../helpers/ingredientHelper';
+import { filterGroupedList, groupListByCategory } from '../../helpers/listHelper';
 import { useDropZone } from '../../hooks/useDropZone';
-import { useOverflow } from '../../hooks/useOverflow';
 import { useSearch } from '../../hooks/useSearch';
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useFavoriteStore } from '../../stores/useFavoriteStore';
@@ -18,6 +18,7 @@ import { SearchInput } from '../shared/input/SearchInput';
 import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
 import { GroupListLayout } from '../shared/layout/ListLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
+import { ScrollArea } from '../shared/ScrollArea';
 import { IngredientManager } from './IngredientManager';
 
 import type { DragEvent, JSX } from 'react';
@@ -40,7 +41,6 @@ export const IngredientPanel = memo((): JSX.Element => {
 
   const isIngredientOpen = currentModal?.type === 'ingredient';
   const isSettingOpen = currentModal?.type === 'settings';
-  const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   const handleDropRecipe = useCallback(
     (id: string): void => {
@@ -80,21 +80,16 @@ export const IngredientPanel = memo((): JSX.Element => {
     return { favoritesList: favs, regularList: regs, visibleIngredientsCount: visibleCount };
   }, [allIngredients, disabledCategories, disabledIngredients, favorites]);
 
-  const groupedRegular = useMemo(() => groupAndSortIngredients(regularList), [regularList]);
+  const groupedRegular = useMemo(() => groupListByCategory(regularList, (ingredient) => ingredient.category), [regularList]);
 
   const filteredIngredients = useMemo((): Array<[string, ReadonlyArray<IngredientProps>]> => {
-    const lowerQuery = deferredQuery.toLowerCase().trim();
-    if (!lowerQuery) {
-      const allGrouped = [...groupedRegular.entries()];
-      if (favoritesList.length > 0) {
-        return [[CATEGORY_FAVORITES, favoritesList], ...allGrouped];
-      }
-      return allGrouped;
+    if (!deferredQuery.trim()) {
+      return favoritesList.length > 0 ? [[CATEGORY_FAVORITES, favoritesList], ...groupedRegular] : groupedRegular;
     }
 
-    const searchPredicate = createIngredientSearchPredicate(lowerQuery);
+    const searchPredicate = createIngredientSearchPredicate(deferredQuery);
     const filteredFavorites = favoritesList.filter(searchPredicate);
-    const filteredRegular = searchGroupedIngredients(groupedRegular, deferredQuery);
+    const filteredRegular = filterGroupedList(groupedRegular, deferredQuery, searchPredicate);
 
     const result: Array<[string, ReadonlyArray<IngredientProps>]> = [];
     if (filteredFavorites.length > 0) {
@@ -182,17 +177,15 @@ export const IngredientPanel = memo((): JSX.Element => {
       <div className="flex-col-gap-2 h-full text-content-tertiary" {...recipeDropZoneProps}>
         {isDragOverRecipe && <DropZoneLayout mode="overlay" text="Drop to Remove from Recipe" variant="remove" />}
         <div className="flex-col-gap-2 h-full">
-          <div>
-            <SearchInput id="ingredient-search" value={query} placeholder="Search Ingredients..." onChange={onQueryChange} onClear={onClear} />
-          </div>
-          <div ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
+          <SearchInput id="ingredient-search" value={query} placeholder="Search Ingredients..." onChange={onQueryChange} onClear={onClear} />
+          <ScrollArea className="flex-1-overflow-auto">
             <GroupListLayout
               query={query}
               itemsByCategory={filteredIngredients}
               renderItemActions={renderItemActions}
               onItemDragStart={handleItemDragStart}
             />
-          </div>
+          </ScrollArea>
         </div>
       </div>
       <IngredientManager />

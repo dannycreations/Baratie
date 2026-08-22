@@ -2,9 +2,9 @@ import { cn } from 'cnfast';
 import { memo, useCallback, useMemo, useRef } from 'react';
 
 import { ingredientRegistry } from '../../app/container';
-import { groupAndSortIngredients, searchGroupedIngredients } from '../../helpers/ingredientHelper';
+import { createIngredientSearchPredicate } from '../../helpers/ingredientHelper';
+import { filterGroupedList, groupListByCategory } from '../../helpers/listHelper';
 import { useAutoFocus } from '../../hooks/useAutoFocus';
-import { useOverflow } from '../../hooks/useOverflow';
 import { useSearch } from '../../hooks/useSearch';
 import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useModalStore } from '../../stores/useModalStore';
@@ -12,6 +12,7 @@ import { BooleanInput } from '../shared/input/BooleanInput';
 import { SearchInput } from '../shared/input/SearchInput';
 import { GroupListLayout } from '../shared/layout/ListLayout';
 import { Modal } from '../shared/Modal';
+import { ScrollArea } from '../shared/ScrollArea';
 
 import type { JSX } from 'react';
 import type { IngredientProps } from '../../core/IngredientRegistry';
@@ -29,7 +30,6 @@ export const IngredientManager = memo((): JSX.Element => {
   const { query, deferredQuery, onQueryChange, onClear } = useSearch();
 
   const searchRef = useRef<HTMLInputElement>(null);
-  const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   useAutoFocus(searchRef, isModalOpen);
 
@@ -38,12 +38,13 @@ export const IngredientManager = memo((): JSX.Element => {
   }, [registryVersion]);
 
   const ingredientsByCategory = useMemo(() => {
-    return groupAndSortIngredients(allIngredients);
+    return groupListByCategory(allIngredients, (ingredient) => ingredient.category);
   }, [allIngredients]);
 
-  const filteredList = useMemo(() => {
-    return searchGroupedIngredients(ingredientsByCategory, deferredQuery);
-  }, [ingredientsByCategory, deferredQuery]);
+  const filteredList = useMemo(
+    () => filterGroupedList(ingredientsByCategory, deferredQuery, createIngredientSearchPredicate(deferredQuery)),
+    [ingredientsByCategory, deferredQuery],
+  );
 
   const renderHeader = useCallback(
     (category: string, _items: ReadonlyArray<GroupListItem>): JSX.Element => {
@@ -106,19 +107,15 @@ export const IngredientManager = memo((): JSX.Element => {
   return (
     <Modal isOpen={isModalOpen} size="lg" title="Manage Ingredients" onClose={closeModal}>
       <div className="flex-col-gap-2 h-full">
-        <div>
-          <SearchInput
-            id="ingredient-manager-search"
-            inputRef={searchRef}
-            value={query}
-            placeholder="Search Ingredients..."
-            onChange={onQueryChange}
-            onClear={onClear}
-          />
-        </div>
-        <div ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
-          {content}
-        </div>
+        <SearchInput
+          id="ingredient-manager-search"
+          inputRef={searchRef}
+          value={query}
+          placeholder="Search Ingredients..."
+          onChange={onQueryChange}
+          onClear={onClear}
+        />
+        <ScrollArea className="flex-1-overflow-auto">{content}</ScrollArea>
       </div>
     </Modal>
   );

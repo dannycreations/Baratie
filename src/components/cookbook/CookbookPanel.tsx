@@ -14,7 +14,6 @@ import { CookbookLoad } from './CookbookLoad';
 import { CookbookSave } from './CookbookSave';
 
 import type { JSX } from 'react';
-import type { RecipebookItem } from '../../core/IngredientRegistry';
 
 interface SaveHeaderActionsProps {
   readonly isSaveDisabled: boolean;
@@ -27,8 +26,6 @@ interface LoadHeaderActionsProps {
   readonly onFileImport: (file: File) => void;
   readonly onExportAll: () => void;
 }
-
-const SEARCH_KEYS: ReadonlyArray<keyof RecipebookItem> = ['name'];
 
 const SaveHeaderActions = memo<SaveHeaderActionsProps>(({ isSaveDisabled, onExportCurrent, onSave }) => (
   <>
@@ -73,7 +70,6 @@ export const CookbookPanel = memo((): JSX.Element | null => {
   const closeModal = useModalStore((state) => state.closeModal);
   const nameInput = useCookbookStore((state) => state.nameInput);
   const recipes = useCookbookStore((state) => state.recipes);
-  const resetModal = useCookbookStore((state) => state.resetModal);
   const setName = useCookbookStore((state) => state.setName);
   const upsert = useCookbookStore((state) => state.upsert);
   const deleteRecipe = useCookbookStore((state) => state.delete);
@@ -107,12 +103,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
       return recipes;
     }
 
-    return recipes.filter((item) => {
-      return SEARCH_KEYS.some((key) => {
-        const value = item[key];
-        return typeof value === 'string' && value.toLowerCase().includes(lowerQuery);
-      });
-    });
+    return recipes.filter((recipe) => recipe.name.toLowerCase().includes(lowerQuery));
   }, [recipes, deferredQuery]);
 
   const handleSave = useCallback((): void => {
@@ -128,21 +119,14 @@ export const CookbookPanel = memo((): JSX.Element | null => {
     [closeModal, load],
   );
 
-  const handleFileImport = useCallback(
-    async (file: File): Promise<void> => {
-      await importFromFile(file);
-    },
-    [importFromFile],
-  );
-
   const title = activeMode === 'save' ? 'Add to Cookbook' : 'Open from Cookbook';
 
   const headerActions = useMemo(() => {
     if (activeMode === 'save') {
       return <SaveHeaderActions isSaveDisabled={isSaveDisabled} onExportCurrent={exportCurrent} onSave={handleSave} />;
     }
-    return <LoadHeaderActions isExportDisabled={recipes.length === 0} onExportAll={exportAll} onFileImport={handleFileImport} />;
-  }, [activeMode, isSaveDisabled, exportCurrent, handleSave, recipes.length, exportAll, handleFileImport]);
+    return <LoadHeaderActions isExportDisabled={recipes.length === 0} onExportAll={exportAll} onFileImport={importFromFile} />;
+  }, [activeMode, isSaveDisabled, exportCurrent, handleSave, recipes.length, exportAll, importFromFile]);
 
   const bodyContent = useMemo(() => {
     if (activeMode === 'save') {
@@ -151,7 +135,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
           isRecipeEmpty={isRecipeEmpty}
           nameRef={nameRef}
           nameInput={nameInput}
-          onNameChange={(e) => setName(e.target.value)}
+          onNameChange={setName}
           onClear={() => setName('')}
           onSave={handleSave}
         />
@@ -192,7 +176,7 @@ export const CookbookPanel = memo((): JSX.Element | null => {
       headerActions={headerActions}
       onClose={closeModal}
       onExited={() => {
-        resetModal();
+        setName('');
         onClear();
       }}
     >

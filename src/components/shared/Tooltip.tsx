@@ -1,9 +1,8 @@
 import { cn } from 'cnfast';
-import { memo, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
-import { useTooltipStore } from '../../stores/useTooltipStore';
 
 import type { JSX, ReactNode } from 'react';
 
@@ -44,9 +43,7 @@ const TOOLTIP_ARROW_STYLES: Readonly<Record<TooltipPosition, string>> = {
 
 export const Tooltip = memo(
   ({ content, children, position = 'top', delay = 200, className = '', tooltipClasses = '', disabled = false }: TooltipProps): JSX.Element => {
-    const tooltipId = useId();
-    const isVisible = useTooltipStore((state) => state.activeId === tooltipId);
-    const setActiveId = useTooltipStore((state) => state.setActiveId);
+    const [isVisible, setIsVisible] = useState(false);
 
     const [style, setStyle] = useState<TooltipPositionStyle>(INITIAL_TOOLTIP_STYLE);
 
@@ -68,28 +65,18 @@ export const Tooltip = memo(
       }
       clearTimer();
       timeoutRef.current = window.setTimeout(() => {
-        setActiveId(tooltipId);
+        setIsVisible(true);
       }, delay);
     };
 
     const handleMouseLeave = () => {
       clearTimer();
-      if (useTooltipStore.getState().activeId === tooltipId) {
-        setActiveId(null);
-      }
+      setIsVisible(false);
     };
 
     useEffect(() => {
       return clearTimer;
     }, []);
-
-    useEffect(() => {
-      return () => {
-        if (useTooltipStore.getState().activeId === tooltipId) {
-          setActiveId(null);
-        }
-      };
-    }, [tooltipId, setActiveId]);
 
     useEffect(() => {
       if (!isVisible) {
@@ -205,16 +192,7 @@ export const Tooltip = memo(
 
     const tooltipElement = isVisible
       ? createPortal(
-          <div
-            ref={tooltipRef}
-            id={tooltipId}
-            className={tooltipClass}
-            style={{
-              position: 'fixed',
-              top: `${style.top}px`,
-              left: `${style.left}px`,
-            }}
-          >
+          <div ref={tooltipRef} className={tooltipClass} style={{ position: 'fixed', top: `${style.top}px`, left: `${style.left}px` }}>
             {content}
             <div
               className={arrowClass}

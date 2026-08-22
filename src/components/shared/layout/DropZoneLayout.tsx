@@ -1,9 +1,10 @@
 import { cn } from 'cnfast';
 import { memo } from 'react';
 
-import { DropZoneMode, DropZoneVariant } from '../../../app/types';
-
 import type { JSX } from 'react';
+
+export type DropZoneMode = 'overlay' | 'placeholder';
+export type DropZoneVariant = 'add' | 'remove';
 
 interface DropZoneProps {
   readonly text: string;
@@ -12,18 +13,8 @@ interface DropZoneProps {
   readonly variant?: DropZoneVariant;
 }
 
-const DROPZONE_MODE_MAP: Readonly<Record<DropZoneMode, string>> = {
-  overlay: 'dropzone-overlay',
-  placeholder: 'dropzone-placeholder',
-};
-
-const DROPZONE_VARIANT_MAP: Readonly<Record<DropZoneVariant, string>> = {
-  add: 'dropzone-add',
-  remove: 'dropzone-remove',
-};
-
 export const DropZoneLayout = memo<DropZoneProps>(({ text, variant = 'add', mode = 'placeholder', className = '' }): JSX.Element => {
-  const combinedClass = cn('dropzone-base', DROPZONE_VARIANT_MAP[variant], DROPZONE_MODE_MAP[mode], className);
+  const combinedClass = cn('dropzone-base', `dropzone-${variant}`, `dropzone-${mode}`, className);
 
   return (
     <div className={combinedClass}>

@@ -4,12 +4,12 @@ import { memo, useCallback } from 'react';
 
 import { ICON_SIZES } from '../../../app/constants';
 
-import type { ChangeEventHandler, JSX, KeyboardEvent, RefObject } from 'react';
+import type { JSX, KeyboardEvent, RefObject } from 'react';
 
 interface StringInputProps {
   readonly id: string;
   readonly value: string;
-  readonly onChange: ChangeEventHandler<HTMLInputElement>;
+  readonly onChange: (value: string) => void;
   readonly inputRef?: RefObject<HTMLInputElement | null>;
   readonly onClear?: () => void;
   readonly showClearButton?: boolean;
@@ -40,7 +40,7 @@ export const StringInput = memo<StringInputProps>(
           type={type}
           value={value}
           className={finalInputClass}
-          onChange={onChange}
+          onChange={(event) => onChange(event.target.value)}
           disabled={disabled}
           placeholder={placeholder}
           onKeyDown={onKeyDown}

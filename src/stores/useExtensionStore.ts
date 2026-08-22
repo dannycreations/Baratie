@@ -6,6 +6,7 @@ import { STORAGE_EXTENSIONS } from '../app/constants';
 import { ingredientRegistry, logger, storage } from '../app/container';
 import {
   ExtensionManifestSchema,
+  formatGitHubRepoId,
   isCacheValid,
   loadAndExecuteExtension,
   parseGitHubUrl,
@@ -16,7 +17,7 @@ import { isObjectLike, isString, pick } from '../utilities/objectUtil';
 import { createListHandlers, persistStore } from '../utilities/storeUtil';
 import { useNotificationStore } from './useNotificationStore';
 
-import type { Extension, ExtensionManifest, ManifestModule, StorableExtension } from '../helpers/extensionHelper';
+import type { Extension, ExtensionManifest, GitHubRepoInfo, ManifestModule, StorableExtension } from '../helpers/extensionHelper';
 
 export interface ExtensionState {
   readonly extensions: ReadonlyArray<Extension>;
@@ -40,18 +41,7 @@ export interface ExtensionState {
   readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
 }
 
-export interface LoadExtensionDependencies {
-  readonly getExtensionMap: () => ReadonlyMap<string, Extension>;
-  readonly setExtensionStatus: (id: string, status: Extension['status'], errors?: ReadonlyArray<string>) => void;
-  readonly setIngredients: (id: string, ingredients: ReadonlyArray<string>) => void;
-  readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
-}
-
-const fetchAndValidateManifest = async (repoInfo: {
-  readonly owner: string;
-  readonly repo: string;
-  readonly ref: string;
-}): Promise<ExtensionManifest> => {
+const fetchAndValidateManifest = async (repoInfo: GitHubRepoInfo): Promise<ExtensionManifest> => {
   const repo = `${repoInfo.owner}/${repoInfo.repo}`;
   const targetUrl = `https://raw.githubusercontent.com/${repo}/${repoInfo.ref}/manifest.json?t=${Date.now()}`;
   const response = await fetch(targetUrl, { cache: 'reload' });
@@ -85,7 +75,7 @@ export const useExtensionStore = create<ExtensionState>()(
         }
 
         const { extensionMap, refresh } = get();
-        const id = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
+        const id = formatGitHubRepoId(repoInfo);
         const existing = extensionMap.get(id);
 
         if (existing && isCacheValid(existing.fetchedAt)) {
@@ -155,12 +145,7 @@ export const useExtensionStore = create<ExtensionState>()(
           }
 
           if (isCacheValid(ext.fetchedAt)) {
-            return loadAndExecuteExtension(ext, {
-              getExtensionMap: () => get().extensionMap,
-              setExtensionStatus: get().setExtensionStatus,
-              setIngredients: get().setIngredients,
-              upsert: get().upsert,
-            });
+            return loadAndExecuteExtension(ext, get);
           }
 
           return get().refresh(ext.id, { force: true });
@@ -176,7 +161,7 @@ export const useExtensionStore = create<ExtensionState>()(
       },
 
       installSelectedModules: async (id, selectedModules) => {
-        const { setExtensionStatus, setIngredients, upsert, extensionMap } = get();
+        const { setIngredients, upsert, extensionMap } = get();
         const extension = extensionMap.get(id);
 
         if (!extension) {
@@ -192,38 +177,23 @@ export const useExtensionStore = create<ExtensionState>()(
         const updatedExtension: Extension = { ...extension, status: 'loading', entry: [...selectedModules] };
         upsert(updatedExtension);
 
-        await loadAndExecuteExtension(
-          updatedExtension,
-          {
-            getExtensionMap: () => get().extensionMap,
-            setExtensionStatus: setExtensionStatus,
-            setIngredients: setIngredients,
-            upsert: upsert,
-          },
-          undefined,
-        );
+        await loadAndExecuteExtension(updatedExtension, get);
       },
 
       refresh: async (id, options) => {
         const { upsert, setIngredients, setExtensionStatus, extensionMap } = get();
         const storeExtension = extensionMap.get(id);
-        const context = options?.context;
         const isNew = !storeExtension;
+        const isRefreshing = options?.context === 'refresh' || (options?.context === 'add' && !isNew);
 
-        const isRefreshing = context === 'refresh' || (context === 'add' && !isNew);
-
-        let logMessage = 'Fetching';
-        if (isRefreshing) {
-          logMessage = 'Refreshing';
-        }
-
-        logger.info(`${logMessage} extension: ${storeExtension?.name || id}`);
+        logger.info(`${isRefreshing ? 'Refreshing' : 'Fetching'} extension: ${storeExtension?.name || id}`);
 
         let displayName = storeExtension?.name || id;
+        if (isNew) {
+          displayName = 'Fetching...';
+        }
         if (isRefreshing) {
           displayName = 'Refreshing...';
-        } else if (isNew) {
-          displayName = 'Fetching...';
         }
 
         upsert({ id, status: 'loading', name: displayName, fetchedAt: undefined });
@@ -255,16 +225,7 @@ export const useExtensionStore = create<ExtensionState>()(
 
           const currentExtState = get().extensionMap.get(id)!;
 
-          await loadAndExecuteExtension(
-            currentExtState,
-            {
-              getExtensionMap: () => get().extensionMap,
-              setExtensionStatus: get().setExtensionStatus,
-              setIngredients: get().setIngredients,
-              upsert: get().upsert,
-            },
-            options?.onProgress,
-          );
+          await loadAndExecuteExtension(currentExtState, get, options?.onProgress);
 
           const finalState = get().extensionMap.get(id)!;
           const isSuccess = finalState.status === 'loaded' || finalState.status === 'partial';
@@ -312,17 +273,14 @@ export const useExtensionStore = create<ExtensionState>()(
           return;
         }
 
-        const updates: Partial<Extension> = {
-          status: status,
-          errors: errors,
+        // A successful or partially successful load stamps the fetch time so
+        // the install cache can treat this extension as fresh.
+        get().upsert({
+          id,
+          status,
+          errors,
           ...((status === 'loaded' || status === 'partial') && { fetchedAt: Date.now() }),
-        };
-
-        if (status === 'error' && extension.name === 'Refreshing...') {
-          updates.name = 'Error';
-        }
-
-        get().upsert({ ...updates, id });
+        });
       },
 
       setExtensions: handlers.setAll,

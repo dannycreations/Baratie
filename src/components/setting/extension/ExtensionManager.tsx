@@ -1,8 +1,7 @@
-import { cn } from 'cnfast';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { filterGroupedList, groupListByCategory } from '../../../helpers/listHelper';
 import { useAutoFocus } from '../../../hooks/useAutoFocus';
-import { useOverflow } from '../../../hooks/useOverflow';
 import { useSearch } from '../../../hooks/useSearch';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
@@ -11,28 +10,13 @@ import { BooleanInput } from '../../shared/input/BooleanInput';
 import { SearchInput } from '../../shared/input/SearchInput';
 import { GroupListLayout } from '../../shared/layout/ListLayout';
 import { Modal } from '../../shared/Modal';
+import { ScrollArea } from '../../shared/ScrollArea';
 
 import type { JSX } from 'react';
 import type { ManifestModule } from '../../../helpers/extensionHelper';
 import type { GroupListItem } from '../../shared/layout/ListLayout';
 
 type ModuleIngredient = ManifestModule & { id: string };
-
-const groupModulesForDisplay = (modules: ReadonlyArray<ManifestModule>): Array<[string, Array<ModuleIngredient>]> => {
-  const grouped = new Map<string, Array<ModuleIngredient>>();
-
-  for (const module of modules) {
-    const item = { ...module, id: module.entry };
-    const list = grouped.get(item.category);
-    if (list) {
-      list.push(item);
-    } else {
-      grouped.set(item.category, [item]);
-    }
-  }
-
-  return [...grouped.entries()].sort(([a], [b]) => a.localeCompare(b));
-};
 
 export const ExtensionManager = memo((): JSX.Element | null => {
   const currentModal = useModalStore((state) => state.currentModal);
@@ -46,7 +30,6 @@ export const ExtensionManager = memo((): JSX.Element | null => {
   const { query, deferredQuery, onQueryChange, onClear } = useSearch();
 
   const searchRef = useRef<HTMLInputElement>(null);
-  const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
 
   const isModalOpen = currentModal?.type === 'extension';
   const pendingSelection = isModalOpen ? currentModal.props : null;
@@ -68,28 +51,18 @@ export const ExtensionManager = memo((): JSX.Element | null => {
   }, [pendingSelection, manifestModules]);
 
   const groupedModules = useMemo(() => {
-    return groupModulesForDisplay(manifestModules);
+    const modulesWithIds: Array<ModuleIngredient> = manifestModules.map((module) => ({ ...module, id: module.entry }));
+    return groupListByCategory(modulesWithIds, (module) => module.category);
   }, [manifestModules]);
 
   const filteredGroupedModules = useMemo(() => {
-    const lowerQuery = deferredQuery.toLowerCase().trim();
-    if (!lowerQuery) {
-      return groupedModules;
-    }
+    const query = deferredQuery.toLowerCase().trim();
 
-    const result: Array<[string, Array<ModuleIngredient>]> = [];
-
-    for (const [category, modules] of groupedModules) {
-      if (category.toLowerCase().includes(lowerQuery)) {
-        result.push([category, modules]);
-        continue;
-      }
-      const matchingModules = modules.filter((m) => m.name.toLowerCase().includes(lowerQuery) || m.description.toLowerCase().includes(lowerQuery));
-      if (matchingModules.length > 0) {
-        result.push([category, matchingModules]);
-      }
-    }
-    return result;
+    return filterGroupedList(
+      groupedModules,
+      query,
+      (module) => module.name.toLowerCase().includes(query) || module.description.toLowerCase().includes(query),
+    );
   }, [groupedModules, deferredQuery]);
 
   const handleToggleModule = useCallback((entry: string): void => {
@@ -199,20 +172,16 @@ export const ExtensionManager = memo((): JSX.Element | null => {
       onExited={resetState}
     >
       <div className="flex-col-gap-2 h-full">
-        <div>
-          <SearchInput
-            id="module-install-search"
-            inputRef={searchRef}
-            value={query}
-            placeholder="Search Modules..."
-            disabled={isLoading}
-            onChange={onQueryChange}
-            onClear={onClear}
-          />
-        </div>
-        <div ref={scrollRef} className={cn('flex-1-overflow-auto', scrollClasses)}>
-          {content}
-        </div>
+        <SearchInput
+          id="module-install-search"
+          inputRef={searchRef}
+          value={query}
+          placeholder="Search Modules..."
+          disabled={isLoading}
+          onChange={onQueryChange}
+          onClear={onClear}
+        />
+        <ScrollArea className="flex-1-overflow-auto">{content}</ScrollArea>
       </div>
     </Modal>
   );

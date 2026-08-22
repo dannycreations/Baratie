@@ -1,20 +1,18 @@
 import { useCallback, useDeferredValue, useState } from 'react';
 
-import type { ChangeEvent } from 'react';
-
 interface UseSearchReturn {
   readonly query: string;
   readonly deferredQuery: string;
   readonly onClear: () => void;
-  readonly onQueryChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  readonly onQueryChange: (value: string) => void;
 }
 
 export const useSearch = (): UseSearchReturn => {
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
 
-  const onQueryChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setQuery(event.target.value);
+  const onQueryChange = useCallback((value: string) => {
+    setQuery(value);
   }, []);
 
   const onClear = useCallback(() => {

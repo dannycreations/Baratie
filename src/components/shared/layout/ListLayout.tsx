@@ -26,10 +26,8 @@ interface GroupListPropsBase {
 
 interface GroupListProps extends GroupListPropsBase {
   readonly itemsByCategory: ReadonlyArray<readonly [string, ReadonlyArray<GroupListItem>]>;
-  readonly emptyMessage?: string;
-  readonly noResultsMessage?: (query: string) => string;
-  readonly renderHeader?: (category: string, items: ReadonlyArray<GroupListItem>) => JSX.Element;
   readonly disabled?: boolean;
+  readonly renderHeader?: (category: string, items: ReadonlyArray<GroupListItem>) => JSX.Element;
 }
 
 type GroupItemProps = GroupListPropsBase & {
@@ -137,21 +135,8 @@ const CategorySection = memo<CategorySectionProps>((props) => {
   );
 });
 
-const defaultNoResultsMessage = (term: string): string => `No items match search for "${term}".`;
-
 export const GroupListLayout = memo<GroupListProps>(
-  ({
-    itemsByCategory,
-    query,
-    renderHeader,
-    emptyMessage = 'No items available.',
-    noResultsMessage = defaultNoResultsMessage,
-    renderItemActions,
-    renderItemPrefix,
-    onItemDragStart,
-    isItemDisabled,
-    disabled,
-  }): JSX.Element => {
+  ({ itemsByCategory, query, renderHeader, renderItemActions, renderItemPrefix, onItemDragStart, isItemDisabled, disabled }): JSX.Element => {
     const multipleOpen = useSettingStore((state) => state.multipleOpen);
     const [expandedCategories, setExpandedCategories] = useState<ReadonlySet<string>>(() => new Set());
     const hasQuery = !!query.trim();
@@ -182,8 +167,9 @@ export const GroupListLayout = memo<GroupListProps>(
     );
 
     if (itemsByCategory.length === 0) {
-      const message = hasQuery ? noResultsMessage(query) : emptyMessage;
-      return <EmptyView className="flex-col-center grow py-3">{message}</EmptyView>;
+      return (
+        <EmptyView className="flex-col-center grow py-3">{hasQuery ? `No items match search for "${query}".` : 'No items available.'}</EmptyView>
+      );
     }
 
     return (

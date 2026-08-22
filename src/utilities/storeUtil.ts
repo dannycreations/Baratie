@@ -87,7 +87,6 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
   const syncMap = (list: ReadonlyArray<V>) => new Map(list.map((item) => [item[idKey], item]));
 
   return {
-    clear: () => set(() => asPartial<T>({ [listKey]: [], [mapKey]: new Map() })),
     setAll: (items: ReadonlyArray<V>) =>
       set(() => {
         const list = sortFn ? [...items].sort(sortFn) : items;
@@ -170,7 +169,7 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
   };
 };
 
-export const persistStore = <T extends object, P>(useStore: UseBoundStore<StoreApi<T>>, options: PersistOptions<T, P>): (() => void) => {
+export const persistStore = <T extends object, P>(useStore: UseBoundStore<StoreApi<T>>, options: PersistOptions<T, P>): void => {
   const { key, context, pick, onHydrate, equalityFn = shallowEqual, shouldPersist, autoHydrate } = options;
 
   const subscribeWithSelector = useStore.subscribe as unknown as (
@@ -178,7 +177,7 @@ export const persistStore = <T extends object, P>(useStore: UseBoundStore<StoreA
     listener: (selected: P, previous: P) => void,
   ) => () => void;
 
-  const unsubscribe = subscribeWithSelector(pick, (selectedState, previousSelectedState) => {
+  subscribeWithSelector(pick, (selectedState, previousSelectedState) => {
     if (equalityFn(selectedState, previousSelectedState)) {
       return;
     }
@@ -201,6 +200,4 @@ export const persistStore = <T extends object, P>(useStore: UseBoundStore<StoreA
   } else {
     onHydrate?.(useStore.getState());
   }
-
-  return unsubscribe;
 };

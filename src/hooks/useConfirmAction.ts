@@ -30,12 +30,7 @@ export const useConfirmAction = (callback: () => void, timeout: number): Confirm
     });
   }, []);
 
-  useControlTimer({
-    callback: resetConfirm,
-    duration: timeout,
-    reset: isConfirm,
-    state: isConfirm,
-  });
+  useControlTimer({ active: isConfirm, callback: resetConfirm, duration: timeout });
 
   return {
     isConfirm,

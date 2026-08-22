@@ -3,11 +3,11 @@ import { useEffect, useRef } from 'react';
 interface ControlTimerProps {
   readonly callback: () => void;
   readonly duration: number;
-  readonly reset?: unknown;
-  readonly state?: boolean;
+  readonly active?: boolean;
+  readonly restartKey?: unknown;
 }
 
-export const useControlTimer = ({ callback, duration, state = true, reset }: ControlTimerProps): void => {
+export const useControlTimer = ({ callback, duration, active = true, restartKey }: ControlTimerProps): void => {
   const timerIdRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const remainingTimeRef = useRef(duration);
@@ -19,7 +19,7 @@ export const useControlTimer = ({ callback, duration, state = true, reset }: Con
 
   useEffect(() => {
     remainingTimeRef.current = duration;
-  }, [duration, reset]);
+  }, [duration, restartKey]);
 
   useEffect(() => {
     const clearTimer = (): void => {
@@ -29,7 +29,7 @@ export const useControlTimer = ({ callback, duration, state = true, reset }: Con
       }
     };
 
-    if (state) {
+    if (active) {
       clearTimer();
       startTimeRef.current = Date.now();
       timerIdRef.current = window.setTimeout(() => {
@@ -45,5 +45,5 @@ export const useControlTimer = ({ callback, duration, state = true, reset }: Con
     }
 
     return clearTimer;
-  }, [state, duration, reset]);
+  }, [active, duration, restartKey]);
 };

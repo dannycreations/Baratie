@@ -7,7 +7,8 @@ import { ICON_SIZES, MODAL_SHOW_MS } from '../../app/constants';
 import { Button } from './Button';
 
 import type { JSX, MouseEvent, ReactNode } from 'react';
-import type { ModalSize } from '../../app/types';
+
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'full';
 
 interface ModalProps {
   readonly children?: ReactNode;
@@ -19,15 +20,6 @@ interface ModalProps {
   readonly onExited?: () => void;
   readonly size?: ModalSize;
 }
-
-const MODAL_SIZE_MAP: Readonly<Record<ModalSize, string>> = {
-  sm: 'modal-sm',
-  md: 'modal-md',
-  lg: 'modal-lg',
-  xl: 'modal-xl',
-  xxl: 'modal-xxl',
-  full: 'modal-full',
-};
 
 export const Modal = ({
   isOpen,
@@ -100,7 +92,7 @@ export const Modal = ({
   const backdropClass = cn('modal-backdrop', isOpen ? 'modal-backdrop-enter-active' : 'modal-backdrop-exit-active');
   const modalClass = cn(
     'panel-container border border-border-primary',
-    MODAL_SIZE_MAP[size],
+    `modal-${size}`,
     isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active',
     contentClasses,
   );

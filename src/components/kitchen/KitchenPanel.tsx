@@ -1,5 +1,5 @@
 import { DownloadCloud, FileText, Trash2 } from 'lucide-react';
-import { Fragment, memo, useCallback, useMemo, useRef } from 'react';
+import { memo, useCallback, useMemo, useRef } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
 import { errorHandler, ingredientRegistry } from '../../app/container';
@@ -14,7 +14,7 @@ import { SectionLayout } from '../shared/layout/SectionLayout';
 import { SpiceLayout } from '../shared/layout/SpiceLayout';
 
 import type { JSX, ReactNode, RefObject } from 'react';
-import type { IngredientItem, InputPanelConfig, OutputPanelConfig, SpiceValue } from '../../core/IngredientRegistry';
+import type { InputPanelConfig, OutputPanelConfig, SpiceValue } from '../../core/IngredientRegistry';
 import type { FilePickerRenderProps } from '../shared/input/FilePicker';
 
 interface KitchenPanelProps {
@@ -23,13 +23,6 @@ interface KitchenPanelProps {
 
 interface KitchenPanelSectionProps {
   readonly data: string;
-}
-
-interface SpiceContentProps {
-  readonly targetIngredient: IngredientItem;
-  readonly onSpiceChange: (ingredientId: string, spiceId: string, rawValue: SpiceValue) => void;
-  readonly onLongPressEnd: () => void;
-  readonly onLongPressStart: () => void;
 }
 
 interface DefaultContentProps extends KitchenPanelSectionProps {
@@ -42,29 +35,6 @@ interface DefaultContentProps extends KitchenPanelSectionProps {
 interface OutputContentProps extends KitchenPanelSectionProps {
   readonly config: OutputPanelConfig | null;
 }
-
-const SpiceContent = memo<SpiceContentProps>(({ onSpiceChange, targetIngredient, onLongPressStart, onLongPressEnd }) => {
-  const handleSpiceChange = useCallback(
-    (spiceId: string, rawValue: SpiceValue): void => {
-      onSpiceChange(targetIngredient.id, spiceId, rawValue);
-    },
-    [onSpiceChange, targetIngredient.id],
-  );
-
-  const definition = ingredientRegistry.get(targetIngredient.ingredientId);
-  errorHandler.assert(definition, 'Could not find definition for target ingredient in spice editor.');
-
-  return (
-    <SpiceLayout
-      ingredient={definition}
-      currentSpices={targetIngredient.spices}
-      containerClasses="space-y-2"
-      onSpiceChange={handleSpiceChange}
-      onLongPressStart={onLongPressStart}
-      onLongPressEnd={onLongPressEnd}
-    />
-  );
-});
 
 const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, onFileDrop, textareaRef }) => {
   const isTextareaDisabled = config?.mode === 'textarea' && (config.disabled ?? false);
@@ -89,39 +59,52 @@ const OutputContent = memo<OutputContentProps>(({ config, data }) => {
   return <TextareaInput value={data} readOnly placeholder={placeholder} showLineNumbers wrapperClasses="flex-1-min-0" />;
 });
 
-const DataContent = memo<KitchenPanelProps & { readonly onFileRead: (file: File) => Promise<void> }>(({ type, onFileRead }): ReactNode => {
-  if (type === 'output') {
-    const config = useKitchenStore((state) => state.outputPanelConfig);
-    const data = useKitchenStore((state) => state.outputData);
-    return <OutputContent config={config} data={data} />;
-  }
+const OutputDataContent = memo((): ReactNode => {
+  const config = useKitchenStore((state) => state.outputPanelConfig);
+  const data = useKitchenStore((state) => state.outputData);
 
+  return <OutputContent config={config} data={data} />;
+});
+
+const InputDataContent = memo<{ readonly onFileRead: (file: File) => Promise<void> }>(({ onFileRead }): ReactNode => {
   const config = useKitchenStore((state) => state.inputPanelConfig);
   const data = useKitchenStore((state) => state.inputData);
+  const setInputData = useKitchenStore((state) => state.setInputData);
+  const startUpdateBatch = useKitchenStore((state) => state.startUpdateBatch);
+  const endUpdateBatch = useKitchenStore((state) => state.endUpdateBatch);
+  const updateSpice = useRecipeStore((state) => state.updateSpice);
 
-  if (config?.mode === 'spiceEditor') {
-    const targetIngredient = useRecipeStore((state) => state.ingredients.find((ing) => ing.id === config.targetIngredientId));
-    const updateSpice = useRecipeStore((state) => state.updateSpice);
-    const startUpdateBatch = useKitchenStore((state) => state.startUpdateBatch);
-    const endUpdateBatch = useKitchenStore((state) => state.endUpdateBatch);
+  const targetIngredient = useRecipeStore((state) =>
+    config?.mode === 'spiceEditor' ? state.ingredientsMap.get(config.targetIngredientId) : undefined,
+  );
 
-    if (targetIngredient) {
-      return (
-        <SpiceContent
-          targetIngredient={targetIngredient}
-          onSpiceChange={updateSpice}
-          onLongPressStart={startUpdateBatch}
-          onLongPressEnd={endUpdateBatch}
-        />
-      );
-    }
+  const handleSpiceChange = useCallback(
+    (spiceId: string, rawValue: SpiceValue): void => {
+      if (!targetIngredient) {
+        return;
+      }
+      updateSpice(targetIngredient.id, spiceId, rawValue);
+    },
+    [targetIngredient, updateSpice],
+  );
+
+  if (!(config?.mode === 'spiceEditor' && targetIngredient)) {
+    return <DefaultContent config={config} data={data} onDataChange={setInputData} onFileDrop={onFileRead} />;
   }
 
-  if (config?.mode === 'custom' && typeof config.content === 'function') {
-    return config.content();
-  }
+  const definition = ingredientRegistry.get(targetIngredient.ingredientId);
+  errorHandler.assert(definition, 'Could not find definition for target ingredient in spice editor.');
 
-  return <DefaultContent config={config} data={data} onDataChange={useKitchenStore.getState().setInputData} onFileDrop={onFileRead} />;
+  return (
+    <SpiceLayout
+      ingredient={definition}
+      currentSpices={targetIngredient.spices}
+      containerClasses="space-y-2"
+      onSpiceChange={handleSpiceChange}
+      onLongPressStart={startUpdateBatch}
+      onLongPressEnd={endUpdateBatch}
+    />
+  );
 });
 
 export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
@@ -205,11 +188,9 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
     const showClearButton = !inputPanelConfig || (inputPanelConfig.mode === 'textarea' && inputPanelConfig.showClear);
 
     const defaultInputActions: ReactNode[] = [
-      <Fragment key="file-picker">
-        <FilePicker accept="*/*" onFileSelect={handleFileRead}>
-          {renderFilePickerTrigger}
-        </FilePicker>
-      </Fragment>,
+      <FilePicker key="file-picker" accept="*/*" onFileSelect={handleFileRead}>
+        {renderFilePickerTrigger}
+      </FilePicker>,
     ];
 
     if (showClearButton) {
@@ -239,7 +220,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
       return inputPanelConfig.content();
     }
 
-    return <DataContent type={type} onFileRead={handleFileRead} />;
+    return type === 'output' ? <OutputDataContent /> : <InputDataContent onFileRead={handleFileRead} />;
   }, [inputPanelConfig, type, handleFileRead]);
 
   return (

@@ -1,4 +1,3 @@
-import { cn } from 'cnfast';
 import { useCallback, useRef } from 'react';
 
 import type { ChangeEvent, JSX, ReactNode } from 'react';
@@ -11,10 +10,9 @@ interface FilePickerProps {
   readonly children?: (props: FilePickerRenderProps) => ReactNode;
   readonly onFileSelect: (file: File) => void;
   readonly accept?: string;
-  readonly inputId?: string;
 }
 
-export const FilePicker = ({ children, onFileSelect, accept, inputId }: FilePickerProps): JSX.Element => {
+export const FilePicker = ({ children, onFileSelect, accept }: FilePickerProps): JSX.Element => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileChange = useCallback(
@@ -37,7 +35,7 @@ export const FilePicker = ({ children, onFileSelect, accept, inputId }: FilePick
   return (
     <>
       {children?.({ trigger })}
-      <input ref={inputRef} id={inputId} type="file" className={cn('hidden')} accept={accept} onChange={handleFileChange} />
+      <input ref={inputRef} type="file" className="hidden" accept={accept} onChange={handleFileChange} />
     </>
   );
 };

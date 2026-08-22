@@ -5,7 +5,13 @@ import { isArrayEqual, isObjectLike, shallowEqual } from '../utilities/objectUti
 
 import type { InferInput } from 'valibot';
 import type { IngredientDefinition, IngredientRegistry } from '../core/IngredientRegistry';
-import type { LoadExtensionDependencies } from '../stores/useExtensionStore';
+import type { ExtensionState } from '../stores/useExtensionStore';
+
+export interface GitHubRepoInfo {
+  readonly owner: string;
+  readonly repo: string;
+  readonly ref: string;
+}
 
 const EXTENSION_CACHE_MS = 86_400_000;
 const GH_URL_SHORTHAND_REGEX =
@@ -68,7 +74,7 @@ const executeScript = (scriptContent: string, api: typeof window.Baratie): void 
   }
 };
 
-const fetchProvider = async (repoInfo: Readonly<{ owner: string; repo: string; ref: string }>, path: string): Promise<Response> => {
+const fetchProvider = async (repoInfo: GitHubRepoInfo, path: string): Promise<Response> => {
   const repo = `${repoInfo.owner}/${repoInfo.repo}`;
   const ref = `${repoInfo.ref}/${path}`;
   const primaryUrl = `https://raw.githubusercontent.com/${repo}/${ref}?t=${Date.now()}`;
@@ -98,7 +104,7 @@ export const isCacheValid = (fetchedAt?: number): boolean => {
   return Date.now() - fetchedAt < EXTENSION_CACHE_MS;
 };
 
-export const parseGitHubUrl = (url: string): Readonly<{ owner: string; repo: string; ref: string }> | null => {
+export const parseGitHubUrl = (url: string): GitHubRepoInfo | null => {
   const trimmedUrl = url.trim();
   const match = trimmedUrl.match(GH_URL_SHORTHAND_REGEX);
   if (!match) return null;
@@ -111,17 +117,18 @@ export const parseGitHubUrl = (url: string): Readonly<{ owner: string; repo: str
   return { owner, repo, ref };
 };
 
+export const formatGitHubRepoId = (repoInfo: GitHubRepoInfo): string => `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
+
 export const loadAndExecuteExtension = async (
   extension: Readonly<Extension>,
-  dependencies: Readonly<LoadExtensionDependencies>,
+  getStore: () => ExtensionState,
   onProgress?: (progress: number) => void,
 ): Promise<void> => {
   const { id, name, entry, scripts: cachedScripts } = extension;
-  const { setExtensionStatus, setIngredients, upsert, getExtensionMap } = dependencies;
 
   const repoInfo = parseGitHubUrl(id);
   if (!repoInfo) {
-    setExtensionStatus(id, 'error', ['Invalid GitHub URL format.']);
+    getStore().setExtensionStatus(id, 'error', ['Invalid GitHub URL format.']);
     return;
   }
 
@@ -135,7 +142,7 @@ export const loadAndExecuteExtension = async (
   }
 
   if (entryPointsOrModules.length === 0) {
-    setExtensionStatus(id, 'error', ['Extension is missing entry point(s) in its manifest or cache.']);
+    getStore().setExtensionStatus(id, 'error', ['Extension is missing entry point(s) in its manifest or cache.']);
     return;
   }
 
@@ -220,7 +227,7 @@ export const loadAndExecuteExtension = async (
     ingredientRegistry.endBatch();
   }
 
-  if (!getExtensionMap().has(id)) {
+  if (!getStore().extensionMap.has(id)) {
     logger.info(`Extension '${name || id}' was removed during load. Aborting update and cleaning up registered ingredients.`);
 
     if (newlyRegisteredKeys.length > 0) {
@@ -231,18 +238,18 @@ export const loadAndExecuteExtension = async (
   }
 
   if (Object.keys(fetchedScripts).length > 0) {
-    upsert({ id, scripts: { ...cachedScripts, ...fetchedScripts } });
+    getStore().upsert({ id, scripts: { ...cachedScripts, ...fetchedScripts } });
   }
 
   if (newlyRegisteredKeys.length > 0) {
-    setIngredients(id, newlyRegisteredKeys);
+    getStore().setIngredients(id, newlyRegisteredKeys);
   }
 
   let finalStatus: Extension['status'] = 'error';
   if (successCount > 0) {
     finalStatus = errorLogs.length > 0 ? 'partial' : 'loaded';
   }
-  setExtensionStatus(id, finalStatus, errorLogs);
+  getStore().setExtensionStatus(id, finalStatus, errorLogs);
 
   const nameForLog = name || id;
 

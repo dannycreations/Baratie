@@ -30,14 +30,7 @@ export const GeneralTab = memo((): JSX.Element => {
             labelWrapperClasses="flex-1-min-0 order-2"
             inputWrapperClasses="order-1 flex-y-center"
           >
-            {(id) => (
-              <BooleanInput
-                id={id}
-                checked={allowMultipleOpen}
-                offBackgroundColor="bg-border-primary"
-                onChange={(e) => setAllowMultipleOpen(e.target.checked)}
-              />
-            )}
+            {(id) => <BooleanInput id={id} checked={allowMultipleOpen} offBackgroundColor="bg-border-primary" onChange={setAllowMultipleOpen} />}
           </FormLayout>
         </div>
         <div className="list-item-container-bordered">
@@ -49,14 +42,7 @@ export const GeneralTab = memo((): JSX.Element => {
             labelWrapperClasses="flex-1-min-0 order-2"
             inputWrapperClasses="order-1 flex-y-center"
           >
-            {(id) => (
-              <BooleanInput
-                id={id}
-                checked={persistRecipe}
-                offBackgroundColor="bg-border-primary"
-                onChange={(e) => setPersistRecipe(e.target.checked)}
-              />
-            )}
+            {(id) => <BooleanInput id={id} checked={persistRecipe} offBackgroundColor="bg-border-primary" onChange={setPersistRecipe} />}
           </FormLayout>
         </div>
       </div>

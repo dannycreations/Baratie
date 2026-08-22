@@ -388,32 +388,16 @@
     @apply border-transparent bg-accent-bg text-accent-fg hover:bg-accent-bg-hover;
   }
 
-  .btn-secondary {
-    @apply border-transparent bg-surface-tertiary text-content-secondary hover:bg-surface-hover hover:text-content-primary;
-  }
-
   .btn-danger {
     @apply border-danger-border bg-transparent text-danger-fg hover:bg-danger-bg-hover;
-  }
-
-  .btn-outline {
-    @apply border-border-primary bg-transparent text-content-secondary hover:border-border-secondary hover:bg-surface-muted;
   }
 
   .btn-stealth {
     @apply border-transparent bg-transparent text-content-tertiary hover:bg-surface-muted hover:text-content-primary;
   }
 
-  .btn-xs {
-    @apply p-1 text-xs;
-  }
-
   .btn-sm {
     @apply p-2 text-sm;
-  }
-
-  .btn-lg {
-    @apply p-3 text-base;
   }
 
   /* Form Elements */

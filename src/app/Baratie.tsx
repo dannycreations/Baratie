@@ -12,8 +12,8 @@ import { LoadingScreen } from '../components/main/LoadingScreen';
 import { NotificationPanel } from '../components/main/NotificationPanel';
 import { RecipePanel } from '../components/recipe/RecipePanel';
 import { SettingPanel } from '../components/setting/SettingPanel';
-import { parseGitHubUrl } from '../helpers/extensionHelper';
-import { useOverflow } from '../hooks/useOverflow';
+import { ScrollArea } from '../components/shared/ScrollArea';
+import { formatGitHubRepoId, parseGitHubUrl } from '../helpers/extensionHelper';
 import { internalIngredients } from '../ingredients';
 import { useDragMoveStore } from '../stores/useDragMoveStore';
 import { useExtensionStore } from '../stores/useExtensionStore';
@@ -32,7 +32,6 @@ export interface BaratieOptions {
 const Baratie = (): JSX.Element => {
   const isAppReady = useTaskStore((state) => state.isInitialized);
   const theme = useThemeStore((state) => state.id);
-  const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
   const isDragging = useDragMoveStore((state) => !!state.draggedItemId);
 
   useEffect(() => {
@@ -57,13 +56,12 @@ const Baratie = (): JSX.Element => {
   }, [isAppReady]);
 
   const mainContentClass = cn('main-content-wrapper', isAppReady ? 'opacity-100' : 'opacity-0');
-  const rootLayoutClass = cn('main-layout-root', scrollClasses);
 
   return (
     <>
       <LoadingScreen />
       <main className={mainContentClass}>
-        <div ref={scrollRef} className={rootLayoutClass}>
+        <ScrollArea className="main-layout-root">
           <section className="section-column md:flex-row">
             <IngredientPanel />
             <RecipePanel />
@@ -73,7 +71,7 @@ const Baratie = (): JSX.Element => {
             <KitchenPanel type="input" />
             <KitchenPanel type="output" />
           </section>
-        </div>
+        </ScrollArea>
 
         <NotificationPanel />
         <CookbookPanel />
@@ -137,7 +135,7 @@ export const createRoot = (element: HTMLElement | null, options: Readonly<Barati
             return;
           }
 
-          const repoName = `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
+          const repoName = formatGitHubRepoId(repoInfo);
 
           if (extensionMap.has(repoName)) {
             updateProgress(index, 1);

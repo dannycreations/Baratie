@@ -8,7 +8,7 @@ import { StringInput } from '../input/StringInput';
 import { TextareaInput } from '../input/TextareaInput';
 import { FormLayout } from './FormLayout';
 
-import type { ChangeEvent, FormEvent, JSX, ReactNode } from 'react';
+import type { FormEvent, JSX, ReactNode } from 'react';
 import type { IngredientDefinition, SpiceDefinition, SpiceValue } from '../../../core/IngredientRegistry';
 
 interface SpiceRendererProps {
@@ -32,15 +32,10 @@ const SpiceRenderer = memo<SpiceRendererProps>(({ spice, value: rawValue, onSpic
   const { id: spiceId } = spice;
 
   const handleChange = useCallback(
-    (value: SpiceValue | ChangeEvent<HTMLInputElement>): void => {
-      if (typeof value === 'object' && 'target' in value) {
-        const target = value.target as HTMLInputElement;
-        onSpiceChange(spiceId, spice.type === 'boolean' ? target.checked : target.value);
-      } else {
-        onSpiceChange(spiceId, value);
-      }
+    (value: SpiceValue): void => {
+      onSpiceChange(spiceId, value);
     },
-    [onSpiceChange, spiceId, spice.type],
+    [onSpiceChange, spiceId],
   );
 
   const renderInput = (id: string): ReactNode => {

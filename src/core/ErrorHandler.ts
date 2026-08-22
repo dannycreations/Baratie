@@ -20,7 +20,6 @@ export interface ErrorOptions {
   readonly defaultMessage?: string;
   readonly genericMessage?: string;
   readonly shouldLog?: boolean;
-  readonly notificationTitle?: string;
   readonly shouldNotify?: boolean;
 }
 
@@ -33,9 +32,10 @@ export class ErrorHandler {
   private static readonly DEFAULT_ERROR_CONFIG: Readonly<ErrorOptions> = {
     defaultMessage: 'An unexpected error occurred. Please try again, or check the console for details.',
     shouldLog: true,
-    notificationTitle: 'Application Error',
     shouldNotify: true,
   };
+
+  private static readonly NOTIFICATION_TITLE = 'Application Error';
 
   public assert(condition: unknown, techMessage: string, context?: string, options: Partial<ErrorOptions> = {}): asserts condition {
     if (condition) {
@@ -72,7 +72,6 @@ export class ErrorHandler {
     const newError = this.buildError(error, callerContext, handlerOptions.defaultMessage, handlerOptions.genericMessage);
     const effectiveContext = newError.context ?? 'Application';
     const displayMessage = newError.userMessage ?? ErrorHandler.DEFAULT_ERROR_CONFIG.defaultMessage!;
-    const notificationTitle = handlerOptions.notificationTitle ?? `Error: ${effectiveContext}`;
 
     if (handlerOptions.shouldLog) {
       logger.error(`Context: ${effectiveContext} | ${newError.name}: ${newError.message}`, {
@@ -83,7 +82,7 @@ export class ErrorHandler {
     }
 
     if (handlerOptions.shouldNotify) {
-      this.notify(displayMessage, notificationTitle, handlerOptions.defaultMessage!, newError.message);
+      this.notify(displayMessage, ErrorHandler.NOTIFICATION_TITLE, handlerOptions.defaultMessage!, newError.message);
     }
 
     return newError;

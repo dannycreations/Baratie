@@ -6,41 +6,34 @@ import { DATA_TYPE_INGREDIENT, DATA_TYPE_RECIPE_ITEM, ICON_SIZES } from '../../a
 import { kitchen } from '../../app/container';
 import { useDragMove } from '../../hooks/useDragMove';
 import { useDropZone } from '../../hooks/useDropZone';
-import { useOverflow } from '../../hooks/useOverflow';
 import { useCookbookStore } from '../../stores/useCookbookStore';
-import { useDragMoveStore } from '../../stores/useDragMoveStore';
 import { useKitchenStore } from '../../stores/useKitchenStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { ConfirmButton, TooltipButton } from '../shared/Button';
 import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
+import { ScrollArea } from '../shared/ScrollArea';
 import { EmptyView } from '../shared/View';
 import { RecipeItem } from './RecipeItem';
 
 import type { DragEvent, JSX } from 'react';
 import type { IngredientItem } from '../../core/IngredientRegistry';
-import type { CookbookModalProps } from '../../stores/useCookbookStore';
 import type { RecipeItemHandlers } from './RecipeItem';
 
 export const RecipePanel = memo((): JSX.Element => {
   const ingredients = useRecipeStore((state) => state.ingredients);
   const editingIds = useRecipeStore((state) => state.editingIds);
-  const activeRecipeId = useRecipeStore((state) => state.activeRecipeId);
   const addIngredient = useRecipeStore((state) => state.addIngredient);
   const clearRecipe = useRecipeStore((state) => state.clearRecipe);
   const reorderIngredients = useRecipeStore((state) => state.reorderIngredients);
   const clearEditingIds = useRecipeStore((state) => state.clearEditingIds);
-  const openModal = useModalStore((state) => state.openModal);
   const isCookbookOpen = useModalStore((state) => state.currentModal?.type === 'cookbook');
   const isAutoCookEnabled = useKitchenStore((state) => state.isAutoCookEnabled);
-  const prepareCookbook = useCookbookStore((state) => state.prepareToOpen);
-  const dragId = useDragMoveStore((state) => state.draggedItemId);
-  const setDraggedItemId = useDragMoveStore((state) => state.setDraggedItemId);
+  const openCookbook = useCookbookStore((state) => state.open);
 
   const prevIngredientsCount = useRef(ingredients.length);
-  const listRef = useRef<HTMLDivElement>(null);
-  const { ref: scrollRef, className: scrollClasses } = useOverflow<HTMLDivElement>();
+  const listRef = useRef<HTMLUListElement>(null);
 
   const handleDropIngredient = useCallback(
     (ingredientId: string): void => {
@@ -70,8 +63,6 @@ export const RecipePanel = memo((): JSX.Element => {
     onDragEnd,
   } = useDragMove({
     items: ingredients,
-    dragId,
-    setDragId: setDraggedItemId,
     onDragMove: reorderIngredients,
   });
 
@@ -84,16 +75,6 @@ export const RecipePanel = memo((): JSX.Element => {
       event.dataTransfer.setData(DATA_TYPE_RECIPE_ITEM, ingredient.id);
     },
     [clearEditingIds, editingIds.size, onMoveStart],
-  );
-
-  const openCookbook = useCallback(
-    (args: Readonly<{ mode: 'save' | 'load' }>): void => {
-      const props: CookbookModalProps = args.mode === 'save' ? { mode: 'save', ingredients, activeRecipeId } : { mode: 'load' };
-
-      prepareCookbook(props);
-      openModal({ type: 'cookbook', props });
-    },
-    [activeRecipeId, ingredients, openModal, prepareCookbook],
   );
 
   const headerActions = useMemo((): JSX.Element => {
@@ -110,7 +91,7 @@ export const RecipePanel = memo((): JSX.Element => {
           tooltipContent="Save to Cookbook"
           tooltipDisabled={isCookbookOpen}
           tooltipPosition="bottom"
-          onClick={() => openCookbook({ mode: 'save' })}
+          onClick={() => openCookbook('save')}
         />
         <TooltipButton
           icon={<FolderOpen size={ICON_SIZES.SM} />}
@@ -119,7 +100,7 @@ export const RecipePanel = memo((): JSX.Element => {
           tooltipContent="Open Cookbook"
           tooltipDisabled={isCookbookOpen}
           tooltipPosition="bottom"
-          onClick={() => openCookbook({ mode: 'load' })}
+          onClick={() => openCookbook('load')}
         />
         <TooltipButton
           icon={isAutoCookEnabled ? <Pause size={ICON_SIZES.SM} /> : <Play size={ICON_SIZES.SM} />}
@@ -158,7 +139,7 @@ export const RecipePanel = memo((): JSX.Element => {
       );
     }
     return (
-      <ul className="list-container pb-3">
+      <ul ref={listRef} className="list-container pb-3">
         {ingredients.map((ingredient: IngredientItem) => (
           <RecipeItem key={ingredient.id} ingredientItem={ingredient} handlers={recipeItemHandlers} />
         ))}
@@ -173,14 +154,6 @@ export const RecipePanel = memo((): JSX.Element => {
 
   const listClass = cn('grow transition-colors duration-200', isDraggingIngredient && 'bg-surface-muted');
 
-  const setListRef = useCallback(
-    (node: HTMLDivElement | null): void => {
-      listRef.current = node;
-      scrollRef(node);
-    },
-    [scrollRef],
-  );
-
   return (
     <SectionLayout
       headerLeft="Recipe"
@@ -189,9 +162,7 @@ export const RecipePanel = memo((): JSX.Element => {
       contentClasses="relative flex-col-gap-2 h-full text-content-tertiary"
     >
       <div className="flex-col-gap-2 h-full" {...dropZoneProps}>
-        <div ref={setListRef} className={cn('flex-1-overflow-auto', listClass, scrollClasses)}>
-          {content}
-        </div>
+        <ScrollArea className={cn('flex-1-overflow-auto', listClass)}>{content}</ScrollArea>
       </div>
     </SectionLayout>
   );

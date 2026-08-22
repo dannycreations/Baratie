@@ -65,17 +65,10 @@ export const AppearanceTab = memo((): JSX.Element => {
   const id = useThemeStore((state) => state.id);
   const setTheme = useThemeStore((state) => state.setTheme);
 
-  const handleSelectTheme = useCallback(
-    (themeId: ThemeId): void => {
-      setTheme(themeId);
-    },
-    [setTheme],
-  );
-
   return (
     <ul className="grid-standard">
       {THEME_VARIANT.map((item) => (
-        <ThemeItem key={item.id} item={item} isChecked={id === item.id} onSelect={handleSelectTheme} />
+        <ThemeItem key={item.id} item={item} isChecked={id === item.id} onSelect={setTheme} />
       ))}
     </ul>
   );

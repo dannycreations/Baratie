@@ -8,8 +8,10 @@ import { useCopyAction } from '../../hooks/useCopyAction';
 import { Tooltip } from './Tooltip';
 
 import type { JSX, MouseEvent, ReactNode } from 'react';
-import type { ButtonSize, ButtonVariant } from '../../app/types';
 import type { TooltipProps } from './Tooltip';
+
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'stealth' | 'outline';
+export type ButtonSize = 'xs' | 'sm' | 'lg';
 
 interface ButtonProps {
   readonly children?: ReactNode;
@@ -48,20 +50,6 @@ interface ConfirmButtonProps {
   readonly tooltipPosition?: TooltipProps['position'];
 }
 
-const BUTTON_VARIANT_MAP: Readonly<Record<ButtonVariant, string>> = {
-  danger: 'btn-danger',
-  outline: 'btn-outline',
-  primary: 'btn-primary',
-  secondary: 'btn-secondary',
-  stealth: 'btn-stealth',
-};
-
-const BUTTON_SIZE_MAP: Readonly<Record<ButtonSize, string>> = {
-  xs: 'btn-xs',
-  sm: 'btn-sm',
-  lg: 'btn-lg',
-};
-
 export const Button = memo<ButtonProps>(
   ({
     children,
@@ -87,7 +75,7 @@ export const Button = memo<ButtonProps>(
     return (
       <button
         type={type}
-        className={cn('btn-base', shapeClass, BUTTON_VARIANT_MAP[variant], BUTTON_SIZE_MAP[size], loading && 'opacity-60', className)}
+        className={cn('btn-base', shapeClass, `btn-${variant}`, `btn-${size}`, loading && 'opacity-60', className)}
         disabled={loading || disabled}
         onClick={onClick}
       >
