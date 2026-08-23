@@ -2,7 +2,7 @@ import { cn } from 'cnfast';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { ICON_SIZES } from '../../app/constants';
+import { ICON_SIZES, LOADING_EXIT_MS } from '../../app/constants';
 import { useTaskStore } from '../../stores/useTaskStore';
 
 import type { JSX } from 'react';
@@ -18,7 +18,7 @@ export const LoadingScreen = (): JSX.Element | null => {
     if (isAppReady) {
       const timer = setTimeout(() => {
         setIsRemoved(true);
-      }, 300);
+      }, LOADING_EXIT_MS);
 
       return () => clearTimeout(timer);
     }

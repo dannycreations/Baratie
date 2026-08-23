@@ -5,7 +5,6 @@ import { useRecipeStore } from '../stores/useRecipeStore';
 import { AppError } from './ErrorHandler';
 import { InputType } from './InputType';
 
-import type { KitchenState } from '../stores/useKitchenStore';
 import type {
   IngredientContext,
   IngredientDefinition,
@@ -16,11 +15,6 @@ import type {
 } from './IngredientRegistry';
 
 export type CookingStatusType = 'idle' | 'error' | 'success' | 'warning';
-
-export type RecipeCookResult = Pick<
-  KitchenState,
-  'ingredientStatuses' | 'ingredientWarnings' | 'inputPanelConfig' | 'inputPanelId' | 'outputData' | 'outputPanelConfig'
->;
 
 interface RecipeLoopState {
   cookedData: InputType;

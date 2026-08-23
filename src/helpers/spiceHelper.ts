@@ -1,10 +1,8 @@
 import { errorHandler } from '../app/container';
 import { InputType } from '../core/InputType';
-import { clamp } from '../utilities/objectUtil';
 
 import type { IngredientDefinition, SpiceDefinition, SpiceValue } from '../core/IngredientRegistry';
 
-const sortedSpicesCache = new WeakMap<Readonly<IngredientDefinition>, ReadonlyArray<SpiceDefinition>>();
 const spiceMapCache = new WeakMap<Readonly<IngredientDefinition>, ReadonlyMap<string, Readonly<SpiceDefinition>>>();
 
 const getSpiceMap = (definition: Readonly<IngredientDefinition>): ReadonlyMap<string, Readonly<SpiceDefinition>> => {
@@ -31,15 +29,6 @@ const prepareSelectValue = (newValue: SpiceValue, spice: Readonly<SpiceDefinitio
   const selectedOption = spice.options.find((opt) => String(opt.value) === String(newValue));
 
   return selectedOption ? selectedOption.value : newValue;
-};
-
-export const getSortedSpices = (definition: Readonly<IngredientDefinition>): ReadonlyArray<SpiceDefinition> => {
-  const cached = sortedSpicesCache.get(definition);
-  if (cached) return cached;
-
-  const result = definition.spices?.length ? [...definition.spices].sort((a, b) => a.id.localeCompare(b.id)) : [];
-  sortedSpicesCache.set(definition, result);
-  return result;
 };
 
 export const getVisibleSpices = (
@@ -107,68 +96,34 @@ export const validateSpices = (
   rawSpices: Readonly<Record<string, unknown>>,
 ): Record<string, SpiceValue> => {
   const validatedSpices: Record<string, SpiceValue> = {};
-  const spices = ingredientDefinition.spices;
 
-  if (!spices || spices.length === 0) {
-    return validatedSpices;
-  }
-
-  const len = spices.length;
-  for (let i = 0; i < len; i++) {
-    const spice = spices[i];
-    const spiceId = spice.id;
-    const rawValue = rawSpices[spiceId];
+  for (const spice of ingredientDefinition.spices ?? []) {
+    const rawValue = rawSpices[spice.id];
 
     if (rawValue === undefined || rawValue === null) {
-      validatedSpices[spiceId] = spice.value;
-      continue;
-    }
-
-    const spiceType = spice.type;
-    const rawValueType = typeof rawValue;
-
-    if (spiceType === 'number' && rawValueType === 'number') {
-      const num = rawValue as number;
-      const { min, max } = spice;
-      validatedSpices[spiceId] = clamp(num, min, max);
-      continue;
-    }
-
-    if (spiceType === 'boolean' && rawValueType === 'boolean') {
-      validatedSpices[spiceId] = rawValue as boolean;
-      continue;
-    }
-
-    if ((spiceType === 'string' || spiceType === 'textarea') && rawValueType === 'string') {
-      validatedSpices[spiceId] = rawValue as string;
+      validatedSpices[spice.id] = spice.value;
       continue;
     }
 
     const input = new InputType(rawValue);
 
-    if (spiceType === 'number') {
-      validatedSpices[spiceId] = input.cast('number', { max: spice.max, min: spice.min, value: spice.value }).value;
+    if (spice.type === 'number') {
+      validatedSpices[spice.id] = input.cast('number', { max: spice.max, min: spice.min, value: spice.value }).value;
       continue;
     }
 
-    if (spiceType === 'boolean') {
-      validatedSpices[spiceId] = input.cast('boolean', { value: spice.value }).value;
+    if (spice.type === 'boolean') {
+      validatedSpices[spice.id] = input.cast('boolean', { value: spice.value }).value;
       continue;
     }
 
-    if (spiceType === 'select') {
-      const val = input.value;
-      const isValid = spice.options.some((opt) => String(opt.value) === String(val));
-      validatedSpices[spiceId] = isValid ? prepareSelectValue(val as SpiceValue, spice) : spice.value;
+    if (spice.type === 'select') {
+      const isValid = spice.options.some((opt) => String(opt.value) === String(input.value));
+      validatedSpices[spice.id] = isValid ? prepareSelectValue(input.value as SpiceValue, spice) : spice.value;
       continue;
     }
 
-    if (spiceType === 'string' || spiceType === 'textarea') {
-      validatedSpices[spiceId] = input.cast('string', { value: spice.value }).value;
-      continue;
-    }
-
-    validatedSpices[spiceId] = input.value as SpiceValue;
+    validatedSpices[spice.id] = input.cast('string', { value: spice.value }).value;
   }
   return validatedSpices;
 };

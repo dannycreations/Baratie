@@ -1,4 +1,4 @@
-import { array, intersect, nonEmpty, number, object, optional, pipe, record, string, union } from 'valibot';
+import { array, intersect, nonEmpty, number, object, optional, pipe, record, safeParse, string, union } from 'valibot';
 
 import { ingredientRegistry, logger } from '../app/container';
 import { isArrayEqual, isObjectLike, shallowEqual } from '../utilities/objectUtil';
@@ -118,6 +118,22 @@ export const parseGitHubUrl = (url: string): GitHubRepoInfo | null => {
 };
 
 export const formatGitHubRepoId = (repoInfo: GitHubRepoInfo): string => `${repoInfo.owner}/${repoInfo.repo}@${repoInfo.ref}`;
+
+export const fetchAndValidateManifest = async (repoInfo: GitHubRepoInfo): Promise<ExtensionManifest> => {
+  const repo = `${repoInfo.owner}/${repoInfo.repo}`;
+  const targetUrl = `https://raw.githubusercontent.com/${repo}/${repoInfo.ref}/manifest.json?t=${Date.now()}`;
+  const response = await fetch(targetUrl, { cache: 'reload' });
+  if (!response.ok) {
+    throw new Error('Could not fetch manifest');
+  }
+
+  const manifestJson: unknown = await response.json();
+  const validationResult = safeParse(ExtensionManifestSchema, manifestJson);
+  if (!validationResult.success) {
+    throw new Error(`Invalid manifest file: ${validationResult.issues[0].message}`);
+  }
+  return validationResult.output;
+};
 
 export const loadAndExecuteExtension = async (
   extension: Readonly<Extension>,

@@ -16,10 +16,6 @@ interface InitializationTask {
 export class TaskRegistry {
   private readonly systemTasks: ReadonlyArray<InitializationTask> = [
     {
-      message: 'Sharpening the cutlasses...',
-      isConcurrent: true,
-    },
-    {
       message: 'Loading supplies from other vessels...',
       isConcurrent: true,
       handler: () => useExtensionStore.getState().init(),
@@ -43,10 +39,6 @@ export class TaskRegistry {
       message: "Consulting the ship's log...",
       isConcurrent: true,
       handler: () => useIngredientStore.getState().init(),
-    },
-    {
-      message: 'Prepping the Mise en Place...',
-      isConcurrent: true,
     },
   ];
   private readonly userTasks: Array<InitializationTask> = [];

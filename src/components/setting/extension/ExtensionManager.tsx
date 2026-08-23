@@ -1,13 +1,13 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { filterGroupedList, groupListByCategory } from '../../../helpers/listHelper';
+import { createSearchPredicate, groupAndFilterList } from '../../../helpers/listHelper';
 import { useAutoFocus } from '../../../hooks/useAutoFocus';
 import { useSearch } from '../../../hooks/useSearch';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
 import { Button } from '../../shared/Button';
 import { BooleanInput } from '../../shared/input/BooleanInput';
-import { SearchInput } from '../../shared/input/SearchInput';
+import { StringInput } from '../../shared/input/StringInput';
 import { GroupListLayout } from '../../shared/layout/ListLayout';
 import { Modal } from '../../shared/Modal';
 import { ScrollArea } from '../../shared/ScrollArea';
@@ -50,20 +50,11 @@ export const ExtensionManager = memo((): JSX.Element | null => {
     }
   }, [pendingSelection, manifestModules]);
 
-  const groupedModules = useMemo(() => {
-    const modulesWithIds: Array<ModuleIngredient> = manifestModules.map((module) => ({ ...module, id: module.entry }));
-    return groupListByCategory(modulesWithIds, (module) => module.category);
-  }, [manifestModules]);
-
   const filteredGroupedModules = useMemo(() => {
-    const query = deferredQuery.toLowerCase().trim();
+    const modulesWithIds: Array<ModuleIngredient> = manifestModules.map((module) => ({ ...module, id: module.entry }));
 
-    return filterGroupedList(
-      groupedModules,
-      query,
-      (module) => module.name.toLowerCase().includes(query) || module.description.toLowerCase().includes(query),
-    );
-  }, [groupedModules, deferredQuery]);
+    return groupAndFilterList(modulesWithIds, (module) => module.category, deferredQuery, createSearchPredicate(deferredQuery));
+  }, [manifestModules, deferredQuery]);
 
   const handleToggleModule = useCallback((entry: string): void => {
     setSelectedEntries((prev) => {
@@ -172,8 +163,10 @@ export const ExtensionManager = memo((): JSX.Element | null => {
       onExited={resetState}
     >
       <div className="flex-col-gap-2 h-full">
-        <SearchInput
+        <StringInput
           id="module-install-search"
+          type="search"
+          showClearButton
           inputRef={searchRef}
           value={query}
           placeholder="Search Modules..."

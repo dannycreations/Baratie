@@ -4,8 +4,7 @@ import { memo, useCallback, useMemo } from 'react';
 
 import { CATEGORY_FAVORITES, DATA_TYPE_INGREDIENT, DATA_TYPE_RECIPE_ITEM, ICON_SIZES } from '../../app/constants';
 import { errorHandler, ingredientRegistry } from '../../app/container';
-import { createIngredientSearchPredicate } from '../../helpers/ingredientHelper';
-import { filterGroupedList, groupListByCategory } from '../../helpers/listHelper';
+import { createSearchPredicate, groupAndFilterList } from '../../helpers/listHelper';
 import { useDropZone } from '../../hooks/useDropZone';
 import { useSearch } from '../../hooks/useSearch';
 import { useDragMoveStore } from '../../stores/useDragMoveStore';
@@ -14,7 +13,7 @@ import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 import { TooltipButton } from '../shared/Button';
-import { SearchInput } from '../shared/input/SearchInput';
+import { StringInput } from '../shared/input/StringInput';
 import { DropZoneLayout } from '../shared/layout/DropZoneLayout';
 import { GroupListLayout } from '../shared/layout/ListLayout';
 import { SectionLayout } from '../shared/layout/SectionLayout';
@@ -54,8 +53,7 @@ export const IngredientPanel = memo((): JSX.Element => {
 
   const { isDragOver: isDragOverRecipe, dropZoneProps: recipeDropZoneProps } = useDropZone<string, HTMLDivElement>({
     effect: 'move',
-    onValidate: (dt) => dt.types.includes(DATA_TYPE_RECIPE_ITEM),
-    onExtract: (dt) => dt.getData(DATA_TYPE_RECIPE_ITEM),
+    onExtract: (dt) => (dt.types.includes(DATA_TYPE_RECIPE_ITEM) ? dt.getData(DATA_TYPE_RECIPE_ITEM) : undefined),
     onDrop: handleDropRecipe,
   });
 
@@ -80,16 +78,18 @@ export const IngredientPanel = memo((): JSX.Element => {
     return { favoritesList: favs, regularList: regs, visibleIngredientsCount: visibleCount };
   }, [allIngredients, disabledCategories, disabledIngredients, favorites]);
 
-  const groupedRegular = useMemo(() => groupListByCategory(regularList, (ingredient) => ingredient.category), [regularList]);
+  const filteredRegular = useMemo(
+    () => groupAndFilterList(regularList, (ingredient) => ingredient.category, deferredQuery, createSearchPredicate(deferredQuery)),
+    [regularList, deferredQuery],
+  );
 
   const filteredIngredients = useMemo((): Array<[string, ReadonlyArray<IngredientProps>]> => {
     if (!deferredQuery.trim()) {
-      return favoritesList.length > 0 ? [[CATEGORY_FAVORITES, favoritesList], ...groupedRegular] : groupedRegular;
+      return favoritesList.length > 0 ? [[CATEGORY_FAVORITES, favoritesList], ...filteredRegular] : filteredRegular;
     }
 
-    const searchPredicate = createIngredientSearchPredicate(deferredQuery);
+    const searchPredicate = createSearchPredicate(deferredQuery);
     const filteredFavorites = favoritesList.filter(searchPredicate);
-    const filteredRegular = filterGroupedList(groupedRegular, deferredQuery, searchPredicate);
 
     const result: Array<[string, ReadonlyArray<IngredientProps>]> = [];
     if (filteredFavorites.length > 0) {
@@ -97,7 +97,7 @@ export const IngredientPanel = memo((): JSX.Element => {
     }
     result.push(...filteredRegular);
     return result;
-  }, [deferredQuery, favoritesList, groupedRegular]);
+  }, [deferredQuery, favoritesList, filteredRegular]);
 
   const totalIngredients = allIngredients.length;
 
@@ -177,7 +177,15 @@ export const IngredientPanel = memo((): JSX.Element => {
       <div className="flex-col-gap-2 h-full text-content-tertiary" {...recipeDropZoneProps}>
         {isDragOverRecipe && <DropZoneLayout mode="overlay" text="Drop to Remove from Recipe" variant="remove" />}
         <div className="flex-col-gap-2 h-full">
-          <SearchInput id="ingredient-search" value={query} placeholder="Search Ingredients..." onChange={onQueryChange} onClear={onClear} />
+          <StringInput
+            id="ingredient-search"
+            type="search"
+            showClearButton
+            value={query}
+            placeholder="Search Ingredients..."
+            onChange={onQueryChange}
+            onClear={onClear}
+          />
           <ScrollArea className="flex-1-overflow-auto">
             <GroupListLayout
               query={query}

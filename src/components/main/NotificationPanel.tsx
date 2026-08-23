@@ -8,7 +8,7 @@ import { useNotificationStore } from '../../stores/useNotificationStore';
 import { Button } from '../shared/Button';
 
 import type { JSX } from 'react';
-import type { NotificationMessage, NotificationType } from '../../app/types';
+import type { NotificationMessage, NotificationType } from '../../stores/useNotificationStore';
 
 interface NotificationItemProps {
   readonly notification: NotificationMessage;

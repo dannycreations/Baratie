@@ -8,7 +8,7 @@ import { Button } from './Button';
 
 import type { JSX, MouseEvent, ReactNode } from 'react';
 
-export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'full';
+export type ModalSize = 'lg' | 'xl';
 
 interface ModalProps {
   readonly children?: ReactNode;

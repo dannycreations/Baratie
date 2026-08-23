@@ -1,10 +1,10 @@
 import { array, boolean, nonEmpty, number, object, optional, pipe, record, safeParse, string, union } from 'valibot';
 
 import { ingredientRegistry, logger } from '../app/container';
-import { getSortedSpices, validateSpices } from './spiceHelper';
+import { validateSpices } from './spiceHelper';
 
 import type { InferInput } from 'valibot';
-import type { IngredientItem, IngredientProps, RecipebookItem } from '../core/IngredientRegistry';
+import type { IngredientDefinition, IngredientItem, IngredientProps, RecipebookItem, SpiceDefinition } from '../core/IngredientRegistry';
 
 const SpiceValueSchema = union([string(), number(), boolean()]);
 
@@ -42,6 +42,17 @@ const recipeNameFormatter = new Intl.DateTimeFormat(undefined, {
   month: 'short',
   day: 'numeric',
 });
+
+const sortedSpicesCache = new WeakMap<Readonly<IngredientDefinition>, ReadonlyArray<SpiceDefinition>>();
+
+const getSortedSpices = (definition: Readonly<IngredientDefinition>): ReadonlyArray<SpiceDefinition> => {
+  const cached = sortedSpicesCache.get(definition);
+  if (cached) return cached;
+
+  const result = definition.spices?.length ? [...definition.spices].sort((a, b) => a.id.localeCompare(b.id)) : [];
+  sortedSpicesCache.set(definition, result);
+  return result;
+};
 
 const ingredientsHashCache = new WeakMap<ReadonlyArray<IngredientItem>, string>();
 

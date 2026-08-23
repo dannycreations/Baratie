@@ -158,6 +158,10 @@ export class IngredientRegistry {
     return this.ingredients.get(id);
   }
 
+  public filterExisting(ids: ReadonlyArray<string>): Array<string> {
+    return ids.filter((id) => this.ingredients.has(id));
+  }
+
   public getAllCategories(): ReadonlySet<string> {
     if (this.categories) {
       return this.categories;

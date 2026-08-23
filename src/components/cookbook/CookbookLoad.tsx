@@ -2,7 +2,7 @@ import { Save } from 'lucide-react';
 import { memo, useMemo } from 'react';
 
 import { ICON_SIZES } from '../../app/constants';
-import { SearchInput } from '../shared/input/SearchInput';
+import { StringInput } from '../shared/input/StringInput';
 import { ScrollArea } from '../shared/ScrollArea';
 import { EmptyView } from '../shared/View';
 import { CookbookItem } from './CookbookItem';
@@ -47,8 +47,10 @@ export const CookbookLoad = memo<CookbookLoadProps>(
     return (
       <div className="flex-col-gap-2 h-full">
         <div className="shrink-0 border-b border-border-primary pb-2">
-          <SearchInput
+          <StringInput
             id="recipe-search"
+            type="search"
+            showClearButton
             inputRef={searchRef}
             value={query}
             placeholder="Search Saved Recipes..."

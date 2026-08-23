@@ -2,14 +2,13 @@ import { cn } from 'cnfast';
 import { memo, useCallback, useMemo, useRef } from 'react';
 
 import { ingredientRegistry } from '../../app/container';
-import { createIngredientSearchPredicate } from '../../helpers/ingredientHelper';
-import { filterGroupedList, groupListByCategory } from '../../helpers/listHelper';
+import { createSearchPredicate, groupAndFilterList } from '../../helpers/listHelper';
 import { useAutoFocus } from '../../hooks/useAutoFocus';
 import { useSearch } from '../../hooks/useSearch';
 import { useIngredientStore } from '../../stores/useIngredientStore';
 import { useModalStore } from '../../stores/useModalStore';
 import { BooleanInput } from '../shared/input/BooleanInput';
-import { SearchInput } from '../shared/input/SearchInput';
+import { StringInput } from '../shared/input/StringInput';
 import { GroupListLayout } from '../shared/layout/ListLayout';
 import { Modal } from '../shared/Modal';
 import { ScrollArea } from '../shared/ScrollArea';
@@ -37,13 +36,9 @@ export const IngredientManager = memo((): JSX.Element => {
     return ingredientRegistry.getAll();
   }, [registryVersion]);
 
-  const ingredientsByCategory = useMemo(() => {
-    return groupListByCategory(allIngredients, (ingredient) => ingredient.category);
-  }, [allIngredients]);
-
   const filteredList = useMemo(
-    () => filterGroupedList(ingredientsByCategory, deferredQuery, createIngredientSearchPredicate(deferredQuery)),
-    [ingredientsByCategory, deferredQuery],
+    () => groupAndFilterList(allIngredients, (ingredient) => ingredient.category, deferredQuery, createSearchPredicate(deferredQuery)),
+    [allIngredients, deferredQuery],
   );
 
   const renderHeader = useCallback(
@@ -107,8 +102,10 @@ export const IngredientManager = memo((): JSX.Element => {
   return (
     <Modal isOpen={isModalOpen} size="lg" title="Manage Ingredients" onClose={closeModal}>
       <div className="flex-col-gap-2 h-full">
-        <SearchInput
+        <StringInput
           id="ingredient-manager-search"
+          type="search"
+          showClearButton
           inputRef={searchRef}
           value={query}
           placeholder="Search Ingredients..."

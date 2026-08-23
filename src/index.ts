@@ -12,9 +12,9 @@ import { useRecipeStore } from './stores/useRecipeStore';
 import { useThemeStore } from './stores/useThemeStore';
 
 import type { BaratieOptions } from './app/Baratie';
-import type { NotificationType } from './app/types';
 import type { IngredientContext, IngredientDefinition, IngredientItem, RecipebookItem, SpiceDefinition, SpiceValue } from './core/IngredientRegistry';
 import type { InputType } from './core/InputType';
+import type { NotificationType } from './stores/useNotificationStore';
 
 const BARATIE_API = {
   LogLevel,

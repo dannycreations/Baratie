@@ -3,7 +3,6 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { STORAGE_FILTERS } from '../app/constants';
 import { ingredientRegistry } from '../app/container';
-import { getExistingIngredientIds } from '../helpers/ingredientHelper';
 import { isArrayEqual } from '../utilities/objectUtil';
 import { createSetHandlers, persistStore } from '../utilities/storeUtil';
 
@@ -34,7 +33,7 @@ export const useIngredientStore = create<IngredientState>()(
         const allCategories = ingredientRegistry.getAllCategories();
 
         const validCategories = [...disabledCategories].filter((c) => allCategories.has(c));
-        const validIngredients = getExistingIngredientIds([...disabledIngredients]);
+        const validIngredients = ingredientRegistry.filterExisting([...disabledIngredients]);
 
         set({
           disabledCategories: new Set(validCategories),

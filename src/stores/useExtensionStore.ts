@@ -5,7 +5,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { STORAGE_EXTENSIONS } from '../app/constants';
 import { ingredientRegistry, logger, storage } from '../app/container';
 import {
-  ExtensionManifestSchema,
+  fetchAndValidateManifest,
   formatGitHubRepoId,
   isCacheValid,
   loadAndExecuteExtension,
@@ -17,7 +17,7 @@ import { isObjectLike, isString, pick } from '../utilities/objectUtil';
 import { createListHandlers, persistStore } from '../utilities/storeUtil';
 import { useNotificationStore } from './useNotificationStore';
 
-import type { Extension, ExtensionManifest, GitHubRepoInfo, ManifestModule, StorableExtension } from '../helpers/extensionHelper';
+import type { Extension, ManifestModule, StorableExtension } from '../helpers/extensionHelper';
 
 export interface ExtensionState {
   readonly extensions: ReadonlyArray<Extension>;
@@ -40,22 +40,6 @@ export interface ExtensionState {
   readonly setIngredients: (id: string, ingredients: ReadonlyArray<string>) => void;
   readonly upsert: (extension: Readonly<Partial<Extension> & { id: string }>) => void;
 }
-
-const fetchAndValidateManifest = async (repoInfo: GitHubRepoInfo): Promise<ExtensionManifest> => {
-  const repo = `${repoInfo.owner}/${repoInfo.repo}`;
-  const targetUrl = `https://raw.githubusercontent.com/${repo}/${repoInfo.ref}/manifest.json?t=${Date.now()}`;
-  const response = await fetch(targetUrl, { cache: 'reload' });
-  if (!response.ok) {
-    throw new Error('Could not fetch manifest');
-  }
-
-  const manifestJson: unknown = await response.json();
-  const validationResult = safeParse(ExtensionManifestSchema, manifestJson);
-  if (!validationResult.success) {
-    throw new Error(`Invalid manifest file: ${validationResult.issues[0].message}`);
-  }
-  return validationResult.output;
-};
 
 export const useExtensionStore = create<ExtensionState>()(
   subscribeWithSelector((set, get) => {

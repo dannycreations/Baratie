@@ -45,8 +45,7 @@ export const RecipePanel = memo((): JSX.Element => {
   );
 
   const { isDragOver: isDraggingIngredient, dropZoneProps } = useDropZone<string, HTMLDivElement>({
-    onValidate: (dt) => dt.types.includes(DATA_TYPE_INGREDIENT),
-    onExtract: (dt) => dt.getData(DATA_TYPE_INGREDIENT),
+    onExtract: (dt) => (dt.types.includes(DATA_TYPE_INGREDIENT) ? dt.getData(DATA_TYPE_INGREDIENT) : undefined),
     onDrop: handleDropIngredient,
   });
 

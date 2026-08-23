@@ -20,7 +20,7 @@ type ModalPayload = { [K in ModalType]: { type: K; props: ModalMap[K] } }[ModalT
 interface ModalState {
   readonly currentModal: ModalPayload | null;
   readonly previousModals: ReadonlyArray<ModalPayload>;
-  readonly openModal: (payload: ModalPayload, options?: Readonly<{ replace?: boolean }>) => void;
+  readonly openModal: (payload: ModalPayload) => void;
   readonly closeModal: () => void;
 }
 
@@ -28,14 +28,11 @@ export const useModalStore = create<ModalState>()((set) => ({
   currentModal: null,
   previousModals: [],
 
-  openModal: (payload, options) => {
-    set((state) => {
-      const shouldStack = state.currentModal && !options?.replace;
-      return {
-        currentModal: payload,
-        previousModals: shouldStack ? [...state.previousModals, state.currentModal!] : state.previousModals,
-      };
-    });
+  openModal: (payload) => {
+    set((state) => ({
+      currentModal: payload,
+      previousModals: state.currentModal ? [...state.previousModals, state.currentModal] : state.previousModals,
+    }));
   },
 
   closeModal: () => {

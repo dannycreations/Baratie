@@ -2,7 +2,16 @@ import { create } from 'zustand';
 
 import { NOTIFICATION_SHOW_MS } from '../app/constants';
 
-import type { NotificationMessage, NotificationType } from '../app/types';
+export type NotificationType = 'success' | 'error' | 'info' | 'warning';
+
+export interface NotificationMessage {
+  readonly id: string;
+  readonly type: NotificationType;
+  readonly message: string;
+  readonly title?: string;
+  readonly duration?: number;
+  readonly resetAt?: number;
+}
 
 interface NotificationState {
   readonly map: ReadonlyMap<string, NotificationMessage>;

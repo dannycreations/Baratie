@@ -31,6 +31,7 @@ export const DATA_TYPE_RECIPE_ITEM = 'application/x-baratie-recipe-item-id';
 export const CONFIRM_SHOW_MS = 2000;
 export const COPY_SHOW_MS = 1500;
 export const MODAL_SHOW_MS = 200;
+export const LOADING_EXIT_MS = 300;
 export const NOTIFICATION_EXIT_MS = 400;
 export const NOTIFICATION_SHOW_MS = 5000;
 

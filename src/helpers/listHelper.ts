@@ -1,8 +1,28 @@
-export const groupListByCategory = <T>(items: ReadonlyArray<T>, getCategory: (item: T) => string): Array<[string, Array<T>]> => {
+export const createSearchPredicate = <T extends { readonly name: string; readonly description: string }>(query: string): ((item: T) => boolean) => {
+  const lowerQuery = query.toLowerCase().trim();
+
+  return (item: T): boolean => {
+    return item.name.toLowerCase().includes(lowerQuery) || item.description.toLowerCase().includes(lowerQuery);
+  };
+};
+
+export const groupAndFilterList = <T>(
+  items: ReadonlyArray<T>,
+  getCategory: (item: T) => string,
+  query: string,
+  matchesItem: (item: T) => boolean,
+): Array<[string, Array<T>]> => {
+  const lowerQuery = query.toLowerCase().trim();
   const grouped = new Map<string, Array<T>>();
 
   for (const item of items) {
     const category = getCategory(item);
+    const categoryMatches = !lowerQuery || category.toLowerCase().includes(lowerQuery);
+
+    if (!categoryMatches && !matchesItem(item)) {
+      continue;
+    }
+
     const categoryItems = grouped.get(category);
     if (categoryItems) {
       categoryItems.push(item);
@@ -12,32 +32,4 @@ export const groupListByCategory = <T>(items: ReadonlyArray<T>, getCategory: (it
   }
 
   return [...grouped.entries()].sort(([categoryA], [categoryB]) => categoryA.localeCompare(categoryB));
-};
-
-export const filterGroupedList = <T>(
-  groups: ReadonlyArray<readonly [string, ReadonlyArray<T>]>,
-  query: string,
-  matchesItem: (item: T) => boolean,
-): Array<[string, Array<T>]> => {
-  const lowerQuery = query.toLowerCase().trim();
-
-  if (!lowerQuery) {
-    return groups.map(([category, items]) => [category, [...items]]);
-  }
-
-  const result: Array<[string, Array<T>]> = [];
-
-  for (const [category, items] of groups) {
-    if (category.toLowerCase().includes(lowerQuery)) {
-      result.push([category, [...items]]);
-      continue;
-    }
-
-    const matchingItems = items.filter(matchesItem);
-    if (matchingItems.length > 0) {
-      result.push([category, matchingItems]);
-    }
-  }
-
-  return result;
 };

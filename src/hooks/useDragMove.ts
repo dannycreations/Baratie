@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { errorHandler } from '../app/container';
 import { useDragMoveStore } from '../stores/useDragMoveStore';
@@ -17,14 +17,12 @@ interface DragMoveHookReturn {
 }
 
 export const useDragMove = <T extends { id: string }>({ items, onDragMove }: DragMoveHookProps<T>): DragMoveHookReturn => {
-  const itemIndexMapRef = useRef(new Map<string, number>());
-
-  useEffect(() => {
+  const itemIndexMap = useMemo(() => {
     const indexMap = new Map<string, number>();
     items.forEach((item, index) => {
       indexMap.set(item.id, index);
     });
-    itemIndexMapRef.current = indexMap;
+    return indexMap;
   }, [items]);
 
   const handleDragStart = useCallback((event: DragEvent<HTMLElement>, itemId: string): void => {
@@ -54,7 +52,6 @@ export const useDragMove = <T extends { id: string }>({ items, onDragMove }: Dra
 
       event.dataTransfer.dropEffect = 'move';
 
-      const itemIndexMap = itemIndexMapRef.current;
       const draggedIndex = itemIndexMap.get(draggedId);
       const targetIndex = itemIndexMap.get(targetItemId);
 
@@ -75,7 +72,7 @@ export const useDragMove = <T extends { id: string }>({ items, onDragMove }: Dra
 
       onDragMove(draggedId, targetItemId);
     },
-    [onDragMove],
+    [itemIndexMap, onDragMove],
   );
 
   const handleDragEnd = useCallback((): void => {

@@ -6,8 +6,7 @@ interface DropZoneProps<T> {
   readonly disabled?: boolean;
   readonly effect?: 'copy' | 'move' | 'link';
   readonly onDrop?: (data: T) => void;
-  readonly onValidate: (dataTransfer: DataTransfer) => boolean;
-  readonly onExtract?: (dataTransfer: DataTransfer) => T;
+  readonly onExtract: (dataTransfer: DataTransfer) => T | undefined;
 }
 
 interface DropZoneReturn<E extends HTMLElement> {
@@ -21,9 +20,8 @@ interface DropZoneReturn<E extends HTMLElement> {
 }
 
 export const useDropZone = <T, E extends HTMLElement>({
-  onValidate,
-  onDrop,
   onExtract,
+  onDrop,
   disabled = false,
   effect = 'copy',
 }: DropZoneProps<T>): DropZoneReturn<E> => {
@@ -31,14 +29,14 @@ export const useDropZone = <T, E extends HTMLElement>({
 
   const handleDragEnter = useCallback(
     (event: DragEvent<E>): void => {
-      if (disabled || !onValidate(event.dataTransfer)) {
+      if (disabled || onExtract(event.dataTransfer) === undefined) {
         return;
       }
       event.preventDefault();
       event.stopPropagation();
       setIsDragOver(true);
     },
-    [disabled, onValidate],
+    [disabled, onExtract],
   );
 
   const handleDragLeave = useCallback((event: DragEvent<E>): void => {
@@ -54,13 +52,11 @@ export const useDropZone = <T, E extends HTMLElement>({
     (event: DragEvent<E>): void => {
       event.preventDefault();
       event.stopPropagation();
-      if (disabled || !onValidate(event.dataTransfer)) {
-        event.dataTransfer.dropEffect = 'none';
-      } else {
-        event.dataTransfer.dropEffect = effect;
-      }
+
+      const acceptsData = !disabled && onExtract(event.dataTransfer) !== undefined;
+      event.dataTransfer.dropEffect = acceptsData ? effect : 'none';
     },
-    [disabled, onValidate, effect],
+    [disabled, onExtract, effect],
   );
 
   const handleDrop = useCallback(
@@ -68,25 +64,16 @@ export const useDropZone = <T, E extends HTMLElement>({
       event.preventDefault();
       event.stopPropagation();
       setIsDragOver(false);
-      if (disabled) {
-        return;
-      }
-      if (!onValidate(event.dataTransfer)) {
-        return;
-      }
-
-      if (!onDrop || !onExtract) {
+      if (disabled || !onDrop) {
         return;
       }
 
       const data = onExtract(event.dataTransfer);
-      if (data === undefined) {
-        return;
+      if (data !== undefined) {
+        onDrop(data);
       }
-
-      onDrop(data);
     },
-    [disabled, onValidate, onDrop, onExtract],
+    [disabled, onExtract, onDrop],
   );
 
   return {
