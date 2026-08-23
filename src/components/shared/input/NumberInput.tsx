@@ -147,14 +147,10 @@ export const NumberInput = memo<NumberInputProps>(
     const isAtMax = max !== undefined && value >= max;
     const isAtMin = min !== undefined && value <= min;
 
-    const incrementPressHandlers = useLongPress(handleIncrement, {
-      onStart: disabled || isAtMax ? undefined : onLongPressStart,
-      onEnd: disabled || isAtMax ? undefined : onLongPressEnd,
-    });
-    const decrementPressHandlers = useLongPress(handleDecrement, {
-      onStart: disabled || isAtMin ? undefined : onLongPressStart,
-      onEnd: disabled || isAtMin ? undefined : onLongPressEnd,
-    });
+    // Start and end must stay paired for the whole gesture, even if the value
+    // reaches a bound mid-press, otherwise isBatchingUpdates leaks as true.
+    const incrementPressHandlers = useLongPress(handleIncrement, { onStart: onLongPressStart, onEnd: onLongPressEnd });
+    const decrementPressHandlers = useLongPress(handleDecrement, { onStart: onLongPressStart, onEnd: onLongPressEnd });
 
     const standardInputStyle = cn('input-base input-base-padding pr-8 number-input-no-spinner');
     const containerClass = cn('input-number-container', className);
