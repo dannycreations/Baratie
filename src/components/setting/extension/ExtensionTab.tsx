@@ -92,10 +92,10 @@ export const ExtensionTab = memo((): JSX.Element => {
 
   return (
     <>
-      <div className="stack-h-small">
+      <div className="flex items-stretch gap-2">
         <StringInput
           id="extension-url-input"
-          className="flex-1-min-0"
+          className="flex-1-min-0 h-full"
           value={url}
           disabled={isLoading}
           placeholder="user/repo@branch or full GitHub URL"
