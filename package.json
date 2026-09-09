@@ -11,6 +11,7 @@
     "dev": "vite",
     "build": "vite build && tsc --emitDeclarationOnly",
     "check": "bun run format && tsc --noEmit",
+    "test": "tsc --noEmit && bun test",
     "format": "prettier --write .",
     "update": "npm-check-updates -u",
     "prepare": "husky && bun run build"

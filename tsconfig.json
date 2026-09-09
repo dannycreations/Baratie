@@ -15,7 +15,7 @@
     "stripInternal": true,
 
     "jsx": "react-jsx",
-    "types": ["vite/client"],
+    "types": ["bun", "react", "vite/client"],
 
     "strict": true,
     "noUnusedLocals": true,
