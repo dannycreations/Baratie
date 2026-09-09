@@ -185,9 +185,11 @@ export const RecipeItem = memo<RecipeItemProps>(({ ingredientItem, handlers }): 
           <GripVertical size={ICON_SIZES.MD} />
         </span>
       </Tooltip>
-      <Tooltip content={definition.description} position="top" className="flex-1-min-0">
-        <h3 className="list-item-title font-medium text-content-primary">{definition.name}</h3>
-      </Tooltip>
+      <div className="flex-1-min-0">
+        <Tooltip content={definition.description} position="top">
+          <h3 className="list-item-title font-medium text-content-primary">{definition.name}</h3>
+        </Tooltip>
+      </div>
     </>
   );
 

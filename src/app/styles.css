@@ -484,11 +484,11 @@
   }
 
   .list-item-title {
-    @apply block truncate pr-2 text-sm transition-colors duration-150 outline-none;
+    @apply inline-block truncate pr-2 text-sm transition-colors duration-150 outline-none;
   }
 
   .list-item-interactive {
-    @apply cursor-default group-hover:text-info-fg;
+    @apply group-hover:text-info-fg;
   }
 
   .list-item-actions {
