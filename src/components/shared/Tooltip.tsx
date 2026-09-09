@@ -178,7 +178,7 @@ export const Tooltip = memo(
     const arrowClass = TOOLTIP_ARROW_STYLES[position];
     const visibilityClass = isVisible && style.isPositioned ? 'opacity-100' : 'pointer-events-none opacity-0';
     const tooltipClass = cn('tooltip-base', visibilityClass, tooltipClasses);
-    const triggerClass = cn('relative inline-flex', className);
+    const triggerClass = cn('relative inline-flex cursor-pointer', className);
 
     const triggerElement = (
       <div ref={triggerRef} className={triggerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onDragStart={handleMouseLeave}>

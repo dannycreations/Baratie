@@ -53,7 +53,7 @@ const TabButton = memo<TabButtonProps>(({ children, isActive, onClick, id }): JS
   const tabClass = cn('tab-button', isActive ? 'tab-button-active' : 'tab-button-inactive');
 
   return (
-    <button className={tabClass} onClick={handleClick}>
+    <button className={cn(tabClass, 'cursor-pointer')} onClick={handleClick}>
       {children}
     </button>
   );

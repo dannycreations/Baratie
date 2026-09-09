@@ -93,7 +93,7 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
     <div className="flex-col-gap-2">
       <h3 className="list-item-title font-medium text-content-primary">{displayName}</h3>
       <Tooltip content={isCopied ? 'Copied URL!' : 'Click to copy URL'} position="top">
-        <button className="extension-item-id-button" onClick={handleCopyId}>
+        <button className={cn('extension-item-id-button', 'cursor-pointer')} onClick={handleCopyId}>
           {id}
         </button>
       </Tooltip>
