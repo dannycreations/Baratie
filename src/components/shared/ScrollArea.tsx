@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 
 import type { JSX, ReactNode } from 'react';

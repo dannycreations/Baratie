@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 

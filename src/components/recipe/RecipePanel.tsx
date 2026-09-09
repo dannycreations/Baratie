@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { FolderOpen, Pause, Play, Save } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 

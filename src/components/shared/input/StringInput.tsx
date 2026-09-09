@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { X } from 'lucide-react';
 import { memo, useCallback } from 'react';
 

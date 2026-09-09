@@ -1,6 +1,6 @@
 import './styles.css';
 
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { StrictMode, useEffect } from 'react';
 import { createRoot as createReactRoot } from 'react-dom/client';
 

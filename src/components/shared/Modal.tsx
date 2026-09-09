@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { X } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -98,7 +98,7 @@ export const Modal = ({
   );
 
   return createPortal(
-    <div ref={backdropRef} className={cn(backdropClass, 'cursor-pointer')} onClick={handleBackdropClick}>
+    <div ref={backdropRef} className={backdropClass} onClick={handleBackdropClick}>
       <div className={modalClass}>
         <header className="panel-header">
           <h2 className="modal-header-title">{title}</h2>

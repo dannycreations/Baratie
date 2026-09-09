@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { Plus, Settings, SlidersHorizontal, Star } from 'lucide-react';
 import { memo, useCallback, useMemo } from 'react';
 

@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { AlertTriangle, Check, Info, X } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 

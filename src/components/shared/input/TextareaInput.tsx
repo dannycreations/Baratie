@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { memo, useCallback, useRef, useState } from 'react';
 
 import { useDropZone } from '../../../hooks/useDropZone';

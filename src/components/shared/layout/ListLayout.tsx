@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { ChevronRight } from 'lucide-react';
 import { memo, useCallback, useMemo, useState } from 'react';
 

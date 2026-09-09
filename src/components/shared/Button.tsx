@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { AlertTriangle, Check, Copy, Loader2, Trash2 } from 'lucide-react';
 import { memo, useCallback } from 'react';
 

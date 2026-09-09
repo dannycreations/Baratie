@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { memo, useCallback, useMemo, useRef } from 'react';
 
 import { ingredientRegistry } from '../../app/container';

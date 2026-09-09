@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { AlertTriangle, Check, Loader2, RefreshCw } from 'lucide-react';
 import { memo, useCallback } from 'react';
 

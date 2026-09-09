@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { memo, useCallback, useState } from 'react';
 
 import { useModalStore } from '../../stores/useModalStore';
