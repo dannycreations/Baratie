@@ -55,9 +55,7 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete,
           tooltipContent="Load Recipe"
           tooltipPosition="left"
           onClick={handleLoad}
-        >
-          Load
-        </TooltipButton>
+        />
 
         <ConfirmButton actionName="Delete" itemType="Recipe" tooltipPosition="left" onConfirm={handleConfirmDelete} />
       </div>

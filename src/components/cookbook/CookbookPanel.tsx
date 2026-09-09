@@ -42,9 +42,7 @@ const SaveHeaderActions = memo<SaveHeaderActionsProps>(({ isSaveDisabled, onExpo
       disabled={isSaveDisabled}
       tooltipContent="Save to Browser Storage"
       onClick={onSave}
-    >
-      Save
-    </TooltipButton>
+    />
   </>
 ));
 
