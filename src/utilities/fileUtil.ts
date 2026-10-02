@@ -6,18 +6,7 @@ export const readFile = <T>(file: Readonly<File>, readMethod: 'readAsText' | 're
     const reader = new FileReader();
 
     reader.onload = () => {
-      try {
-        resolve(reader.result as T);
-      } catch (error) {
-        reject(
-          new AppError(
-            `Error processing file content after reading: ${String(error)}`,
-            context,
-            `Could not process the content of '${file.name}'.`,
-            error,
-          ),
-        );
-      }
+      resolve(reader.result as T);
     };
 
     reader.onerror = () => {

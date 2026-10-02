@@ -1,5 +1,5 @@
 import { AppError } from '../core/ErrorHandler';
-import { isObjectLike, withCircularCache } from './objectUtil';
+import { isObjectLike } from './objectUtil';
 
 const REDACTION_PATTERN = /[a-zA-Z0-9+/=]{30,}/g;
 
@@ -39,19 +39,17 @@ export const objectStringify = (data: unknown, space?: string | number): string 
   if (data === null || data === undefined) return String(data);
   if (typeof data !== 'object' && typeof data !== 'function') return String(data);
 
-  const stringifier = withCircularCache((val, cache) => {
-    const replacer = (_key: string, value: unknown): unknown => {
-      if (isObjectLike(value)) {
-        if (cache.has(value)) return '[Circular]';
-        cache.add(value);
-      }
-      return value instanceof Error ? createErrorObject(value) : value;
-    };
-    return JSON.stringify(val, replacer, space);
-  });
+  const cache = new Set<unknown>();
+  const replacer = (_key: string, value: unknown): unknown => {
+    if (isObjectLike(value)) {
+      if (cache.has(value)) return '[Circular]';
+      cache.add(value);
+    }
+    return value instanceof Error ? createErrorObject(value) : value;
+  };
 
   try {
-    const jsonString = stringifier(data);
+    const jsonString = JSON.stringify(data, replacer, space);
     return jsonString.replace(REDACTION_PATTERN, '[REDACTED]');
   } catch (e) {
     const error = e instanceof Error ? e : new Error(String(e));

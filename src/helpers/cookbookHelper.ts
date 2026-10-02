@@ -28,7 +28,7 @@ const RecipeBookItemSchema = object({
 type RawRecipeBookItem = InferInput<typeof RecipeBookItemSchema>;
 
 interface SanitizationResult {
-  readonly recipe: RecipebookItem | null;
+  readonly recipe: RecipebookItem;
   readonly warning: string | null;
 }
 
@@ -187,9 +187,7 @@ export const processAndSanitizeRecipes = (rawItems: ReadonlyArray<unknown>, sour
 
     const { recipe, warning } = sanitizeRecipe(itemValidation.output, source);
 
-    if (recipe) {
-      sanitizedRecipes.push(recipe);
-    }
+    sanitizedRecipes.push(recipe);
 
     if (warning) {
       allWarnings.add(warning);

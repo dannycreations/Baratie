@@ -104,7 +104,7 @@ export const ExtensionTab = memo((): JSX.Element => {
           onKeyDown={handleKeyDown}
           onClear={() => setUrl('')}
         />
-        <Button icon={<GitMerge size={ICON_SIZES.MD} />} size="sm" loading={isLoading} disabled={validationStatus !== 'valid'} onClick={handleAdd}>
+        <Button icon={<GitMerge size={ICON_SIZES.MD} />} loading={isLoading} disabled={validationStatus !== 'valid'} onClick={handleAdd}>
           Add
         </Button>
       </div>

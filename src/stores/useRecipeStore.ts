@@ -102,19 +102,17 @@ export const useRecipeStore = create<RecipeState>()(
       },
 
       removeIngredient: (id) => {
-        const { ingredients, activeRecipeId } = get();
-        ingredientHandlers.remove(id);
-
-        const nextIngredients = get().ingredients;
-        if (nextIngredients.length === ingredients.length) {
+        if (!get().ingredientsMap.has(id)) {
           logger.warn(`Attempted to remove non-existent ingredient with id: ${id}`);
           return;
         }
 
+        const { activeRecipeId } = get();
+        ingredientHandlers.remove(id);
         editingHandlers.remove(id);
         pausedHandlers.remove(id);
 
-        if (nextIngredients.length === 0 && activeRecipeId) {
+        if (get().ingredients.length === 0 && activeRecipeId) {
           set({ activeRecipeId: null });
         }
       },
@@ -122,9 +120,7 @@ export const useRecipeStore = create<RecipeState>()(
       reorderIngredients: ingredientHandlers.reorder,
 
       setActiveRecipeId: (activeRecipeId) => {
-        set({
-          activeRecipeId: activeRecipeId,
-        });
+        set({ activeRecipeId });
       },
 
       setRecipe: (ingredients, activeRecipeId = null) => {

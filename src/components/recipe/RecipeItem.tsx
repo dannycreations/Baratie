@@ -49,7 +49,6 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
       <>
         <TooltipButton
           icon={isPaused ? <Play size={ICON_SIZES.SM} /> : <Pause size={ICON_SIZES.SM} />}
-          size="sm"
           variant="stealth"
           className={cn('list-item-group-actions', isPaused ? 'text-success-fg hover:!bg-success-bg' : 'text-warning-fg hover:!bg-warning-bg')}
           tooltipContent={isPaused ? 'Resume' : 'Pause'}
@@ -59,7 +58,6 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
         {hasSpices && (
           <TooltipButton
             icon={<SlidersHorizontal size={ICON_SIZES.SM} />}
-            size="sm"
             variant={isEditorVisible ? 'primary' : 'stealth'}
             className={cn(!isEditorVisible && 'text-content-tertiary hover:text-info-fg')}
             tooltipContent={settingsTooltip}
@@ -69,7 +67,6 @@ const RecipeItemActions = memo<RecipeItemActionsProps>(
         )}
         <TooltipButton
           icon={<X size={ICON_SIZES.SM} />}
-          size="sm"
           variant="danger"
           className="list-item-group-actions"
           tooltipContent="Remove Ingredient"
@@ -103,7 +100,6 @@ const MissingRecipeItem = memo<MissingRecipeItemProps>(({ ingredientItem, onRemo
         <div className="list-item-actions">
           <TooltipButton
             icon={<X size={ICON_SIZES.SM} />}
-            size="sm"
             variant="danger"
             tooltipContent="Remove Missing Ingredient"
             tooltipPosition="top"

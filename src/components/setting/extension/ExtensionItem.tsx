@@ -105,7 +105,6 @@ export const ExtensionItem = memo<ExtensionItemProps>(({ id, displayName, status
       <ExtensionItemStatus status={status} errors={errors} />
       <TooltipButton
         icon={<RefreshCw size={ICON_SIZES.SM} />}
-        size="sm"
         variant="stealth"
         disabled={isLoading}
         tooltipContent="Refresh"

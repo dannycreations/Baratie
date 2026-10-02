@@ -174,7 +174,6 @@ export class InputType<T = unknown> {
     const val = this.value;
     if (typeof val === 'boolean') return this.cloneValue(val);
     if (!val) return this.cloneValue(false);
-    if (val === 1) return this.cloneValue(true);
 
     const str = String(val).trim().toLowerCase();
     const isTrue = str === 'true' || str === '1';

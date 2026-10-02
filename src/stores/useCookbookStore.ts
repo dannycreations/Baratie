@@ -194,8 +194,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
       let updated = 0;
       let skipped = 0;
 
-      for (const item of recipesToImport) {
-        const recipeItem = item as RecipebookItem;
+      for (const recipeItem of recipesToImport) {
         const existingItem = recipeMap.get(recipeItem.id);
 
         if (!existingItem) {
@@ -221,19 +220,15 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
 
       const mergedList: ReadonlyArray<RecipebookItem> = [...recipeMap.values()];
 
-      const saveSuccess = persistRecipes(mergedList);
-      if (!saveSuccess) {
-        return;
-      }
+      const summary = [
+        added > 0 ? `${countRecipes(added)} added.` : '',
+        updated > 0 ? `${countRecipes(updated)} updated.` : '',
+        skipped > 0 ? `${countRecipes(skipped)} skipped (older versions).` : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
 
-      const addedPart = added > 0 ? `${countRecipes(added)} added.` : '';
-      const updatedPart = updated > 0 ? `${countRecipes(updated)} updated.` : '';
-      const skippedPart = skipped > 0 ? `${countRecipes(skipped)} skipped (older versions).` : '';
-
-      const summaryParts = [addedPart, updatedPart, skippedPart];
-      const summary = summaryParts.filter(Boolean).join(' ');
-
-      if (!summary) {
+      if (!persistRecipes(mergedList)) {
         return;
       }
 

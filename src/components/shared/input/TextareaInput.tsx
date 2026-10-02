@@ -7,6 +7,8 @@ import { DropZoneLayout } from '../layout/DropZoneLayout';
 
 import type { ChangeEvent, JSX, RefObject, UIEvent } from 'react';
 
+const extractFirstFile = (dt: DataTransfer): File | undefined => dt.files?.[0];
+
 interface TextareaInputProps {
   readonly value: string;
   readonly onChange?: (value: string) => void;
@@ -43,19 +45,10 @@ export const TextareaInput = memo<TextareaInputProps>(
 
     const virtualizedLines = useLineNumber({ value, showLineNumbers, textareaRef, scrollTop });
 
-    const handleDrop = useCallback(
-      (file: File): void => {
-        if (!disabled && onFileDrop) {
-          onFileDrop(file);
-        }
-      },
-      [disabled, onFileDrop],
-    );
-
     const { isDragOver, dropZoneProps } = useDropZone<File, HTMLDivElement>({
       disabled: disabled || !onFileDrop,
-      onExtract: (dt) => dt.files?.[0],
-      onDrop: handleDrop,
+      onExtract: extractFirstFile,
+      onDrop: onFileDrop,
     });
 
     const handleChange = useCallback(

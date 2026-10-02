@@ -1,14 +1,3 @@
-export const withCircularCache = <T, R>(fn: (value: T, cache: Set<unknown>) => R) => {
-  const cache = new Set<unknown>();
-  return (value: T): R => {
-    try {
-      return fn(value, cache);
-    } finally {
-      cache.clear();
-    }
-  };
-};
-
 const canonicalStringifyFn = (obj: unknown, seen: Set<unknown>): string => {
   if (obj === null || typeof obj !== 'object') {
     return typeof obj === 'function' ? '' : JSON.stringify(obj);
@@ -43,10 +32,8 @@ const canonicalStringifyFn = (obj: unknown, seen: Set<unknown>): string => {
   return res + '}';
 };
 
-const canonicalStringify = withCircularCache(canonicalStringifyFn);
-
 export const getObjectHash = (obj: object, namespace?: string): string => {
-  const stringToHash = (namespace || '') + canonicalStringify(obj);
+  const stringToHash = (namespace || '') + canonicalStringifyFn(obj, new Set());
   let hash = 2166136261 >>> 0;
 
   for (let i = 0, len = stringToHash.length; i < len; i++) {
@@ -100,14 +87,12 @@ export const isArrayEqual = <T>(
   return a.every((item, index) => itemEqual(item, b[index]));
 };
 
-export const toggleSetItem = <T>(set: ReadonlySet<T>, item: T, force?: boolean): Set<T> => {
+export const toggleSetItem = <T>(set: ReadonlySet<T>, item: T): Set<T> => {
   const nextSet = new Set(set);
-  const shouldInclude = force ?? !nextSet.has(item);
-
-  if (shouldInclude) {
-    nextSet.add(item);
-  } else {
+  if (nextSet.has(item)) {
     nextSet.delete(item);
+  } else {
+    nextSet.add(item);
   }
   return nextSet;
 };

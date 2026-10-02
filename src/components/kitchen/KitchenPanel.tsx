@@ -151,7 +151,6 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
     ({ trigger }: FilePickerRenderProps) => (
       <TooltipButton
         icon={<FileText size={ICON_SIZES.SM} />}
-        size="sm"
         variant="stealth"
         tooltipContent="Open File..."
         tooltipPosition="left"
@@ -167,7 +166,6 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
         <TooltipButton
           key="download-button"
           icon={<DownloadCloud size={ICON_SIZES.SM} />}
-          size="sm"
           variant="stealth"
           disabled={data.length === 0}
           tooltipContent="Save Output"
@@ -197,7 +195,6 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
         <TooltipButton
           key="clear-button"
           icon={<Trash2 size={ICON_SIZES.SM} />}
-          size="sm"
           variant="danger"
           disabled={data.length === 0}
           tooltipContent="Clear Input"

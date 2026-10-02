@@ -8,25 +8,25 @@ import { ExtensionManager } from './extension/ExtensionManager';
 import { ExtensionTab } from './extension/ExtensionTab';
 import { GeneralTab } from './GeneralTab';
 
-import type { JSX, ReactNode } from 'react';
+import type { JSX } from 'react';
 
 const SETTING_TABS = [
   {
     id: 'general',
     label: 'General',
-    description: (): ReactNode => 'Manage general application behavior and user interface preferences.',
+    description: 'Manage general application behavior and user interface preferences.',
     component: <GeneralTab />,
   },
   {
     id: 'appearance',
     label: 'Appearance',
-    description: (): ReactNode => 'Select a color theme for the application.',
+    description: 'Select a color theme for the application.',
     component: <AppearanceTab />,
   },
   {
     id: 'extensions',
     label: 'Extensions',
-    description: (): ReactNode => (
+    description: (
       <>
         Add external ingredients by providing a link to a public GitHub repository. The repository must contain a{' '}
         <code className="rounded-md bg-surface-hover p-1 text-xs text-content-secondary">manifest.json</code> file.
@@ -88,7 +88,7 @@ export const SettingPanel = memo((): JSX.Element => {
                 tab.id === 'extensions' ? 'overflow-hidden' : 'flex-1-overflow-auto',
               )}
             >
-              {tab.description && <p className="text-description-small text-content-tertiary mb-1">{tab.description()}</p>}
+              <p className="text-description-small text-content-tertiary mb-1">{tab.description}</p>
               <div className="tab-content-container">{tab.component}</div>
             </div>
           ))}

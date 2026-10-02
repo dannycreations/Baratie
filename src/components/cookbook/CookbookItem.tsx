@@ -50,7 +50,6 @@ export const CookbookItem = memo<CookbookItemProps>(({ recipe, onLoad, onDelete,
       <div className="list-item-actions">
         <TooltipButton
           icon={<UploadCloud size={ICON_SIZES.SM} />}
-          size="sm"
           variant="primary"
           tooltipContent="Load Recipe"
           tooltipPosition="left"

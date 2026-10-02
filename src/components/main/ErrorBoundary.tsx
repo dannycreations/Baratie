@@ -26,7 +26,7 @@ const ErrorDisplay = ({ error, errorInfo }: ErrorDisplayProps): JSX.Element => (
       <div className="dialog-icon-large">⚠️</div>
       <h2 className="dialog-title-large">A Kitchen Catastrophe!</h2>
       <p className="mb-3 text-content-secondary">A sudden squall has hit the galley! Reloading might calm the seas.</p>
-      <Button icon={<RefreshCw size={ICON_SIZES.MD} />} size="sm" variant="primary" onClick={() => window.location.reload()}>
+      <Button icon={<RefreshCw size={ICON_SIZES.MD} />} variant="primary" onClick={() => window.location.reload()}>
         Batten Down the Hatches!
       </Button>
       {error && <ErrorView error={error} errorInfo={errorInfo} />}

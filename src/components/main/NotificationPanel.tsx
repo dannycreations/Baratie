@@ -88,7 +88,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
           <p className={messageClass}>{notification.message}</p>
         </div>
         <div className="shrink-0">
-          <Button icon={<X size={ICON_SIZES.MD} />} size="sm" variant="stealth" onClick={handleExit} />
+          <Button icon={<X size={ICON_SIZES.MD} />} variant="stealth" onClick={handleExit} />
         </div>
       </div>
       {!isExiting && (

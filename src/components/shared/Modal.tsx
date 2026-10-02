@@ -15,22 +15,12 @@ interface ModalProps {
   readonly isOpen: boolean;
   readonly title: string;
   readonly onClose: () => void;
-  readonly contentClasses?: string;
   readonly headerActions?: ReactNode;
   readonly onExited?: () => void;
   readonly size?: ModalSize;
 }
 
-export const Modal = ({
-  isOpen,
-  onClose,
-  onExited,
-  title,
-  children,
-  headerActions,
-  size = 'lg',
-  contentClasses = 'max-h-[80vh]',
-}: ModalProps): JSX.Element | null => {
+export const Modal = ({ isOpen, onClose, onExited, title, children, headerActions, size = 'lg' }: ModalProps): JSX.Element | null => {
   const [isClosing, setIsClosing] = useState(false);
 
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -93,8 +83,8 @@ export const Modal = ({
   const modalClass = cn(
     'panel-container border border-border-primary',
     `modal-${size}`,
+    'max-h-[80vh]',
     isOpen ? 'modal-content-enter-active' : 'modal-content-exit-active',
-    contentClasses,
   );
 
   return createPortal(
@@ -104,7 +94,7 @@ export const Modal = ({
           <h2 className="modal-header-title">{title}</h2>
           <div className="modal-header-actions-wrapper">
             {headerActions && <div className="panel-header-actions">{headerActions}</div>}
-            <Button icon={<X size={ICON_SIZES.MD} />} size="sm" variant="stealth" onClick={onClose} />
+            <Button icon={<X size={ICON_SIZES.MD} />} variant="stealth" onClick={onClose} />
           </div>
         </header>
         <div className="modal-body">{children}</div>

@@ -51,9 +51,14 @@ export const IngredientPanel = memo((): JSX.Element => {
     [removeIngredient, setDraggedItemId],
   );
 
+  const extractRecipeItemId = useCallback(
+    (dt: DataTransfer): string | undefined => (dt.types.includes(DATA_TYPE_RECIPE_ITEM) ? dt.getData(DATA_TYPE_RECIPE_ITEM) : undefined),
+    [],
+  );
+
   const { isDragOver: isDragOverRecipe, dropZoneProps: recipeDropZoneProps } = useDropZone<string, HTMLDivElement>({
     effect: 'move',
-    onExtract: (dt) => (dt.types.includes(DATA_TYPE_RECIPE_ITEM) ? dt.getData(DATA_TYPE_RECIPE_ITEM) : undefined),
+    onExtract: extractRecipeItemId,
     onDrop: handleDropRecipe,
   });
 
@@ -112,7 +117,6 @@ export const IngredientPanel = memo((): JSX.Element => {
       <>
         <TooltipButton
           icon={<SlidersHorizontal size={ICON_SIZES.SM} />}
-          size="sm"
           variant="stealth"
           tooltipContent={`Manage Ingredients\n${visibleIngredientsCount} of ${totalIngredients} visible`}
           tooltipDisabled={isIngredientOpen}
@@ -121,7 +125,6 @@ export const IngredientPanel = memo((): JSX.Element => {
         />
         <TooltipButton
           icon={<Settings size={ICON_SIZES.SM} />}
-          size="sm"
           variant="stealth"
           tooltipContent="Settings"
           tooltipDisabled={isSettingOpen}
@@ -145,7 +148,6 @@ export const IngredientPanel = memo((): JSX.Element => {
         <>
           <TooltipButton
             icon={<Star size={ICON_SIZES.SM} fill={isFavorite ? 'currentColor' : 'none'} strokeWidth={isFavorite ? 0 : 2} />}
-            size="sm"
             variant="stealth"
             className={starClasses}
             tooltipContent={isFavorite ? `Remove '${item.name}' from favorites` : `Add '${item.name}' to favorites`}
@@ -154,7 +156,6 @@ export const IngredientPanel = memo((): JSX.Element => {
           />
           <TooltipButton
             icon={<Plus size={ICON_SIZES.SM} />}
-            size="sm"
             variant="primary"
             className="list-item-group-actions"
             tooltipContent={`Add '${item.name}' to Recipe`}

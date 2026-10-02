@@ -10,19 +10,16 @@ import { Tooltip } from './Tooltip';
 import type { JSX, MouseEvent, ReactNode } from 'react';
 import type { TooltipProps } from './Tooltip';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'stealth' | 'outline';
-export type ButtonSize = 'xs' | 'sm' | 'lg';
+export type ButtonVariant = 'primary' | 'danger' | 'stealth';
 
 interface ButtonProps {
   readonly children?: ReactNode;
   readonly icon?: ReactNode;
   readonly loading?: boolean;
-  readonly size?: ButtonSize;
   readonly variant?: ButtonVariant;
   readonly className?: string;
   readonly disabled?: boolean;
   readonly onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
-  readonly type?: 'button' | 'submit' | 'reset';
 }
 
 interface TooltipButtonProps extends ButtonProps {
@@ -40,28 +37,15 @@ interface CopyButtonProps {
 interface ConfirmButtonProps {
   readonly actionName?: string;
   readonly className?: string;
-  readonly confirmIcon?: ReactNode;
   readonly confirmTooltip?: ReactNode;
   readonly disabled?: boolean;
-  readonly icon?: ReactNode;
   readonly itemType: string;
   readonly onConfirm: () => void;
-  readonly tooltip?: ReactNode;
   readonly tooltipPosition?: TooltipProps['position'];
 }
 
 export const Button = memo<ButtonProps>(
-  ({
-    children,
-    className = '',
-    disabled = false,
-    icon,
-    loading = false,
-    onClick,
-    size = 'sm',
-    type = 'button',
-    variant = 'primary',
-  }): JSX.Element => {
+  ({ children, className = '', disabled = false, icon, loading = false, onClick, variant = 'primary' }): JSX.Element => {
     const shapeClass = children ? 'rounded-md' : 'rounded-full';
     const iconMarginClass = children && icon ? 'mr-2' : '';
 
@@ -74,8 +58,8 @@ export const Button = memo<ButtonProps>(
 
     return (
       <button
-        type={type}
-        className={cn('btn-base', shapeClass, `btn-${variant}`, `btn-${size}`, loading && 'opacity-60', className)}
+        type="button"
+        className={cn('btn-base', shapeClass, `btn-${variant}`, 'btn-sm', loading && 'opacity-60', className)}
         disabled={loading || disabled}
         onClick={onClick}
       >
@@ -96,7 +80,6 @@ export const CopyButton = memo<CopyButtonProps>(({ textToCopy, tooltipPosition =
   return (
     <TooltipButton
       icon={isCopied ? <Check size={ICON_SIZES.SM} /> : <Copy size={ICON_SIZES.SM} />}
-      size="sm"
       variant="stealth"
       className={cn(isCopied && 'text-success-fg')}
       disabled={!textToCopy || isCopied}
@@ -125,23 +108,17 @@ export const ConfirmButton = memo<ConfirmButtonProps>(
     tooltipPosition = 'top',
     className = '',
     disabled = false,
-    icon,
-    confirmIcon,
-    tooltip: customTooltip,
     confirmTooltip: customConfirmTooltip,
   }): JSX.Element => {
     const { isConfirm, trigger } = useConfirmAction(onConfirm, CONFIRM_SHOW_MS);
 
-    const tooltipContent = isConfirm ? (customConfirmTooltip ?? `Confirm ${actionName}`) : (customTooltip ?? `${actionName} ${itemType}`);
+    const tooltipContent = isConfirm ? (customConfirmTooltip ?? `Confirm ${actionName}`) : `${actionName} ${itemType}`;
 
     const buttonClass = cn(isConfirm && 'bg-danger-bg! text-accent-fg!', className);
 
     return (
       <TooltipButton
-        icon={
-          isConfirm ? (confirmIcon ?? <AlertTriangle className="text-danger-fg" size={ICON_SIZES.SM} />) : (icon ?? <Trash2 size={ICON_SIZES.SM} />)
-        }
-        size="sm"
+        icon={isConfirm ? <AlertTriangle className="text-danger-fg" size={ICON_SIZES.SM} /> : <Trash2 size={ICON_SIZES.SM} />}
         variant="danger"
         className={buttonClass}
         disabled={disabled}

@@ -28,7 +28,6 @@ interface RecipeLoopState {
 }
 
 interface IngredientRunResult {
-  readonly hasError: boolean;
   readonly nextData: InputType;
   readonly status: CookingStatusType;
   readonly inputPanelId?: string | null;
@@ -169,13 +168,13 @@ export class Kitchen {
   }
 
   public async executeSubRecipe(recipe: ReadonlyArray<IngredientItem>, initialInput: string, context?: Partial<IngredientContext>): Promise<string> {
-    const state = this.createInitialLoopState(initialInput);
+    let cookedData: InputType = new InputType(initialInput);
 
     for (const [index, ingredient] of recipe.entries()) {
       const definition = ingredientRegistry.get(ingredient.ingredientId);
       errorHandler.assert(definition, `Definition for '${ingredient.name}' not found during sub-recipe execution.`);
 
-      const res = await this.runIngredient(ingredient, definition, state.cookedData, recipe, index, initialInput, {
+      const res = await this.runIngredient(ingredient, definition, cookedData, recipe, index, initialInput, {
         currentIndex: index,
         ingredient,
         initialInput,
@@ -187,13 +186,13 @@ export class Kitchen {
         throw new AppError(res.nextData.cast('string').value, 'Sub-recipe Execution');
       }
 
-      this.updateLoopStateFromResult(state, res, ingredient.id);
+      cookedData = res.nextData;
     }
-    return state.cookedData.cast('string').value;
+    return cookedData.cast('string').value;
   }
 
   private updateLoopStateFromResult(state: RecipeLoopState, res: IngredientRunResult, id: string): void {
-    const { nextData, status, warningMessage, panelInstruction, inputPanelId, hasError } = res;
+    const { nextData, status, warningMessage, panelInstruction, inputPanelId } = res;
 
     state.cookedData = nextData;
     state.localStatuses[id] = status;
@@ -202,7 +201,7 @@ export class Kitchen {
       state.localWarnings[id] = warningMessage;
     }
 
-    if (hasError) {
+    if (status === 'error') {
       state.globalError = true;
     }
 
@@ -288,7 +287,6 @@ export class Kitchen {
 
       if (result.warningMessage !== undefined) {
         return {
-          hasError: false,
           nextData: data,
           status: 'warning',
           warningMessage: result.warningMessage,
@@ -303,7 +301,6 @@ export class Kitchen {
       }
 
       return {
-        hasError: false,
         status: 'success',
         nextData: result,
         panelInstruction: panel,
@@ -311,7 +308,7 @@ export class Kitchen {
       };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
-      return { hasError: true, nextData: new InputType(`Error: ${msg}`), status: 'error' };
+      return { nextData: new InputType(`Error: ${msg}`), status: 'error' };
     }
   }
 

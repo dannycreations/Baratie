@@ -44,8 +44,13 @@ export const RecipePanel = memo((): JSX.Element => {
     [addIngredient],
   );
 
+  const extractIngredientId = useCallback(
+    (dt: DataTransfer): string | undefined => (dt.types.includes(DATA_TYPE_INGREDIENT) ? dt.getData(DATA_TYPE_INGREDIENT) : undefined),
+    [],
+  );
+
   const { isDragOver: isDraggingIngredient, dropZoneProps } = useDropZone<string, HTMLDivElement>({
-    onExtract: (dt) => (dt.types.includes(DATA_TYPE_INGREDIENT) ? dt.getData(DATA_TYPE_INGREDIENT) : undefined),
+    onExtract: extractIngredientId,
     onDrop: handleDropIngredient,
   });
 
@@ -84,7 +89,6 @@ export const RecipePanel = memo((): JSX.Element => {
       <>
         <TooltipButton
           icon={<Save size={ICON_SIZES.SM} />}
-          size="sm"
           variant="stealth"
           disabled={ingredients.length === 0}
           tooltipContent="Save to Cookbook"
@@ -94,7 +98,6 @@ export const RecipePanel = memo((): JSX.Element => {
         />
         <TooltipButton
           icon={<FolderOpen size={ICON_SIZES.SM} />}
-          size="sm"
           variant="stealth"
           tooltipContent="Open Cookbook"
           tooltipDisabled={isCookbookOpen}
@@ -103,7 +106,6 @@ export const RecipePanel = memo((): JSX.Element => {
         />
         <TooltipButton
           icon={isAutoCookEnabled ? <Pause size={ICON_SIZES.SM} /> : <Play size={ICON_SIZES.SM} />}
-          size="sm"
           variant="stealth"
           className={autoCookClass}
           tooltipContent={autoCookTooltip}
