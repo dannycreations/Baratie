@@ -98,6 +98,8 @@ export const Tooltip = memo(
 
         let newTop = 0;
         let newLeft = 0;
+        let newArrowLeft: number | undefined;
+        let newArrowTop: number | undefined;
         const triggerCenterX = triggerRect.left + triggerRect.width / 2;
         const triggerCenterY = triggerRect.top + triggerRect.height / 2;
 
@@ -105,18 +107,22 @@ export const Tooltip = memo(
           case 'top':
             newTop = triggerRect.top - tooltipRect.height - TOOLTIP_GAP_PX;
             newLeft = triggerCenterX - tooltipRect.width / 2;
+            newArrowLeft = triggerCenterX - ARROW_SIZE_PX;
             break;
           case 'bottom':
             newTop = triggerRect.bottom + TOOLTIP_GAP_PX;
             newLeft = triggerCenterX - tooltipRect.width / 2;
+            newArrowLeft = triggerCenterX - ARROW_SIZE_PX;
             break;
           case 'left':
             newTop = triggerCenterY - tooltipRect.height / 2;
             newLeft = triggerRect.left - tooltipRect.width - TOOLTIP_GAP_PX;
+            newArrowTop = triggerCenterY - ARROW_SIZE_PX;
             break;
           case 'right':
             newTop = triggerCenterY - tooltipRect.height / 2;
             newLeft = triggerRect.right + TOOLTIP_GAP_PX;
+            newArrowTop = triggerCenterY - ARROW_SIZE_PX;
             break;
         }
 
@@ -125,27 +131,20 @@ export const Tooltip = memo(
         const finalLeft = Math.round(newLeft);
         const finalTop = Math.round(newTop);
 
-        let arrowLeft: number | undefined;
-        let arrowTop: number | undefined;
-
-        switch (position) {
-          case 'top':
-          case 'bottom':
-            arrowLeft = triggerCenterX - finalLeft - ARROW_SIZE_PX;
-            arrowLeft = Math.max(ARROW_SIZE_PX, Math.min(arrowLeft, tooltipRect.width - ARROW_SIZE_PX * 3));
-            break;
-          case 'left':
-          case 'right':
-            arrowTop = triggerCenterY - finalTop - ARROW_SIZE_PX;
-            arrowTop = Math.max(ARROW_SIZE_PX, Math.min(arrowTop, tooltipRect.height - ARROW_SIZE_PX * 3));
-            break;
+        // The arrow tracks the trigger centre, re-clamped now that the tooltip
+        // itself may have been pushed back inside the viewport.
+        if (newArrowLeft !== undefined) {
+          newArrowLeft = Math.max(ARROW_SIZE_PX, Math.min(newArrowLeft - finalLeft, tooltipRect.width - ARROW_SIZE_PX * 3));
+        }
+        if (newArrowTop !== undefined) {
+          newArrowTop = Math.max(ARROW_SIZE_PX, Math.min(newArrowTop - finalTop, tooltipRect.height - ARROW_SIZE_PX * 3));
         }
 
         setStyle({
           top: finalTop,
           left: finalLeft,
-          arrowLeft: arrowLeft !== undefined ? Math.round(arrowLeft) : undefined,
-          arrowTop: arrowTop !== undefined ? Math.round(arrowTop) : undefined,
+          arrowLeft: newArrowLeft !== undefined ? Math.round(newArrowLeft) : undefined,
+          arrowTop: newArrowTop !== undefined ? Math.round(newArrowTop) : undefined,
           isPositioned: true,
         });
       };

@@ -21,9 +21,8 @@ export const FilePicker = ({ children, onFileSelect, accept }: FilePickerProps):
       if (file) {
         onFileSelect(file);
       }
-      if (event.target) {
-        event.target.value = '';
-      }
+      // Cleared so selecting the same file again still fires a change event.
+      event.target.value = '';
     },
     [onFileSelect],
   );

@@ -42,6 +42,11 @@ const schedulePersist = (writeKey: string, value: unknown, context: string): voi
   }
 };
 
+const readList = <T extends object, K extends keyof T, V>(state: T, key: K): ReadonlyArray<V> => (state[key] as unknown as ReadonlyArray<V>) ?? [];
+
+const readMap = <T extends object, K extends keyof T, V, IDK>(state: T, key: K): ReadonlyMap<IDK, V> =>
+  (state[key] as unknown as ReadonlyMap<IDK, V>) ?? new Map<IDK, V>();
+
 interface PersistOptions<T, P> {
   readonly key: string;
   readonly context: string;
@@ -88,8 +93,8 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
     upsert: (item: Partial<V> & { [P in IDK]: V[IDK] }) =>
       set((state) => {
         const id = item[idKey] as V[IDK];
-        const currentList = (state[listKey] as unknown as ReadonlyArray<V>) || [];
-        const currentMap = (state[mapKey] as unknown as ReadonlyMap<V[IDK], V>) || new Map();
+        const currentList = readList<T, LK, V>(state, listKey);
+        const currentMap = readMap<T, MK, V, V[IDK]>(state, mapKey);
 
         const existing = currentMap.get(id);
 
@@ -121,11 +126,10 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
       }),
     remove: (id: V[IDK]) =>
       set((state) => {
-        const currentMap = (state[mapKey] as unknown as ReadonlyMap<V[IDK], V>) || new Map();
+        const currentMap = readMap<T, MK, V, V[IDK]>(state, mapKey);
         if (!currentMap.has(id)) return state;
 
-        const currentList = (state[listKey] as unknown as ReadonlyArray<V>) || [];
-        const nextList = currentList.filter((item) => item[idKey] !== id);
+        const nextList = readList<T, LK, V>(state, listKey).filter((item) => item[idKey] !== id);
         const nextMap = new Map(currentMap);
         nextMap.delete(id);
 
@@ -135,7 +139,7 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
       set((state) => {
         if (draggedId === targetId) return state;
 
-        const list = state[listKey] as unknown as ReadonlyArray<V>;
+        const list = readList<T, LK, V>(state, listKey);
         const draggedIndex = list.findIndex((item) => item[idKey] === draggedId);
         const targetIndex = list.findIndex((item) => item[idKey] === targetId);
 
@@ -153,12 +157,11 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
 export const persistStore = <T extends object, P>(useStore: UseBoundStore<StoreApi<T>>, options: PersistOptions<T, P>): void => {
   const { key, context, pick, onHydrate, equalityFn = shallowEqual, shouldPersist, autoHydrate } = options;
 
-  const subscribeWithSelector = useStore.subscribe as unknown as (
-    selector: (state: T) => P,
-    listener: (selected: P, previous: P) => void,
-  ) => () => void;
+  // Every persisted store is created with the subscribeWithSelector middleware,
+  // which widens subscribe to the (selector, listener) form used below.
+  const subscribeSelection = useStore.subscribe as unknown as (selector: (state: T) => P, listener: (selected: P, previous: P) => void) => () => void;
 
-  subscribeWithSelector(pick, (selectedState, previousSelectedState) => {
+  subscribeSelection(pick, (selectedState, previousSelectedState) => {
     if (equalityFn(selectedState, previousSelectedState)) {
       return;
     }

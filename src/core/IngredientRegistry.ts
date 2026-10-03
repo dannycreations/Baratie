@@ -1,4 +1,4 @@
-import { errorHandler, logger } from '../app/container';
+import { logger } from '../app/container';
 import { useIngredientStore } from '../stores/useIngredientStore';
 import { getObjectHash } from '../utilities/objectUtil';
 
@@ -180,8 +180,6 @@ export class IngredientRegistry {
   public register<T>(definition: IngredientDefinition<T>, namespace?: string): string {
     const { run: _run, ...restOfDefinition } = definition;
     const id = getObjectHash(restOfDefinition, namespace);
-
-    errorHandler.assert(!!id, `Ingredient definition "${definition.name}" failed to generate a valid ID.`);
 
     const existing = this.ingredients.get(id);
     const isSameIngredient = existing?.name === definition.name;

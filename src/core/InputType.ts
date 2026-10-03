@@ -3,19 +3,7 @@ import { clamp, isObjectLike } from '../utilities/objectUtil';
 
 import type { PanelControlConfig, PanelCustomConfig } from './IngredientRegistry';
 
-interface InputTypeMap {
-  readonly array: ReadonlyArray<unknown>;
-  readonly arraybuffer: ArrayBuffer;
-  readonly base64: string;
-  readonly boolean: boolean;
-  readonly bytearray: Uint8Array;
-  readonly hex: string;
-  readonly number: number;
-  readonly object: object;
-  readonly string: string;
-}
-
-type InputDataType = keyof InputTypeMap;
+type InputDataType = 'array' | 'arraybuffer' | 'base64' | 'boolean' | 'bytearray' | 'hex' | 'number' | 'object' | 'string';
 
 type InputRenderProps = Omit<PanelControlConfig, 'config'> & Omit<PanelCustomConfig, 'mode'>;
 

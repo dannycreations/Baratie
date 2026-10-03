@@ -33,6 +33,9 @@ export const useControlTimer = ({ callback, duration, active = true, restartKey 
       clearTimer();
       startTimeRef.current = Date.now();
       timerIdRef.current = window.setTimeout(() => {
+        // Clearing the start time keeps elapsed time from a consumed timer out of
+        // the next activation; only a paused timer may resume a shortened window.
+        startTimeRef.current = null;
         callbackRef.current();
       }, remainingTimeRef.current);
     } else {

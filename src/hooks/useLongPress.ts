@@ -6,16 +6,15 @@ interface LongPressOptions {
   readonly onEnd?: () => void;
 }
 
-export const useLongPress = (
-  callback: () => void,
-  { delay = 300, onStart, onEnd }: LongPressOptions = {},
-): {
+interface LongPressHandlers {
   readonly onMouseDown: () => void;
   readonly onMouseUp: () => void;
   readonly onMouseLeave: () => void;
   readonly onTouchStart: () => void;
   readonly onTouchEnd: () => void;
-} => {
+}
+
+export const useLongPress = (callback: () => void, { delay = 300, onStart, onEnd }: LongPressOptions = {}): LongPressHandlers => {
   const timeoutRef = useRef<number | null>(null);
   const intervalRef = useRef<number | null>(null);
   const callbackRef = useRef(callback);
@@ -69,11 +68,13 @@ export const useLongPress = (
     return () => stop(true);
   }, [stop]);
 
+  const endPress = useCallback((): void => stop(true), [stop]);
+
   return {
     onMouseDown: start,
-    onMouseUp: stop,
-    onMouseLeave: stop,
+    onMouseUp: endPress,
+    onMouseLeave: endPress,
     onTouchStart: start,
-    onTouchEnd: stop,
+    onTouchEnd: endPress,
   };
 };

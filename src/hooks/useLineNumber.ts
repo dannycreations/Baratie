@@ -9,11 +9,6 @@ interface LineNumberProps {
   readonly textareaRef: RefObject<HTMLTextAreaElement | null>;
 }
 
-interface LineMetric {
-  readonly number: number;
-  readonly count: number;
-}
-
 interface VirtualItem {
   readonly key: number;
   readonly number: number | null;
@@ -31,6 +26,15 @@ interface TextareaMetrics {
   readonly charWidth: number;
   readonly contentWidth: number;
 }
+
+const OVERSCAN_LINES = 10;
+
+const EMPTY_RESULT: VirtualResult = {
+  lineHeight: 0,
+  paddingTop: 0,
+  paddingBottom: 0,
+  visibleItems: [],
+};
 
 const findStartLogicalLineIndex = (prefixSum: ReadonlyArray<number>, targetVisualLine: number): number => {
   let low = 0;
@@ -50,8 +54,34 @@ const findStartLogicalLineIndex = (prefixSum: ReadonlyArray<number>, targetVisua
   return resultIndex;
 };
 
+export const selectVisibleLineItems = (prefixSum: ReadonlyArray<number>, startIndex: number, endIndex: number): Array<VirtualItem> => {
+  const visibleItems: Array<VirtualItem> = [];
+  const startLogicalIndex = findStartLogicalLineIndex(prefixSum, startIndex + 1);
+  let currentVisualLine = startLogicalIndex > 0 ? prefixSum[startLogicalIndex - 1] : 0;
+
+  for (let logicalIndex = startLogicalIndex; logicalIndex < prefixSum.length; logicalIndex++) {
+    const lineEnd = prefixSum[logicalIndex];
+
+    for (let visualIndex = currentVisualLine; visualIndex < lineEnd; visualIndex++) {
+      if (visualIndex >= startIndex && visualIndex < endIndex) {
+        visibleItems.push({
+          key: visualIndex,
+          number: visualIndex === currentVisualLine ? logicalIndex + 1 : null,
+        });
+      }
+    }
+
+    if (lineEnd >= endIndex) {
+      break;
+    }
+
+    currentVisualLine = lineEnd;
+  }
+
+  return visibleItems;
+};
+
 export const useLineNumber = ({ textareaRef, value, showLineNumbers, scrollTop }: LineNumberProps): VirtualResult => {
-  const [lineMetrics, setLineMetrics] = useState<ReadonlyArray<LineMetric>>([]);
   const [visualLinePrefixSum, setVisualLinePrefixSum] = useState<ReadonlyArray<number>>([]);
 
   const metricsRef = useRef<TextareaMetrics | null>(null);
@@ -69,7 +99,6 @@ export const useLineNumber = ({ textareaRef, value, showLineNumbers, scrollTop }
   const calculateLineCounts = useCallback(
     (currentValue: string) => {
       if (!showLineNumbers) {
-        setLineMetrics([]);
         setVisualLinePrefixSum([]);
         return;
       }
@@ -83,22 +112,16 @@ export const useLineNumber = ({ textareaRef, value, showLineNumbers, scrollTop }
       const maxLineChars = charWidth > 0 ? Math.floor(contentWidth / charWidth) : 0;
 
       const newPrefixSum: Array<number> = [];
-      const newMetrics: Array<LineMetric> = [];
       let visualLineCount = 0;
-      let logicalLineNumber = 1;
 
       const lines = currentValue.split('\n');
       const len = lines.length;
       for (let i = 0; i < len; i++) {
         const lineLength = lines[i].length;
-        const count = maxLineChars > 0 ? Math.max(1, Math.ceil(lineLength / maxLineChars)) : 1;
-        visualLineCount += count;
+        visualLineCount += maxLineChars > 0 ? Math.max(1, Math.ceil(lineLength / maxLineChars)) : 1;
         newPrefixSum.push(visualLineCount);
-        newMetrics.push({ number: logicalLineNumber, count: count });
-        logicalLineNumber++;
       }
 
-      setLineMetrics(newMetrics);
       setVisualLinePrefixSum(newPrefixSum);
     },
     [showLineNumbers],
@@ -154,65 +177,24 @@ export const useLineNumber = ({ textareaRef, value, showLineNumbers, scrollTop }
   return useMemo((): VirtualResult => {
     const lineHeight = metricsRef.current?.lineHeight ?? 0;
     if (!showLineNumbers || !textareaRef.current || lineHeight === 0) {
-      return {
-        lineHeight: 0,
-        paddingTop: 0,
-        paddingBottom: 0,
-        visibleItems: [],
-      };
+      return EMPTY_RESULT;
     }
 
-    const { clientHeight } = textareaRef.current;
     const totalVisualLines = visualLinePrefixSum.length > 0 ? visualLinePrefixSum[visualLinePrefixSum.length - 1] : 0;
 
     if (totalVisualLines === 0) {
-      return {
-        lineHeight: lineHeight,
-        paddingTop: 0,
-        paddingBottom: 0,
-        visibleItems: [{ key: 0, number: 1 }],
-      };
+      return { lineHeight, paddingTop: 0, paddingBottom: 0, visibleItems: [{ key: 0, number: 1 }] };
     }
 
-    const buffer = 10;
-    const startIndex = Math.max(0, Math.floor(scrollTop / lineHeight) - buffer);
-    const endIndex = Math.min(totalVisualLines, Math.ceil((scrollTop + clientHeight) / lineHeight) + buffer);
-
-    const visibleItems: Array<VirtualItem> = [];
-    if (startIndex < endIndex) {
-      const startLogicalIndex = findStartLogicalLineIndex(visualLinePrefixSum, startIndex + 1);
-      let currentVisualLine = startLogicalIndex > 0 ? visualLinePrefixSum[startLogicalIndex - 1] : 0;
-
-      const metricsLen = lineMetrics.length;
-      for (let logicalIndex = startLogicalIndex; logicalIndex < metricsLen; logicalIndex++) {
-        const metric = lineMetrics[logicalIndex];
-        const count = metric.count;
-
-        for (let i = 0; i < count; i++) {
-          const visualIndex = currentVisualLine + i;
-          if (visualIndex >= startIndex && visualIndex < endIndex) {
-            visibleItems.push({
-              key: visualIndex,
-              number: i === 0 ? metric.number : null,
-            });
-          }
-        }
-
-        currentVisualLine += count;
-        if (currentVisualLine >= endIndex) {
-          break;
-        }
-      }
-    }
-
-    const paddingTop = startIndex * lineHeight;
-    const paddingBottom = Math.max(0, (totalVisualLines - endIndex) * lineHeight);
+    const { clientHeight } = textareaRef.current;
+    const startIndex = Math.max(0, Math.floor(scrollTop / lineHeight) - OVERSCAN_LINES);
+    const endIndex = Math.min(totalVisualLines, Math.ceil((scrollTop + clientHeight) / lineHeight) + OVERSCAN_LINES);
 
     return {
-      lineHeight: lineHeight,
-      paddingTop: paddingTop,
-      paddingBottom: paddingBottom,
-      visibleItems: visibleItems,
+      lineHeight,
+      paddingTop: startIndex * lineHeight,
+      paddingBottom: Math.max(0, (totalVisualLines - endIndex) * lineHeight),
+      visibleItems: startIndex < endIndex ? selectVisibleLineItems(visualLinePrefixSum, startIndex, endIndex) : [],
     };
-  }, [showLineNumbers, textareaRef, lineMetrics, scrollTop, visualLinePrefixSum]);
+  }, [showLineNumbers, textareaRef, scrollTop, visualLinePrefixSum]);
 };

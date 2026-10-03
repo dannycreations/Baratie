@@ -10,7 +10,7 @@ interface InitializationTask {
   readonly type?: 'preInit' | 'postInit';
   readonly message: string;
   readonly isConcurrent?: boolean;
-  readonly handler?: () => unknown;
+  readonly handler: () => unknown;
 }
 
 export class TaskRegistry {
@@ -63,9 +63,6 @@ export class TaskRegistry {
 
       const runTask = async (task: InitializationTask): Promise<void> => {
         logger.debug(`Executing init task: ${task.message}`);
-        if (!task.handler) {
-          return;
-        }
 
         const { error } = await errorHandler.attemptAsync(task.handler, `Init: ${task.message}`, {
           genericMessage: `Failed during task: ${task.message}`,

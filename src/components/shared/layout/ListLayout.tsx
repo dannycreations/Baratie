@@ -1,6 +1,6 @@
 import { cn } from 'cn';
 import { ChevronRight } from 'lucide-react';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 
 import { useSettingStore } from '../../../stores/useSettingStore';
 import { HighlightText } from '../HighlightText';
@@ -142,13 +142,6 @@ export const GroupListLayout = memo<GroupListProps>(
     const [expandedCategories, setExpandedCategories] = useState<ReadonlySet<string>>(() => new Set());
     const hasQuery = !!query.trim();
 
-    const sections = useMemo(() => {
-      return itemsByCategory.map(([category, items]) => {
-        const isExpanded = hasQuery || expandedCategories.has(category);
-        return { category, items, isExpanded };
-      });
-    }, [itemsByCategory, hasQuery, expandedCategories]);
-
     const handleCategoryToggle = useCallback(
       (category: string): void => {
         setExpandedCategories((current) => {
@@ -175,12 +168,12 @@ export const GroupListLayout = memo<GroupListProps>(
 
     return (
       <div className="list-container">
-        {sections.map(({ category, items, isExpanded }) => (
+        {itemsByCategory.map(([category, items]) => (
           <CategorySection
             key={category}
             category={category}
             items={items}
-            isExpanded={isExpanded}
+            isExpanded={hasQuery || expandedCategories.has(category)}
             onToggle={handleCategoryToggle}
             query={query}
             renderHeader={renderHeader}

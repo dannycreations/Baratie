@@ -34,13 +34,7 @@ export const FormLayout = ({
         <div className={cn(isRow ? 'flex-1-min-0' : '', labelWrapperClasses)}>
           <label className="label-base">
             {description ? (
-              <Tooltip
-                content={description}
-                disabled={!description}
-                position="top"
-                tooltipClasses="max-w-[250px]"
-                className="inline-block max-w-full"
-              >
+              <Tooltip content={description} position="top" tooltipClasses="max-w-[250px]" className="inline-block max-w-full">
                 {labelText}
               </Tooltip>
             ) : (
