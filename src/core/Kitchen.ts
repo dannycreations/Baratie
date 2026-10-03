@@ -27,6 +27,8 @@ interface RecipeLoopState {
   localWarnings: Record<string, string | null>;
 }
 
+const pairsEqual = <T>(a: ReadonlyArray<T>, b: ReadonlyArray<T>): boolean => a[0] === b[0] && a[1] === b[1];
+
 interface IngredientRunResult {
   readonly nextData: InputType;
   readonly status: CookingStatusType;
@@ -42,7 +44,7 @@ export class Kitchen {
   private intervalMs = 0;
 
   public initAutoCook(): () => void {
-    const handleRecipeChange = (): void => {
+    const cookIfEnabled = (): void => {
       if (!useKitchenStore.getState().isAutoCookEnabled) {
         return;
       }
@@ -50,25 +52,16 @@ export class Kitchen {
       this.cook();
     };
 
-    const unsubscribeKitchen = useKitchenStore.subscribe(
-      (state) => [state.inputData, state.isBatchingUpdates] as const,
-      () => {
-        const state = useKitchenStore.getState();
-        if (!state.isAutoCookEnabled || state.isBatchingUpdates) {
-          return;
-        }
+    const unsubscribeKitchen = useKitchenStore.subscribe((state) => [state.inputData, state.isBatchingUpdates] as const, cookIfEnabled, {
+      equalityFn: pairsEqual,
+    });
 
-        this.cook();
-      },
-      { equalityFn: (a, b) => a[0] === b[0] && a[1] === b[1] },
-    );
-
-    const unsubscribeRecipe = useRecipeStore.subscribe((state) => [state.ingredients, state.pausedIngredientIds] as const, handleRecipeChange, {
-      equalityFn: (a, b) => a[0] === b[0] && a[1] === b[1],
+    const unsubscribeRecipe = useRecipeStore.subscribe((state) => [state.ingredients, state.pausedIngredientIds] as const, cookIfEnabled, {
+      equalityFn: pairsEqual,
     });
 
     if (useKitchenStore.getState().isAutoCookEnabled) {
-      handleRecipeChange();
+      cookIfEnabled();
     }
 
     return () => {

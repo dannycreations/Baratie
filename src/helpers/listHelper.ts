@@ -6,13 +6,18 @@ export const createSearchPredicate = <T extends { readonly name: string; readonl
   };
 };
 
-export const groupAndFilterList = <T>(
+export const groupAndFilterList = <
+  T extends {
+    readonly name: string;
+    readonly description: string;
+  },
+>(
   items: ReadonlyArray<T>,
   getCategory: (item: T) => string,
   query: string,
-  matchesItem: (item: T) => boolean,
 ): Array<[string, Array<T>]> => {
   const lowerQuery = query.toLowerCase().trim();
+  const matchesItem = createSearchPredicate<T>(query);
   const grouped = new Map<string, Array<T>>();
 
   for (const item of items) {

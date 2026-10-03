@@ -84,7 +84,7 @@ export const IngredientPanel = memo((): JSX.Element => {
   }, [allIngredients, disabledCategories, disabledIngredients, favorites]);
 
   const filteredRegular = useMemo(
-    () => groupAndFilterList(regularList, (ingredient) => ingredient.category, deferredQuery, createSearchPredicate(deferredQuery)),
+    () => groupAndFilterList(regularList, (ingredient) => ingredient.category, deferredQuery),
     [regularList, deferredQuery],
   );
 

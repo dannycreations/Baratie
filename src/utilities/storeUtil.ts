@@ -52,28 +52,21 @@ interface PersistOptions<T, P> {
   readonly autoHydrate?: boolean;
 }
 
-const asPartial = <T>(obj: unknown): Partial<T> => obj as unknown as Partial<T>;
-
 export const createSetHandlers = <T extends object, K extends keyof T, V>(set: (fn: (state: T) => Partial<T> | T) => void, key: K) => {
   const getSet = (state: T) => state[key] as unknown as ReadonlySet<V>;
 
   return {
-    clear: () => set(() => asPartial<T>({ [key]: new Set<V>() })),
+    clear: () => set(() => ({ [key]: new Set<V>() }) as Partial<T>),
     remove: (item: V) =>
       set((state) => {
         const current = getSet(state);
         if (!current.has(item)) return state;
         const next = new Set(current);
         next.delete(item);
-        return asPartial<T>({ [key]: next });
+        return { [key]: next } as Partial<T>;
       }),
-    set: (items: ReadonlyArray<V> | ReadonlySet<V>) => set(() => asPartial<T>({ [key]: new Set(items) })),
-    toggle: (item: V) =>
-      set((state) =>
-        asPartial<T>({
-          [key]: toggleSetItem(getSet(state), item),
-        }),
-      ),
+    set: (items: ReadonlyArray<V> | ReadonlySet<V>) => set(() => ({ [key]: new Set(items) }) as Partial<T>),
+    toggle: (item: V) => set((state) => ({ [key]: toggleSetItem(getSet(state), item) }) as Partial<T>),
   };
 };
 
@@ -90,10 +83,7 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
     setAll: (items: ReadonlyArray<V>) =>
       set(() => {
         const list = sortFn ? [...items].sort(sortFn) : items;
-        return asPartial<T>({
-          [listKey]: list,
-          [mapKey]: syncMap(list),
-        });
+        return { [listKey]: list, [mapKey]: syncMap(list) } as Partial<T>;
       }),
     upsert: (item: Partial<V> & { [P in IDK]: V[IDK] }) =>
       set((state) => {
@@ -113,10 +103,7 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
             nextList.sort(sortFn);
           }
 
-          return asPartial<T>({
-            [listKey]: nextList,
-            [mapKey]: nextMap,
-          });
+          return { [listKey]: nextList, [mapKey]: nextMap } as Partial<T>;
         }
 
         const updated = { ...existing, ...item } as V;
@@ -130,10 +117,7 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
 
         const nextList = currentList.map((i) => (i[idKey] === id ? updated : i));
 
-        return asPartial<T>({
-          [listKey]: nextList,
-          [mapKey]: nextMap,
-        });
+        return { [listKey]: nextList, [mapKey]: nextMap } as Partial<T>;
       }),
     remove: (id: V[IDK]) =>
       set((state) => {
@@ -145,10 +129,7 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
         const nextMap = new Map(currentMap);
         nextMap.delete(id);
 
-        return asPartial<T>({
-          [listKey]: nextList,
-          [mapKey]: nextMap,
-        });
+        return { [listKey]: nextList, [mapKey]: nextMap } as Partial<T>;
       }),
     reorder: (draggedId: V[IDK], targetId: V[IDK]) =>
       set((state) => {
@@ -164,7 +145,7 @@ export const createListHandlers = <T extends object, LK extends keyof T, MK exte
         const [draggedItem] = nextList.splice(draggedIndex, 1);
         nextList.splice(targetIndex, 0, draggedItem);
 
-        return asPartial<T>({ [listKey]: nextList });
+        return { [listKey]: nextList } as Partial<T>;
       }),
   };
 };

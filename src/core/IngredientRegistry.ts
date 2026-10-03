@@ -184,21 +184,19 @@ export class IngredientRegistry {
     errorHandler.assert(!!id, `Ingredient definition "${definition.name}" failed to generate a valid ID.`);
 
     const existing = this.ingredients.get(id);
+    const isSameIngredient = existing?.name === definition.name;
 
-    if (existing && existing.name === definition.name) {
-      this.ingredients.set(id, { ...definition, id } as IngredientProps);
-      this.invalidate();
-
-      return id;
-    }
-
-    if (existing) {
+    if (existing && !isSameIngredient) {
       logger.warn(`IngredientRegistry: ID collision for "${definition.name}" with existing "${existing.name}". Overwriting.`);
       this.nameToIdMap.delete(existing.name);
     }
 
     this.ingredients.set(id, { ...definition, id } as IngredientProps);
-    this.nameToIdMap.set(definition.name, id);
+
+    if (!isSameIngredient) {
+      this.nameToIdMap.set(definition.name, id);
+    }
+
     this.invalidate();
 
     return id;

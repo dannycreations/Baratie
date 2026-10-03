@@ -108,8 +108,9 @@ export const computeInitialRecipeName = (
 };
 
 const createRecipeHash = (ingredients: ReadonlyArray<IngredientItem>): string => {
-  if (ingredientsHashCache.has(ingredients)) {
-    return ingredientsHashCache.get(ingredients)!;
+  const cached = ingredientsHashCache.get(ingredients);
+  if (cached) {
+    return cached;
   }
 
   const canonicalParts = ingredients.map((ing) => {

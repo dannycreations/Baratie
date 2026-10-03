@@ -2,7 +2,7 @@ import { cn } from 'cn';
 import { memo, useCallback, useMemo, useRef } from 'react';
 
 import { ingredientRegistry } from '../../app/container';
-import { createSearchPredicate, groupAndFilterList } from '../../helpers/listHelper';
+import { groupAndFilterList } from '../../helpers/listHelper';
 import { useAutoFocus } from '../../hooks/useAutoFocus';
 import { useSearch } from '../../hooks/useSearch';
 import { useIngredientStore } from '../../stores/useIngredientStore';
@@ -37,7 +37,7 @@ export const IngredientManager = memo((): JSX.Element => {
   }, [registryVersion]);
 
   const filteredList = useMemo(
-    () => groupAndFilterList(allIngredients, (ingredient) => ingredient.category, deferredQuery, createSearchPredicate(deferredQuery)),
+    () => groupAndFilterList(allIngredients, (ingredient) => ingredient.category, deferredQuery),
     [allIngredients, deferredQuery],
   );
 

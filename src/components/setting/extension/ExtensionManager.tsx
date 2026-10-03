@@ -1,10 +1,11 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { createSearchPredicate, groupAndFilterList } from '../../../helpers/listHelper';
+import { groupAndFilterList } from '../../../helpers/listHelper';
 import { useAutoFocus } from '../../../hooks/useAutoFocus';
 import { useSearch } from '../../../hooks/useSearch';
 import { useExtensionStore } from '../../../stores/useExtensionStore';
 import { useModalStore } from '../../../stores/useModalStore';
+import { toggleSetItem } from '../../../utilities/objectUtil';
 import { Button } from '../../shared/Button';
 import { BooleanInput } from '../../shared/input/BooleanInput';
 import { StringInput } from '../../shared/input/StringInput';
@@ -53,19 +54,11 @@ export const ExtensionManager = memo((): JSX.Element | null => {
   const filteredGroupedModules = useMemo(() => {
     const modulesWithIds: Array<ModuleIngredient> = manifestModules.map((module) => ({ ...module, id: module.entry }));
 
-    return groupAndFilterList(modulesWithIds, (module) => module.category, deferredQuery, createSearchPredicate(deferredQuery));
+    return groupAndFilterList(modulesWithIds, (module) => module.category, deferredQuery);
   }, [manifestModules, deferredQuery]);
 
   const handleToggleModule = useCallback((entry: string): void => {
-    setSelectedEntries((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(entry)) {
-        newSet.delete(entry);
-      } else {
-        newSet.add(entry);
-      }
-      return newSet;
-    });
+    setSelectedEntries((prev) => toggleSetItem(prev, entry));
   }, []);
 
   const handleToggleCategory = useCallback((modules: ReadonlyArray<GroupListItem>): void => {

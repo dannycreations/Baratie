@@ -37,16 +37,13 @@ export const ExtensionTab = memo((): JSX.Element => {
     }
   }, [extensions, openModal]);
 
-  const validationStatus = useMemo<'empty' | 'valid' | 'invalid'>(() => {
+  const isValidUrl = useMemo(() => {
     const trimmedUrl = url.trim();
-    if (!trimmedUrl) {
-      return 'empty';
-    }
-    return parseGitHubUrl(trimmedUrl) ? 'valid' : 'invalid';
+    return !!trimmedUrl && !!parseGitHubUrl(trimmedUrl);
   }, [url]);
 
   const handleAdd = useCallback(async (): Promise<void> => {
-    if (!url.trim() || isLoading || validationStatus !== 'valid') {
+    if (!isValidUrl || isLoading) {
       return;
     }
     setIsLoading(true);
@@ -56,7 +53,7 @@ export const ExtensionTab = memo((): JSX.Element => {
     } finally {
       setIsLoading(false);
     }
-  }, [addExtension, isLoading, url, validationStatus]);
+  }, [addExtension, isLoading, url, isValidUrl]);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>): void => {
@@ -104,7 +101,7 @@ export const ExtensionTab = memo((): JSX.Element => {
           onKeyDown={handleKeyDown}
           onClear={() => setUrl('')}
         />
-        <Button icon={<GitMerge size={ICON_SIZES.MD} />} loading={isLoading} disabled={validationStatus !== 'valid'} onClick={handleAdd}>
+        <Button icon={<GitMerge size={ICON_SIZES.MD} />} loading={isLoading} disabled={!isValidUrl} onClick={handleAdd}>
           Add
         </Button>
       </div>

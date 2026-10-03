@@ -14,20 +14,10 @@ const base64ToUint8Array = (base64: string): Uint8Array => {
 
 const hexToUint8Array = (hex: string): Uint8Array => {
   const cleanHex = hex.startsWith('0x') ? hex.slice(2) : hex;
-  const len = cleanHex.length;
+  const bytes = new Uint8Array(cleanHex.length >>> 1);
 
-  if (len % 2 !== 0) {
-    throw new Error('Invalid hex string');
-  }
-
-  const bytes = new Uint8Array(len >>> 1);
-  for (let i = 0; i < len; i += 2) {
-    const high = parseInt(cleanHex[i], 16);
-    const low = parseInt(cleanHex[i + 1], 16);
-    if (Number.isNaN(high) || Number.isNaN(low)) {
-      throw new Error('Invalid hex string');
-    }
-    bytes[i >>> 1] = (high << 4) | low;
+  for (let i = 0; i < cleanHex.length; i += 2) {
+    bytes[i >>> 1] = (parseInt(cleanHex[i], 16) << 4) | parseInt(cleanHex[i + 1], 16);
   }
   return bytes;
 };
@@ -43,11 +33,7 @@ export const stringToUint8Array = (str: string): Uint8Array => {
   }
 
   if (len % 2 === 0 && HEX_REGEX.test(cleanValue)) {
-    try {
-      return hexToUint8Array(cleanValue);
-    } catch {
-      // Not valid hex, continue
-    }
+    return hexToUint8Array(cleanValue);
   }
 
   if (len % 4 === 0 && BASE64_REGEX.test(cleanValue)) {

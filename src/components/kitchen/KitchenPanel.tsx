@@ -27,16 +27,16 @@ interface KitchenPanelSectionProps {
 
 interface DefaultContentProps extends KitchenPanelSectionProps {
   readonly config: InputPanelConfig | null;
+  readonly textareaRef: RefObject<HTMLTextAreaElement | null>;
   readonly onDataChange: (data: string) => void;
   readonly onFileDrop: (file: File) => void;
-  readonly textareaRef?: RefObject<HTMLTextAreaElement | null>;
 }
 
 interface OutputContentProps extends KitchenPanelSectionProps {
   readonly config: OutputPanelConfig | null;
 }
 
-const DefaultContent = memo<DefaultContentProps>(({ config, data, onDataChange, onFileDrop, textareaRef }) => {
+const DefaultContent = memo<DefaultContentProps>(({ config, data, textareaRef, onDataChange, onFileDrop }) => {
   const isTextareaDisabled = config?.mode === 'textarea' && (config.disabled ?? false);
   const placeholder = (config?.mode === 'textarea' && config.placeholder) || 'Place Raw Ingredients Here.';
 
@@ -66,7 +66,12 @@ const OutputDataContent = memo((): ReactNode => {
   return <OutputContent config={config} data={data} />;
 });
 
-const InputDataContent = memo<{ readonly onFileRead: (file: File) => Promise<void> }>(({ onFileRead }): ReactNode => {
+interface InputDataContentProps {
+  readonly onFileRead: (file: File) => Promise<void>;
+  readonly textareaRef: RefObject<HTMLTextAreaElement | null>;
+}
+
+const InputDataContent = memo<InputDataContentProps>(({ onFileRead, textareaRef }): ReactNode => {
   const config = useKitchenStore((state) => state.inputPanelConfig);
   const data = useKitchenStore((state) => state.inputData);
   const setInputData = useKitchenStore((state) => state.setInputData);
@@ -89,7 +94,7 @@ const InputDataContent = memo<{ readonly onFileRead: (file: File) => Promise<voi
   );
 
   if (!(config?.mode === 'spiceEditor' && targetIngredient)) {
-    return <DefaultContent config={config} data={data} onDataChange={setInputData} onFileDrop={onFileRead} />;
+    return <DefaultContent config={config} data={data} textareaRef={textareaRef} onDataChange={setInputData} onFileDrop={onFileRead} />;
   }
 
   const definition = ingredientRegistry.get(targetIngredient.ingredientId);
@@ -135,11 +140,9 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
   }, []);
 
   const handleClearInput = useCallback((): void => {
-    if (isInput) {
-      useKitchenStore.getState().setInputData('');
-      inputRef.current?.focus();
-    }
-  }, [isInput]);
+    useKitchenStore.getState().setInputData('');
+    inputRef.current?.focus();
+  }, []);
 
   const handleDownloadOutput = useCallback((): void => {
     const timestamp = new Date().toISOString().slice(0, 19).replace(/-/g, '').replace('T', '_').replace(/:/g, '');
@@ -216,7 +219,7 @@ export const KitchenPanel = memo<KitchenPanelProps>(({ type }): JSX.Element => {
       return inputPanelConfig.content();
     }
 
-    return type === 'output' ? <OutputDataContent /> : <InputDataContent onFileRead={handleFileRead} />;
+    return type === 'output' ? <OutputDataContent /> : <InputDataContent onFileRead={handleFileRead} textareaRef={inputRef} />;
   }, [inputPanelConfig, type, handleFileRead]);
 
   return (

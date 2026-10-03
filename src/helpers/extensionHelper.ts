@@ -148,13 +148,13 @@ export const loadAndExecuteExtension = async (
     return;
   }
 
-  let entryPointsOrModules: ReadonlyArray<string | ManifestModule> = [];
+  let entryPointsOrModules: ReadonlyArray<string | ManifestModule>;
   if (Array.isArray(entry)) {
     entryPointsOrModules = entry;
   } else if (entry) {
     entryPointsOrModules = [entry];
   } else {
-    entryPointsOrModules = Object.keys(cachedScripts || {});
+    entryPointsOrModules = Object.keys(cachedScripts ?? {});
   }
 
   if (entryPointsOrModules.length === 0) {

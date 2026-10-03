@@ -123,21 +123,15 @@ export const useExtensionStore = create<ExtensionState>()(
 
         get().setExtensions(extensions);
 
-        const loadPromises = extensions.map((ext) => {
-          if (ext.status === 'error') {
-            return Promise.resolve();
-          }
-
-          if (isCacheValid(ext.fetchedAt)) {
-            return loadAndExecuteExtension(ext, get);
-          }
-
-          return get().refresh(ext.id, { force: true });
-        });
-
         await Promise.all(
-          loadPromises.map((p) => {
-            return p.catch((err) => {
+          extensions.map((ext) => {
+            if (ext.status === 'error') {
+              return undefined;
+            }
+
+            const loading = isCacheValid(ext.fetchedAt) ? loadAndExecuteExtension(ext, get) : get().refresh(ext.id, { force: true });
+
+            return loading.catch((err) => {
               logger.error('Error during extension init:', err);
             });
           }),
@@ -172,13 +166,7 @@ export const useExtensionStore = create<ExtensionState>()(
 
         logger.info(`${isRefreshing ? 'Refreshing' : 'Fetching'} extension: ${storeExtension?.name || id}`);
 
-        let displayName = storeExtension?.name || id;
-        if (isNew) {
-          displayName = 'Fetching...';
-        }
-        if (isRefreshing) {
-          displayName = 'Refreshing...';
-        }
+        const displayName = isRefreshing ? 'Refreshing...' : isNew ? 'Fetching...' : storeExtension?.name || id;
 
         upsert({ id, status: 'loading', name: displayName, fetchedAt: undefined });
 

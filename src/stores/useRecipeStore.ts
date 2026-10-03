@@ -123,7 +123,7 @@ export const useRecipeStore = create<RecipeState>()(
         set({ activeRecipeId });
       },
 
-      setRecipe: (ingredients, activeRecipeId = null) => {
+      setRecipe: (ingredients, activeRecipeId) => {
         const validIngredients = ingredients.map((ingredient) => {
           const ingredientDefinition = ingredientRegistry.get(ingredient.ingredientId);
 
@@ -153,13 +153,8 @@ export const useRecipeStore = create<RecipeState>()(
           return;
         }
 
-        const currentEditingIds = get().editingIds;
-        if (currentEditingIds.has(id)) {
-          set({ editingIds: new Set() });
-          return;
-        }
-
-        set({ editingIds: new Set([id]) });
+        const isOpen = get().editingIds.has(id);
+        set({ editingIds: isOpen ? new Set() : new Set([id]) });
       },
 
       toggleIngredientPause: pausedHandlers.toggle,

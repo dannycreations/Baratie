@@ -51,7 +51,7 @@ export class ErrorHandler {
     try {
       return { result: fn(), error: null };
     } catch (error: unknown) {
-      return { result: null, error: this.handleCapture(error, context || 'Sync Operation', options) };
+      return { result: null, error: this.handle(error, context || 'Sync Operation', options) };
     }
   }
 
@@ -59,15 +59,11 @@ export class ErrorHandler {
     try {
       return { result: await fn(), error: null };
     } catch (error: unknown) {
-      return { result: null, error: this.handleCapture(error, context || 'Async Operation', options) };
+      return { result: null, error: this.handle(error, context || 'Async Operation', options) };
     }
   }
 
-  public handle(error: unknown, callerContext?: string, options: Partial<ErrorOptions> = {}): void {
-    this.handleCapture(error, callerContext, options);
-  }
-
-  private handleCapture(error: unknown, callerContext?: string, options: Partial<ErrorOptions> = {}): AppError {
+  public handle(error: unknown, callerContext?: string, options: Partial<ErrorOptions> = {}): AppError {
     const handlerOptions = { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
     const newError = this.buildError(error, callerContext, handlerOptions.defaultMessage, handlerOptions.genericMessage);
     const effectiveContext = newError.context ?? 'Application';

@@ -152,9 +152,7 @@ export const NumberInput = memo<NumberInputProps>(
     const incrementPressHandlers = useLongPress(handleIncrement, { onStart: onLongPressStart, onEnd: onLongPressEnd });
     const decrementPressHandlers = useLongPress(handleDecrement, { onStart: onLongPressStart, onEnd: onLongPressEnd });
 
-    const standardInputStyle = cn('input-base input-base-padding pr-8 number-input-no-spinner');
     const containerClass = cn('input-number-container', className);
-    const buttonGroupClass = cn('input-number-button-group');
     const stepButtonClass = 'input-number-button';
 
     return (
@@ -163,7 +161,7 @@ export const NumberInput = memo<NumberInputProps>(
           id={id}
           type="text"
           value={internalValue}
-          className={standardInputStyle}
+          className="input-base input-base-padding pr-8 number-input-no-spinner"
           disabled={disabled}
           inputMode="decimal"
           placeholder={placeholder}
@@ -172,7 +170,7 @@ export const NumberInput = memo<NumberInputProps>(
           onKeyDown={handleKeyDown}
           onWheel={handleWheel}
         />
-        <div className={buttonGroupClass}>
+        <div className="input-number-button-group">
           <button
             type="button"
             className={cn(stepButtonClass, 'rounded-tr-sm', (disabled || isAtMax) && 'opacity-50 cursor-not-allowed')}

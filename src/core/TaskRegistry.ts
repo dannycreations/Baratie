@@ -17,7 +17,6 @@ export class TaskRegistry {
   private readonly systemTasks: ReadonlyArray<InitializationTask> = [
     {
       message: 'Loading supplies from other vessels...',
-      isConcurrent: true,
       handler: () => useExtensionStore.getState().init(),
     },
     {
@@ -80,15 +79,13 @@ export class TaskRegistry {
       };
 
       const runTaskGroup = async (tasks: ReadonlyArray<InitializationTask>) => {
-        const concurrentPromises = tasks.filter((t) => t.isConcurrent).map(runTask);
-
         for (const task of tasks.filter((t) => !t.isConcurrent)) {
           taskStore.setLoadingMessage(task.message);
           await runTask(task);
           await new Promise((resolve) => setTimeout(resolve, 10));
         }
 
-        await Promise.all(concurrentPromises);
+        await Promise.all(tasks.filter((t) => t.isConcurrent).map(runTask));
       };
 
       await runTaskGroup(preTasks);

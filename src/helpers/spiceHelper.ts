@@ -6,17 +6,12 @@ import type { IngredientDefinition, SpiceDefinition, SpiceValue } from '../core/
 const spiceMapCache = new WeakMap<Readonly<IngredientDefinition>, ReadonlyMap<string, Readonly<SpiceDefinition>>>();
 
 const getSpiceMap = (definition: Readonly<IngredientDefinition>): ReadonlyMap<string, Readonly<SpiceDefinition>> => {
-  if (spiceMapCache.has(definition)) {
-    return spiceMapCache.get(definition)!;
+  const cached = spiceMapCache.get(definition);
+  if (cached) {
+    return cached;
   }
 
-  if (!definition.spices || definition.spices.length === 0) {
-    const result = new Map<string, Readonly<SpiceDefinition>>();
-    spiceMapCache.set(definition, result);
-    return result;
-  }
-
-  const result = new Map(definition.spices.map((s) => [s.id, s]));
+  const result = definition.spices ? new Map(definition.spices.map((s) => [s.id, s])) : new Map<string, Readonly<SpiceDefinition>>();
   spiceMapCache.set(definition, result);
   return result;
 };
