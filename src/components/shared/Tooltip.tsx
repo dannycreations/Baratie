@@ -12,7 +12,6 @@ export interface TooltipProps {
   readonly children?: ReactNode;
   readonly content: ReactNode;
   readonly className?: string;
-  readonly delay?: number;
   readonly disabled?: boolean;
   readonly position?: TooltipPosition;
   readonly tooltipClasses?: string;
@@ -28,6 +27,7 @@ interface TooltipPositionStyle {
 
 const ARROW_SIZE_PX = 5;
 const TOOLTIP_GAP_PX = 8;
+const TOOLTIP_SHOW_DELAY_MS = 200;
 const INITIAL_TOOLTIP_STYLE: TooltipPositionStyle = {
   top: -9999,
   left: -9999,
@@ -42,7 +42,7 @@ const TOOLTIP_ARROW_STYLES: Readonly<Record<TooltipPosition, string>> = {
 };
 
 export const Tooltip = memo(
-  ({ content, children, position = 'top', delay = 200, className = '', tooltipClasses = '', disabled = false }: TooltipProps): JSX.Element => {
+  ({ content, children, position = 'top', className = '', tooltipClasses = '', disabled = false }: TooltipProps): JSX.Element => {
     const [isVisible, setIsVisible] = useState(false);
 
     const [style, setStyle] = useState<TooltipPositionStyle>(INITIAL_TOOLTIP_STYLE);
@@ -66,7 +66,7 @@ export const Tooltip = memo(
       clearTimer();
       timeoutRef.current = window.setTimeout(() => {
         setIsVisible(true);
-      }, delay);
+      }, TOOLTIP_SHOW_DELAY_MS);
     };
 
     const handleMouseLeave = () => {

@@ -14,24 +14,21 @@ interface NotificationItemProps {
   readonly notification: NotificationMessage;
 }
 
-interface NotificationTheme {
+interface NotificationStyle {
+  readonly icon: JSX.Element;
   readonly barClass: string;
   readonly borderClass: string;
-  readonly iconClass: string;
 }
 
-const NOTIFICATION_THEME_MAP: Readonly<Record<NotificationType, NotificationTheme>> = {
-  error: { barClass: 'bg-danger-bg', borderClass: 'border-danger-border', iconClass: 'text-danger-fg' },
-  success: { barClass: 'bg-success-bg', borderClass: 'border-success-border', iconClass: 'text-success-fg' },
-  warning: { barClass: 'bg-warning-bg', borderClass: 'border-warning-border', iconClass: 'text-warning-fg' },
-  info: { barClass: 'bg-info-bg', borderClass: 'border-info-border', iconClass: 'text-info-fg' },
-} as const;
-
-const NOTIFICATION_ICON_MAP = {
-  success: Check,
-  error: AlertTriangle,
-  warning: AlertTriangle,
-  info: Info,
+const NOTIFICATION_STYLE: Readonly<Record<NotificationType, NotificationStyle>> = {
+  error: { icon: <AlertTriangle className="text-danger-fg" size={ICON_SIZES.MD} />, barClass: 'bg-danger-bg', borderClass: 'border-danger-border' },
+  success: { icon: <Check className="text-success-fg" size={ICON_SIZES.MD} />, barClass: 'bg-success-bg', borderClass: 'border-success-border' },
+  warning: {
+    icon: <AlertTriangle className="text-warning-fg" size={ICON_SIZES.MD} />,
+    barClass: 'bg-warning-bg',
+    borderClass: 'border-warning-border',
+  },
+  info: { icon: <Info className="text-info-fg" size={ICON_SIZES.MD} />, barClass: 'bg-info-bg', borderClass: 'border-info-border' },
 } as const;
 
 const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Element => {
@@ -69,9 +66,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
     };
   }, [isExiting, notification.id, removeNotification]);
 
-  const { iconClass, borderClass, barClass } = NOTIFICATION_THEME_MAP[notification.type];
-  const IconComponent = NOTIFICATION_ICON_MAP[notification.type];
-  const renderedIcon = <IconComponent className={iconClass} size={ICON_SIZES.MD} />;
+  const { icon, borderClass, barClass } = NOTIFICATION_STYLE[notification.type];
 
   const animationClass = isExiting ? 'notification-exit-active' : 'notification-enter-active';
 
@@ -82,7 +77,7 @@ const NotificationItem = memo<NotificationItemProps>(({ notification }): JSX.Ele
   return (
     <li className={containerClass} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="notification-content">
-        <div className="shrink-0">{renderedIcon}</div>
+        <div className="shrink-0">{icon}</div>
         <div className="flex-1-min-0">
           {notification.title && <h3 className="text-sm font-semibold text-content-primary">{notification.title}</h3>}
           <p className={messageClass}>{notification.message}</p>

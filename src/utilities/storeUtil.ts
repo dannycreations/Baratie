@@ -106,6 +106,12 @@ export const createListHandlers = <T extends object, LK extends keyof T, IDK ext
         const nextList = [...currentList];
         nextList[existingIndex] = updated;
 
+        // An update can move an item relative to the rest (the cookbook sorts by
+        // updatedAt), so the sort has to be reapplied here just as it is on insert.
+        if (sortFn) {
+          nextList.sort(sortFn);
+        }
+
         return { [listKey]: nextList } as Partial<T>;
       }),
     remove: (id: V[IDK]) =>

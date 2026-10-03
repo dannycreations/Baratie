@@ -62,6 +62,14 @@ describe('createListHandlers', () => {
     expect(getState().steps).toEqual([BETA]);
   });
 
+  it('re-sorts an updated item when a sort function is supplied', () => {
+    const { handlers, getState } = createHarness([ALPHA, BETA], true);
+
+    handlers.upsert({ id: 'b', label: 'Aardvark' });
+
+    expect(getState().steps.map((step) => step.id)).toEqual(['b', 'a']);
+  });
+
   it('reorders by moving the dragged step onto the target position', () => {
     const { handlers, getState } = createHarness([ALPHA, BETA, { id: 'c', label: 'Gamma', enabled: true }], true);
 

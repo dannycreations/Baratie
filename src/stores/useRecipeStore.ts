@@ -179,9 +179,9 @@ export const useRecipeStore = create<RecipeState>()(
 );
 
 useIngredientStore.subscribe(
-  (state) => [state.registryVersion, state.isHydrated] as const,
-  ([, isHydrated]) => {
-    if (!isHydrated) {
+  (state) => state.registryVersion,
+  () => {
+    if (!useIngredientStore.getState().isHydrated) {
       return;
     }
 
