@@ -243,7 +243,7 @@ export const loadAndExecuteExtension = async (
     ingredientRegistry.endBatch();
   }
 
-  if (!getStore().extensionMap.has(id)) {
+  if (!getStore().extensions.some((ext) => ext.id === id)) {
     logger.info(`Extension '${name || id}' was removed during load. Aborting update and cleaning up registered ingredients.`);
 
     if (newlyRegisteredKeys.length > 0) {

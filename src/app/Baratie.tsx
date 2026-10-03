@@ -109,7 +109,7 @@ export const createRoot = (element: HTMLElement | null, options: Readonly<Barati
       message: 'Gathering exotic provisions...',
       isConcurrent: true,
       handler: async () => {
-        const { add, extensionMap } = useExtensionStore.getState();
+        const { add, extensions } = useExtensionStore.getState();
         const { setLoadingMessage } = useTaskStore.getState();
         const extensionsToLoad = (Array.isArray(defaultExtensions) ? defaultExtensions : [defaultExtensions]).filter(isString);
         const totalExtensions = extensionsToLoad.length;
@@ -137,7 +137,7 @@ export const createRoot = (element: HTMLElement | null, options: Readonly<Barati
 
           const repoName = formatGitHubRepoId(repoInfo);
 
-          if (extensionMap.has(repoName)) {
+          if (extensions.some((ext) => ext.id === repoName)) {
             updateProgress(index, 1);
             return;
           }

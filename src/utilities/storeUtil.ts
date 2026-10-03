@@ -42,11 +42,6 @@ const schedulePersist = (writeKey: string, value: unknown, context: string): voi
   }
 };
 
-const readList = <T extends object, K extends keyof T, V>(state: T, key: K): ReadonlyArray<V> => (state[key] as unknown as ReadonlyArray<V>) ?? [];
-
-const readMap = <T extends object, K extends keyof T, V, IDK>(state: T, key: K): ReadonlyMap<IDK, V> =>
-  (state[key] as unknown as ReadonlyMap<IDK, V>) ?? new Map<IDK, V>();
-
 interface PersistOptions<T, P> {
   readonly key: string;
   readonly context: string;
@@ -75,71 +70,58 @@ export const createSetHandlers = <T extends object, K extends keyof T, V>(set: (
   };
 };
 
-export const createListHandlers = <T extends object, LK extends keyof T, MK extends keyof T, IDK extends keyof V & string, V extends object>(
+export const createListHandlers = <T extends object, LK extends keyof T, IDK extends keyof V & string, V extends object>(
   set: (fn: (state: T) => Partial<T> | T) => void,
   listKey: LK,
-  mapKey: MK,
   idKey: IDK,
   sortFn?: (a: V, b: V) => number,
 ) => {
-  const syncMap = (list: ReadonlyArray<V>) => new Map(list.map((item) => [item[idKey], item]));
+  // The list is the only copy of the collection; callers that need lookup by
+  // id scan it, which is cheaper than keeping a second structure in sync.
+  const readList = (state: T): ReadonlyArray<V> => state[listKey] as unknown as ReadonlyArray<V>;
 
   return {
-    setAll: (items: ReadonlyArray<V>) =>
-      set(() => {
-        const list = sortFn ? [...items].sort(sortFn) : items;
-        return { [listKey]: list, [mapKey]: syncMap(list) } as Partial<T>;
-      }),
+    setAll: (items: ReadonlyArray<V>) => set(() => ({ [listKey]: sortFn ? [...items].sort(sortFn) : items }) as Partial<T>),
     upsert: (item: Partial<V> & { [P in IDK]: V[IDK] }) =>
       set((state) => {
         const id = item[idKey] as V[IDK];
-        const currentList = readList<T, LK, V>(state, listKey);
-        const currentMap = readMap<T, MK, V, V[IDK]>(state, mapKey);
+        const currentList = readList(state);
+        const existingIndex = currentList.findIndex((listItem) => listItem[idKey] === id);
 
-        const existing = currentMap.get(id);
-
-        if (!existing) {
-          const nextMap = new Map(currentMap);
-          const newItem = item as V;
-          const nextList = [...currentList, newItem];
-          nextMap.set(id, newItem);
-
+        if (existingIndex === -1) {
+          const nextList = [...currentList, item as V];
           if (sortFn) {
             nextList.sort(sortFn);
           }
-
-          return { [listKey]: nextList, [mapKey]: nextMap } as Partial<T>;
+          return { [listKey]: nextList } as Partial<T>;
         }
 
+        const existing = currentList[existingIndex];
         const updated = { ...existing, ...item } as V;
 
         if (shallowEqual(existing, updated)) {
           return state;
         }
 
-        const nextMap = new Map(currentMap);
-        nextMap.set(id, updated);
+        const nextList = [...currentList];
+        nextList[existingIndex] = updated;
 
-        const nextList = currentList.map((i) => (i[idKey] === id ? updated : i));
-
-        return { [listKey]: nextList, [mapKey]: nextMap } as Partial<T>;
+        return { [listKey]: nextList } as Partial<T>;
       }),
     remove: (id: V[IDK]) =>
       set((state) => {
-        const currentMap = readMap<T, MK, V, V[IDK]>(state, mapKey);
-        if (!currentMap.has(id)) return state;
+        const currentList = readList(state);
+        if (!currentList.some((listItem) => listItem[idKey] === id)) {
+          return state;
+        }
 
-        const nextList = readList<T, LK, V>(state, listKey).filter((item) => item[idKey] !== id);
-        const nextMap = new Map(currentMap);
-        nextMap.delete(id);
-
-        return { [listKey]: nextList, [mapKey]: nextMap } as Partial<T>;
+        return { [listKey]: currentList.filter((listItem) => listItem[idKey] !== id) } as Partial<T>;
       }),
     reorder: (draggedId: V[IDK], targetId: V[IDK]) =>
       set((state) => {
         if (draggedId === targetId) return state;
 
-        const list = readList<T, LK, V>(state, listKey);
+        const list = readList(state);
         const draggedIndex = list.findIndex((item) => item[idKey] === draggedId);
         const targetIndex = list.findIndex((item) => item[idKey] === targetId);
 

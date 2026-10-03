@@ -94,7 +94,7 @@ describe('cookbook hydration during application init', () => {
   beforeEach(() => {
     localStorageMock.clear();
     useTaskStore.setState({ isInitialized: false });
-    useCookbookStore.setState({ nameInput: '', recipes: [], recipeIdMap: new Map() });
+    useCookbookStore.setState({ nameInput: '', recipes: [] });
   });
 
   it('keeps stored steps whose ingredients come from a cached extension', async () => {

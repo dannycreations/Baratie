@@ -80,14 +80,12 @@ describe('saving cookbook behaviour', () => {
     useCookbookStore.setState({
       nameInput: '',
       recipes: [],
-      recipeIdMap: new Map(),
     });
 
     useRecipeStore.setState({
       activeRecipeId: null,
       editingIds: new Set(),
       ingredients: [],
-      ingredientsMap: new Map(),
       pausedIngredientIds: new Set(),
     });
 
@@ -111,17 +109,6 @@ describe('saving cookbook behaviour', () => {
           spices: {},
         },
       ],
-      ingredientsMap: new Map([
-        [
-          ingredientId,
-          {
-            id: ingredientId,
-            ingredientId: 'ingredient-1',
-            name: 'Test Ingredient',
-            spices: {},
-          },
-        ],
-      ]),
       editingIds: new Set(),
       pausedIngredientIds: new Set(),
     });
@@ -170,7 +157,6 @@ describe('saving cookbook behaviour', () => {
     useCookbookStore.setState({
       nameInput: 'Existing Recipe',
       recipes: [existingRecipe],
-      recipeIdMap: new Map([[recipeId, existingRecipe]]),
     });
 
     useRecipeStore.setState({
@@ -183,17 +169,6 @@ describe('saving cookbook behaviour', () => {
           spices: { spicy: true },
         },
       ],
-      ingredientsMap: new Map([
-        [
-          ingredientId,
-          {
-            id: ingredientId,
-            ingredientId: 'ingredient-1',
-            name: 'Updated Ingredient',
-            spices: { spicy: true },
-          },
-        ],
-      ]),
       editingIds: new Set(),
       pausedIngredientIds: new Set(),
     });
@@ -238,7 +213,6 @@ describe('saving cookbook behaviour', () => {
     useCookbookStore.setState({
       nameInput: 'New Recipe Name',
       recipes: [existingRecipe],
-      recipeIdMap: new Map([[recipeId, existingRecipe]]),
     });
 
     useRecipeStore.setState({
@@ -251,17 +225,6 @@ describe('saving cookbook behaviour', () => {
           spices: {},
         },
       ],
-      ingredientsMap: new Map([
-        [
-          ingredientId,
-          {
-            id: ingredientId,
-            ingredientId: 'ingredient-1',
-            name: 'Test Ingredient',
-            spices: {},
-          },
-        ],
-      ]),
       editingIds: new Set(),
       pausedIngredientIds: new Set(),
     });
@@ -293,7 +256,6 @@ describe('saving cookbook behaviour', () => {
           spices: {},
         },
       ],
-      ingredientsMap: new Map(),
       editingIds: new Set(),
       pausedIngredientIds: new Set(),
     });

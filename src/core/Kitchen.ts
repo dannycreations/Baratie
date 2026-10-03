@@ -32,7 +32,6 @@ const pairsEqual = <T>(a: ReadonlyArray<T>, b: ReadonlyArray<T>): boolean => a[0
 interface IngredientRunResult {
   readonly nextData: InputType;
   readonly status: CookingStatusType;
-  readonly inputPanelId?: string | null;
   readonly panelInstruction?: PanelControlConfig;
   readonly warningMessage?: string | null;
 }
@@ -119,12 +118,10 @@ export class Kitchen {
       if (!hasIntervalSetter && this.intervalMs > 0) {
         this.setCookingInterval(0);
       }
-
-      this.scheduleNextCook();
     } catch (error) {
-      this.scheduleNextCook();
       logger.error('Error during automatic cook execution:', error);
     } finally {
+      this.scheduleNextCook();
       this.isCooking = false;
       if (this.hasPendingCook) {
         this.cook();
@@ -185,7 +182,7 @@ export class Kitchen {
   }
 
   private updateLoopStateFromResult(state: RecipeLoopState, res: IngredientRunResult, id: string): void {
-    const { nextData, status, warningMessage, panelInstruction, inputPanelId } = res;
+    const { nextData, status, warningMessage, panelInstruction } = res;
 
     state.cookedData = nextData;
     state.localStatuses[id] = status;
@@ -211,10 +208,8 @@ export class Kitchen {
       return;
     }
 
-    if (panelInstruction.panelType === 'input') {
-      state.lastInputConfig = panelInstruction.config;
-      state.lastInputPanelId = inputPanelId ?? null;
-    }
+    state.lastInputConfig = panelInstruction.config;
+    state.lastInputPanelId = panelInstruction.config.mode === 'spiceEditor' ? panelInstruction.config.targetIngredientId : null;
   }
 
   private createInitialLoopState(init: string): RecipeLoopState {
@@ -286,18 +281,10 @@ export class Kitchen {
         };
       }
 
-      const panel = result.panelControl;
-
-      let inputId: string | null = null;
-      if (panel?.panelType === 'input' && panel.config.mode === 'spiceEditor') {
-        inputId = panel.config.targetIngredientId;
-      }
-
       return {
         status: 'success',
         nextData: result,
-        panelInstruction: panel,
-        inputPanelId: inputId,
+        panelInstruction: result.panelControl,
       };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);

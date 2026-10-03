@@ -80,7 +80,7 @@ const InputDataContent = memo<InputDataContentProps>(({ onFileRead, textareaRef 
   const updateSpice = useRecipeStore((state) => state.updateSpice);
 
   const targetIngredient = useRecipeStore((state) =>
-    config?.mode === 'spiceEditor' ? state.ingredientsMap.get(config.targetIngredientId) : undefined,
+    config?.mode === 'spiceEditor' ? state.ingredients.find((ingredient) => ingredient.id === config.targetIngredientId) : undefined,
   );
 
   const handleSpiceChange = useCallback(

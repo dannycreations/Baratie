@@ -19,7 +19,6 @@ export interface CookbookModalProps {
 interface CookbookState {
   readonly nameInput: string;
   readonly recipes: ReadonlyArray<RecipebookItem>;
-  readonly recipeIdMap: ReadonlyMap<string, RecipebookItem>;
   readonly delete: (id: string) => void;
   readonly exportAll: () => void;
   readonly exportCurrent: () => void;
@@ -40,10 +39,9 @@ const persistRecipes = (recipes: ReadonlyArray<RecipebookItem>): boolean => {
 const countRecipes = (count: number): string => `${count} recipe${count === 1 ? '' : 's'}`;
 
 export const useCookbookStore = create<CookbookState>()((set, get) => {
-  const recipeHandlers = createListHandlers<CookbookState, 'recipes', 'recipeIdMap', 'id', RecipebookItem>(
+  const recipeHandlers = createListHandlers<CookbookState, 'recipes', 'id', RecipebookItem>(
     set,
     'recipes',
-    'recipeIdMap',
     'id',
     (a, b) => b.updatedAt - a.updatedAt,
   );
@@ -51,12 +49,10 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
   return {
     nameInput: '',
     recipes: [],
-    recipeIdMap: new Map(),
 
     delete: (id) => {
       const { show } = useNotificationStore.getState();
-      const { recipeIdMap } = get();
-      const recipeToDelete = recipeIdMap.get(id);
+      const recipeToDelete = get().recipes.find((recipe) => recipe.id === id);
 
       if (!recipeToDelete) return;
 
@@ -171,7 +167,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
 
     load: (id) => {
       const { show } = useNotificationStore.getState();
-      const recipeToLoad = get().recipeIdMap.get(id);
+      const recipeToLoad = get().recipes.find((recipe) => recipe.id === id);
 
       if (!recipeToLoad) {
         return;
@@ -183,22 +179,22 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
 
     merge: (recipesToImport: ReadonlyArray<RecipebookItem>) => {
       const { show } = useNotificationStore.getState();
-      const { recipes, setRecipes, recipeIdMap } = get();
+      const { recipes, setRecipes } = get();
       logger.info('Merging imported recipes...', {
         importedCount: recipesToImport.length,
         existingCount: recipes.length,
       });
 
-      const recipeMap = new Map<string, RecipebookItem>(recipeIdMap);
+      const mergedById = new Map<string, RecipebookItem>(recipes.map((recipe) => [recipe.id, recipe]));
       let added = 0;
       let updated = 0;
       let skipped = 0;
 
       for (const recipeItem of recipesToImport) {
-        const existingItem = recipeMap.get(recipeItem.id);
+        const existingItem = mergedById.get(recipeItem.id);
 
         if (!existingItem) {
-          recipeMap.set(recipeItem.id, recipeItem);
+          mergedById.set(recipeItem.id, recipeItem);
           added++;
           continue;
         }
@@ -208,7 +204,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
           continue;
         }
 
-        recipeMap.set(recipeItem.id, recipeItem);
+        mergedById.set(recipeItem.id, recipeItem);
         updated++;
       }
 
@@ -218,7 +214,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
         return;
       }
 
-      const mergedList: ReadonlyArray<RecipebookItem> = [...recipeMap.values()];
+      const mergedList: ReadonlyArray<RecipebookItem> = [...mergedById.values()];
 
       const summary = [
         added > 0 ? `${countRecipes(added)} added.` : '',
@@ -254,7 +250,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
     setRecipes: recipeHandlers.setAll,
 
     upsert: () => {
-      const { nameInput, recipeIdMap } = get();
+      const { nameInput, recipes } = get();
       const { ingredients, activeRecipeId, setActiveRecipeId } = useRecipeStore.getState();
       const { show } = useNotificationStore.getState();
       const trimmedName = nameInput.trim();
@@ -264,7 +260,7 @@ export const useCookbookStore = create<CookbookState>()((set, get) => {
         return;
       }
 
-      const recipeToUpdate = activeRecipeId ? recipeIdMap.get(activeRecipeId) : null;
+      const recipeToUpdate = recipes.find((recipe) => recipe.id === activeRecipeId) ?? null;
       const isNameMatching = recipeToUpdate?.name.trim().toLowerCase() === trimmedName.toLowerCase();
       const isUpdateAction = !!recipeToUpdate && isNameMatching && ingredients.length > 0;
       const now = Date.now();

@@ -21,7 +21,6 @@ import type { Extension, ManifestModule, StorableExtension } from '../helpers/ex
 
 export interface ExtensionState {
   readonly extensions: ReadonlyArray<Extension>;
-  readonly extensionMap: ReadonlyMap<string, Extension>;
   readonly add: (url: string, options?: Readonly<{ force?: boolean; onProgress?: (percentage: number) => void }>) => Promise<void>;
   readonly cancelPendingInstall: () => void;
   readonly init: () => Promise<void>;
@@ -43,11 +42,10 @@ export interface ExtensionState {
 
 export const useExtensionStore = create<ExtensionState>()(
   subscribeWithSelector((set, get) => {
-    const handlers = createListHandlers<ExtensionState, 'extensions', 'extensionMap', 'id', Extension>(set, 'extensions', 'extensionMap', 'id');
+    const handlers = createListHandlers<ExtensionState, 'extensions', 'id', Extension>(set, 'extensions', 'id');
 
     return {
       extensions: [],
-      extensionMap: new Map(),
 
       add: async (url, options) => {
         const { show } = useNotificationStore.getState();
@@ -58,9 +56,9 @@ export const useExtensionStore = create<ExtensionState>()(
           return;
         }
 
-        const { extensionMap, refresh } = get();
+        const { extensions, refresh } = get();
         const id = formatGitHubRepoId(repoInfo);
-        const existing = extensionMap.get(id);
+        const existing = extensions.find((ext) => ext.id === id);
 
         if (existing && isCacheValid(existing.fetchedAt)) {
           show('This extension is already installed and up-to-date.', 'info', 'Add Extension');
@@ -75,7 +73,7 @@ export const useExtensionStore = create<ExtensionState>()(
         const pendingExtension = extensions.find((e) => e.status === 'awaiting');
 
         if (!pendingExtension) {
-          logger.warn(`Attempted to cancel non-existent pending extension.`);
+          logger.warn('Attempted to cancel non-existent pending extension.');
           return;
         }
 
@@ -139,8 +137,8 @@ export const useExtensionStore = create<ExtensionState>()(
       },
 
       installSelectedModules: async (id, selectedModules) => {
-        const { setIngredients, upsert, extensionMap } = get();
-        const extension = extensionMap.get(id);
+        const { extensions, setIngredients, upsert } = get();
+        const extension = extensions.find((ext) => ext.id === id);
 
         if (!extension) {
           logger.error(`Attempted to install modules for a non-existent extension: ${id}`);
@@ -159,8 +157,8 @@ export const useExtensionStore = create<ExtensionState>()(
       },
 
       refresh: async (id, options) => {
-        const { upsert, setIngredients, setExtensionStatus, extensionMap } = get();
-        const storeExtension = extensionMap.get(id);
+        const { upsert, setIngredients, setExtensionStatus, extensions } = get();
+        const storeExtension = extensions.find((ext) => ext.id === id);
         const isNew = !storeExtension;
         const isRefreshing = options?.context === 'refresh' || (options?.context === 'add' && !isNew);
 
@@ -195,11 +193,11 @@ export const useExtensionStore = create<ExtensionState>()(
           const entryToUse = isModuleBased && storeExtension?.entry ? storeExtension.entry : manifest.entry;
           upsert({ id, manifest, entry: entryToUse, scripts: {} });
 
-          const currentExtState = get().extensionMap.get(id)!;
+          const currentExtState = get().extensions.find((ext) => ext.id === id)!;
 
           await loadAndExecuteExtension(currentExtState, get, options?.onProgress);
 
-          const finalState = get().extensionMap.get(id)!;
+          const finalState = get().extensions.find((ext) => ext.id === id)!;
           const isSuccess = finalState.status === 'loaded' || finalState.status === 'partial';
           if (isSuccess) {
             upsert({ id, name: manifest.name });
@@ -220,7 +218,7 @@ export const useExtensionStore = create<ExtensionState>()(
 
       remove: (id) => {
         const { show } = useNotificationStore.getState();
-        const extension = get().extensionMap.get(id);
+        const extension = get().extensions.find((ext) => ext.id === id);
 
         if (!extension) {
           logger.warn(`Attempted to remove non-existent extension with id: ${id}`);
@@ -239,9 +237,7 @@ export const useExtensionStore = create<ExtensionState>()(
       },
 
       setExtensionStatus: (id, status, errors) => {
-        const extension = get().extensionMap.get(id);
-
-        if (!extension) {
+        if (!get().extensions.some((ext) => ext.id === id)) {
           return;
         }
 

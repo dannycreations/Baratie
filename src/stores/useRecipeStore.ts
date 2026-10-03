@@ -17,7 +17,6 @@ interface RecipeState {
   readonly activeRecipeId: string | null;
   readonly editingIds: Set<string>;
   readonly ingredients: ReadonlyArray<IngredientItem>;
-  readonly ingredientsMap: ReadonlyMap<string, IngredientItem>;
   readonly pausedIngredientIds: Set<string>;
   readonly addIngredient: (ingredientId: string, initialSpices?: Readonly<Record<string, unknown>>) => void;
   readonly clearEditingIds: () => void;
@@ -37,18 +36,12 @@ export const useRecipeStore = create<RecipeState>()(
     const editingHandlers = createSetHandlers<RecipeState, 'editingIds', string>(set, 'editingIds');
     const pausedHandlers = createSetHandlers<RecipeState, 'pausedIngredientIds', string>(set, 'pausedIngredientIds');
 
-    const ingredientHandlers = createListHandlers<RecipeState, 'ingredients', 'ingredientsMap', 'id', IngredientItem>(
-      set,
-      'ingredients',
-      'ingredientsMap',
-      'id',
-    );
+    const ingredientHandlers = createListHandlers<RecipeState, 'ingredients', 'id', IngredientItem>(set, 'ingredients', 'id');
 
     return {
       activeRecipeId: null,
       editingIds: new Set(),
       ingredients: [],
-      ingredientsMap: new Map(),
       pausedIngredientIds: new Set(),
 
       addIngredient: (ingredientId, initialSpices) => {
@@ -73,7 +66,6 @@ export const useRecipeStore = create<RecipeState>()(
       clearRecipe: () => {
         set({
           ingredients: [],
-          ingredientsMap: new Map(),
           activeRecipeId: null,
           editingIds: new Set(),
           pausedIngredientIds: new Set(),
@@ -102,12 +94,12 @@ export const useRecipeStore = create<RecipeState>()(
       },
 
       removeIngredient: (id) => {
-        if (!get().ingredientsMap.has(id)) {
+        const { activeRecipeId, ingredients } = get();
+        if (!ingredients.some((ingredient) => ingredient.id === id)) {
           logger.warn(`Attempted to remove non-existent ingredient with id: ${id}`);
           return;
         }
 
-        const { activeRecipeId } = get();
         ingredientHandlers.remove(id);
         editingHandlers.remove(id);
         pausedHandlers.remove(id);
@@ -140,7 +132,6 @@ export const useRecipeStore = create<RecipeState>()(
 
         set({
           ingredients: validIngredients,
-          ingredientsMap: new Map(validIngredients.map((i) => [i.id, i])),
           activeRecipeId,
           editingIds: new Set(),
           pausedIngredientIds: new Set(),
@@ -160,7 +151,7 @@ export const useRecipeStore = create<RecipeState>()(
       toggleIngredientPause: pausedHandlers.toggle,
 
       updateSpice: (id, spiceId, rawValue) => {
-        const ingredientToUpdate = get().ingredientsMap.get(id);
+        const ingredientToUpdate = get().ingredients.find((ingredient) => ingredient.id === id);
         errorHandler.assert(ingredientToUpdate, `Ingredient with ID "${id}" not found for spice change.`, 'Recipe Change Spice');
 
         const ingredientDefinition = ingredientRegistry.get(ingredientToUpdate.ingredientId);

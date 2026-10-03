@@ -67,7 +67,7 @@ export class ErrorHandler {
     const handlerOptions = { ...ErrorHandler.DEFAULT_ERROR_CONFIG, ...options };
     const newError = this.buildError(error, callerContext, handlerOptions.defaultMessage, handlerOptions.genericMessage);
     const effectiveContext = newError.context ?? 'Application';
-    const displayMessage = newError.userMessage ?? ErrorHandler.DEFAULT_ERROR_CONFIG.defaultMessage!;
+    const defaultMessage = handlerOptions.defaultMessage ?? ErrorHandler.DEFAULT_ERROR_CONFIG.defaultMessage!;
 
     if (handlerOptions.shouldLog) {
       logger.error(`Context: ${effectiveContext} | ${newError.name}: ${newError.message}`, {
@@ -78,7 +78,7 @@ export class ErrorHandler {
     }
 
     if (handlerOptions.shouldNotify) {
-      this.notify(displayMessage, ErrorHandler.NOTIFICATION_TITLE, handlerOptions.defaultMessage!, newError.message);
+      this.notify(newError.userMessage ?? defaultMessage, ErrorHandler.NOTIFICATION_TITLE, defaultMessage, newError.message);
     }
 
     return newError;
